@@ -1,0 +1,23 @@
+# Environments
+.venv/
+__pycache__/
+*.pyc
+.pytest_cache/
+
+# Data (large / regeneratable / not ours to redistribute)
+data/raw/*
+!data/raw/toy_smoke_dataset.json
+data/processed/
+data/poisoned/
+
+# Results and logs (raw, versioned by experiment ID instead of git diff)
+results/*.jsonl
+logs/
+
+# Model weights if ever cached locally
+*.safetensors
+*.gguf
+mlx_models/
+
+# OS
+.DS_Store

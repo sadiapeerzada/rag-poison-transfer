@@ -1,0 +1,9 @@
+# Weeks 1-2 (smoke test) — CPU-only, no model downloads required
+rank_bm25
+pyyaml
+pytest
+
+# Weeks 3-4+ (uncomment as needed on your Mac):
+# mlx-lm            # local generator, Apple Silicon only
+# sentence-transformers   # dense retrieval (BGE/E5)
+# faiss-cpu         # vector index for dense retrieval

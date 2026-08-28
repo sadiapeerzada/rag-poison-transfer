@@ -1,0 +1,22 @@
+{
+  "_NOTE": "PLACEHOLDER DATA ONLY. This is a synthetic 10-example set for pipeline-wiring tests, not a sample of Natural Questions. Swap for a real NQ-open dev sample before any real experiment (Weeks 3-4).",
+  "corpus": [
+    {"doc_id": "d1", "text": "The Eiffel Tower is located in Paris, France, and was completed in 1889."},
+    {"doc_id": "d2", "text": "Mount Everest is the tallest mountain above sea level, located in the Himalayas."},
+    {"doc_id": "d3", "text": "The capital of Japan is Tokyo, one of the most populous cities in the world."},
+    {"doc_id": "d4", "text": "Water boils at 100 degrees Celsius at standard atmospheric pressure."},
+    {"doc_id": "d5", "text": "The Great Wall of China was built over many centuries to protect against invasions."},
+    {"doc_id": "d6", "text": "Albert Einstein developed the theory of relativity in the early 20th century."},
+    {"doc_id": "d7", "text": "The Amazon River is the largest river by discharge volume in the world."},
+    {"doc_id": "d8", "text": "Photosynthesis is the process by which plants convert sunlight into chemical energy."},
+    {"doc_id": "d9", "text": "The Pacific Ocean is the largest and deepest of Earth's oceanic divisions."},
+    {"doc_id": "d10", "text": "William Shakespeare wrote plays including Hamlet, Macbeth, and Romeo and Juliet."}
+  ],
+  "queries": [
+    {"query_id": "q1", "question": "Where is the Eiffel Tower located?", "gold_answer": "Paris"},
+    {"query_id": "q2", "question": "What is the tallest mountain?", "gold_answer": "Mount Everest"},
+    {"query_id": "q3", "question": "What is the capital of Japan?", "gold_answer": "Tokyo"},
+    {"query_id": "q4", "question": "At what temperature does water boil at standard pressure?", "gold_answer": "100 degrees Celsius"},
+    {"query_id": "q5", "question": "Who developed the theory of relativity?", "gold_answer": "Albert Einstein"}
+  ]
+}
