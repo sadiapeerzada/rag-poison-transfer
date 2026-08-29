@@ -5,12 +5,21 @@ Research repo for Sadia Peerzada's undergraduate thesis project. See
 experiment proves, and the project foundation doc (shared separately)
 for the full 12-week roadmap and repository design rationale.
 
-## Status: Week 1-2, smoke test complete
+## Status: Week 3-4, retrieval components built + tested (dataset scope pending supervisor sign-off)
 
-This currently proves the *pipeline wiring* works end to end:
-`toy dataset -> BM25 retrieval -> generator -> EM/F1 scoring -> logged results`.
-It does **not** yet use real data, a real model, or any of the attacks/
-defenses -- those come in Weeks 3-8 per the roadmap.
+Built and verified (with mock embedders/scorers, no model downloads needed):
+- `src/retrieval/dense.py` — dense retriever, pluggable embedder
+- `src/retrieval/hybrid.py` — reciprocal rank fusion of any two retrievers
+- `src/retrieval/reranker.py` — cross-encoder rescoring stage
+- `src/data/loaders.py` — HotpotQA / 2WikiMultiHopQA / NQ-open loaders
+
+**IMPORTANT:** `src/data/loaders.py` bakes in corpus-scope shortcuts
+(test-set subsampling, using each dataset's provided candidate pool
+instead of full open-domain retrieval, an NQ pilot-only loader with no
+real corpus yet) that are `[REC]` — my recommendations for MacBook
+feasibility, NOT yet confirmed by your supervisor. Do not report any
+numbers from these loaders as final results until he's signed off —
+see the module docstring for the exact three items to confirm.
 
 ## Setup
 
@@ -34,25 +43,26 @@ answer. That's intentional: it isolates "does the pipeline plumbing
 work" from "does the model generate good answers," which is a separate
 question for once the real generator is wired in.
 
-## Switching to the real generator (on your Mac only)
-
-This sandbox has no internet access to Hugging Face, so the real
-model must be set up on your machine:
+## Real generator (exp_001, on your Mac)
 
 ```bash
 pip install mlx-lm
+python run.py --config configs/exp_001_real_generator.yaml
 ```
 
-Then in `configs/exp_000_smoke.yaml`, change:
-```yaml
-generator_backend: mlx
+First run downloads `mlx-community/Qwen2.5-7B-Instruct-4bit` (a few
+GB). This still uses the toy dataset — real EM/F1 on real questions,
+but not yet a frozen benchmark result.
+
+## Real datasets (pending supervisor confirmation)
+
+```bash
+pip install datasets sentence-transformers
 ```
 
-The first run will download `mlx-community/Qwen2.5-7B-Instruct-4bit`
-(a few GB) — expect this to take a while depending on your connection.
-Delete `results/exp_000_smoke_test.jsonl` first if you already have a
-mock-generator run logged (raw results are never overwritten — see
-`src/utils/logging_utils.py`).
+Then use `src/data/loaders.py` — but read its docstring warnings
+first. Don't treat output from this as a citable result until the
+corpus-scope questions are confirmed.
 
 ## What's real vs placeholder right now
 

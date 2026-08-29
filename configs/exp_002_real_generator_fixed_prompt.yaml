@@ -1,0 +1,9 @@
+experiment_id: exp_002_real_generator_fixed_prompt
+seed: 42
+dataset_path: data/raw/toy_smoke_dataset.json
+retriever: bm25
+top_k: 2
+generator_backend: mlx
+generator_model: mlx-community/Qwen2.5-7B-Instruct-4bit
+max_tokens: 64
+results_dir: results

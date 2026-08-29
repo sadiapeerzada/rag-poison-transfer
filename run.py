@@ -31,8 +31,9 @@ def build_generator(config: dict):
 def build_prompt(question: str, evidence_docs: list) -> str:
     evidence_text = "\n".join(f"- {d.text}" for d in evidence_docs)
     return (
-        "Answer the question using only the evidence below. "
-        "Be concise.\n\n"
+        "Answer the question using only the evidence below.\n"
+        "Respond with ONLY the short factual answer (a name, place, date, or number). "
+        "No explanation, no extra sentences, no punctuation-terminated reasoning.\n\n"
         f"Evidence:\n{evidence_text}\n\n"
         f"Question: {question}\n"
         "Answer:"
@@ -58,6 +59,12 @@ def main(config_path: str):
         retrieved = retriever.retrieve(q["question"], top_k=config["top_k"])
         prompt = build_prompt(q["question"], retrieved)
         gen_result = generator.generate(prompt, max_tokens=config["max_tokens"])
+        # Extract just the first line/sentence -- generative models often add
+        # unrequested explanation after the answer; standard practice is to
+        # score against the extracted short answer, not the raw generation.
+        raw_text = gen_result.text
+        extracted = raw_text.split("\n")[0].split(". ")[0].strip()
+        gen_result.text = extracted
 
         em = exact_match(gen_result.text, q["gold_answer"])
         f1 = f1_score(gen_result.text, q["gold_answer"])
