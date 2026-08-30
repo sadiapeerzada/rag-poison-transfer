@@ -30,9 +30,15 @@ def load_hotpotqa_distractor(split: str = "validation", n_samples: int | None = 
     This is the standard evaluation setting for this dataset in most
     published work [RESEARCH INFERENCE] -- not full open-domain
     retrieval over all of Wikipedia.
+
+    NOTE: uses the namespaced mirror "hotpotqa/hotpot_qa" rather than
+    the original bare "hotpot_qa" repo. The original is a legacy
+    "loading script" dataset; `datasets` v5.x removed script support,
+    and its automatic parquet-fallback has a bug parsing bare-name
+    (no-namespace) legacy repos. The namespaced mirror avoids this.
     """
     from datasets import load_dataset
-    ds = load_dataset("hotpot_qa", "distractor", split=split, trust_remote_code=True)
+    ds = load_dataset("hotpotqa/hotpot_qa", "distractor", split=split)
 
     if n_samples is not None:
         rng = random.Random(seed)
@@ -62,7 +68,7 @@ def load_2wikimultihopqa(split: str = "validation", n_samples: int | None = None
     provided candidate pool, not full open-domain retrieval.
     """
     from datasets import load_dataset
-    ds = load_dataset("xanhho/2WikiMultihopQA", split=split, trust_remote_code=True)
+    ds = load_dataset("xanhho/2WikiMultihopQA", split=split)
 
     if n_samples is not None:
         rng = random.Random(seed)
