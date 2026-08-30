@@ -12,7 +12,15 @@ Embedding is pluggable via the `embedder` argument:
   download. Used only to test the retrieval/ranking/fusion LOGIC here
   without needing real embeddings. Never use it for real results --
   it has no semantic understanding, just word-hash buckets.
+
+  IMPORTANT: uses hashlib, not Python's built-in hash(). Built-in
+  hash() is randomly salted per-process (a security feature, PEP 456)
+  -- meaning two runs of the "same" deterministic code could disagree
+  on word->bucket assignment. hashlib.md5 is stable across runs,
+  processes, and machines, which is what "deterministic" actually
+  requires here.
 """
+import hashlib
 import numpy as np
 from dataclasses import dataclass
 
@@ -22,6 +30,10 @@ class RetrievedDoc:
     doc_id: str
     text: str
     score: float
+
+
+def _stable_hash(word: str, dim: int) -> int:
+    return int(hashlib.md5(word.encode("utf-8")).hexdigest(), 16) % dim
 
 
 class HashingEmbedder:
@@ -34,7 +46,7 @@ class HashingEmbedder:
         vectors = np.zeros((len(texts), self.dim), dtype=np.float32)
         for i, text in enumerate(texts):
             for word in text.lower().split():
-                vectors[i, hash(word) % self.dim] += 1.0
+                vectors[i, _stable_hash(word, self.dim)] += 1.0
         norms = np.linalg.norm(vectors, axis=1, keepdims=True)
         norms[norms == 0] = 1.0
         return vectors / norms

@@ -1,12 +1,12 @@
-"""Week 1-2 smoke test: Dataset -> BM25 retrieval -> Generator -> EM/F1.
+"""Dataset -> Retrieval -> Generator -> EM/F1.
 
 Run with:
     python run.py --config configs/exp_000_smoke.yaml
 
-This is intentionally the simplest possible clean pipeline (Section 6
-of the plan / Section E-Weeks-1-2 of the foundation doc). No attacks,
-no defenses, no dense retrieval yet -- just proving the wiring works
-end to end, reproducibly, before we add complexity in Weeks 3-4.
+Supports two data sources, chosen by config:
+- dataset_path: static JSON (toy dataset -- exp_000/001/002)
+- dataset_loader: a real dataset via src/data/loaders.py (exp_003+)
+  Requires internet access to Hugging Face; run on your Mac.
 """
 import argparse
 import json
@@ -28,6 +28,32 @@ def build_generator(config: dict):
         raise ValueError(f"Unknown generator_backend: {config['generator_backend']}")
 
 
+def load_dataset(config: dict) -> dict:
+    """Returns {"corpus": [...], "queries": [...]}, from either a static
+    JSON file (toy dataset) or a real loader in src/data/loaders.py.
+    """
+    if "dataset_loader" in config:
+        from src.data import loaders as real_loaders
+        loader_name = config["dataset_loader"]
+        loader_fn = getattr(real_loaders, loader_name, None)
+        if loader_fn is None:
+            raise ValueError(
+                f"Unknown dataset_loader: {loader_name!r}. "
+                f"Check src/data/loaders.py for available loader function names."
+            )
+        kwargs = {}
+        if "dataset_split" in config:
+            kwargs["split"] = config["dataset_split"]
+        if "dataset_n_samples" in config:
+            kwargs["n_samples"] = config["dataset_n_samples"]
+        if "dataset_seed" in config:
+            kwargs["seed"] = config["dataset_seed"]
+        return loader_fn(**kwargs)
+    else:
+        with open(config["dataset_path"]) as f:
+            return json.load(f)
+
+
 def build_prompt(question: str, evidence_docs: list) -> str:
     evidence_text = "\n".join(f"- {d.text}" for d in evidence_docs)
     return (
@@ -44,8 +70,7 @@ def main(config_path: str):
     config = load_config(config_path)
     set_seed(config["seed"])
 
-    with open(config["dataset_path"]) as f:
-        data = json.load(f)
+    data = load_dataset(config)
 
     retriever = BM25Retriever()
     retriever.build(data["corpus"])
@@ -62,8 +87,7 @@ def main(config_path: str):
         # Extract just the first line/sentence -- generative models often add
         # unrequested explanation after the answer; standard practice is to
         # score against the extracted short answer, not the raw generation.
-        raw_text = gen_result.text
-        extracted = raw_text.split("\n")[0].split(". ")[0].strip()
+        extracted = gen_result.text.split("\n")[0].split(". ")[0].strip()
         gen_result.text = extracted
 
         em = exact_match(gen_result.text, q["gold_answer"])
