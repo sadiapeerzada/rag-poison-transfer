@@ -15,36 +15,8 @@ from src.utils.config import load_config
 from src.utils.seeding import set_seed
 from src.utils.logging_utils import ExperimentLogger
 from src.retrieval.bm25 import BM25Retriever
-from src.retrieval.dense import DenseRetriever, SentenceTransformerEmbedder
-from src.retrieval.hybrid import HybridRetriever
-from src.retrieval.reranker import Reranker, CrossEncoderScorer
 from src.pipelines.generator import MockGenerator, MLXGenerator, TransformersGenerator
 from src.evaluation.metrics import exact_match, f1_score
-
-
-def build_retriever(config: dict):
-    """Real retrievers only (no mocks) -- this is for real experiment
-    runs, not tests. embedder_model/reranker_model are optional config
-    overrides; sensible defaults (BGE-small / MiniLM cross-encoder) are
-    used otherwise.
-    """
-    kind = config.get("retriever", "bm25")
-    embedder_model = config.get("embedder_model", "BAAI/bge-small-en-v1.5")
-    reranker_model = config.get("reranker_model", "cross-encoder/ms-marco-MiniLM-L-6-v2")
-
-    if kind == "bm25":
-        return BM25Retriever()
-    elif kind == "dense":
-        return DenseRetriever(SentenceTransformerEmbedder(embedder_model))
-    elif kind == "hybrid":
-        return HybridRetriever(
-            BM25Retriever(),
-            DenseRetriever(SentenceTransformerEmbedder(embedder_model)),
-        )
-    elif kind == "reranker":
-        return Reranker(BM25Retriever(), CrossEncoderScorer(reranker_model))
-    else:
-        raise ValueError(f"Unknown retriever: {kind!r}")
 
 
 def build_generator(config: dict):
@@ -105,7 +77,7 @@ def main(config_path: str):
 
     data = load_dataset(config)
 
-    retriever = build_retriever(config)
+    retriever = BM25Retriever()
     retriever.build(data["corpus"])
 
     generator = build_generator(config)
