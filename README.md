@@ -49,6 +49,10 @@ evidence of the four strategies tested. This is a real, reproducible
 pilot finding, directionally useful for the next phase of the thesis --
 **not yet a frozen benchmark result** (see caveat below).
 
+<p align="center">
+  <img src="retriever_comparison.svg" alt="Retriever comparison: EM and F1 across BM25, Dense, Hybrid, and Reranker" width="600">
+</p>
+
 **Pending supervisor sign-off before this counts as final:**
 `src/data/loaders.py` bakes in corpus-scope shortcuts -- test-set
 subsampling at N=50 (below the eventual N~=150-300 target) and using
