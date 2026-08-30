@@ -15,7 +15,7 @@ from src.utils.config import load_config
 from src.utils.seeding import set_seed
 from src.utils.logging_utils import ExperimentLogger
 from src.retrieval.bm25 import BM25Retriever
-from src.pipelines.generator import MockGenerator, MLXGenerator
+from src.pipelines.generator import MockGenerator, MLXGenerator, TransformersGenerator
 from src.evaluation.metrics import exact_match, f1_score
 
 
@@ -24,6 +24,11 @@ def build_generator(config: dict):
         return MockGenerator()
     elif config["generator_backend"] == "mlx":
         return MLXGenerator(model_name=config["generator_model"])
+    elif config["generator_backend"] == "transformers":
+        return TransformersGenerator(
+            model_name=config["generator_model"],
+            load_in_4bit=config.get("load_in_4bit", True),
+        )
     else:
         raise ValueError(f"Unknown generator_backend: {config['generator_backend']}")
 
@@ -84,9 +89,6 @@ def main(config_path: str):
         retrieved = retriever.retrieve(q["question"], top_k=config["top_k"])
         prompt = build_prompt(q["question"], retrieved)
         gen_result = generator.generate(prompt, max_tokens=config["max_tokens"])
-        # Extract just the first line/sentence -- generative models often add
-        # unrequested explanation after the answer; standard practice is to
-        # score against the extracted short answer, not the raw generation.
         extracted = gen_result.text.split("\n")[0].split(". ")[0].strip()
         gen_result.text = extracted
 
