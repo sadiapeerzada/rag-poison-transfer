@@ -20,16 +20,55 @@ your Mac, not in a sandbox with restricted network access.
 Until confirmed, treat anything loaded here as DEV-SCALE / PILOT DATA
 for testing the pipeline -- not a frozen benchmark.
 """
+import hashlib
 import random
+
+
+def _canonical_doc_id(dataset_tag: str, title: str, text: str) -> str:
+    """Canonical, content-addressed doc ID: dataset + normalized title +
+    content hash. This is deliberately NOT query-scoped, so the same
+    Wikipedia article pulled in by multiple questions collapses to one
+    corpus entry instead of N duplicates (see supervisor review #5).
+    A hash suffix (rather than title alone) guards against two
+    same-titled articles with different sentence sets (e.g. dataset
+    version drift) silently colliding.
+    """
+    normalized_title = title.strip().lower().replace(" ", "_")
+    content_hash = hashlib.sha1(text.encode("utf-8")).hexdigest()[:10]
+    return f"{dataset_tag}::{normalized_title}::{content_hash}"
 
 
 def load_hotpotqa_distractor(split: str = "validation", n_samples: int | None = None,
                               seed: int = 42) -> dict:
-    """HotpotQA, distractor setting: each question ships with its own
-    ~10-paragraph candidate pool (mix of gold + distractor paragraphs).
-    This is the standard evaluation setting for this dataset in most
-    published work [RESEARCH INFERENCE] -- not full open-domain
-    retrieval over all of Wikipedia.
+    """HotpotQA, distractor setting.
+
+    [RESEARCH INFERENCE, corrected per supervisor review #3] Each HF
+    row ships its own ~10-paragraph candidate pool, but this loader
+    does NOT keep those pools separate per question. It merges every
+    sampled question's paragraphs into one shared, deduplicated corpus
+    (canonical doc IDs -- see `_canonical_doc_id`), and every query is
+    evaluated by retrieving against that whole merged corpus. So the
+    actual setting here is:
+
+        pooled HotpotQA mini-corpus retrieval (N questions -> up to
+        ~10*N deduplicated passages, fewer once repeated articles like
+        "Albert Einstein" collapse to a single entry)
+
+    NOT the standard per-question 10-doc distractor-pool evaluation
+    used in most published HotpotQA work. [RECOMMENDATION, per review]
+    Pooling is arguably more interesting for poisoning-transfer
+    experiments (a 10-doc closed pool per question leaves little room
+    for a poisoned doc to compete), but it must be reported as this
+    pooled setting, not as standard distractor-setting HotpotQA.
+
+    Also attaches gold retrieval labels (review #4), required for
+    Recall@k / MRR / nDCG@k / PoisonRetrievalRate@k:
+      - gold_doc_ids: canonical IDs of this query's supporting-fact
+        documents, resolved against the SAME canonical-ID scheme used
+        for the corpus (so gold_doc_ids are guaranteed to match
+        entries in `corpus`).
+      - gold_supporting_facts: the raw HF (title, sent_id) pairs, kept
+        for sentence-level analysis / debugging.
 
     NOTE: uses the namespaced mirror "hotpotqa/hotpot_qa" rather than
     the original bare "hotpot_qa" repo. The original is a legacy
@@ -45,27 +84,59 @@ def load_hotpotqa_distractor(split: str = "validation", n_samples: int | None = 
         indices = rng.sample(range(len(ds)), min(n_samples, len(ds)))
         ds = ds.select(indices)
 
-    corpus, queries = [], []
+    corpus = []
+    seen_doc_ids = set()  # dedupe across queries (canonical IDs repeat
+                           # when the same article is pulled in twice)
+    queries = []
+
     for row in ds:
         query_id = row["id"]
         titles = row["context"]["title"]
         sentences_per_doc = row["context"]["sentences"]
+
+        # title -> canonical doc_id, for resolving this row's supporting
+        # facts below (needed since supporting_facts only gives titles,
+        # not the merged text we hash into the canonical ID)
+        title_to_doc_id = {}
         for title, sentences in zip(titles, sentences_per_doc):
-            doc_id = f"{query_id}::{title}"
-            corpus.append({"doc_id": doc_id, "text": " ".join(sentences)})
+            text = " ".join(sentences)
+            doc_id = _canonical_doc_id("hotpotqa", title, text)
+            title_to_doc_id[title] = doc_id
+            if doc_id not in seen_doc_ids:
+                seen_doc_ids.add(doc_id)
+                corpus.append({"doc_id": doc_id, "text": text})
+
+        sf_titles = row["supporting_facts"]["title"]
+        sf_sent_ids = row["supporting_facts"]["sent_id"]
+        gold_doc_ids = sorted({
+            title_to_doc_id[t] for t in sf_titles if t in title_to_doc_id
+        })
+        gold_supporting_facts = [
+            {"title": t, "sent_id": s} for t, s in zip(sf_titles, sf_sent_ids)
+        ]
+
         queries.append({
             "query_id": query_id,
             "question": row["question"],
             "gold_answer": row["answer"],
+            "gold_doc_ids": gold_doc_ids,
+            "gold_supporting_facts": gold_supporting_facts,
         })
+
     return {"corpus": corpus, "queries": queries}
 
 
 def load_2wikimultihopqa(split: str = "validation", n_samples: int | None = None,
                           seed: int = 42) -> dict:
-    """2WikiMultiHopQA: similarly ships a per-question candidate pool.
-    [REC] Same corpus-scope reasoning as HotpotQA above -- use the
-    provided candidate pool, not full open-domain retrieval.
+    """2WikiMultiHopQA.
+
+    Same corpus-scope correction as `load_hotpotqa_distractor` (review
+    #3/#4/#5): merges per-question candidate pools into one
+    deduplicated, canonically-ID'd pooled corpus (see
+    `load_hotpotqa_distractor`'s docstring for the full rationale)
+    rather than keeping each question's pool separate, and attaches
+    `gold_doc_ids` / `gold_supporting_facts` resolved against those
+    canonical IDs.
     """
     from datasets import load_dataset
     ds = load_dataset("xanhho/2WikiMultihopQA", split=split)
@@ -75,17 +146,40 @@ def load_2wikimultihopqa(split: str = "validation", n_samples: int | None = None
         indices = rng.sample(range(len(ds)), min(n_samples, len(ds)))
         ds = ds.select(indices)
 
-    corpus, queries = [], []
+    corpus = []
+    seen_doc_ids = set()
+    queries = []
+
     for row in ds:
         query_id = row["_id"]
+
+        title_to_doc_id = {}
         for title, sentences in row["context"]:
-            doc_id = f"{query_id}::{title}"
-            corpus.append({"doc_id": doc_id, "text": " ".join(sentences)})
+            text = " ".join(sentences)
+            doc_id = _canonical_doc_id("2wikimultihopqa", title, text)
+            title_to_doc_id[title] = doc_id
+            if doc_id not in seen_doc_ids:
+                seen_doc_ids.add(doc_id)
+                corpus.append({"doc_id": doc_id, "text": text})
+
+        # 2WikiMultiHopQA's supporting_facts is a list of [title, sent_id]
+        # pairs (same shape idea as HotpotQA, different container).
+        supporting_facts = row.get("supporting_facts", [])
+        gold_doc_ids = sorted({
+            title_to_doc_id[t] for t, _ in supporting_facts if t in title_to_doc_id
+        })
+        gold_supporting_facts = [
+            {"title": t, "sent_id": s} for t, s in supporting_facts
+        ]
+
         queries.append({
             "query_id": query_id,
             "question": row["question"],
             "gold_answer": row["answer"],
+            "gold_doc_ids": gold_doc_ids,
+            "gold_supporting_facts": gold_supporting_facts,
         })
+
     return {"corpus": corpus, "queries": queries}
 
 
