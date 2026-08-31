@@ -10,8 +10,15 @@ data/raw/*
 data/processed/
 data/poisoned/
 
-# Results and logs (raw, versioned by experiment ID instead of git diff)
-results/*.jsonl
+# Results (raw per-query logs) -- TRACKED by default now, not ignored.
+# Every real experiment (exp_00N_*.jsonl) is traceable evidence per the
+# reproducibility rules; committing it directly means no manual copy-into-
+# experiments/ step to remember and forget. Only throwaway/dev-loop runs
+# (smoke tests, ad-hoc debug runs) are excluded -- these aren't real
+# results and don't need a permanent record.
+results/*smoke*.jsonl
+results/*debug*.jsonl
+results/*_scratch*.jsonl
 logs/
 
 # Model weights if ever cached locally
