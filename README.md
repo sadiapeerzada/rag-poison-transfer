@@ -24,7 +24,7 @@ found and fixed along the way rather than hidden:
   evaluated on the same 50 real HotpotQA questions (same seed, so it's a
   fair comparison), with a real 7B instruction model doing the generation
   -- not a toy dataset, not a mock model.
-- **Found and fixed three real bugs** during development (details below),
+- **Found and fixed four real bugs** during development (details below),
   rather than shipping results that happened to work by accident.
 - **Set up a dual-environment workflow**: local Mac for fast dev/debug
   iteration, Kaggle GPU for real generation runs, both syncing through this
@@ -36,18 +36,31 @@ All four retrievers tested end-to-end on real HotpotQA data (distractor
 setting, N=50 sampled from validation, same seed across all four runs),
 using `Qwen/Qwen2.5-7B-Instruct` (4-bit) on a Kaggle T4 GPU:
 
-| Retriever |        EM |        F1 | Config                           |
-| --------- | --------: | --------: | -------------------------------- |
-| BM25      |     0.360 |     0.485 | `exp_004_hotpotqa_kaggle.yaml`   |
-| Dense     |     0.380 |     0.574 | `exp_005_hotpotqa_dense.yaml`    |
-| Hybrid    |     0.400 |     0.524 | `exp_006_hotpotqa_hybrid.yaml`   |
-| Reranker  | **0.460** | **0.574** | `exp_007_hotpotqa_reranker.yaml` |
+| Retriever |        EM |        F1 | Config                           | Raw log |
+| --------- | --------: | --------: | -------------------------------- | ------- |
+| BM25      |     0.360 |     0.485 | `exp_004_hotpotqa_kaggle.yaml`   | `experiments/exp_004_hotpotqa_kaggle/exp_004_hotpotqa_kaggle.jsonl` |
+| Dense     |     0.380 |     0.574 | `exp_005_hotpotqa_dense.yaml`    | `experiments/exp_005_hotpotqa_dense/exp_005_hotpotqa_dense.jsonl` |
+| Hybrid    |     0.400 |     0.524 | `exp_006_hotpotqa_hybrid.yaml`   | `experiments/exp_006_hotpotqa_hybrid/exp_006_hotpotqa_hybrid.jsonl` |
+| Reranker  | **0.460** | **0.574** | `exp_007_hotpotqa_reranker.yaml` | `experiments/exp_007_hotpotqa_reranker/exp_007_hotpotqa_reranker.jsonl` |
 
 **Reranking wins on exact match and ties dense retrieval on F1.**
 Cross-encoder reranking of BM25's candidates gives the model the best
 evidence of the four strategies tested. This is a real, reproducible
 pilot finding, directionally useful for the next phase of the thesis --
 **not yet a frozen benchmark result** (see caveat below).
+
+**Re-verified end-to-end on 2026-08-31**, after fixing a retriever-routing
+regression that briefly made `run.py` ignore `config['retriever']` entirely
+(see bug #4 below). All four experiments were re-run from scratch on the
+fixed code, and the resulting EM/F1 numbers matched the original table
+**exactly**, to three decimal places, across all four retrievers. Since
+each config also visibly loaded different underlying components this
+run (`BAAI/bge-small-en-v1.5` for dense/hybrid, `cross-encoder/ms-marco-MiniLM-L-6-v2`
+for reranker), this is strong evidence the original numbers were genuinely
+produced by correctly-routed retrievers, not by four accidental BM25 runs
+or hand-entered placeholders. Raw per-query logs for all four runs are now
+committed under `experiments/exp_00N_.../` (see table above) so every
+number here is traceable to source data, not just asserted in this file.
 
 <p align="center">
   <img src="retriever_comparison.svg" alt="Retriever comparison: EM and F1 across BM25, Dense, Hybrid, and Reranker" width="600">
@@ -83,6 +96,22 @@ engineering work, not something to hide:
    parsing bare-name (no-namespace) legacy repos. Fixed by switching to
    the namespaced mirror (`hotpotqa/hotpot_qa`) and dropping the now-
    invalid `trust_remote_code` argument.
+4. **Retriever-routing regression (caught by supervisor review, not by
+   tests).** A later commit adding the Kaggle/`TransformersGenerator`
+   backend accidentally deleted `build_retriever(config)` and hardcoded
+   `main()` to always use `BM25Retriever()`, silently ignoring
+   `config['retriever']`. This meant `exp_005`/`006`/`007` (dense/hybrid/
+   reranker) would have all quietly run as BM25 if re-executed, even
+   though their configs said otherwise -- and the existing test suite
+   didn't catch it, because the one end-to-end test only exercised the
+   BM25 smoke config. Fixed by restoring `build_retriever()` and adding
+   `tests/test_config_routing.py`, an integration test that runs `main()`
+   end-to-end for each retriever kind and asserts the actual class
+   instantiated matches the config -- this is the test that would have
+   (and now would) catch this class of regression automatically. Then
+   re-ran all four retriever experiments from scratch on the fixed code
+   to confirm the original pilot numbers were genuine (see results table
+   above) rather than assuming it.
 
 ## Two working environments
 
@@ -154,7 +183,9 @@ benchmark result the plan calls for.
 | `MockGenerator` | **Placeholder/test-only** -- never use for real results |
 | `MLXGenerator` / `TransformersGenerator` | Real, both verified working |
 | EM/F1 metrics | Real, final |
-| HotpotQA pilot (N=50) | Real results, pending sign-off to become final |
+| HotpotQA pilot (N=50), all 4 retrievers | Real, re-verified after routing-regression fix, raw logs committed -- pending sign-off on corpus scope to become final |
+| Config-routing integration test | Real, catches the exact regression class found in bug #4 |
+| `gold_doc_ids` / `gold_supporting_facts`, canonical doc IDs | Real, verified on real HotpotQA data (dedup confirmed on true repeats, no false collapses) |
 | 2WikiMultiHopQA, NQ-open real runs | Loader built, not yet run on real data |
 | Attacks, RCD, full metric suite | Not yet built -- Weeks 5-10 |
 
