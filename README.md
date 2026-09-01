@@ -255,7 +255,201 @@ benchmark result the plan calls for.
 | Per-record environment metadata (`git_commit_sha`, library versions, device) | Real, tested (8 tests), wired into every experiment log |
 | Pinned Kaggle dependencies (`requirements-kaggle-lock.txt`) | Real, captured from a verified-working Kaggle T4 run |
 | 2WikiMultiHopQA, NQ-open real runs | Loader built, not yet run on real data |
-| Attacks, RCD, full metric suite | Not yet built -- Weeks 5-10 |
+| Corpus metadata logging | Real; corpus statistics (num_queries, num_unique_documents, corpus_type) recorded in every experiment summary |
+| Attack metrics (PRR@k, ASR, ATR) | Infrastructure built and tested; ready for poison-generation implementations |
+| Transfer matrix framework | Real, ready for source→target pipeline evaluation |
+| Attacks, RCD, full transfer experiments | Not yet built -- Weeks 5-10 |
+
+## Corpus construction methodology (HotpotQA)
+
+The current implementation uses a **pooled HotpotQA mini-corpus** design,
+pending supervisor approval:
+
+### Sampling & Scope
+- **Dataset:** HotpotQA, distractor setting (provides top-k Wikipedia candidate pool per query)
+- **Split:** Validation split (see `load_hotpotqa_distractor` in `src/data/loaders.py`)
+- **Sample size:** N ≤ 50 queries per run (configurable via `n_samples` in config)
+- **Seed:** Fixed seed (e.g., 42) for reproducibility; different seeds produce different sample sets
+
+### Corpus Construction
+1. Load N sampled HotpotQA queries (seeded random sample)
+2. For each query, extract its candidate documents (titles + sentences)
+3. Assign a canonical document ID to each document:
+   - **Format:** `hotpotqa::normalized_title::content_hash[:10]`
+   - **Properties:** Content-addressed (deterministic, query-independent), deduplicates same Wikipedia article across questions
+4. Pool all candidate documents from all N queries into a single corpus
+5. Deduplicate by canonical ID (a single Wikipedia article appears once, not once-per-query)
+6. For each query, preserve the set of gold document IDs (those IDs that appear in the corpus) and supporting facts (title + sentence ID)
+
+### Corpus Statistics
+Every experiment logs:
+```json
+"corpus": {
+  "dataset": "load_hotpotqa_distractor",
+  "dataset_split": "train" or "validation",
+  "num_queries": N,
+  "num_unique_documents": (after dedup),
+  "corpus_type": "pooled_hotpotqa",
+  "seed": 42
+}
+```
+
+### Why Pooled, Not Per-Query Closed-Book?
+The pooled design allows multiple queries to share the same document corpus,
+which more closely mirrors real-world RAG where a fixed knowledge base
+serves many queries. It also naturally handles the transfer experiment case:
+a poison document injected via a source pipeline's retriever can then be
+re-evaluated on a target pipeline against the same corpus, measuring transfer.
+
+### Gold Labels & Deduplication
+Gold labels (`gold_doc_ids`, `gold_supporting_facts`) are *per-query*.
+They are NOT duplicated into the global corpus; the corpus has one entry
+per unique document. The query → document relevance relationship is
+preserved separately in each query record.
+
+### Determinism & Reproducibility
+- Corpus construction is **fully deterministic:** same seed → same N questions → same corpus
+- Canonical IDs are **content-addressed** and **query-independent:** the same Wikipedia
+  article will get the same ID regardless of which queries retrieve it
+- This is verified by tests in `tests/test_corpus_construction.py`
+
+## Retrieval metrics hierarchy
+
+### Clean Retrieval Metrics
+All runs retrieve the top 10 ranked documents (independent of `top_k`,
+which controls how many go to the generator). Per-query metrics:
+
+- **Recall@k:** Fraction of query's gold documents appearing in top-k results (k ∈ {1,3,5,10})
+- **MRR@k:** Mean Reciprocal Rank of the first relevant document in top-k (k ∈ {1,3,5,10})
+  - Returns 1.0 if first relevant doc is at rank 1, 0.5 if at rank 2, 0.0 if none in top-k
+- **nDCG@10:** Normalized Discounted Cumulative Gain with binary relevance (is/isn't a gold doc)
+  - Perfect ranking → 1.0; no relevant docs in top-10 → 0.0
+  - Uses gold document labels from HotpotQA's supporting facts
+
+### Clean Generation Metrics
+- **Exact Match (EM):** Generated answer matches gold answer exactly (after normalization)
+- **F1:** Token-level overlap between generated and gold answers
+
+All metrics use standard SQuAD-style normalization (lowercase, punctuation removal, article removal).
+
+### Attack Metrics (Infrastructure)
+The following infrastructure is built and tested, ready to accept poison-generation outputs:
+
+- **Poison Retrieval Rate@k (PRR@k):** Fraction of attacked queries that retrieve at least one poison document in top-k
+  - Computed per-query as 1.0 or 0.0; aggregate as mean across queries
+  - k ∈ {1,3,5,10}
+- **Attack Success Rate (ASR):** Fraction of attacked queries where the model generated the attack target answer instead of the true answer
+- **Attack Transfer Rate (ATR):** Of the attacks that succeeded on the source pipeline, fraction that also succeed on the target pipeline
+
+See `src/evaluation/metrics.py` for function signatures and `tests/test_attack_metrics.py` for test cases.
+
+### Metric Logging
+Every experiment record logs:
+```json
+"retrieval_metrics": {
+  "recall@1": float | null,
+  "recall@3": float | null,
+  "recall@5": float | null,
+  "recall@10": float | null,
+  "mrr@1": float | null,
+  "mrr@3": float | null,
+  "mrr@5": float | null,
+  "mrr@10": float | null,
+  "ndcg@10": float | null
+},
+"em": float,
+"f1": float
+```
+
+Queries without `gold_doc_ids` record `null` for retrieval metrics (undefined, not 0).
+Summary files report per-metric means, excluding `null` values from denominators.
+
+## Transfer experiment framework
+
+### Motivation
+Knowledge-poisoning attacks are crafted against a specific source pipeline
+(e.g., BM25 + Qwen LLM). The central research question is: *which attacks
+transfer to target pipelines?* The transfer framework enables systematic
+evaluation across all 4 × 4 = 16 source-target retriever pairs.
+
+### Architecture
+
+**TransferMatrix** (`src/pipelines/transfer.py`)
+- Stores results for each (source_pipeline, target_pipeline) pair
+- Unrun cells are marked explicitly as `"not_run"`, never fabricated
+- Exports to CSV and Markdown for human inspection
+
+**TransferExperimentResult** (`src/pipelines/transfer.py`)
+- Captures:
+  - Source & target pipeline identifiers
+  - Poison ID and attack metadata
+  - Query counts and success rates
+  - PRR@k, ASR, ATR values per experiment
+  - Per-query transfer tracking (which source successes transferred)
+
+**compute_transfer_statistics()** (`src/pipelines/transfer.py`)
+- Takes parallel lists of source and target results
+- Computes transfer rates automatically
+- Validates alignment (same queries, same order)
+
+### Result Schema
+Each attack result record must contain:
+```json
+{
+  "query_id": "id_of_query",
+  "source_pipeline": "bm25" | "dense" | "hybrid" | "reranker",
+  "target_pipeline": "bm25" | "dense" | "hybrid" | "reranker",
+  "poison_doc_ids": ["canonical_id_1", "canonical_id_2", ...],
+  "retrieved_doc_ids": ["ranked", "list", "of", "doc", "ids"],
+  "poison_retrieved": true | false,
+  "poison_rank": 1 | 2 | ... | null,
+  "clean_answer": "model_output_on_clean_evidence",
+  "attacked_answer": "model_output_on_poisoned_evidence",
+  "gold_answer": "ground_truth",
+  "attack_success": true | false,
+  ... reproducibility metadata
+}
+```
+
+### Configuration
+Extend experiment config with:
+```yaml
+source_pipeline: bm25
+target_pipeline: dense
+attack_id: "attack_v1"
+poison_id: "poison_001"
+```
+
+### Current Status
+- Transfer matrix framework is built and tested
+- All four retrievers can be swapped via config (no code changes)
+- Awaiting attack-generation implementations to populate the matrix
+
+## Testing
+
+Run the full test suite:
+```bash
+pytest tests/ -v
+```
+
+**86 tests**, all passing:
+- 17 retrieval metrics tests (Recall, MRR, nDCG edge cases)
+- 9 attack metrics tests (PRR, ASR, ATR)
+- 22 transfer framework tests (matrix, statistics, export formats)
+- 23 corpus construction tests (determinism, dedup, canonical IDs, gold mapping)
+- 5 config routing tests (retriever instantiation per config)
+- 7 integration tests (end-to-end pipeline validation)
+- 3 environment metadata tests
+
+### Running specific test suites
+```bash
+pytest tests/test_retrieval_metrics.py -v      # Recall/MRR/nDCG unit tests
+pytest tests/test_attack_metrics.py -v         # PRR/ASR/ATR unit tests
+pytest tests/test_transfer_framework.py -v     # Matrix and aggregation tests
+pytest tests/test_corpus_construction.py -v    # Corpus determinism & dedup
+pytest tests/test_config_routing.py -v         # Retriever routing verification
+pytest tests/test_integration_full_pipeline.py -v  # End-to-end validation
+```
 
 ## Repository layout
 

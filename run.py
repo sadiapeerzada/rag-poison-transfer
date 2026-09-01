@@ -223,9 +223,23 @@ def main(config_path: str):
         metric_name: sum(scores) / len(scores)
         for metric_name, scores in retrieval_metric_scores.items()
     }
+    
+    # Corpus metadata for experiment reproducibility
+    corpus = data.get("corpus", [])
+    num_queries = len(data["queries"])
+    corpus_stats = {
+        "dataset": config.get("dataset_loader"),
+        "dataset_split": config.get("split", "train"),
+        "num_queries": num_queries,
+        "num_unique_documents": len(corpus),
+        "corpus_type": "pooled_hotpotqa",  # Hardcoded for current implementation
+        "seed": config.get("seed", 42),
+    }
+    
     summary = {
         "experiment_id": config["experiment_id"],
-        "query_count": len(data["queries"]),
+        "query_count": num_queries,
+        "corpus": corpus_stats,
         "mean_em": sum(em_scores) / len(em_scores),
         "mean_f1": sum(f1_scores) / len(f1_scores),
         "mean_retrieval_metrics": retrieval_metric_means,

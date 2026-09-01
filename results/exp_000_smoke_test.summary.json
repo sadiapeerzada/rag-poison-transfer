@@ -1,0 +1,15 @@
+{
+  "corpus": {
+    "corpus_type": "pooled_hotpotqa",
+    "dataset": null,
+    "dataset_split": "train",
+    "num_queries": 5,
+    "num_unique_documents": 10,
+    "seed": 42
+  },
+  "experiment_id": "exp_000_smoke_test",
+  "mean_em": 0.0,
+  "mean_f1": 0.0,
+  "mean_retrieval_metrics": {},
+  "query_count": 5
+}
