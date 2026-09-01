@@ -15,12 +15,52 @@ from src.utils.config import load_config
 from src.utils.seeding import set_seed
 from src.utils.logging_utils import ExperimentLogger
 from src.retrieval.bm25 import BM25Retriever
+from src.retrieval.dense import DenseRetriever, SentenceTransformerEmbedder
+from src.retrieval.hybrid import HybridRetriever
+from src.retrieval.reranker import Reranker, CrossEncoderScorer
 from src.pipelines.generator import MockGenerator, MLXGenerator, TransformersGenerator
 from src.evaluation.metrics import exact_match, f1_score
 
 
-def build_generator(config: dict):
-    if config["generator_backend"] == "mock":
+
+def build_retriever(config: dict):
+    """Build the configured retriever."""
+    kind = config.get("retriever", "bm25")
+
+    if kind == "bm25":
+        return BM25Retriever()
+
+    elif kind == "dense":
+        embedder_model = config["embedder_model"]
+        return DenseRetriever(
+            SentenceTransformerEmbedder(embedder_model)
+        )
+
+    elif kind == "hybrid":
+        embedder_model = config["embedder_model"]
+        return HybridRetriever(
+            BM25Retriever(),
+            DenseRetriever(
+                SentenceTransformerEmbedder(embedder_model)
+            ),
+        )
+
+    elif kind == "reranker":
+        embedder_model = config["embedder_model"]
+        reranker_model = config["reranker_model"]
+        # Plan spec (Section 6): "dense + cross-encoder reranking" -- base
+        # retriever must be dense, not BM25, so this is genuinely a second
+        # reranking stage on top of the dense pipeline, not a BM25 variant.
+        return Reranker(
+            DenseRetriever(SentenceTransformerEmbedder(embedder_model)),
+            CrossEncoderScorer(reranker_model),
+        )
+
+    else:
+        raise ValueError(f"Unknown retriever: {kind}")
+
+
+def build_generator(config: dict):    if config["generator_backend"] == "mock":
         return MockGenerator()
     elif config["generator_backend"] == "mlx":
         return MLXGenerator(model_name=config["generator_model"])
@@ -77,7 +117,7 @@ def main(config_path: str):
 
     data = load_dataset(config)
 
-    retriever = BM25Retriever()
+    retriever = build_retriever(config)
     retriever.build(data["corpus"])
 
     generator = build_generator(config)

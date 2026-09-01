@@ -1,0 +1,21 @@
+# Second generator family for transfer validation (experiment plan Section 6:
+# "one substantially different model family... for transfer validation").
+# Mistral-7B-Instruct is used here specifically because it appears repeatedly
+# as the standard second/comparison family in the assigned literature matrix
+# (RevPRAG tests Mistral-7B alongside Llama2/Llama3; DenialRAG uses
+# Mistral-7B-Instruct-v0.3 + Llama-3.1-8B-Instruct as its two open families).
+# Same retriever/dataset setup as exp_004 (BM25 baseline) so results are
+# directly comparable to the Qwen baseline -- only the generator changes.
+experiment_id: exp_008_hotpotqa_mistral_transfer
+seed: 42
+dataset_loader: load_hotpotqa_distractor
+dataset_split: validation
+dataset_n_samples: 50
+dataset_seed: 42
+retriever: bm25
+top_k: 3
+generator_backend: transformers
+generator_model: mistralai/Mistral-7B-Instruct-v0.3
+load_in_4bit: true
+max_tokens: 64
+results_dir: results
