@@ -8,5 +8,14 @@ sentence-transformers   # dense retrieval (BGE/E5) + cross-encoder reranker
 datasets                # HotpotQA / 2WikiMultiHopQA / NQ-open loading (needs internet)
 numpy
 
-# Real generator (already installed if you did exp_001):
+# Real generator, local Mac (already installed if you did exp_001):
 # mlx-lm
+
+# Real generator, Kaggle GPU (transformers + bitsandbytes 4-bit quantization) --
+# needed for exp_004 onward (exp_004_hotpotqa_kaggle.yaml, exp_005/006/007):
+# torch
+# transformers
+# accelerate
+# bitsandbytes
+# See requirements-kaggle-lock.txt for exact pinned versions verified working
+# on Kaggle T4 GPU.
