@@ -71,6 +71,15 @@ verifies the end-to-end schema (10 aligned IDs/scores and all cutoff fields),
 but it has no gold document labels, so its retrieval metrics are intentionally
 `null` and its summary has no retrieval averages.
 
+`configs/exp_009_hotpotqa_retrieval_eval_smoke.yaml` was run on 2026-09-01
+against five real HotpotQA validation questions with BM25 and the mock
+generator. Its current-code artifacts,
+`results/exp_009_hotpotqa_retrieval_eval_smoke.jsonl` and
+`results/exp_009_hotpotqa_retrieval_eval_smoke.summary.json`, contain ten
+aligned ranked IDs/scores per query and non-null aggregate Recall/MRR metrics.
+This verifies retrieval evaluation and canonical gold-ID handling only; its
+mock-generator EM/F1 values are not generation-quality results.
+
 The committed HotpotQA pilot logs under `experiments/` and the corresponding
 older files under `results/` were produced before this expanded schema: they
 contain three-document rankings and no retrieval metrics. They remain the
@@ -231,6 +240,7 @@ benchmark result the plan calls for.
 | EM/F1 metrics | Real, final |
 | HotpotQA pilot (N=50), all 4 retrievers | Real EM/F1 pilot, re-verified after routing-regression fix; committed logs use the pre-expanded retrieval schema and remain pending corpus-scope sign-off |
 | Recall@1/@3/@5/@10 and MRR@1/@3/@5/@10 | Real in the current run path, integration-tested with gold labels; the existing HotpotQA artifacts require reruns before they report these metrics |
+| HotpotQA retrieval-evaluation smoke (N=5, BM25, mock generator) | Run on 2026-09-01 with current code; logs all required retrieval metrics and aggregate summary, but is not a generation-quality result |
 | Config-routing integration test | Real, catches the exact regression class found in bug #4 |
 | `gold_doc_ids` / `gold_supporting_facts`, canonical doc IDs | Real, verified on real HotpotQA data (dedup confirmed on true repeats, no false collapses) |
 | Per-record environment metadata (`git_commit_sha`, library versions, device) | Real, tested (8 tests), wired into every experiment log |

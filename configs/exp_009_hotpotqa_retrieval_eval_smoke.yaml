@@ -1,0 +1,14 @@
+# Real HotpotQA loader with mock generation: validates retrieval metrics and
+# canonical gold-document IDs without presenting generation quality as a result.
+experiment_id: exp_009_hotpotqa_retrieval_eval_smoke
+seed: 42
+dataset_loader: load_hotpotqa_distractor
+dataset_split: validation
+dataset_n_samples: 5
+dataset_seed: 42
+retriever: bm25
+top_k: 3
+generator_backend: mock
+generator_model: unused
+max_tokens: 64
+results_dir: results

@@ -1,0 +1,17 @@
+{
+  "experiment_id": "exp_009_hotpotqa_retrieval_eval_smoke",
+  "mean_em": 0.0,
+  "mean_f1": 0.0,
+  "mean_retrieval_metrics": {
+    "mrr@1": 0.6,
+    "mrr@10": 0.7285714285714285,
+    "mrr@3": 0.7,
+    "mrr@5": 0.7,
+    "ndcg@10": 0.6043823975884861,
+    "recall@1": 0.3,
+    "recall@10": 0.7,
+    "recall@3": 0.5,
+    "recall@5": 0.5
+  },
+  "query_count": 5
+}

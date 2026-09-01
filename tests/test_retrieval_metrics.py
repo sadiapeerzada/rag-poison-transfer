@@ -60,6 +60,10 @@ def test_recall_at_k_duplicate_gold_ids_not_double_counted():
     assert recall_at_k(retrieved, gold, k=2) == 1.0
 
 
+def test_recall_at_10_handles_a_shorter_ranking():
+    assert recall_at_k(["a"], ["a", "b"], k=10) == 0.5
+
+
 # ---- mrr ---------------------------------------------------------------
 
 def test_mrr_first_position():
@@ -89,6 +93,15 @@ def test_mrr_respects_k_cutoff():
     assert mrr(retrieved, gold, k=2) == 0.0   # "a" is past the cutoff
     assert mrr(retrieved, gold, k=3) == pytest_approx(1 / 3)
     assert mrr(retrieved, gold, k=None) == pytest_approx(1 / 3)  # no cutoff
+
+
+def test_mrr_at_required_cutoffs():
+    retrieved = ["a", "b", "c", "d"]
+    gold = ["c"]
+    assert mrr(retrieved, gold, k=1) == 0.0
+    assert mrr(retrieved, gold, k=3) == pytest_approx(1 / 3)
+    assert mrr(retrieved, gold, k=5) == pytest_approx(1 / 3)
+    assert mrr(retrieved, gold, k=10) == pytest_approx(1 / 3)
 
 
 def test_mrr_empty_gold_returns_none():

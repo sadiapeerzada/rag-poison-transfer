@@ -3,6 +3,7 @@
 import json
 import os
 import sys
+from types import SimpleNamespace
 
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
@@ -23,6 +24,25 @@ class FakeGenerator:
                 "completion_tokens": 1,
             },
         )()
+
+
+class RecordingRetriever:
+    def __init__(self):
+        self.requested_depths = []
+
+    def build(self, corpus):
+        pass
+
+    def retrieve(self, query, top_k=5):
+        self.requested_depths.append(top_k)
+        return [
+            SimpleNamespace(
+                doc_id=f"doc-{rank}",
+                text=f"Evidence document {rank}.",
+                score=float(11 - rank),
+            )
+            for rank in range(1, 11)
+        ][:top_k]
 
 
 def test_main_logs_retrieval_metrics(tmp_path, monkeypatch):
@@ -199,3 +219,52 @@ results_dir: {tmp_path / "results"}
     assert metrics["mrr@3"] == 0
     assert metrics["mrr@5"] > 0
     assert metrics["mrr@10"] > 0
+
+
+def test_generator_top_k_does_not_change_retrieval_metric_depth_or_scores(
+    tmp_path, monkeypatch
+):
+    """A fixed 10-document ranking is evaluated unchanged for 3- and 5-doc prompts."""
+    dataset = {
+        "corpus": [],
+        "queries": [{
+            "query_id": "q1",
+            "question": "Which document is relevant?",
+            "gold_answer": "unused",
+            "gold_doc_ids": ["doc-10"],
+            "gold_supporting_facts": [],
+        }],
+    }
+    dataset_path = tmp_path / "dataset.json"
+    dataset_path.write_text(json.dumps(dataset))
+
+    retriever = RecordingRetriever()
+    monkeypatch.setattr(run, "build_retriever", lambda config: retriever)
+    monkeypatch.setattr(run, "build_generator", lambda config: FakeGenerator())
+
+    records = []
+    for generator_top_k in (3, 5):
+        config_path = tmp_path / f"config_{generator_top_k}.yaml"
+        config_path.write_text(
+            f"""
+experiment_id: test_generator_top_k_{generator_top_k}
+seed: 42
+dataset_path: {dataset_path}
+retriever: bm25
+top_k: {generator_top_k}
+generator_backend: mock
+max_tokens: 64
+results_dir: {tmp_path / "results"}
+"""
+        )
+        run.main(str(config_path))
+        result_path = tmp_path / "results" / f"test_generator_top_k_{generator_top_k}.jsonl"
+        records.append(json.loads(result_path.read_text().splitlines()[0]))
+
+    assert retriever.requested_depths == [10, 10]
+    assert [record["prompt"].count("\n- ") for record in records] == [3, 5]
+    assert all(len(record["retrieved_doc_ids"]) == 10 for record in records)
+    assert all(len(record["retrieved_doc_ids"]) == len(record["retrieved_scores"]) for record in records)
+    assert records[0]["retrieval_metrics"] == records[1]["retrieval_metrics"]
+    assert records[0]["retrieval_metrics"]["recall@10"] == 1
+    assert records[0]["retrieval_metrics"]["mrr@10"] == 0.1
