@@ -19,7 +19,13 @@ from src.retrieval.dense import DenseRetriever, SentenceTransformerEmbedder
 from src.retrieval.hybrid import HybridRetriever
 from src.retrieval.reranker import Reranker, CrossEncoderScorer
 from src.pipelines.generator import MockGenerator, MLXGenerator, TransformersGenerator
-from src.evaluation.metrics import exact_match, f1_score
+from src.evaluation.metrics import (
+    exact_match,
+    f1_score,
+    recall_at_k,
+    mrr,
+    ndcg_at_k,
+)
 
 
 
@@ -135,6 +141,19 @@ def main(config_path: str):
 
         em = exact_match(gen_result.text, q["gold_answer"])
         f1 = f1_score(gen_result.text, q["gold_answer"])
+
+        retrieved_doc_ids = [d.doc_id for d in retrieved]
+        gold_doc_ids = q.get("gold_doc_ids", [])
+
+        recall_1 = recall_at_k(retrieved_doc_ids, gold_doc_ids, 1)
+        recall_3 = recall_at_k(retrieved_doc_ids, gold_doc_ids, 3)
+        recall_5 = recall_at_k(retrieved_doc_ids, gold_doc_ids, 5)
+        recall_10 = recall_at_k(retrieved_doc_ids, gold_doc_ids, 10)
+        retrieval_mrr = mrr(retrieved_doc_ids, gold_doc_ids)
+        retrieval_ndcg_10 = ndcg_at_k(
+            retrieved_doc_ids, gold_doc_ids, 10
+        )
+
         em_scores.append(em)
         f1_scores.append(f1)
 
@@ -144,8 +163,10 @@ def main(config_path: str):
             "query_id": q["query_id"],
             "question": q["question"],
             "gold_answer": q["gold_answer"],
-            "retrieved_doc_ids": [d.doc_id for d in retrieved],
+            "retrieved_doc_ids": retrieved_doc_ids,
             "retrieved_scores": [d.score for d in retrieved],
+            "gold_doc_ids": gold_doc_ids,
+            "gold_supporting_facts": q.get("gold_supporting_facts", []),
             "prompt": prompt,
             "generated_text": gen_result.text,
             "latency_seconds": gen_result.latency_seconds,
@@ -153,6 +174,12 @@ def main(config_path: str):
             "completion_tokens": gen_result.completion_tokens,
             "em": em,
             "f1": f1,
+            "recall_at_1": recall_1,
+            "recall_at_3": recall_3,
+            "recall_at_5": recall_5,
+            "recall_at_10": recall_10,
+            "mrr": retrieval_mrr,
+            "ndcg_at_10": retrieval_ndcg_10,
             "generator_backend": config["generator_backend"],
         })
 
