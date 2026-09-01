@@ -5,7 +5,9 @@
 # real HotpotQA loader run producing correct gold_doc_ids, full pytest suite (37 passed).
 #
 # Install: pip install -r requirements-kaggle-lock.txt
-# For local Mac/MLX dev, see requirements-mac-lock.txt instead.
+# For local Mac/MLX dev, no pinned lockfile exists yet -- use requirements.txt
+# + `pip install mlx-lm` and pin one down once the Mac workflow is verified
+# the same way this one was.
 
 numpy==2.0.2
 PyYAML==6.0.3
