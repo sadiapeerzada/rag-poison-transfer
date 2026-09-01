@@ -15,36 +15,8 @@ from src.utils.config import load_config
 from src.utils.seeding import set_seed
 from src.utils.logging_utils import ExperimentLogger
 from src.retrieval.bm25 import BM25Retriever
-from src.retrieval.dense import DenseRetriever, SentenceTransformerEmbedder
-from src.retrieval.hybrid import HybridRetriever
-from src.retrieval.reranker import Reranker, CrossEncoderScorer
 from src.pipelines.generator import MockGenerator, MLXGenerator, TransformersGenerator
-from src.evaluation.metrics import exact_match, f1_score, recall_at_k, mrr, ndcg_at_k
-
-
-def build_retriever(config: dict):
-    """Real retrievers only (no mocks) -- this is for real experiment
-    runs, not tests. embedder_model/reranker_model are optional config
-    overrides; sensible defaults (BGE-small / MiniLM cross-encoder) are
-    used otherwise.
-    """
-    kind = config.get("retriever", "bm25")
-    embedder_model = config.get("embedder_model", "BAAI/bge-small-en-v1.5")
-    reranker_model = config.get("reranker_model", "cross-encoder/ms-marco-MiniLM-L-6-v2")
-
-    if kind == "bm25":
-        return BM25Retriever()
-    elif kind == "dense":
-        return DenseRetriever(SentenceTransformerEmbedder(embedder_model))
-    elif kind == "hybrid":
-        return HybridRetriever(
-            BM25Retriever(),
-            DenseRetriever(SentenceTransformerEmbedder(embedder_model)),
-        )
-    elif kind == "reranker":
-        return Reranker(BM25Retriever(), CrossEncoderScorer(reranker_model))
-    else:
-        raise ValueError(f"Unknown retriever: {kind!r}")
+from src.evaluation.metrics import exact_match, f1_score
 
 
 def build_generator(config: dict):
@@ -105,14 +77,13 @@ def main(config_path: str):
 
     data = load_dataset(config)
 
-    retriever = build_retriever(config)
+    retriever = BM25Retriever()
     retriever.build(data["corpus"])
 
     generator = build_generator(config)
-    logger = ExperimentLogger(config["results_dir"], config["experiment_id"], config=config)
+    logger = ExperimentLogger(config["results_dir"], config["experiment_id"])
 
     em_scores, f1_scores = [], []
-    recall_scores, mrr_scores, ndcg_scores = [], [], []
 
     for q in data["queries"]:
         retrieved = retriever.retrieve(q["question"], top_k=config["top_k"])
@@ -126,16 +97,13 @@ def main(config_path: str):
         em_scores.append(em)
         f1_scores.append(f1)
 
-        retrieved_doc_ids = [d.doc_id for d in retrieved]
-        gold_doc_ids = q.get("gold_doc_ids")  # None if this dataset/query has no gold labels
-
-        record = {
+        logger.log({
             "experiment_id": config["experiment_id"],
             "config_hash": config["_config_hash"],
             "query_id": q["query_id"],
             "question": q["question"],
             "gold_answer": q["gold_answer"],
-            "retrieved_doc_ids": retrieved_doc_ids,
+            "retrieved_doc_ids": [d.doc_id for d in retrieved],
             "retrieved_scores": [d.score for d in retrieved],
             "prompt": prompt,
             "generated_text": gen_result.text,
@@ -145,31 +113,11 @@ def main(config_path: str):
             "em": em,
             "f1": f1,
             "generator_backend": config["generator_backend"],
-        }
-
-        if gold_doc_ids:  # only compute/log if this query actually has gold labels
-            k = config["top_k"]
-            r_at_k = recall_at_k(retrieved_doc_ids, gold_doc_ids, k=k)
-            mrr_val = mrr(retrieved_doc_ids, gold_doc_ids)
-            ndcg_val = ndcg_at_k(retrieved_doc_ids, gold_doc_ids, k=k)
-            recall_scores.append(r_at_k)
-            mrr_scores.append(mrr_val)
-            ndcg_scores.append(ndcg_val)
-            record["gold_doc_ids"] = gold_doc_ids
-            record[f"recall_at_{k}"] = r_at_k
-            record["mrr"] = mrr_val
-            record[f"ndcg_at_{k}"] = ndcg_val
-
-        logger.log(record)
+        })
 
     print(f"Ran {len(data['queries'])} queries.")
     print(f"Mean EM: {sum(em_scores) / len(em_scores):.3f}")
     print(f"Mean F1: {sum(f1_scores) / len(f1_scores):.3f}")
-    if recall_scores:
-        k = config["top_k"]
-        print(f"Mean Recall@{k}: {sum(recall_scores) / len(recall_scores):.3f}")
-        print(f"Mean MRR: {sum(mrr_scores) / len(mrr_scores):.3f}")
-        print(f"Mean nDCG@{k}: {sum(ndcg_scores) / len(ndcg_scores):.3f}")
     print(f"Raw results: {logger.path}")
 
 
