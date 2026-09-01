@@ -133,7 +133,16 @@ def main(config_path: str):
     em_scores, f1_scores = [], []
 
     for q in data["queries"]:
-        retrieved = retriever.retrieve(q["question"], top_k=config["top_k"])
+        # Retrieve enough ranked documents to evaluate Recall@1/3/5/10,
+        # MRR@10, and nDCG@10. Generation still uses only the
+        # configured top_k evidence documents.
+        retrieval_metric_k = 10
+        retrieved_for_metrics = retriever.retrieve(
+            q["question"],
+            top_k=max(config["top_k"], retrieval_metric_k),
+        )
+        retrieved = retrieved_for_metrics[:config["top_k"]]
+
         prompt = build_prompt(q["question"], retrieved)
         gen_result = generator.generate(prompt, max_tokens=config["max_tokens"])
         extracted = gen_result.text.split("\n")[0].split(". ")[0].strip()
@@ -142,14 +151,16 @@ def main(config_path: str):
         em = exact_match(gen_result.text, q["gold_answer"])
         f1 = f1_score(gen_result.text, q["gold_answer"])
 
-        retrieved_doc_ids = [d.doc_id for d in retrieved]
+        # Retrieval metrics use the actual ranked retrieval output,
+        # not the smaller evidence set passed to the generator.
+        retrieved_doc_ids = [d.doc_id for d in retrieved_for_metrics]
         gold_doc_ids = q.get("gold_doc_ids", [])
 
         recall_1 = recall_at_k(retrieved_doc_ids, gold_doc_ids, 1)
         recall_3 = recall_at_k(retrieved_doc_ids, gold_doc_ids, 3)
         recall_5 = recall_at_k(retrieved_doc_ids, gold_doc_ids, 5)
         recall_10 = recall_at_k(retrieved_doc_ids, gold_doc_ids, 10)
-        retrieval_mrr = mrr(retrieved_doc_ids, gold_doc_ids)
+        retrieval_mrr = mrr(retrieved_doc_ids, gold_doc_ids, 10)
         retrieval_ndcg_10 = ndcg_at_k(
             retrieved_doc_ids, gold_doc_ids, 10
         )
@@ -174,6 +185,15 @@ def main(config_path: str):
             "completion_tokens": gen_result.completion_tokens,
             "em": em,
             "f1": f1,
+            "retrieval_metrics": {
+                "recall@1": recall_1,
+                "recall@3": recall_3,
+                "recall@5": recall_5,
+                "recall@10": recall_10,
+                "mrr@10": retrieval_mrr,
+                "ndcg@10": retrieval_ndcg_10,
+            },
+            # Preserve the existing flat fields for backwards compatibility.
             "recall_at_1": recall_1,
             "recall_at_3": recall_3,
             "recall_at_5": recall_5,
