@@ -131,10 +131,11 @@ def main(config_path: str):
     logger = ExperimentLogger(config["results_dir"], config["experiment_id"], config=config)
 
     em_scores, f1_scores = [], []
+    retrieval_metric_scores = {}
 
     for q in data["queries"]:
         # Retrieve enough ranked documents to evaluate Recall@1/3/5/10,
-        # MRR@10, and nDCG@10. Generation still uses only the
+        # MRR@1/3/5/10, and nDCG@10. Generation still uses only the
         # configured top_k evidence documents.
         retrieval_metric_k = 10
         retrieved_for_metrics = retriever.retrieve(
@@ -160,10 +161,28 @@ def main(config_path: str):
         recall_3 = recall_at_k(retrieved_doc_ids, gold_doc_ids, 3)
         recall_5 = recall_at_k(retrieved_doc_ids, gold_doc_ids, 5)
         recall_10 = recall_at_k(retrieved_doc_ids, gold_doc_ids, 10)
-        retrieval_mrr = mrr(retrieved_doc_ids, gold_doc_ids, 10)
+        mrr_1 = mrr(retrieved_doc_ids, gold_doc_ids, 1)
+        mrr_3 = mrr(retrieved_doc_ids, gold_doc_ids, 3)
+        mrr_5 = mrr(retrieved_doc_ids, gold_doc_ids, 5)
+        mrr_10 = mrr(retrieved_doc_ids, gold_doc_ids, 10)
         retrieval_ndcg_10 = ndcg_at_k(
             retrieved_doc_ids, gold_doc_ids, 10
         )
+
+        retrieval_metrics = {
+            "recall@1": recall_1,
+            "recall@3": recall_3,
+            "recall@5": recall_5,
+            "recall@10": recall_10,
+            "mrr@1": mrr_1,
+            "mrr@3": mrr_3,
+            "mrr@5": mrr_5,
+            "mrr@10": mrr_10,
+            "ndcg@10": retrieval_ndcg_10,
+        }
+        for metric_name, metric_value in retrieval_metrics.items():
+            if metric_value is not None:
+                retrieval_metric_scores.setdefault(metric_name, []).append(metric_value)
 
         em_scores.append(em)
         f1_scores.append(f1)
@@ -175,7 +194,7 @@ def main(config_path: str):
             "question": q["question"],
             "gold_answer": q["gold_answer"],
             "retrieved_doc_ids": retrieved_doc_ids,
-            "retrieved_scores": [d.score for d in retrieved],
+            "retrieved_scores": [d.score for d in retrieved_for_metrics],
             "gold_doc_ids": gold_doc_ids,
             "gold_supporting_facts": q.get("gold_supporting_facts", []),
             "prompt": prompt,
@@ -185,28 +204,41 @@ def main(config_path: str):
             "completion_tokens": gen_result.completion_tokens,
             "em": em,
             "f1": f1,
-            "retrieval_metrics": {
-                "recall@1": recall_1,
-                "recall@3": recall_3,
-                "recall@5": recall_5,
-                "recall@10": recall_10,
-                "mrr@10": retrieval_mrr,
-                "ndcg@10": retrieval_ndcg_10,
-            },
+            "retrieval_metrics": retrieval_metrics,
             # Preserve the existing flat fields for backwards compatibility.
             "recall_at_1": recall_1,
             "recall_at_3": recall_3,
             "recall_at_5": recall_5,
             "recall_at_10": recall_10,
-            "mrr": retrieval_mrr,
+            "mrr_at_1": mrr_1,
+            "mrr_at_3": mrr_3,
+            "mrr_at_5": mrr_5,
+            "mrr_at_10": mrr_10,
+            "mrr": mrr_10,
             "ndcg_at_10": retrieval_ndcg_10,
             "generator_backend": config["generator_backend"],
         })
 
+    retrieval_metric_means = {
+        metric_name: sum(scores) / len(scores)
+        for metric_name, scores in retrieval_metric_scores.items()
+    }
+    summary = {
+        "experiment_id": config["experiment_id"],
+        "query_count": len(data["queries"]),
+        "mean_em": sum(em_scores) / len(em_scores),
+        "mean_f1": sum(f1_scores) / len(f1_scores),
+        "mean_retrieval_metrics": retrieval_metric_means,
+    }
+    logger.write_summary(summary)
+
     print(f"Ran {len(data['queries'])} queries.")
-    print(f"Mean EM: {sum(em_scores) / len(em_scores):.3f}")
-    print(f"Mean F1: {sum(f1_scores) / len(f1_scores):.3f}")
+    print(f"Mean EM: {summary['mean_em']:.3f}")
+    print(f"Mean F1: {summary['mean_f1']:.3f}")
+    if retrieval_metric_means:
+        print(f"Mean retrieval metrics: {json.dumps(retrieval_metric_means, sort_keys=True)}")
     print(f"Raw results: {logger.path}")
+    print(f"Summary: {logger.summary_path}")
 
 
 if __name__ == "__main__":

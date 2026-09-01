@@ -54,6 +54,30 @@ evidence of the four strategies tested. This is a real, reproducible
 pilot finding, directionally useful for the next phase of the thesis --
 **not yet a frozen benchmark result** (see caveat below).
 
+## Retrieval evaluation
+
+`top_k` is the number of retrieved documents included in the generator
+prompt. It is independent from retrieval evaluation depth: each run requests
+the top 10 ranked documents, computes Recall@1/@3/@5/@10 and
+MRR@1/@3/@5/@10 from that ranking, and logs matched
+`retrieved_doc_ids` and `retrieved_scores` arrays. nDCG@10 is also logged.
+Queries without `gold_doc_ids` record `null` for these metrics and are
+excluded from retrieval-metric averages.
+
+Each run writes per-query records to `<experiment_id>.jsonl` and a separate
+`<experiment_id>.summary.json` containing EM, F1, and mean retrieval metrics.
+The regenerated mock smoke artifact, `results/exp_000_smoke_test.jsonl`,
+verifies the end-to-end schema (10 aligned IDs/scores and all cutoff fields),
+but it has no gold document labels, so its retrieval metrics are intentionally
+`null` and its summary has no retrieval averages.
+
+The committed HotpotQA pilot logs under `experiments/` and the corresponding
+older files under `results/` were produced before this expanded schema: they
+contain three-document rankings and no retrieval metrics. They remain the
+historical record for the EM/F1 table above, not evidence for Recall or MRR.
+Rerun the relevant configuration on its required MLX or CUDA environment to
+produce comparable, expanded-metric pilot artifacts.
+
 **Re-verified end-to-end on 2026-08-31**, after fixing a retriever-routing
 regression that briefly made `run.py` ignore `config['retriever']` entirely
 (see bug #4 below). All four experiments were re-run from scratch on the
@@ -205,7 +229,8 @@ benchmark result the plan calls for.
 | `MockGenerator` | **Placeholder/test-only** -- never use for real results |
 | `MLXGenerator` / `TransformersGenerator` | Real, both verified working |
 | EM/F1 metrics | Real, final |
-| HotpotQA pilot (N=50), all 4 retrievers | Real, re-verified after routing-regression fix, raw logs committed -- pending sign-off on corpus scope to become final |
+| HotpotQA pilot (N=50), all 4 retrievers | Real EM/F1 pilot, re-verified after routing-regression fix; committed logs use the pre-expanded retrieval schema and remain pending corpus-scope sign-off |
+| Recall@1/@3/@5/@10 and MRR@1/@3/@5/@10 | Real in the current run path, integration-tested with gold labels; the existing HotpotQA artifacts require reruns before they report these metrics |
 | Config-routing integration test | Real, catches the exact regression class found in bug #4 |
 | `gold_doc_ids` / `gold_supporting_facts`, canonical doc IDs | Real, verified on real HotpotQA data (dedup confirmed on true repeats, no false collapses) |
 | Per-record environment metadata (`git_commit_sha`, library versions, device) | Real, tested (8 tests), wired into every experiment log |
@@ -219,8 +244,9 @@ See the foundation doc, Section F, for the full rationale on what goes
 where and what's git-ignored vs. committed. Quick summary: `src/` is
 source code (commit), `data/raw` and `data/processed` are gitignored
 (large/regeneratable), `experiments/*/config.yaml` + `README.md` are
-committed (they ARE the record of what happened), `results/` raw logs
-are gitignored or Git-LFS'd.
+committed (they ARE the record of what happened). Every new run writes a raw
+JSONL log and a JSON summary beside it; older committed logs retain the schema
+that existed when they were produced.
 
 ## Next phase
 

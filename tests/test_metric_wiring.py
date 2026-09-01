@@ -89,6 +89,9 @@ results_dir: {tmp_path / "results"}
         "recall@3",
         "recall@5",
         "recall@10",
+        "mrr@1",
+        "mrr@3",
+        "mrr@5",
         "mrr@10",
         "ndcg@10",
     }
@@ -101,11 +104,20 @@ results_dir: {tmp_path / "results"}
     # These must be based on the actual retrieved ranking, not the
     # gold labels themselves.
     assert record["retrieved_doc_ids"]
+    assert len(record["retrieved_doc_ids"]) == len(record["retrieved_scores"])
     assert record["gold_doc_ids"] == ["doc-a", "doc-b"]
 
     assert metrics["recall@1"] > 0
+    assert metrics["mrr@1"] > 0
+    assert metrics["mrr@3"] > 0
+    assert metrics["mrr@5"] > 0
     assert metrics["mrr@10"] > 0
     assert metrics["ndcg@10"] > 0
+
+    summary_path = tmp_path / "results" / "test_metric_wiring.summary.json"
+    summary = json.loads(summary_path.read_text())
+    assert summary["query_count"] == 1
+    assert set(summary["mean_retrieval_metrics"]) == expected_keys
 
 
 def test_retrieval_depth_for_metrics_is_decoupled_from_generator_top_k(
@@ -173,14 +185,17 @@ results_dir: {tmp_path / "results"}
 
     # Generation must only ever see `top_k` (1) evidence documents.
     assert record["prompt"].count("\n- ") == 1
-    assert len(record["retrieved_scores"]) == 1
 
     # But retrieval-metric scoring must have looked deeper than top_k,
     # otherwise a gold doc ranked below top_k could never be credited.
     assert len(record["retrieved_doc_ids"]) > 1
+    assert len(record["retrieved_doc_ids"]) == len(record["retrieved_scores"])
     assert "doc-gold-deep" in record["retrieved_doc_ids"]
 
     metrics = record["retrieval_metrics"]
     assert metrics["recall@1"] == 0  # gold doc is not the top-1 hit
     assert metrics["recall@10"] == 1  # but is found within depth 10
+    assert metrics["mrr@1"] == 0
+    assert metrics["mrr@3"] == 0
+    assert metrics["mrr@5"] > 0
     assert metrics["mrr@10"] > 0

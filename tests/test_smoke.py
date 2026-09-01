@@ -64,8 +64,10 @@ def test_full_pipeline_runs_without_error():
     import subprocess
     repo_root = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
     stale_results = os.path.join(repo_root, "results", "exp_000_smoke_test.jsonl")
-    if os.path.exists(stale_results):
-        os.remove(stale_results)
+    stale_summary = os.path.join(repo_root, "results", "exp_000_smoke_test.summary.json")
+    for path in (stale_results, stale_summary):
+        if os.path.exists(path):
+            os.remove(path)
     result = subprocess.run(
         [sys.executable, "run.py", "--config", "configs/exp_000_smoke.yaml"],
         cwd=repo_root, capture_output=True, text=True,

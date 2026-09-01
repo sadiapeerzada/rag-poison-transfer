@@ -26,6 +26,7 @@ class ExperimentLogger:
     def __init__(self, results_dir: str, experiment_id: str, config: dict | None = None):
         os.makedirs(results_dir, exist_ok=True)
         self.path = os.path.join(results_dir, f"{experiment_id}.jsonl")
+        self.summary_path = os.path.join(results_dir, f"{experiment_id}.summary.json")
         if os.path.exists(self.path):
             raise FileExistsError(
                 f"{self.path} already exists. Raw results are never overwritten — "
@@ -41,3 +42,14 @@ class ExperimentLogger:
             record.setdefault(key, value)
         with open(self.path, "a") as f:
             f.write(json.dumps(record) + "\n")
+
+    def write_summary(self, summary: dict) -> None:
+        if os.path.exists(self.summary_path):
+            raise FileExistsError(
+                f"{self.summary_path} already exists. Experiment summaries are never "
+                f"overwritten — use a new experiment_id or delete the file deliberately "
+                f"if this was an intentional rerun."
+            )
+        with open(self.summary_path, "w") as f:
+            json.dump(summary, f, indent=2, sort_keys=True)
+            f.write("\n")
