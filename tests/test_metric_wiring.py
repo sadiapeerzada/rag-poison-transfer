@@ -106,3 +106,81 @@ results_dir: {tmp_path / "results"}
     assert metrics["recall@1"] > 0
     assert metrics["mrr@10"] > 0
     assert metrics["ndcg@10"] > 0
+
+
+def test_retrieval_depth_for_metrics_is_decoupled_from_generator_top_k(
+    tmp_path, monkeypatch
+):
+    """run.main() must retrieve enough documents to score Recall@10/MRR@10/
+    nDCG@10 even when the generator only sees `top_k` evidence documents.
+
+    Review #1 flagged that retrieval depth and the generator's evidence
+    window need to be independent: a config with a small `top_k` (e.g. 1,
+    to keep the prompt short) should not silently starve the retrieval
+    metrics down to that same depth. This pins the fix by using a gold
+    document that only appears at rank 4 of 5 -- outside `top_k=1` -- and
+    asserting it still shows up in `retrieved_doc_ids` and is credited by
+    the retrieval metrics, while the generation prompt only cites the
+    single top-ranked document.
+    """
+
+    dataset = {
+        "corpus": [
+            {"doc_id": "doc-top", "text": "castle river mountain lake forest"},
+            {"doc_id": "doc-2", "text": "castle river mountain"},
+            {"doc_id": "doc-3", "text": "castle river"},
+            {"doc_id": "doc-gold-deep", "text": "castle founded in 1755"},
+            {"doc_id": "doc-5", "text": "castle"},
+        ],
+        "queries": [
+            {
+                "query_id": "q1",
+                "question": "castle",
+                "gold_answer": "1755",
+                "gold_doc_ids": ["doc-gold-deep"],
+                "gold_supporting_facts": [],
+            }
+        ],
+    }
+
+    dataset_path = tmp_path / "dataset.json"
+    dataset_path.write_text(json.dumps(dataset))
+
+    config_path = tmp_path / "config.yaml"
+    config_path.write_text(
+        f"""
+experiment_id: test_retrieval_depth
+seed: 42
+dataset_path: {dataset_path}
+retriever: bm25
+top_k: 1
+generator_backend: mock
+max_tokens: 64
+results_dir: {tmp_path / "results"}
+"""
+    )
+
+    monkeypatch.setattr(
+        run,
+        "build_generator",
+        lambda config: FakeGenerator(),
+    )
+
+    run.main(str(config_path))
+
+    result_path = tmp_path / "results" / "test_retrieval_depth.jsonl"
+    record = json.loads(result_path.read_text().splitlines()[0])
+
+    # Generation must only ever see `top_k` (1) evidence documents.
+    assert record["prompt"].count("\n- ") == 1
+    assert len(record["retrieved_scores"]) == 1
+
+    # But retrieval-metric scoring must have looked deeper than top_k,
+    # otherwise a gold doc ranked below top_k could never be credited.
+    assert len(record["retrieved_doc_ids"]) > 1
+    assert "doc-gold-deep" in record["retrieved_doc_ids"]
+
+    metrics = record["retrieval_metrics"]
+    assert metrics["recall@1"] == 0  # gold doc is not the top-1 hit
+    assert metrics["recall@10"] == 1  # but is found within depth 10
+    assert metrics["mrr@10"] > 0
