@@ -24,8 +24,13 @@ found and fixed along the way rather than hidden:
   evaluated on the same 50 real HotpotQA questions (same seed, so it's a
   fair comparison), with a real 7B instruction model doing the generation
   -- not a toy dataset, not a mock model.
-- **Found and fixed four real bugs** during development (details below),
+- **Found and fixed five real bugs** during development (details below),
   rather than shipping results that happened to work by accident.
+- **Closed a reproducibility gap** (review issue #8): every logged result now
+  carries `git_commit_sha`, Python/torch/transformers/sentence-transformers
+  versions, and actual device -- so a future silent regression (like bug #4
+  below) would show up as a mismatched fingerprint in the logs, not just as
+  suspiciously-identical numbers.
 - **Set up a dual-environment workflow**: local Mac for fast dev/debug
   iteration, Kaggle GPU for real generation runs, both syncing through this
   repo so neither environment silently drifts out of date with the other.
@@ -112,6 +117,23 @@ engineering work, not something to hide:
    re-ran all four retriever experiments from scratch on the fixed code
    to confirm the original pilot numbers were genuine (see results table
    above) rather than assuming it.
+5. **Missing reproducibility metadata (review issue #8).** Logged results
+   had no record of which code, library versions, or hardware produced
+   them -- so a regression like bug #4 would have been invisible except as
+   a numerical discrepancy, with no way to tell *why* the numbers changed.
+   Fixed with `src/utils/env_info.py`, capturing `git_commit_sha`,
+   `python_version`, `torch_version`, `transformers_version`,
+   `sentence_transformers_version`, and actual detected `device` (correctly
+   distinguishing `cuda`/`mps`/`cpu`), wired into `ExperimentLogger` so
+   every JSONL record carries it automatically via `setdefault` (a crashed
+   run still leaves a full fingerprint on every record written so far).
+   Missing optional libraries degrade to an explicit `None`, not a crash --
+   verified by `tests/test_env_metadata.py` (8 tests: graceful degradation,
+   `setdefault` not clobbering real per-query data, backward compatibility
+   with call sites that don't pass `config=`). Also added
+   `requirements-kaggle-lock.txt`, pinned exact versions verified working
+   on a Kaggle T4 GPU -- a curated subset of the environment's actual
+   dependencies, not a raw `pip freeze` of Kaggle's 700+-package base image.
 
 ## Two working environments
 
@@ -186,6 +208,8 @@ benchmark result the plan calls for.
 | HotpotQA pilot (N=50), all 4 retrievers | Real, re-verified after routing-regression fix, raw logs committed -- pending sign-off on corpus scope to become final |
 | Config-routing integration test | Real, catches the exact regression class found in bug #4 |
 | `gold_doc_ids` / `gold_supporting_facts`, canonical doc IDs | Real, verified on real HotpotQA data (dedup confirmed on true repeats, no false collapses) |
+| Per-record environment metadata (`git_commit_sha`, library versions, device) | Real, tested (8 tests), wired into every experiment log |
+| Pinned Kaggle dependencies (`requirements-kaggle-lock.txt`) | Real, captured from a verified-working Kaggle T4 run |
 | 2WikiMultiHopQA, NQ-open real runs | Loader built, not yet run on real data |
 | Attacks, RCD, full metric suite | Not yet built -- Weeks 5-10 |
 
