@@ -31,13 +31,13 @@ def build_retriever(config: dict):
         return BM25Retriever()
 
     elif kind == "dense":
-        embedder_model = config["embedder_model"]
+        embedder_model = config.get("embedder_model", "BAAI/bge-small-en-v1.5")
         return DenseRetriever(
             SentenceTransformerEmbedder(embedder_model)
         )
 
     elif kind == "hybrid":
-        embedder_model = config["embedder_model"]
+        embedder_model = config.get("embedder_model", "BAAI/bge-small-en-v1.5")
         return HybridRetriever(
             BM25Retriever(),
             DenseRetriever(
@@ -46,8 +46,8 @@ def build_retriever(config: dict):
         )
 
     elif kind == "reranker":
-        embedder_model = config["embedder_model"]
-        reranker_model = config["reranker_model"]
+        embedder_model = config.get("embedder_model", "BAAI/bge-small-en-v1.5")
+        reranker_model = config.get("reranker_model", "cross-encoder/ms-marco-MiniLM-L-6-v2")
         # Plan spec (Section 6): "dense + cross-encoder reranking" -- base
         # retriever must be dense, not BM25, so this is genuinely a second
         # reranking stage on top of the dense pipeline, not a BM25 variant.
@@ -60,7 +60,8 @@ def build_retriever(config: dict):
         raise ValueError(f"Unknown retriever: {kind}")
 
 
-def build_generator(config: dict):    if config["generator_backend"] == "mock":
+def build_generator(config: dict):
+    if config["generator_backend"] == "mock":
         return MockGenerator()
     elif config["generator_backend"] == "mlx":
         return MLXGenerator(model_name=config["generator_model"])
