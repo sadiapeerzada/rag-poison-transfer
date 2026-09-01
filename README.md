@@ -49,7 +49,7 @@ using `Qwen/Qwen2.5-7B-Instruct` (4-bit) on a Kaggle T4 GPU:
 | Reranker  | **0.460** | **0.574** | `exp_007_hotpotqa_reranker.yaml` | `experiments/exp_007_hotpotqa_reranker/exp_007_hotpotqa_reranker.jsonl` |
 
 **Reranking wins on exact match and ties dense retrieval on F1.**
-Cross-encoder reranking of BM25's candidates gives the model the best
+Dense retrieval followed by cross-encoder reranking gives the model the best
 evidence of the four strategies tested. This is a real, reproducible
 pilot finding, directionally useful for the next phase of the thesis --
 **not yet a frozen benchmark result** (see caveat below).
