@@ -1,0 +1,14 @@
+# Real HotpotQA retrieval evaluation with mock generation; not a generation-quality run.
+experiment_id: exp_010_hotpotqa_dense_metrics
+seed: 42
+dataset_loader: load_hotpotqa_distractor
+dataset_split: validation
+dataset_n_samples: 5
+dataset_seed: 42
+retriever: dense
+embedder_model: BAAI/bge-small-en-v1.5
+top_k: 3
+generator_backend: mock
+generator_model: unused
+max_tokens: 64
+results_dir: results

@@ -1,0 +1,17 @@
+{
+  "experiment_id": "exp_010_hotpotqa_dense_metrics",
+  "mean_em": 0.0,
+  "mean_f1": 0.0,
+  "mean_retrieval_metrics": {
+    "mrr@1": 1.0,
+    "mrr@10": 1.0,
+    "mrr@3": 1.0,
+    "mrr@5": 1.0,
+    "ndcg@10": 0.9417539889843344,
+    "recall@1": 0.5,
+    "recall@10": 1.0,
+    "recall@3": 0.8,
+    "recall@5": 0.9
+  },
+  "query_count": 5
+}

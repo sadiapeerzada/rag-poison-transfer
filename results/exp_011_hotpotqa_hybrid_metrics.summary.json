@@ -1,0 +1,17 @@
+{
+  "experiment_id": "exp_011_hotpotqa_hybrid_metrics",
+  "mean_em": 0.0,
+  "mean_f1": 0.0,
+  "mean_retrieval_metrics": {
+    "mrr@1": 0.8,
+    "mrr@10": 0.85,
+    "mrr@3": 0.8,
+    "mrr@5": 0.85,
+    "ndcg@10": 0.7963809369726154,
+    "recall@1": 0.4,
+    "recall@10": 1.0,
+    "recall@3": 0.5,
+    "recall@5": 0.7
+  },
+  "query_count": 5
+}

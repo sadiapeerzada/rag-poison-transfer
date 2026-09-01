@@ -80,6 +80,15 @@ aligned ranked IDs/scores per query and non-null aggregate Recall/MRR metrics.
 This verifies retrieval evaluation and canonical gold-ID handling only; its
 mock-generator EM/F1 values are not generation-quality results.
 
+Matching five-question current-code retrieval baselines were also generated
+with dense, hybrid, and reranked retrieval:
+`exp_010_hotpotqa_dense_metrics`, `exp_011_hotpotqa_hybrid_metrics`, and
+`exp_012_hotpotqa_reranker_metrics`. Each has a JSONL log and summary in
+`results/`, uses the same seed and generator evidence size (`top_k: 3`), and
+reports the expanded retrieval schema. These small mock-generation runs verify
+retrieval behavior across all four retrievers; they do not supersede the
+historical 50-question real-generation EM/F1 pilot.
+
 The committed HotpotQA pilot logs under `experiments/` and the corresponding
 older files under `results/` were produced before this expanded schema: they
 contain three-document rankings and no retrieval metrics. They remain the
@@ -239,7 +248,7 @@ benchmark result the plan calls for.
 | `MLXGenerator` / `TransformersGenerator` | Real, both verified working |
 | EM/F1 metrics | Real, final |
 | HotpotQA pilot (N=50), all 4 retrievers | Real EM/F1 pilot, re-verified after routing-regression fix; committed logs use the pre-expanded retrieval schema and remain pending corpus-scope sign-off |
-| Recall@1/@3/@5/@10 and MRR@1/@3/@5/@10 | Real in the current run path, integration-tested with gold labels; the existing HotpotQA artifacts require reruns before they report these metrics |
+| Recall@1/@3/@5/@10 and MRR@1/@3/@5/@10 | Real in the current run path, integration-tested with gold labels; current five-question HotpotQA artifacts cover BM25, dense, hybrid, and reranker |
 | HotpotQA retrieval-evaluation smoke (N=5, BM25, mock generator) | Run on 2026-09-01 with current code; logs all required retrieval metrics and aggregate summary, but is not a generation-quality result |
 | Config-routing integration test | Real, catches the exact regression class found in bug #4 |
 | `gold_doc_ids` / `gold_supporting_facts`, canonical doc IDs | Real, verified on real HotpotQA data (dedup confirmed on true repeats, no false collapses) |
