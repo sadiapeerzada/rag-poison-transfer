@@ -16,6 +16,8 @@ data/poisoned/
 # experiments/ step to remember and forget. Only throwaway/dev-loop runs
 # (smoke tests, ad-hoc debug runs) are excluded -- these aren't real
 # results and don't need a permanent record.
+# Exception: exp_009_hotpotqa_retrieval_eval_smoke.jsonl is force-committed
+# as evidence for the current-schema retrieval metrics implementation (see README).
 results/*smoke*.jsonl
 results/*debug*.jsonl
 results/*_scratch*.jsonl

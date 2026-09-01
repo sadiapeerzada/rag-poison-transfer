@@ -432,7 +432,7 @@ Run the full test suite:
 pytest tests/ -v
 ```
 
-**86 tests**, all passing:
+**127 tests**, all passing:
 - 17 retrieval metrics tests (Recall, MRR, nDCG edge cases)
 - 9 attack metrics tests (PRR, ASR, ATR)
 - 22 transfer framework tests (matrix, statistics, export formats)
@@ -440,6 +440,9 @@ pytest tests/ -v
 - 5 config routing tests (retriever instantiation per config)
 - 7 integration tests (end-to-end pipeline validation)
 - 3 environment metadata tests
+- 3 gold retrieval label tests (extraction, dedup, unresolved handling)
+- 5 dataset revision pinning tests
+- 12 metric wiring tests (EM/F1/retrieval/poison metrics composition)
 
 ### Running specific test suites
 ```bash

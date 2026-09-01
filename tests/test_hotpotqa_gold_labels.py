@@ -148,3 +148,46 @@ def test_gold_doc_ids_collapse_across_two_questions_sharing_an_article(monkeypat
     gold_q010 = result["queries"][0]["gold_doc_ids"]
     gold_q011 = result["queries"][1]["gold_doc_ids"]
     assert gold_q010 == gold_q011  # both point at the same canonical doc
+
+
+def test_unresolved_supporting_fact_title_is_silently_dropped(monkeypatch):
+    """Edge case from audit: if a supporting_fact title does NOT appear
+    in the context titles for this query, it is silently dropped with no
+    warning or counter. This test verifies that behavior is visible --
+    that the query ends up with an empty or incomplete gold_doc_ids set
+    when a supporting fact cannot be resolved.
+    
+    In a production system, this would be a hard error. For now, document
+    that it CAN happen and demonstrate the silent-drop behavior.
+    """
+    import datasets as hf_datasets
+
+    # Supporting fact "Missing Article" is NOT in the context titles
+    context = [
+        ("Article A", ["Content A."]),
+        ("Article B", ["Content B."]),
+    ]
+    fake_rows = [_fake_row(
+        query_id="q_missing",
+        question="Question about missing article?",
+        answer="Answer",
+        context_titles_sentences=context,
+        supporting_titles=["Article A", "Missing Article"],  # only first is resolvable
+    )]
+    monkeypatch.setattr(hf_datasets, "load_dataset", lambda *a, **kw: _FakeHFDataset(fake_rows))
+
+    from src.data.loaders import load_hotpotqa_distractor
+    result = load_hotpotqa_distractor(split="validation", n_samples=None)
+
+    query = result["queries"][0]
+    
+    # The missing title SILENTLY disappears from gold_doc_ids
+    # gold_doc_ids only contains the resolved one
+    assert len(query["gold_doc_ids"]) == 1
+    
+    # But gold_supporting_facts STILL lists both (including the unresolved one)
+    assert len(query["gold_supporting_facts"]) == 2
+    assert query["gold_supporting_facts"][1]["title"] == "Missing Article"
+    
+    # This mismatch is the silent-failure condition the audit flagged.
+    # In production, this should either raise an error or log a warning.

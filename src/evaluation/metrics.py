@@ -163,19 +163,20 @@ def attack_success_rate(
     attack_results: list[dict],
 ) -> float | None:
     """Attack Success Rate (ASR): fraction of poisoned queries where the
-    LLM generated the ATTACK TARGET answer instead of the true answer.
+    attack succeeded (i.e., the model's answer on poisoned evidence differed
+    from the ground truth in the expected way).
     
     Requires `attack_results`, a list of dicts with fields:
-        - attacked_answer: str (what the model generated on poison docs)
-        - gold_answer: str (ground truth)
-        - poison_doc_ids: list[str] (poison docs for this attack)
+        - attack_success: bool (pre-computed boolean indicating if attack worked)
+        - (other fields like attacked_answer, gold_answer, poison_doc_ids are
+          available for future extensions)
     
-    Returns the fraction of queries where attacked_answer == gold_answer.
+    Returns the fraction of queries where attack_success is True.
     
     Returns None if the result list is empty.
     
-    Note: This assumes attacked_answer and gold_answer are comparable
-    via exact_match() or similar normalization.
+    Note: attack_success is expected to be pre-computed and attached by the
+    attack generation/evaluation pipeline, not computed here from raw answers.
     """
     if not attack_results:
         return None

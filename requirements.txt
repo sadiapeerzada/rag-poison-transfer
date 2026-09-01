@@ -1,3 +1,8 @@
+# UNPINNED local development environment (Mac/MLX dev).
+# For reproducible/citable results on Kaggle/GPU, use requirements-kaggle-lock.txt instead.
+# That file contains pinned versions verified working with the full test suite.
+# This file is for fast iteration and debugging only, not for final experimental runs.
+
 # Weeks 1-2 (smoke test) — CPU-only, no model downloads required
 rank_bm25
 pyyaml

@@ -231,7 +231,7 @@ def main(config_path: str):
     num_queries = len(data["queries"])
     corpus_stats = {
         "dataset": config.get("dataset_loader"),
-        "dataset_split": config.get("split", "train"),
+        "dataset_split": config.get("dataset_split", "train"),
         "num_queries": num_queries,
         "num_unique_documents": len(corpus),
         "corpus_type": "pooled_hotpotqa",  # Hardcoded for current implementation

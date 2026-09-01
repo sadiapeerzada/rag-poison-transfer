@@ -1,8 +1,9 @@
 # Pinned dependency versions verified working on Kaggle (T4 GPU), captured 2026-09-01.
 # Curated subset of `pip freeze` -- Kaggle's base image ships 700+ packages this repo
 # never imports (spacy, cudf, bigquery, pymc, etc). Only what this repo actually
-# depends on is listed, at versions confirmed working: config routing test passing,
-# real HotpotQA loader run producing correct gold_doc_ids, full pytest suite (37 passed).
+# depends on is listed, at versions confirmed working: all 127 tests passing,
+# config routing test passing, real HotpotQA loader run producing correct gold_doc_ids,
+# end-to-end pilot generation with real models completing successfully.
 #
 # Install: pip install -r requirements-kaggle-lock.txt
 # For local Mac/MLX dev, no pinned lockfile exists yet -- use requirements.txt

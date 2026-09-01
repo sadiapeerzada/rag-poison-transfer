@@ -121,12 +121,19 @@ def test_hybrid_config_routes_through_main(tmp_path, monkeypatch):
 
 
 def test_reranker_config_routes_through_main(tmp_path, monkeypatch):
+    from src.retrieval.dense import HashingEmbedder
     from src.retrieval.reranker import MockCrossEncoderScorer
+
+    class _FakeEmbedder(HashingEmbedder):
+        """Same deterministic test double used in dense/hybrid routing tests."""
+        def __init__(self, model_name):
+            super().__init__()
 
     class _FakeScorer(MockCrossEncoderScorer):
         def __init__(self, model_name):
             super().__init__()
 
+    monkeypatch.setattr(run, "SentenceTransformerEmbedder", _FakeEmbedder)
     monkeypatch.setattr(run, "CrossEncoderScorer", _FakeScorer)
     config_path = _toy_config(tmp_path, "reranker", "test_reranker_routing")
     cls = _run_main_and_capture_retriever_class(monkeypatch, config_path)
