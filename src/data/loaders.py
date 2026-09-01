@@ -39,7 +39,7 @@ def _canonical_doc_id(dataset_tag: str, title: str, text: str) -> str:
 
 
 def load_hotpotqa_distractor(split: str = "validation", n_samples: int | None = None,
-                              seed: int = 42) -> dict:
+                              seed: int = 42, revision: str | None = None) -> dict:
     """HotpotQA, distractor setting.
 
     [RESEARCH INFERENCE, corrected per supervisor review #3] Each HF
@@ -77,7 +77,10 @@ def load_hotpotqa_distractor(split: str = "validation", n_samples: int | None = 
     (no-namespace) legacy repos. The namespaced mirror avoids this.
     """
     from datasets import load_dataset
-    ds = load_dataset("hotpotqa/hotpot_qa", "distractor", split=split)
+    kwargs = {"split": split}
+    if revision is not None:
+        kwargs["revision"] = revision
+    ds = load_dataset("hotpotqa/hotpot_qa", "distractor", **kwargs)
 
     if n_samples is not None:
         rng = random.Random(seed)
@@ -127,7 +130,7 @@ def load_hotpotqa_distractor(split: str = "validation", n_samples: int | None = 
 
 
 def load_2wikimultihopqa(split: str = "validation", n_samples: int | None = None,
-                          seed: int = 42) -> dict:
+                          seed: int = 42, revision: str | None = None) -> dict:
     """2WikiMultiHopQA.
 
     Same corpus-scope correction as `load_hotpotqa_distractor` (review
@@ -139,7 +142,10 @@ def load_2wikimultihopqa(split: str = "validation", n_samples: int | None = None
     canonical IDs.
     """
     from datasets import load_dataset
-    ds = load_dataset("xanhho/2WikiMultihopQA", split=split)
+    kwargs = {"split": split}
+    if revision is not None:
+        kwargs["revision"] = revision
+    ds = load_dataset("xanhho/2WikiMultihopQA", **kwargs)
 
     if n_samples is not None:
         rng = random.Random(seed)

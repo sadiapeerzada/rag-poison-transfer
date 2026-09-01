@@ -4,6 +4,7 @@ dataset_loader: load_hotpotqa_distractor
 dataset_split: validation
 dataset_n_samples: 50
 dataset_seed: 42
+dataset_revision: null  # Hugging Face dataset revision (null = use latest; pin to prevent drift)
 retriever: reranker
 embedder_model: BAAI/bge-small-en-v1.5
 reranker_model: cross-encoder/ms-marco-MiniLM-L-6-v2

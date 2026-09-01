@@ -90,4 +90,5 @@ def capture_environment_metadata(config: dict) -> dict:
         "generator_model": config.get("generator_model"),
         "dataset_loader": config.get("dataset_loader"),
         "dataset_split": config.get("dataset_split"),
+        "dataset_revision": config.get("dataset_revision"),
     }

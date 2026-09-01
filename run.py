@@ -100,6 +100,8 @@ def load_dataset(config: dict) -> dict:
             kwargs["n_samples"] = config["dataset_n_samples"]
         if "dataset_seed" in config:
             kwargs["seed"] = config["dataset_seed"]
+        if "dataset_revision" in config:
+            kwargs["revision"] = config["dataset_revision"]
         return loader_fn(**kwargs)
     else:
         with open(config["dataset_path"]) as f:
