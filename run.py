@@ -109,7 +109,7 @@ def main(config_path: str):
     retriever.build(data["corpus"])
 
     generator = build_generator(config)
-    logger = ExperimentLogger(config["results_dir"], config["experiment_id"])
+    logger = ExperimentLogger(config["results_dir"], config["experiment_id"], config=config)
 
     em_scores, f1_scores = [], []
     recall_scores, mrr_scores, ndcg_scores = [], [], []
