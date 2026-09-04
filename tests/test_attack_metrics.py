@@ -193,7 +193,10 @@ class TestAttackTransferRate:
         assert attack_transfer_rate(source, target) is None
 
     def test_mismatched_length_returns_none(self):
-        """Source and target with different lengths returns None."""
+        """Source and target with different lengths raises ValueError.
+        
+        Different lengths means the query_ids don't match, which is an error.
+        """
         source = [
             {"query_id": "q1", "attack_success": True},
             {"query_id": "q2", "attack_success": False},
@@ -201,7 +204,9 @@ class TestAttackTransferRate:
         target = [
             {"query_id": "q1", "attack_success": True},
         ]
-        assert attack_transfer_rate(source, target) is None
+        # New behavior: raise on mismatched query_ids, don't return None
+        with pytest.raises(ValueError, match="mismatched query_ids"):
+            attack_transfer_rate(source, target)
 
     def test_single_successful_source_attack_transfers(self):
         """Single source attack that transfers returns 1.0."""
@@ -229,3 +234,163 @@ class TestAttackTransferRate:
         # Target successful on q2 only (q1 missing = False)
         # Transfer = 1/2 = 0.5
         assert attack_transfer_rate(source, target) == 0.5
+
+    def test_reordered_input_produces_same_atr(self):
+        """Reordered inputs (different order, same queries) give same ATR.
+        
+        Tests requirement: alignment is by query_id, not position.
+        """
+        source_ordered = [
+            {"query_id": "q1", "attack_success": True},
+            {"query_id": "q2", "attack_success": True},
+            {"query_id": "q3", "attack_success": False},
+        ]
+        target_ordered = [
+            {"query_id": "q1", "attack_success": True},
+            {"query_id": "q2", "attack_success": False},
+            {"query_id": "q3", "attack_success": False},
+        ]
+        atr_ordered = attack_transfer_rate(source_ordered, target_ordered)
+        
+        # Reverse order in both source and target
+        source_reordered = [
+            {"query_id": "q3", "attack_success": False},
+            {"query_id": "q2", "attack_success": True},
+            {"query_id": "q1", "attack_success": True},
+        ]
+        target_reordered = [
+            {"query_id": "q3", "attack_success": False},
+            {"query_id": "q2", "attack_success": False},
+            {"query_id": "q1", "attack_success": True},
+        ]
+        atr_reordered = attack_transfer_rate(source_reordered, target_reordered)
+        
+        # ATR should be the same regardless of order
+        assert atr_ordered == 0.5
+        assert atr_reordered == 0.5
+        assert atr_ordered == atr_reordered
+
+    def test_reordered_mismatched_values_uses_correct_pairing(self):
+        """Reordered inputs with different values use correct per-query pairing.
+        
+        If the function incorrectly paired by position, it would compute a
+        different (wrong) ATR. This test verifies correct query_id matching.
+        """
+        # In-order inputs: q1 transfers (T->T), q2 doesn't (T->F)
+        source_ordered = [
+            {"query_id": "q1", "attack_success": True},
+            {"query_id": "q2", "attack_success": True},
+        ]
+        target_ordered = [
+            {"query_id": "q1", "attack_success": True},
+            {"query_id": "q2", "attack_success": False},
+        ]
+        atr_ordered = attack_transfer_rate(source_ordered, target_ordered)
+        
+        # Reordered with opposite order: q2 first, then q1
+        # Now target values are: q2->False (position 0), q1->True (position 1)
+        # If function incorrectly paired by position:
+        #   source[0]=q1(T) with target[0]=q2(F) -> no transfer
+        #   source[1]=q2(T) with target[1]=q1(T) -> transfer
+        # Wrong ATR would be 1/2 = 0.5
+        # But correct pairing by query_id:
+        #   source q1(T) with target q1(T) -> transfer
+        #   source q2(T) with target q2(F) -> no transfer
+        # Correct ATR is 1/2 = 0.5 (same in this case by coincidence!)
+        
+        # So let's use a case where positional pairing gives wrong result
+        source_reordered = [
+            {"query_id": "q2", "attack_success": True},
+            {"query_id": "q1", "attack_success": True},
+        ]
+        target_reordered = [
+            {"query_id": "q2", "attack_success": False},
+            {"query_id": "q1", "attack_success": True},
+        ]
+        atr_reordered = attack_transfer_rate(source_reordered, target_reordered)
+        
+        # Correct pairing by query_id: q1 transfers, q2 doesn't -> 1/2 = 0.5
+        # Wrong positional pairing would be: [q2 source T with q2 target F] + 
+        #                                    [q1 source T with q1 target T]
+        # Which also gives 1/2 = 0.5, so coincidentally the same!
+        # Let's instead build a case where the error is obvious:
+        
+        # Case where positional pairing would be obviously wrong:
+        source = [
+            {"query_id": "q1", "attack_success": True},   # pos 0
+            {"query_id": "q2", "attack_success": False},  # pos 1
+        ]
+        target = [
+            {"query_id": "q2", "attack_success": True},   # pos 0 (but is q2)
+            {"query_id": "q1", "attack_success": False},  # pos 1 (but is q1)
+        ]
+        # Correct (by query_id):
+        #   q1: source=T, target=F -> no transfer
+        #   q2: source=F, target=T -> not counted (source not successful)
+        # Correct ATR = 0/1 = 0.0
+        
+        # Wrong (by position):
+        #   pos0: source_q1(T) with target_q2(T) -> transfer
+        # Wrong ATR = 1/1 = 1.0
+        
+        atr = attack_transfer_rate(source, target)
+        assert atr == 0.0  # Correct by query_id alignment
+        
+    def test_duplicate_query_id_in_source_raises(self):
+        """Duplicate query_id within source_results raises ValueError."""
+        source = [
+            {"query_id": "q1", "attack_success": True},
+            {"query_id": "q1", "attack_success": False},  # Duplicate!
+        ]
+        target = [
+            {"query_id": "q1", "attack_success": True},
+        ]
+        with pytest.raises(ValueError, match="duplicate query_id"):
+            attack_transfer_rate(source, target)
+
+    def test_duplicate_query_id_in_target_raises(self):
+        """Duplicate query_id within target_results raises ValueError."""
+        source = [
+            {"query_id": "q1", "attack_success": True},
+        ]
+        target = [
+            {"query_id": "q1", "attack_success": True},
+            {"query_id": "q1", "attack_success": False},  # Duplicate!
+        ]
+        with pytest.raises(ValueError, match="duplicate query_id"):
+            attack_transfer_rate(source, target)
+
+    def test_missing_query_id_in_source_raises(self):
+        """Missing query_id in source_results raises ValueError."""
+        source = [
+            {"attack_success": True},  # No query_id field!
+        ]
+        target = [
+            {"query_id": "q1", "attack_success": True},
+        ]
+        with pytest.raises(ValueError, match="without query_id"):
+            attack_transfer_rate(source, target)
+
+    def test_missing_query_id_in_target_raises(self):
+        """Missing query_id in target_results raises ValueError."""
+        source = [
+            {"query_id": "q1", "attack_success": True},
+        ]
+        target = [
+            {"attack_success": True},  # No query_id field!
+        ]
+        with pytest.raises(ValueError, match="without query_id"):
+            attack_transfer_rate(source, target)
+
+    def test_mismatched_query_ids_raises(self):
+        """Mismatched query_id sets between source and target raises ValueError."""
+        source = [
+            {"query_id": "q1", "attack_success": True},
+            {"query_id": "q2", "attack_success": True},
+        ]
+        target = [
+            {"query_id": "q1", "attack_success": True},
+            {"query_id": "q3", "attack_success": True},  # q3 instead of q2
+        ]
+        with pytest.raises(ValueError, match="mismatched query_ids"):
+            attack_transfer_rate(source, target)

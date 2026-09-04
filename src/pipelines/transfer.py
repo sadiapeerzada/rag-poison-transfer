@@ -87,6 +87,7 @@ class TransferExperimentResult:
             "attack_success_rate_source": self.attack_success_rate_source,
             "attack_success_rate_target": self.attack_success_rate_target,
             "attack_transfer_rate": self.attack_transfer_rate,
+            "per_query_results": self.per_query_results,
         }
 
 
@@ -214,72 +215,129 @@ class TransferMatrix:
 
         return "\n".join(lines)
 
+    def to_json(self, filepath: str, overwrite: bool = False) -> None:
+        """Export transfer matrix to a JSON file.
+        
+        Args:
+            filepath: Path where the JSON file will be written.
+            overwrite: If False (default), raise FileExistsError if file exists.
+                      If True, overwrite the existing file.
+        
+        Raises:
+            FileExistsError: If file exists and overwrite=False.
+        """
+        import json
+        import os
+        
+        if os.path.exists(filepath) and not overwrite:
+            raise FileExistsError(
+                f"{filepath} already exists. Pass overwrite=True to overwrite, "
+                f"or use a different filepath."
+            )
+        
+        matrix_dict = self.to_dict()
+        with open(filepath, "w") as f:
+            json.dump(matrix_dict, f, indent=2, sort_keys=True)
+            f.write("\n")
+
 
 def compute_transfer_statistics(
     source_results: list[dict],
     target_results: list[dict],
 ) -> TransferExperimentResult:
-    """Compute transfer metrics from parallel source/target result lists.
+    """Compute transfer metrics from source/target result lists, aligned by query_id.
     
     Args:
         source_results: Attack results evaluated on source pipeline.
-                       Each dict should have 'attack_success' field.
+                       Each dict should have 'query_id' and 'attack_success' fields.
         target_results: Same queries re-evaluated on target pipeline.
-                       Parallel to source_results (same order, same queries).
+                       Aligned to source_results by query_id, not by position.
     
     Returns:
         TransferExperimentResult with computed statistics.
     
     Raises:
-        ValueError if result lists don't match length or structure.
+        ValueError if:
+        - Result lists are empty
+        - Results lack query_id fields
+        - query_ids are duplicated within a list
+        - The two lists have different sets of query_ids
+    
+    Note: Query alignment is by query_id, so reordered inputs produce the same result.
     """
-    if len(source_results) != len(target_results):
-        raise ValueError(
-            f"Source ({len(source_results)}) and target ({len(target_results)}) "
-            "result counts don't match"
-        )
-
-    if not source_results:
+    if not source_results or not target_results:
         raise ValueError("Empty result lists")
 
-    # Fail fast on query-ID misalignment (supervisor review 3.5): source and
-    # target must be the same queries, in the same order, or every downstream
-    # rate (ATR, ASR, PRR) is silently computed over the wrong pairs.
-    for i, (src, tgt) in enumerate(zip(source_results, target_results)):
-        src_qid = src.get("query_id")
-        tgt_qid = tgt.get("query_id")
-        if src_qid != tgt_qid:
+    # Build dicts indexed by query_id for alignment
+    source_by_id = {}
+    for result in source_results:
+        qid = result.get("query_id")
+        if qid is None:
             raise ValueError(
-                f"Query ID mismatch at index {i}: source={src_qid!r}, "
-                f"target={tgt_qid!r}. source_results and target_results must "
-                "contain the same queries in the same order."
+                "source_results contains entry without query_id field"
             )
+        if qid in source_by_id:
+            raise ValueError(
+                f"source_results has duplicate query_id={qid!r}"
+            )
+        source_by_id[qid] = result
+    
+    target_by_id = {}
+    for result in target_results:
+        qid = result.get("query_id")
+        if qid is None:
+            raise ValueError(
+                "target_results contains entry without query_id field"
+            )
+        if qid in target_by_id:
+            raise ValueError(
+                f"target_results has duplicate query_id={qid!r}"
+            )
+        target_by_id[qid] = result
+    
+    # Check that both lists have the same set of query_ids
+    source_ids = set(source_by_id.keys())
+    target_ids = set(target_by_id.keys())
+    if source_ids != target_ids:
+        missing_in_target = source_ids - target_ids
+        missing_in_source = target_ids - source_ids
+        msg = []
+        if missing_in_target:
+            msg.append(f"query_ids in source but not target: {missing_in_target}")
+        if missing_in_source:
+            msg.append(f"query_ids in target but not source: {missing_in_source}")
+        raise ValueError(
+            "source_results and target_results have mismatched query_ids: "
+            + "; ".join(msg)
+        )
 
-    # Extract metadata from first result (assume consistent across all)
-    first_result = source_results[0]
+    # Extract metadata from first source result (assume consistent across all)
+    first_result = list(source_by_id.values())[0]
     result = TransferExperimentResult(
         source_pipeline=first_result.get("source_pipeline", "unknown"),
         target_pipeline=first_result.get("target_pipeline", "unknown"),
         poison_id=first_result.get("poison_id", "unknown"),
         dataset=first_result.get("dataset", "unknown"),
         seed=first_result.get("seed", 0),
-        total_queries=len(source_results),
+        total_queries=len(source_by_id),
     )
 
-    # Count successes
-    source_successful_indices = []
-    for i, res in enumerate(source_results):
-        if res.get("attack_success", False):
+    # Count successes across all queries (matched by query_id)
+    source_successful_ids = []
+    for qid, src_res in source_by_id.items():
+        if src_res.get("attack_success", False):
             result.successful_attacks_source += 1
-            source_successful_indices.append(i)
+            source_successful_ids.append(qid)
 
-    for i, res in enumerate(target_results):
-        if res.get("attack_success", False):
+    for qid, tgt_res in target_by_id.items():
+        if tgt_res.get("attack_success", False):
             result.successful_attacks_target += 1
 
-    # Count transfers
-    for i in source_successful_indices:
-        if target_results[i].get("attack_success", False):
+    # Count transfers: for each query that was successful in source,
+    # check if it was also successful in target
+    for qid in source_successful_ids:
+        target_result = target_by_id[qid]
+        if target_result.get("attack_success", False):
             result.transferred_attacks += 1
 
     # Compute rates
@@ -299,7 +357,7 @@ def compute_transfer_statistics(
     # Poison Retrieval Rate @k (supervisor review 3.5): fraction of attacked
     # target queries where a poison doc appears in the top-k retrieved docs.
     # Only counted over queries that actually had a poison doc to retrieve.
-    attacked = [res for res in target_results if res.get("poison_doc_ids")]
+    attacked = [res for res in target_by_id.values() if res.get("poison_doc_ids")]
     if attacked:
         for k in (1, 3, 5, 10):
             hits = sum(
@@ -308,17 +366,18 @@ def compute_transfer_statistics(
             )
             setattr(result, f"poison_retrieval_rate_at_{k}", hits / len(attacked))
 
+    # Build per-query results in consistent (sorted) query_id order
     result.per_query_results = [
         {
-            "query_id": source_results[i].get("query_id"),
-            "source_attack_success": source_results[i].get("attack_success", False),
-            "target_attack_success": target_results[i].get("attack_success", False),
+            "query_id": qid,
+            "source_attack_success": source_by_id[qid].get("attack_success", False),
+            "target_attack_success": target_by_id[qid].get("attack_success", False),
             "transferred": (
-                source_results[i].get("attack_success", False)
-                and target_results[i].get("attack_success", False)
+                source_by_id[qid].get("attack_success", False)
+                and target_by_id[qid].get("attack_success", False)
             ),
         }
-        for i in range(len(source_results))
+        for qid in sorted(source_by_id.keys())
     ]
 
     return result

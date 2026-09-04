@@ -157,16 +157,16 @@ class TestMetricsComputation:
         assert pytest.approx(asr) == 2.0 / 3.0
 
     def test_transfer_rate_computed(self):
-        """Transfer rate should compute from source/target results."""
+        """Transfer rate should compute from source/target results aligned by query_id."""
         source = [
-            {"attack_success": True},
-            {"attack_success": True},
-            {"attack_success": False},
+            {"query_id": "q1", "attack_success": True},
+            {"query_id": "q2", "attack_success": True},
+            {"query_id": "q3", "attack_success": False},
         ]
         target = [
-            {"attack_success": True},
-            {"attack_success": False},
-            {"attack_success": False},
+            {"query_id": "q1", "attack_success": True},
+            {"query_id": "q2", "attack_success": False},
+            {"query_id": "q3", "attack_success": False},
         ]
         
         atr = attack_transfer_rate(source, target)

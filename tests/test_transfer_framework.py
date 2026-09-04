@@ -3,7 +3,10 @@
 Validates TransferMatrix, TransferExperimentResult, and transfer statistic
 computation without requiring actual poisoning implementations.
 """
+import json
+import os
 import pytest
+import tempfile
 from src.pipelines.transfer import (
     TransferExperimentResult,
     TransferMatrix,
@@ -192,6 +195,155 @@ class TestTransferMatrix:
         assert "dense" in matrix_dict["bm25"]
         assert matrix_dict["bm25"]["dense"]["attack_transfer_rate"] == 0.6
 
+    def test_to_json_exports_to_file(self):
+        """Export matrix to JSON file and verify content."""
+        matrix = TransferMatrix()
+        result = TransferExperimentResult(
+            source_pipeline="bm25",
+            target_pipeline="dense",
+            poison_id="poison_001",
+            dataset="hotpotqa",
+            seed=42,
+            attack_transfer_rate=0.5,
+            poison_retrieval_rate_at_1=0.75,
+            poison_retrieval_rate_at_5=0.95,
+        )
+        matrix.add_result(result)
+
+        with tempfile.TemporaryDirectory() as tmpdir:
+            filepath = os.path.join(tmpdir, "test_matrix.json")
+            matrix.to_json(filepath)
+
+            # Verify file exists and is valid JSON
+            assert os.path.exists(filepath)
+            with open(filepath, "r") as f:
+                loaded_dict = json.load(f)
+
+            # Verify content matches the exported dict
+            assert "bm25" in loaded_dict
+            assert loaded_dict["bm25"]["dense"]["attack_transfer_rate"] == 0.5
+            # Note: to_dict() uses @ notation for PRR metrics
+            assert loaded_dict["bm25"]["dense"]["poison_retrieval_rate@1"] == 0.75
+            assert loaded_dict["bm25"]["dense"]["poison_retrieval_rate@5"] == 0.95
+
+    def test_to_json_raises_on_existing_file(self):
+        """Raise FileExistsError if file exists and overwrite=False."""
+        matrix = TransferMatrix()
+
+        with tempfile.TemporaryDirectory() as tmpdir:
+            filepath = os.path.join(tmpdir, "test_matrix.json")
+            # Create the file first
+            with open(filepath, "w") as f:
+                f.write("{}")
+
+            # Try to export without overwrite flag
+            with pytest.raises(FileExistsError):
+                matrix.to_json(filepath, overwrite=False)
+
+    def test_to_json_overwrites_with_flag(self):
+        """Overwrite existing file when overwrite=True."""
+        matrix = TransferMatrix()
+        result = TransferExperimentResult(
+            source_pipeline="bm25",
+            target_pipeline="dense",
+            poison_id="poison_001",
+            dataset="hotpotqa",
+            seed=42,
+            attack_transfer_rate=0.7,
+        )
+        matrix.add_result(result)
+
+        with tempfile.TemporaryDirectory() as tmpdir:
+            filepath = os.path.join(tmpdir, "test_matrix.json")
+            # Create the file first with different content
+            with open(filepath, "w") as f:
+                json.dump({"old": "content"}, f)
+
+            # Export with overwrite=True should succeed
+            matrix.to_json(filepath, overwrite=True)
+
+            # Verify new content
+            with open(filepath, "r") as f:
+                loaded_dict = json.load(f)
+            assert "old" not in loaded_dict
+            assert loaded_dict["bm25"]["dense"]["attack_transfer_rate"] == 0.7
+
+    def test_to_json_with_multiple_results(self):
+        """Export a larger matrix with multiple results and not_run cells."""
+        matrix = TransferMatrix()
+
+        # Add multiple results
+        for source in ["bm25", "dense"]:
+            for target in ["hybrid", "reranker"]:
+                result = TransferExperimentResult(
+                    source_pipeline=source,
+                    target_pipeline=target,
+                    poison_id="poison_001",
+                    dataset="hotpotqa",
+                    seed=42,
+                    attack_transfer_rate=0.5 + (hash(source + target) % 30) / 100,
+                )
+                matrix.add_result(result)
+
+        # Mark some as not_run
+        matrix.mark_not_run("hybrid", "bm25")
+        matrix.mark_not_run("reranker", "reranker")
+
+        with tempfile.TemporaryDirectory() as tmpdir:
+            filepath = os.path.join(tmpdir, "test_matrix.json")
+            matrix.to_json(filepath)
+
+            # Verify structure
+            with open(filepath, "r") as f:
+                loaded_dict = json.load(f)
+
+            assert "bm25" in loaded_dict
+            assert "dense" in loaded_dict
+            assert "hybrid" in loaded_dict
+            assert "reranker" in loaded_dict
+
+            # Check a result cell (bm25 -> hybrid)
+            assert "hybrid" in loaded_dict["bm25"]
+            assert loaded_dict["bm25"]["hybrid"]["attack_transfer_rate"] is not None
+
+            # Check another result cell (dense -> reranker)
+            assert "reranker" in loaded_dict["dense"]
+            assert loaded_dict["dense"]["reranker"]["attack_transfer_rate"] is not None
+
+            # Check a not_run cell
+            assert loaded_dict["hybrid"]["bm25"]["status"] == "not_run"
+            assert loaded_dict["reranker"]["reranker"]["status"] == "not_run"
+
+    def test_to_json_preserves_per_query_results(self):
+        """JSON export includes per_query_results from experiments."""
+        matrix = TransferMatrix()
+        result = TransferExperimentResult(
+            source_pipeline="bm25",
+            target_pipeline="dense",
+            poison_id="poison_001",
+            dataset="hotpotqa",
+            seed=42,
+            attack_transfer_rate=0.5,
+            per_query_results=[
+                {"query_id": "q1", "transferred": True},
+                {"query_id": "q2", "transferred": False},
+            ],
+        )
+        matrix.add_result(result)
+
+        with tempfile.TemporaryDirectory() as tmpdir:
+            filepath = os.path.join(tmpdir, "test_matrix.json")
+            matrix.to_json(filepath)
+
+            with open(filepath, "r") as f:
+                loaded_dict = json.load(f)
+
+            assert "per_query_results" in loaded_dict["bm25"]["dense"]
+            pqr = loaded_dict["bm25"]["dense"]["per_query_results"]
+            assert len(pqr) == 2
+            assert pqr[0]["query_id"] == "q1"
+            assert pqr[0]["transferred"] is True
+
 
 class TestComputeTransferStatistics:
     """Tests for computing transfer metrics from result lists."""
@@ -280,7 +432,7 @@ class TestComputeTransferStatistics:
 
 
 class TestQueryIDAlignment:
-    """Supervisor review 3.5: ATR must fail fast on query-ID misalignment."""
+    """Query-ID alignment: ATR must match by query_id regardless of position."""
 
     def _make_result(self, query_id, attack_success=True):
         return {
@@ -297,22 +449,53 @@ class TestQueryIDAlignment:
         assert result.total_queries == 2
 
     def test_mismatched_query_id_raises(self):
+        """Query IDs present in one list but not the other raise ValueError."""
         source = [self._make_result("q1"), self._make_result("q2")]
         target = [self._make_result("q1"), self._make_result("q3")]
-        with pytest.raises(ValueError, match="Query ID mismatch"):
+        with pytest.raises(ValueError, match="mismatched query_ids"):
             compute_transfer_statistics(source, target)
 
-    def test_reordered_query_ids_raises(self):
-        source = [self._make_result("q1"), self._make_result("q2")]
-        target = [self._make_result("q2"), self._make_result("q1")]
-        with pytest.raises(ValueError, match="Query ID mismatch"):
-            compute_transfer_statistics(source, target)
+    def test_reordered_query_ids_succeeds(self):
+        """Reordered inputs with same query_ids work correctly (matched by ID, not position).
+        
+        This is the fix: alignment is by query_id, so reordering doesn't cause errors.
+        """
+        source = [self._make_result("q1", True), self._make_result("q2", True)]
+        target = [self._make_result("q2", False), self._make_result("q1", True)]
+        result = compute_transfer_statistics(source, target)
+        assert result.total_queries == 2
+        # q1: source=True, target=True -> transfer
+        # q2: source=True, target=False -> no transfer
+        assert result.transferred_attacks == 1
+        assert result.attack_transfer_rate == 0.5
+
+    def test_reordered_produces_same_result(self):
+        """Reordered inputs produce the same ATR as ordered inputs."""
+        source_ordered = [self._make_result("q1", True), self._make_result("q2", False)]
+        target_ordered = [self._make_result("q1", True), self._make_result("q2", True)]
+        result_ordered = compute_transfer_statistics(source_ordered, target_ordered)
+        
+        source_reordered = [self._make_result("q2", False), self._make_result("q1", True)]
+        target_reordered = [self._make_result("q2", True), self._make_result("q1", True)]
+        result_reordered = compute_transfer_statistics(source_reordered, target_reordered)
+        
+        assert result_ordered.attack_transfer_rate == result_reordered.attack_transfer_rate
+        assert result_ordered.transferred_attacks == result_reordered.transferred_attacks
 
     def test_missing_query_id_raises(self):
+        """Results without query_id field raise ValueError."""
         source = [{"attack_success": True}]
         target = [self._make_result("q1")]
-        with pytest.raises(ValueError, match="Query ID mismatch"):
+        with pytest.raises(ValueError, match="without query_id"):
             compute_transfer_statistics(source, target)
+
+    def test_duplicate_query_id_raises(self):
+        """Duplicate query_id within one list raises ValueError."""
+        source = [self._make_result("q1", True), self._make_result("q1", False)]
+        target = [self._make_result("q1", True)]
+        with pytest.raises(ValueError, match="duplicate query_id"):
+            compute_transfer_statistics(source, target)
+
 
 
 class TestPoisonRetrievalRateComputation:

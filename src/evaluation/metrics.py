@@ -193,41 +193,86 @@ def attack_transfer_rate(
 ) -> float | None:
     """Attack Transfer Rate (ATR): fraction of queries where an attack
     successful in the SOURCE pipeline also transfers to the TARGET
-    pipeline.
+    pipeline. Uses query_id alignment regardless of input order.
     
     Requires both source_results and target_results to be lists of dicts,
-    each indexed by query_id and containing attack_success boolean.
+    each with a 'query_id' field and 'attack_success' boolean.
     
         ATR = count(queries where source_attack_success AND
-+                           target_attack_success)
+              target_attack_success)
               /
               count(queries where source_attack_success)
     
+    Alignment policy: Queries are matched by query_id, not position.
+    - If a query_id appears in one list but not the other, raises ValueError.
+    - If a query_id is duplicated within a list, raises ValueError.
+    - Reordered inputs (same query_ids in different order) produce the same ATR.
+    
     Returns None if no queries were successfully attacked in source, or
     if either result list is empty.
-    
-    Note: Caller is responsible for ensuring query_id alignment between
-    source and target results. This function assumes they are indexed
-    the same way (same query order or keyed by query_id).
     """
     if not source_results or not target_results:
         return None
-    if len(source_results) != len(target_results):
-        # Results must be parallel (same queries, same order)
-        return None
     
-    source_successful = [
-        r.get("attack_success", False) for r in source_results
-    ]
-    source_attack_count = sum(source_successful)
+    # Build dicts indexed by query_id for alignment
+    source_by_id = {}
+    for result in source_results:
+        qid = result.get("query_id")
+        if qid is None:
+            raise ValueError(
+                "source_results contains entry without query_id field"
+            )
+        if qid in source_by_id:
+            raise ValueError(
+                f"source_results has duplicate query_id={qid!r}"
+            )
+        source_by_id[qid] = result
+    
+    target_by_id = {}
+    for result in target_results:
+        qid = result.get("query_id")
+        if qid is None:
+            raise ValueError(
+                "target_results contains entry without query_id field"
+            )
+        if qid in target_by_id:
+            raise ValueError(
+                f"target_results has duplicate query_id={qid!r}"
+            )
+        target_by_id[qid] = result
+    
+    # Check that both lists have the same set of query_ids
+    source_ids = set(source_by_id.keys())
+    target_ids = set(target_by_id.keys())
+    if source_ids != target_ids:
+        missing_in_target = source_ids - target_ids
+        missing_in_source = target_ids - source_ids
+        msg = []
+        if missing_in_target:
+            msg.append(f"query_ids in source but not target: {missing_in_target}")
+        if missing_in_source:
+            msg.append(f"query_ids in target but not source: {missing_in_source}")
+        raise ValueError(
+            "source_results and target_results have mismatched query_ids: "
+            + "; ".join(msg)
+        )
+    
+    # Count successful source attacks
+    source_attack_count = sum(
+        1 for result in source_results
+        if result.get("attack_success", False)
+    )
     
     if source_attack_count == 0:
         return None  # No attacks to transfer
     
-    transferred = sum(
-        target_results[i].get("attack_success", False)
-        for i in range(len(source_results))
-        if source_successful[i]
-    )
+    # Count transferred attacks (source successful AND target successful,
+    # matched by query_id)
+    transferred = 0
+    for qid, source_result in source_by_id.items():
+        if source_result.get("attack_success", False):
+            target_result = target_by_id[qid]
+            if target_result.get("attack_success", False):
+                transferred += 1
     
     return transferred / source_attack_count
