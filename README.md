@@ -146,7 +146,7 @@ Configs: `configs/exp_013`-`exp_016` (HotpotQA), `configs/exp_017`-`exp_020`
 
 Dataset revisions pinned:
 - HotpotQA (`hotpotqa/hotpot_qa`): `1908d6afbbead072334abe2965f91bd2709910ab`
-- 2WikiMultiHopQA (`xanhho/2WikiMultihopQA`, parquet-converted): `e37a4050605363be62f1d02e6eb888fe5f56530e`
+- 2WikiMultiHopQA (`xanhho/2WikiMultihopQA`, parquet-converted): `612bc5039a457880d9e7d84c3b0a4cf154b70e4f`
 
 ## Bugs found and fixed along the way
 
@@ -209,7 +209,7 @@ engineering work, not something to hide:
    fails outright under `datasets` v5.x. Fixed by pointing the loader at
    HuggingFace's auto-generated `refs/convert/parquet` branch instead, then
    pinning the *actual commit SHA behind that branch*
-   (`e37a4050605363be62f1d02e6eb888fe5f56530e`) rather than the branch name
+   (`612bc5039a457880d9e7d84c3b0a4cf154b70e4f`) rather than the branch name
    itself, since a branch can move and a pinned revision shouldn't. That
    parquet conversion turned out to have a second issue: its `context` and
    `supporting_facts` fields are JSON-encoded strings, not native nested
@@ -513,6 +513,8 @@ IDs, gold mapping), config routing, end-to-end integration, environment
 metadata, gold retrieval labels, and dataset revision pinning. Run
 `pytest tests/ -v` for the exact current per-file breakdown rather than
 relying on a hand-maintained count here, which has drifted before.
+
+Final verification of the frozen Clean Baseline v1 commit (`clean-baseline-v1`): 139 tests passed, 0 failed.
 
 ### Running specific test suites
 ```bash
