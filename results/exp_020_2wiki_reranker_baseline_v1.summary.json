@@ -1,0 +1,25 @@
+{
+  "corpus": {
+    "corpus_type": "pooled_hotpotqa",
+    "dataset": "load_2wikimultihopqa",
+    "dataset_split": "validation",
+    "num_queries": 300,
+    "num_unique_documents": 2091,
+    "seed": 42
+  },
+  "experiment_id": "exp_020_2wiki_reranker_baseline_v1",
+  "mean_em": 0.2833333333333333,
+  "mean_f1": 0.325224025974026,
+  "mean_retrieval_metrics": {
+    "mrr@1": 0.9466666666666667,
+    "mrr@10": 0.9680555555555557,
+    "mrr@3": 0.9672222222222223,
+    "mrr@5": 0.9680555555555557,
+    "ndcg@10": 0.7829720816651858,
+    "recall@1": 0.41833333333333333,
+    "recall@10": 0.7775,
+    "recall@3": 0.6783333333333333,
+    "recall@5": 0.7291666666666666
+  },
+  "query_count": 300
+}
