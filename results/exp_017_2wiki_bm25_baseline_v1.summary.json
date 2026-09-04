@@ -1,0 +1,25 @@
+{
+  "corpus": {
+    "corpus_type": "pooled_hotpotqa",
+    "dataset": "load_2wikimultihopqa",
+    "dataset_split": "validation",
+    "num_queries": 300,
+    "num_unique_documents": 2091,
+    "seed": 42
+  },
+  "experiment_id": "exp_017_2wiki_bm25_baseline_v1",
+  "mean_em": 0.17333333333333334,
+  "mean_f1": 0.205377572719678,
+  "mean_retrieval_metrics": {
+    "mrr@1": 0.5133333333333333,
+    "mrr@10": 0.6276679894179894,
+    "mrr@3": 0.6022222222222222,
+    "mrr@5": 0.6150555555555556,
+    "ndcg@10": 0.46634768872021054,
+    "recall@1": 0.225,
+    "recall@10": 0.5208333333333334,
+    "recall@3": 0.37333333333333335,
+    "recall@5": 0.43333333333333335
+  },
+  "query_count": 300
+}

@@ -21,6 +21,7 @@ Until confirmed, treat anything loaded here as DEV-SCALE / PILOT DATA
 for testing the pipeline -- not a frozen benchmark.
 """
 import hashlib
+import json
 import random
 
 
@@ -159,8 +160,16 @@ def load_2wikimultihopqa(split: str = "validation", n_samples: int | None = None
     for row in ds:
         query_id = row["_id"]
 
+        # The parquet-converted mirror stores nested fields (context,
+        # supporting_facts) as JSON-encoded strings rather than native
+        # lists -- parse them before use.
+        row_context = json.loads(row["context"]) if isinstance(row["context"], str) else row["context"]
+
         title_to_doc_id = {}
-        for title, sentences in row["context"]:
+        for entry in row_context:
+            if len(entry) != 2:
+                continue
+            title, sentences = entry
             text = " ".join(sentences)
             doc_id = _canonical_doc_id("2wikimultihopqa", title, text)
             title_to_doc_id[title] = doc_id
@@ -171,11 +180,14 @@ def load_2wikimultihopqa(split: str = "validation", n_samples: int | None = None
         # 2WikiMultiHopQA's supporting_facts is a list of [title, sent_id]
         # pairs (same shape idea as HotpotQA, different container).
         supporting_facts = row.get("supporting_facts", [])
+        if isinstance(supporting_facts, str):
+            supporting_facts = json.loads(supporting_facts)
+        clean_facts = [f for f in supporting_facts if len(f) == 2]
         gold_doc_ids = sorted({
-            title_to_doc_id[t] for t, _ in supporting_facts if t in title_to_doc_id
+            title_to_doc_id[t] for t, _ in clean_facts if t in title_to_doc_id
         })
         gold_supporting_facts = [
-            {"title": t, "sent_id": s} for t, s in supporting_facts
+            {"title": t, "sent_id": s} for t, s in clean_facts
         ]
 
         queries.append({
