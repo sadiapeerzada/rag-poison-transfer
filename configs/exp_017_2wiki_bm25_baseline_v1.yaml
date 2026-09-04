@@ -1,0 +1,14 @@
+experiment_id: exp_017_2wiki_bm25_baseline_v1
+seed: 42
+dataset_loader: load_2wikimultihopqa
+dataset_split: validation
+dataset_n_samples: 300
+dataset_seed: 42
+dataset_revision: "612bc5039a457880d9e7d84c3b0a4cf154b70e4f"  # pinned per supervisor review 3.3
+retriever: bm25
+top_k: 3
+generator_backend: transformers
+generator_model: Qwen/Qwen2.5-7B-Instruct
+load_in_4bit: true
+max_tokens: 64
+results_dir: results

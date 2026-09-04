@@ -1,0 +1,15 @@
+experiment_id: exp_014_hotpotqa_dense_baseline_v1
+seed: 42
+dataset_loader: load_hotpotqa_distractor
+dataset_split: validation
+dataset_n_samples: 300
+dataset_seed: 42
+dataset_revision: "1908d6afbbead072334abe2965f91bd2709910ab"  # pinned per supervisor review 3.3
+retriever: dense
+embedder_model: BAAI/bge-small-en-v1.5
+top_k: 3
+generator_backend: transformers
+generator_model: Qwen/Qwen2.5-7B-Instruct
+load_in_4bit: true
+max_tokens: 64
+results_dir: results
