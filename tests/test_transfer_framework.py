@@ -277,3 +277,118 @@ class TestComputeTransferStatistics:
         result = compute_transfer_statistics(source, target)
         assert pytest.approx(result.attack_success_rate_source) == 2.0 / 3.0
         assert pytest.approx(result.attack_success_rate_target) == 1.0 / 3.0
+
+
+class TestQueryIDAlignment:
+    """Supervisor review 3.5: ATR must fail fast on query-ID misalignment."""
+
+    def _make_result(self, query_id, attack_success=True):
+        return {
+            "query_id": query_id,
+            "attack_success": attack_success,
+            "source_pipeline": "bm25",
+            "target_pipeline": "dense",
+        }
+
+    def test_matching_query_ids_succeeds(self):
+        source = [self._make_result("q1"), self._make_result("q2")]
+        target = [self._make_result("q1"), self._make_result("q2")]
+        result = compute_transfer_statistics(source, target)
+        assert result.total_queries == 2
+
+    def test_mismatched_query_id_raises(self):
+        source = [self._make_result("q1"), self._make_result("q2")]
+        target = [self._make_result("q1"), self._make_result("q3")]
+        with pytest.raises(ValueError, match="Query ID mismatch"):
+            compute_transfer_statistics(source, target)
+
+    def test_reordered_query_ids_raises(self):
+        source = [self._make_result("q1"), self._make_result("q2")]
+        target = [self._make_result("q2"), self._make_result("q1")]
+        with pytest.raises(ValueError, match="Query ID mismatch"):
+            compute_transfer_statistics(source, target)
+
+    def test_missing_query_id_raises(self):
+        source = [{"attack_success": True}]
+        target = [self._make_result("q1")]
+        with pytest.raises(ValueError, match="Query ID mismatch"):
+            compute_transfer_statistics(source, target)
+
+
+class TestPoisonRetrievalRateComputation:
+    """Supervisor review 3.5: PRR@k must actually be computed, not left None."""
+
+    def _make_pair(self, query_id, poison_rank, poison_doc_ids=("p1",)):
+        base = {
+            "query_id": query_id,
+            "attack_success": True,
+            "poison_doc_ids": list(poison_doc_ids),
+            "poison_rank": poison_rank,
+        }
+        return dict(base), dict(base)
+
+    def test_prr_fields_are_not_none_when_poisons_present(self):
+        source, target = zip(*[self._make_pair(f"q{i}", 1) for i in range(3)])
+        result = compute_transfer_statistics(list(source), list(target))
+        assert result.poison_retrieval_rate_at_1 is not None
+        assert result.poison_retrieval_rate_at_10 is not None
+
+    def test_prr_at_1_all_hits(self):
+        source, target = zip(*[self._make_pair(f"q{i}", 1) for i in range(4)])
+        result = compute_transfer_statistics(list(source), list(target))
+        assert result.poison_retrieval_rate_at_1 == 1.0
+
+    def test_prr_at_1_partial_hits(self):
+        pairs = [self._make_pair("q0", 1), self._make_pair("q1", 5)]
+        source, target = zip(*pairs)
+        result = compute_transfer_statistics(list(source), list(target))
+        assert result.poison_retrieval_rate_at_1 == 0.5
+        assert result.poison_retrieval_rate_at_5 == 1.0
+
+    def test_prr_none_rank_counts_as_miss(self):
+        pairs = [self._make_pair("q0", None), self._make_pair("q1", 2)]
+        source, target = zip(*pairs)
+        result = compute_transfer_statistics(list(source), list(target))
+        assert result.poison_retrieval_rate_at_1 == 0.0
+        assert result.poison_retrieval_rate_at_10 == 0.5
+
+    def test_prr_none_when_no_queries_have_poison_docs(self):
+        source = [{"query_id": "q0", "attack_success": True}]
+        target = [{"query_id": "q0", "attack_success": True}]
+        result = compute_transfer_statistics(source, target)
+        assert result.poison_retrieval_rate_at_1 is None
+
+
+class TestPRRExportPath:
+    """Supervisor review 3.5: PRR@k must export correctly from the transfer matrix."""
+
+    def _make_pair(self, query_id, poison_rank):
+        base = {
+            "query_id": query_id,
+            "attack_success": True,
+            "poison_doc_ids": ["p1"],
+            "poison_rank": poison_rank,
+        }
+        return dict(base), dict(base)
+
+    def test_csv_export_resolves_at_notation(self):
+        source, target = zip(*[self._make_pair(f"q{i}", 1) for i in range(2)])
+        result = compute_transfer_statistics(list(source), list(target))
+        result.source_pipeline, result.target_pipeline = "bm25", "dense"
+
+        matrix = TransferMatrix()
+        matrix.add_result(result)
+        csv_out = matrix.to_csv(metric="poison_retrieval_rate@1")
+        # The real (bm25 -> dense) cell should show the computed value, not N/A.
+        # (bm25 -> bm25) is a legitimate N/A -- that cell was never run.
+        assert "1.0000" in csv_out
+
+    def test_markdown_export_resolves_at_notation(self):
+        source, target = zip(*[self._make_pair(f"q{i}", 1) for i in range(2)])
+        result = compute_transfer_statistics(list(source), list(target))
+        result.source_pipeline, result.target_pipeline = "bm25", "dense"
+
+        matrix = TransferMatrix()
+        matrix.add_result(result)
+        md_out = matrix.to_markdown(metric="poison_retrieval_rate@5")
+        assert "1.0000" in md_out

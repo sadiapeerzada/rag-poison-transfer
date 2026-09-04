@@ -137,6 +137,12 @@ class TransferMatrix:
                 matrix[source][target] = result.to_dict()
         return matrix
 
+    @staticmethod
+    def _resolve_metric_attr(metric: str) -> str:
+        """Map an external metric key like 'poison_retrieval_rate@5' to the
+        actual dataclass attribute name 'poison_retrieval_rate_at_5'."""
+        return metric.replace("@", "_at_")
+
     def to_csv(self, metric: str = "attack_transfer_rate") -> str:
         """Generate CSV representation of a single metric across matrix.
         
@@ -159,7 +165,7 @@ class TransferMatrix:
                 elif result is None:
                     row.append("N/A")
                 else:
-                    value = getattr(result, metric, None)
+                    value = getattr(result, self._resolve_metric_attr(metric), None)
                     if value is None:
                         row.append("N/A")
                     else:
@@ -199,7 +205,7 @@ class TransferMatrix:
                 elif result is None:
                     row += " N/A |"
                 else:
-                    value = getattr(result, metric, None)
+                    value = getattr(result, self._resolve_metric_attr(metric), None)
                     if value is None:
                         row += " N/A |"
                     else:
@@ -235,6 +241,19 @@ def compute_transfer_statistics(
 
     if not source_results:
         raise ValueError("Empty result lists")
+
+    # Fail fast on query-ID misalignment (supervisor review 3.5): source and
+    # target must be the same queries, in the same order, or every downstream
+    # rate (ATR, ASR, PRR) is silently computed over the wrong pairs.
+    for i, (src, tgt) in enumerate(zip(source_results, target_results)):
+        src_qid = src.get("query_id")
+        tgt_qid = tgt.get("query_id")
+        if src_qid != tgt_qid:
+            raise ValueError(
+                f"Query ID mismatch at index {i}: source={src_qid!r}, "
+                f"target={tgt_qid!r}. source_results and target_results must "
+                "contain the same queries in the same order."
+            )
 
     # Extract metadata from first result (assume consistent across all)
     first_result = source_results[0]
@@ -276,6 +295,18 @@ def compute_transfer_statistics(
         result.attack_success_rate_target = (
             result.successful_attacks_target / result.total_queries
         )
+
+    # Poison Retrieval Rate @k (supervisor review 3.5): fraction of attacked
+    # target queries where a poison doc appears in the top-k retrieved docs.
+    # Only counted over queries that actually had a poison doc to retrieve.
+    attacked = [res for res in target_results if res.get("poison_doc_ids")]
+    if attacked:
+        for k in (1, 3, 5, 10):
+            hits = sum(
+                1 for res in attacked
+                if res.get("poison_rank") is not None and res["poison_rank"] <= k
+            )
+            setattr(result, f"poison_retrieval_rate_at_{k}", hits / len(attacked))
 
     result.per_query_results = [
         {
