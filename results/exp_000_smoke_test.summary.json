@@ -1,6 +1,6 @@
 {
   "corpus": {
-    "corpus_type": "pooled_hotpotqa",
+    "corpus_type": "unknown",
     "dataset": null,
     "dataset_split": "train",
     "num_queries": 5,

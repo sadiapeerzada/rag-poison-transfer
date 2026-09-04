@@ -1,6 +1,6 @@
 {
   "corpus": {
-    "corpus_type": "pooled_hotpotqa",
+    "corpus_type": "pooled_2wikimultihopqa",
     "dataset": "load_2wikimultihopqa",
     "dataset_split": "validation",
     "num_queries": 300,

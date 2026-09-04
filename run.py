@@ -234,7 +234,10 @@ def main(config_path: str):
         "dataset_split": config.get("dataset_split", "train"),
         "num_queries": num_queries,
         "num_unique_documents": len(corpus),
-        "corpus_type": "pooled_hotpotqa",  # Hardcoded for current implementation
+        "corpus_type": {
+            "load_hotpotqa_distractor": "pooled_hotpotqa",
+            "load_2wikimultihopqa": "pooled_2wikimultihopqa",
+        }.get(config.get("dataset_loader"), "unknown"),  # supervisor review 3.5: was hardcoded to pooled_hotpotqa for every dataset
         "seed": config.get("seed", 42),
     }
     
