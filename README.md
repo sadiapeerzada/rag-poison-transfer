@@ -516,6 +516,8 @@ relying on a hand-maintained count here, which has drifted before.
 
 Final verification of the frozen Clean Baseline v1 commit (`clean-baseline-v1`): 139 tests passed, 0 failed.
 
+`main` has since grown to 153 tests as of the ATR/PRR and 2Wiki-labeling fixes (review 3.5); the frozen tag's count remains 139 by design.
+
 ### Running specific test suites
 ```bash
 pytest tests/test_retrieval_metrics.py -v      # Recall/MRR/nDCG unit tests
