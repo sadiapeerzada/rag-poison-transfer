@@ -6,6 +6,12 @@ different retrieval pipelines, and evaluating a retrieval-consistency defense
 against them. See the project foundation doc (shared separately) for the full
 12-week roadmap and research plan.
 
+> **Clean Baseline v1 is frozen** as of commit tag [`clean-baseline-v1`](../../tree/clean-baseline-v1):
+> HotpotQA + 2WikiMultiHopQA, N=300 real queries each, all 4 retrievers,
+> pinned dataset revisions, real 7B generator, 139/139 tests passing. See
+> the [Clean Baseline v1 results](#clean-baseline-v1-results) section below.
+> Approved per supervisor review, pre-Week-5 readiness assessment.
+
 ## What this repo demonstrates so far
 
 This isn't a single script that "ran once" -- it's a working, tested,
@@ -113,12 +119,34 @@ number here is traceable to source data, not just asserted in this file.
   <img src="retriever_comparison.svg" alt="Retriever comparison: EM and F1 across BM25, Dense, Hybrid, and Reranker" width="600">
 </p>
 
-**Pending supervisor sign-off before this counts as final:**
-`src/data/loaders.py` bakes in corpus-scope shortcuts -- test-set
-subsampling at N=50 (below the eventual N~=150-300 target) and using
-HotpotQA's provided candidate pool rather than full open-domain
-retrieval -- that are `[REC]`, my compute-feasibility recommendations,
-not yet confirmed. See the module docstring for exact items to confirm.
+The N=50 table above is the original pilot and is kept for historical
+comparison; it is **not** the frozen benchmark. See below.
+
+## Clean Baseline v1 results
+
+Frozen per supervisor review, tag `clean-baseline-v1`. HotpotQA and
+2WikiMultiHopQA, N=300 real validation queries each, all four retrievers,
+dataset revisions pinned to exact HuggingFace commit SHAs, real
+`Qwen/Qwen2.5-7B-Instruct` (4-bit) generator on Kaggle T4 GPU. Full table:
+`results/clean_baseline_v1_final_table.csv`.
+
+| Dataset | Retriever | R@1 | R@3 | R@5 | R@10 | MRR@10 | nDCG@10 | EM | F1 |
+|---|---|---|---|---|---|---|---|---|---|
+| HotpotQA | BM25 | 0.298 | 0.508 | 0.600 | 0.743 | 0.716 | 0.620 | 0.303 | 0.391 |
+| HotpotQA | Dense | 0.452 | 0.810 | 0.880 | 0.942 | 0.945 | 0.878 | 0.397 | 0.528 |
+| HotpotQA | Hybrid | 0.402 | 0.672 | 0.765 | 0.885 | 0.878 | 0.781 | 0.373 | 0.475 |
+| HotpotQA | Reranker | 0.455 | 0.785 | 0.863 | 0.940 | 0.949 | 0.871 | 0.420 | 0.529 |
+| 2Wiki | BM25 | 0.225 | 0.373 | 0.433 | 0.521 | 0.628 | 0.466 | 0.173 | 0.205 |
+| 2Wiki | Dense | 0.423 | 0.673 | 0.717 | 0.770 | 0.973 | 0.781 | 0.270 | 0.309 |
+| 2Wiki | Hybrid | 0.340 | 0.561 | 0.625 | 0.712 | 0.863 | 0.675 | 0.223 | 0.265 |
+| 2Wiki | Reranker | 0.418 | 0.678 | 0.729 | 0.778 | 0.968 | 0.783 | 0.283 | 0.325 |
+
+Configs: `configs/exp_013`-`exp_016` (HotpotQA), `configs/exp_017`-`exp_020`
+(2Wiki). Raw logs and summaries: `results/exp_01[3-9]*` and `results/exp_020*`.
+
+Dataset revisions pinned:
+- HotpotQA (`hotpotqa/hotpot_qa`): `1908d6afbbead072334abe2965f91bd2709910ab`
+- 2WikiMultiHopQA (`xanhho/2WikiMultihopQA`, parquet-converted): `e37a4050605363be62f1d02e6eb888fe5f56530e`
 
 ## Bugs found and fixed along the way
 
@@ -176,6 +204,49 @@ engineering work, not something to hide:
    `requirements-kaggle-lock.txt`, pinned exact versions verified working
    on a Kaggle T4 GPU -- a curated subset of the environment's actual
    dependencies, not a raw `pip freeze` of Kaggle's 700+-package base image.
+6. **2WikiMultiHopQA's HuggingFace repo is a legacy loading-script dataset**
+   (same root cause as bug #3, different dataset). `xanhho/2WikiMultihopQA`
+   fails outright under `datasets` v5.x. Fixed by pointing the loader at
+   HuggingFace's auto-generated `refs/convert/parquet` branch instead, then
+   pinning the *actual commit SHA behind that branch*
+   (`e37a4050605363be62f1d02e6eb888fe5f56530e`) rather than the branch name
+   itself, since a branch can move and a pinned revision shouldn't. That
+   parquet conversion turned out to have a second issue: its `context` and
+   `supporting_facts` fields are JSON-encoded strings, not native nested
+   lists (`row["context"]` looked like `[["title", [...]]]` when printed,
+   but was actually one long string -- iterating it as pairs silently
+   unpacked individual characters instead of raising immediately, and only
+   surfaced as a `ZeroDivisionError` in BM25 downstream, with an empty
+   corpus as the real cause). Fixed by `json.loads`-parsing both fields in
+   `load_2wikimultihopqa` before use.
+7. **ATR/PRR issues flagged in supervisor review 3.5.**
+   `compute_transfer_statistics` checked that `source_results` and
+   `target_results` had matching *lengths* but never that they contained
+   the *same queries in the same order* -- misaligned or reordered lists
+   would silently compute transfer rates over mismatched pairs. Fixed with
+   an explicit per-index `query_id` check that raises immediately on
+   mismatch. Separately, `poison_retrieval_rate_at_1/3/5/10` were declared
+   as fields on `TransferExperimentResult` but never actually computed
+   (always `None`), and even once computed, `TransferMatrix.to_csv()` /
+   `.to_markdown()` looked up metrics by attribute name directly, so a
+   caller asking for `"poison_retrieval_rate@5"` (the `@k` notation used
+   everywhere else in this codebase) never matched the real attribute
+   `poison_retrieval_rate_at_5` and silently printed `N/A`. Fixed by
+   computing PRR@k in `compute_transfer_statistics` and adding a
+   `_resolve_metric_attr` translation step in the export methods. 12 new
+   tests added in `tests/test_transfer_framework.py` covering all three
+   sub-issues.
+8. **Stale test count and a mislabeled corpus field**, both caught during
+   the same review pass. `WEEK_4_AUDIT_REPORT.md` still said "128 tests"
+   after the 11 new tests from bug #7 landed (139 real); bulk-corrected
+   across the file. Separately, every experiment summary's
+   `corpus_type` field was hardcoded to `"pooled_hotpotqa"` in `run.py`
+   regardless of which dataset actually ran -- harmless for HotpotQA-only
+   runs, but every 2Wiki baseline run was silently mislabeling its own
+   corpus type. Fixed by deriving the label from `dataset_loader` instead
+   of hardcoding it, and patched into the 4 already-frozen 2Wiki summary
+   JSON files directly (re-running them would have wasted GPU quota for a
+   metadata-only fix).
 
 ## Two working environments
 
@@ -247,14 +318,16 @@ benchmark result the plan calls for.
 | `MockGenerator` | **Placeholder/test-only** -- never use for real results |
 | `MLXGenerator` / `TransformersGenerator` | Real, both verified working |
 | EM/F1 metrics | Real, final |
-| HotpotQA pilot (N=50), all 4 retrievers | Real EM/F1 pilot, re-verified after routing-regression fix; committed logs use the pre-expanded retrieval schema and remain pending corpus-scope sign-off |
+| HotpotQA pilot (N=50), all 4 retrievers | Real EM/F1 pilot; superseded by Clean Baseline v1 (N=300) below, kept for historical comparison only |
+| **HotpotQA Clean Baseline v1 (N=300), all 4 retrievers** | **Real, frozen, tag `clean-baseline-v1`. Pinned dataset revision, real generator, full retrieval + generation metrics** |
 | Recall@1/@3/@5/@10 and MRR@1/@3/@5/@10 | Real in the current run path, integration-tested with gold labels; current five-question HotpotQA artifacts cover BM25, dense, hybrid, and reranker |
 | HotpotQA retrieval-evaluation smoke (N=5, BM25, mock generator) | Run on 2026-09-01 with current code; logs all required retrieval metrics and aggregate summary, but is not a generation-quality result |
 | Config-routing integration test | Real, catches the exact regression class found in bug #4 |
 | `gold_doc_ids` / `gold_supporting_facts`, canonical doc IDs | Real, verified on real HotpotQA data (dedup confirmed on true repeats, no false collapses) |
 | Per-record environment metadata (`git_commit_sha`, library versions, device) | Real, tested (8 tests), wired into every experiment log |
 | Pinned Kaggle dependencies (`requirements-kaggle-lock.txt`) | Real, captured from a verified-working Kaggle T4 run |
-| 2WikiMultiHopQA, NQ-open real runs | Loader built, not yet run on real data |
+| **2WikiMultiHopQA Clean Baseline v1 (N=300), all 4 retrievers** | **Real, frozen, tag `clean-baseline-v1`. Required switching to the parquet-converted mirror + a loader fix for JSON-string-encoded fields (see bugs below)** |
+| NQ-open real runs | Loader built, not yet run on real data -- not required before Week 5 per supervisor review |
 | Corpus metadata logging | Real; corpus statistics (num_queries, num_unique_documents, corpus_type) recorded in every experiment summary |
 | Attack metrics (PRR@k, ASR, ATR) | Infrastructure built and tested; ready for poison-generation implementations |
 | Transfer matrix framework | Real, ready for source→target pipeline evaluation |
@@ -432,17 +505,14 @@ Run the full test suite:
 pytest tests/ -v
 ```
 
-**127 tests**, all passing:
-- 17 retrieval metrics tests (Recall, MRR, nDCG edge cases)
-- 9 attack metrics tests (PRR, ASR, ATR)
-- 22 transfer framework tests (matrix, statistics, export formats)
-- 23 corpus construction tests (determinism, dedup, canonical IDs, gold mapping)
-- 5 config routing tests (retriever instantiation per config)
-- 7 integration tests (end-to-end pipeline validation)
-- 3 environment metadata tests
-- 3 gold retrieval label tests (extraction, dedup, unresolved handling)
-- 5 dataset revision pinning tests
-- 12 metric wiring tests (EM/F1/retrieval/poison metrics composition)
+**139 tests**, all passing, across 12 files covering: retrieval metrics
+(Recall/MRR/nDCG), attack metrics (PRR/ASR/ATR), transfer framework
+(including query-ID alignment fail-fast and PRR@k export, added per
+supervisor review 3.5), corpus construction (determinism, dedup, canonical
+IDs, gold mapping), config routing, end-to-end integration, environment
+metadata, gold retrieval labels, and dataset revision pinning. Run
+`pytest tests/ -v` for the exact current per-file breakdown rather than
+relying on a hand-maintained count here, which has drifted before.
 
 ### Running specific test suites
 ```bash
