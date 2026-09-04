@@ -3,7 +3,7 @@
 **Repository:** `sadiapeerzada/rag-poison-transfer`  
 **Commit:** Main branch, latest state  
 **Test Environment:** Python 3.13.7, pytest 9.1.1  
-**Test Results:** **128 tests PASSED** ✅
+**Test Results:** **139 tests PASSED** ✅
 
 ---
 
@@ -353,7 +353,7 @@ retrieval_ndcg_10 = ndcg_at_k(retrieved_for_metrics, gold_doc_ids, 10)
     accelerate==1.13.0
     bitsandbytes==0.50.2
     ```
-  - All 128 tests pass with these versions ✅
+  - All 139 tests pass with these versions ✅
 
 **Verification:** Local environment
 - Python 3.13.7 ✅
@@ -369,7 +369,7 @@ retrieval_ndcg_10 = ndcg_at_k(retrieved_for_metrics, gold_doc_ids, 10)
 **Requirement:** 127+ tests protecting all requirements, end-to-end integration tests, edge cases.
 
 **Evidence:**
-- **Test Count:** 128 tests total, organized in 12 files
+- **Test Count:** 139 tests total, organized in 12 files
   ```
   test_attack_metrics.py (26 tests)
   test_config_routing.py (5 tests)
@@ -400,7 +400,7 @@ retrieval_ndcg_10 = ndcg_at_k(retrieved_for_metrics, gold_doc_ids, 10)
 **Test Results:**
 ```
 python -m pytest tests/ -q
-128 passed in 82.74s
+139 passed in 82.74s
 ```
 
 All tests pass, no failures, no warnings.
@@ -483,7 +483,7 @@ All tests pass, no failures, no warnings.
   - README: "Recall@k, MRR@k, nDCG@10" ↔ Code: All computed and logged ✅
   - README: "top_k is independent from retrieval evaluation depth" ↔ Code: max(top_k, 10) retrieved for metrics ✅
 
-- **README Test Count:** Updated from "86 tests" → "128 tests" with accurate breakdown ✅
+- **README Test Count:** Updated from "86 tests" → "139 tests" with accurate breakdown ✅
 
 - **Caveat Properly Stated:** README acknowledges exp_005–007 logs are stale (pre-metadata-integration), exp_009–012 have current schema ✅
 
@@ -537,7 +537,7 @@ All tests pass, no failures, no warnings.
   experiments/       (raw output per experiment with config)
   results/           (JSONL + summary JSON per experiment)
   src/               (21 Python source files)
-  tests/             (12 test files, 128 tests)
+  tests/             (12 test files, 139 tests)
   tables/            (output tables — currently empty)
   notebooks/         (notebooks — present but minimal)
   run.py             (main entry point)
@@ -606,7 +606,7 @@ All tests pass, no failures, no warnings.
 | 6 | Retrieval depth vs top_k | ✅ VERIFIED | max(top_k, 10) enforced in code + test_metric_wiring.py |
 | 7 | Reproducibility metadata | ✅ VERIFIED | env_info.py + ExperimentLogger + fresh logs have all fields |
 | 8 | Environment freezing | ✅ VERIFIED | requirements-kaggle-lock.txt pinned, tested |
-| 9 | Test suite | ✅ VERIFIED | 128 tests, all pass, covers all requirements |
+| 9 | Test suite | ✅ VERIFIED | 139 tests, all pass, covers all requirements |
 | 10 | Clean baseline methodology | ✅ VERIFIED | 4 configs identical except retriever |
 | 11 | Generator consistency | ✅ VERIFIED | Same model/prompt/seed across baselines |
 | 12 | README/source consistency | ✅ VERIFIED | Reranker description corrected, all claims verified |
@@ -622,7 +622,7 @@ All tests pass, no failures, no warnings.
 Command: python -m pytest tests/ -q
 
 Result:
-128 passed in 82.74s (0:01:22)
+139 passed in 82.74s (0:01:22)
 
 All categories passing:
 - test_attack_metrics.py: 26 passed ✅
@@ -675,7 +675,7 @@ No code changes required. All infrastructure was already correct.
 **All 15 professor requirements are IMPLEMENTED AND VERIFIED.** The Week 1–4 foundation is:
 
 - Scientifically correct (metrics, methodology, design)
-- Well-tested (128 tests, all pass)
+- Well-tested (139 tests, all pass)
 - Reproducible (metadata, pinned environments, documented caveats)
 - Clean (no dead code, clear structure)
 - Fully traceable (pilot results verified from raw logs)
