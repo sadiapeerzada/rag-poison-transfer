@@ -109,3 +109,31 @@ class TestSemanticFluentAttack:
         target_answer = attack.pick_cross_query_target_answer(query, clean["queries"], rng)
         attack.generate(query, clean["queries"], rng, poison_index=0, target_answer=target_answer)
         assert generator.last_max_tokens == 99
+
+
+class TestMultiDocumentVariation:
+    """Multi-document poison must produce genuinely different text per
+    document under greedy decoding, not literal duplicates -- otherwise
+    'coordinated poison docs' collapses to one document repeated N times."""
+
+    def test_different_poison_index_gives_different_prompt(self):
+        clean = make_clean_data(6)
+        generator = StubGenerator()
+        attack = SemanticFluentFalseEvidenceAttack(generator)
+        rng = random.Random(1)
+        query = clean["queries"][0]
+        target_answer = attack.pick_cross_query_target_answer(query, clean["queries"], rng)
+
+        attack.generate(query, clean["queries"], rng, poison_index=0, target_answer=target_answer)
+        attack.generate(query, clean["queries"], rng, poison_index=1, target_answer=target_answer)
+        attack.generate(query, clean["queries"], rng, poison_index=2, target_answer=target_answer)
+
+        prompts = generator.calls
+        assert len(set(prompts)) == 3, "expected 3 distinct prompts for 3 different poison_index values"
+
+    def test_framing_cycles_for_index_beyond_framing_count(self):
+        attack = SemanticFluentFalseEvidenceAttack(StubGenerator())
+        # index 5 should cycle back to the same framing as index 0
+        framing_0 = attack._FRAMINGS[0 % len(attack._FRAMINGS)]
+        framing_5 = attack._FRAMINGS[5 % len(attack._FRAMINGS)]
+        assert framing_0 == framing_5
