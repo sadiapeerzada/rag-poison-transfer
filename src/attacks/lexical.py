@@ -37,8 +37,7 @@ class LexicalInfluentialTokenAttack(PoisonAttack):
     def __init__(self, repeat_factor: int = 4):
         self.repeat_factor = repeat_factor
 
-    def generate(self, query: dict, all_queries: list[dict], rng, poison_index: int) -> PoisonDocument:
-        target_answer = self.pick_cross_query_target_answer(query, all_queries, rng)
+    def generate(self, query: dict, all_queries: list[dict], rng, poison_index: int, target_answer: str) -> PoisonDocument:
         keywords = _extract_keywords(query["question"])
         stuffed = " ".join(keywords * self.repeat_factor) if keywords else query["question"]
         text = (

@@ -60,9 +60,15 @@ def inject_poisons(
                                     # so they remain byte-identical to the
                                     # input.
         if query["query_id"] in attacked_ids:
+            # Target answer chosen ONCE per query, not per document, so a
+            # multi-document attack (n_poison > 1) produces documents that
+            # all coherently support the SAME false claim -- "coordinated
+            # poison docs" per the research plan -- rather than each
+            # document independently arguing for a different random target.
+            target_answer = attack.pick_cross_query_target_answer(query, queries, rng)
             poison_ids_for_query = []
             for i in range(n_poison):
-                doc = attack.generate(query, queries, rng, poison_index=i)
+                doc = attack.generate(query, queries, rng, poison_index=i, target_answer=target_answer)
                 if doc.doc_id in existing_ids:
                     raise ValueError(
                         f"Poison doc ID collision: {doc.doc_id!r} already "
@@ -76,9 +82,14 @@ def inject_poisons(
                 poison_ids_for_query.append(doc.doc_id)
             query_copy["poison_doc_ids"] = poison_ids_for_query
             query_copy["attack_family"] = attack.name
+            # Stored explicitly so downstream ASR computation (does the
+            # model's answer match the intended false target?) doesn't
+            # need to re-derive it from poison document text.
+            query_copy["poison_target_answer"] = target_answer
         else:
             query_copy["poison_doc_ids"] = []
             query_copy["attack_family"] = None
+            query_copy["poison_target_answer"] = None
         new_queries.append(query_copy)
 
     return {"corpus": corpus, "queries": new_queries}

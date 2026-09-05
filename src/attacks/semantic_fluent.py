@@ -48,8 +48,7 @@ class SemanticFluentFalseEvidenceAttack(PoisonAttack):
             "and do not use the words 'claim' or 'evidence'."
         )
 
-    def generate(self, query: dict, all_queries: list[dict], rng, poison_index: int) -> PoisonDocument:
-        target_answer = self.pick_cross_query_target_answer(query, all_queries, rng)
+    def generate(self, query: dict, all_queries: list[dict], rng, poison_index: int, target_answer: str) -> PoisonDocument:
         prompt = self._build_prompt(query["question"], target_answer)
         result = self.generator.generate(prompt, max_tokens=self.max_tokens)
         text = result.text.strip()

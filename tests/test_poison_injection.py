@@ -181,15 +181,18 @@ class TestLexicalAttack:
         attack = LexicalInfluentialTokenAttack()
         rng = random.Random(1)
         query = clean["queries"][0]
-        doc = attack.generate(query, clean["queries"], rng, poison_index=0)
+        target_answer = attack.pick_cross_query_target_answer(query, clean["queries"], rng)
+        doc = attack.generate(query, clean["queries"], rng, poison_index=0, target_answer=target_answer)
         assert doc.target_answer != query["gold_answer"]
+        assert doc.target_answer == target_answer  # echoed back unchanged
 
     def test_generated_doc_has_correct_query_and_family(self):
         clean = make_clean_data(6)
         attack = LexicalInfluentialTokenAttack()
         rng = random.Random(1)
         query = clean["queries"][0]
-        doc = attack.generate(query, clean["queries"], rng, poison_index=2)
+        target_answer = attack.pick_cross_query_target_answer(query, clean["queries"], rng)
+        doc = attack.generate(query, clean["queries"], rng, poison_index=2, target_answer=target_answer)
         assert doc.query_id == query["query_id"]
         assert doc.attack_family == "lexical_influential_token"
         assert doc.poison_index == 2
@@ -200,3 +203,77 @@ class TestLexicalAttack:
         single_query = {"query_id": "only", "gold_answer": "answer_0"}
         with pytest.raises(ValueError, match="No valid cross-query target"):
             attack.pick_cross_query_target_answer(single_query, [single_query], rng)
+
+
+class TestAnswerTypeMatching:
+    """Cross-query target answers should prefer matching answer type
+    (numeric vs. text), so a year-question doesn't get handed a
+    person's name as its false target."""
+
+    def test_numeric_gold_answer_prefers_numeric_target(self):
+        query = {"query_id": "q0", "gold_answer": "1755"}
+        all_queries = [
+            query,
+            {"query_id": "q1", "gold_answer": "Kevin Spacey"},
+            {"query_id": "q2", "gold_answer": "1965"},
+            {"query_id": "q3", "gold_answer": "Marie Curie"},
+        ]
+        attack = LexicalInfluentialTokenAttack()
+        rng = random.Random(0)
+        # Run many times -- should always pick the one numeric candidate.
+        results = {attack.pick_cross_query_target_answer(query, all_queries, rng) for _ in range(20)}
+        assert results == {"1965"}
+
+    def test_text_gold_answer_prefers_text_target(self):
+        query = {"query_id": "q0", "gold_answer": "Marie Curie"}
+        all_queries = [
+            query,
+            {"query_id": "q1", "gold_answer": "1965"},
+            {"query_id": "q2", "gold_answer": "Kevin Spacey"},
+        ]
+        attack = LexicalInfluentialTokenAttack()
+        rng = random.Random(0)
+        results = {attack.pick_cross_query_target_answer(query, all_queries, rng) for _ in range(20)}
+        assert results == {"Kevin Spacey"}
+
+    def test_falls_back_to_any_type_if_no_same_type_candidate(self):
+        query = {"query_id": "q0", "gold_answer": "1755"}
+        all_queries = [
+            query,
+            {"query_id": "q1", "gold_answer": "Kevin Spacey"},
+        ]
+        attack = LexicalInfluentialTokenAttack()
+        rng = random.Random(0)
+        # Only a text candidate exists -- must fall back to it, not raise.
+        result = attack.pick_cross_query_target_answer(query, all_queries, rng)
+        assert result == "Kevin Spacey"
+
+    def test_answer_type_classifies_numeric_correctly(self):
+        assert LexicalInfluentialTokenAttack._answer_type("1755") == "numeric"
+        assert LexicalInfluentialTokenAttack._answer_type("1,024") == "numeric"
+        assert LexicalInfluentialTokenAttack._answer_type("Marie Curie") == "text"
+        assert LexicalInfluentialTokenAttack._answer_type("Yes") == "text"
+
+
+class TestCoordinatedMultiDocumentTargets:
+    """Research plan calls multi-document poison 'coordinated poison
+    docs' -- all documents for one attacked query must support the SAME
+    false target answer, chosen once, not independently per document."""
+
+    def test_all_poison_docs_for_a_query_share_the_same_target_answer(self):
+        clean = make_clean_data(10)
+        poisoned = inject_poisons(clean, LexicalInfluentialTokenAttack(), n_poison=5, poison_rate=1.0, seed=42)
+        for query in poisoned["queries"]:
+            target = query["poison_target_answer"]
+            for doc_id in query["poison_doc_ids"]:
+                doc_text = next(d["text"] for d in poisoned["corpus"] if d["doc_id"] == doc_id)
+                assert target in doc_text, f"target {target!r} not found in poison doc for {query['query_id']}"
+
+    def test_poison_target_answer_field_present_and_none_when_unattacked(self):
+        clean = make_clean_data(6)
+        poisoned = inject_poisons(clean, LexicalInfluentialTokenAttack(), n_poison=1, poison_rate=0.5, seed=42)
+        for query in poisoned["queries"]:
+            if query["poison_doc_ids"]:
+                assert query["poison_target_answer"] is not None
+            else:
+                assert query["poison_target_answer"] is None

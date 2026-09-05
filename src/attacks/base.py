@@ -53,31 +53,63 @@ class PoisonAttack(ABC):
     name: str = "base"
 
     @abstractmethod
-    def generate(self, query: dict, all_queries: list[dict], rng, poison_index: int) -> PoisonDocument:
+    def generate(self, query: dict, all_queries: list[dict], rng, poison_index: int, target_answer: str) -> PoisonDocument:
         """Produce one poison document for `query`.
 
         Args:
             query: the query dict being attacked (has query_id, question,
                 gold_answer, gold_doc_ids -- must NOT be mutated).
-            all_queries: the full query list, in case the attack needs to
-                pick a target answer from elsewhere in the dataset (e.g.
-                another query's gold answer as a plausible wrong target).
+            all_queries: the full query list, in case the attack needs
+                dataset context beyond the target answer itself.
             rng: a seeded random.Random instance for determinism.
             poison_index: 0-indexed position, for attacks producing
                 multiple distinct documents per query (intensity > 1).
+            target_answer: the false answer this poison should support.
+                Chosen ONCE per query by the caller (inject_poisons),
+                not per-document -- so a multi-document attack (intensity
+                > 1) produces several documents that all coherently
+                support the SAME false claim ("coordinated poison docs",
+                per the research plan), rather than each document
+                independently arguing for a different random target.
         """
         raise NotImplementedError
+
+    @staticmethod
+    def _answer_type(answer: str) -> str:
+        """Rough answer-type classifier: numeric/year vs. free text.
+
+        Cross-query target selection must respect this, or a "what
+        year" question can get handed a person's name as its intended
+        false answer -- the generator then has no coherent way to
+        assert it, and produces garbled content that undermines ASR
+        scoring (which checks whether the model's answer matches this
+        target). This is deliberately coarse (numeric vs. not), not a
+        full answer-type taxonomy -- good enough to avoid the worst
+        mismatches without a separate classifier model.
+        """
+        stripped = answer.strip()
+        return "numeric" if stripped.replace(",", "").isdigit() else "text"
 
     def pick_cross_query_target_answer(self, query: dict, all_queries: list[dict], rng) -> str:
         """Shared helper: pick another query's gold answer as this
         query's attack target, guaranteed different from its own true
         answer. A standard construction for a "plausible wrong answer"
         without needing a separate answer-generation model.
+
+        Prefers a candidate of the SAME rough answer type (numeric vs.
+        text) as this query's own gold answer, so e.g. a "what year"
+        question gets another year as its false target, not an
+        unrelated person's name. Falls back to any valid candidate only
+        if no same-type candidate exists.
         """
-        candidates = [
+        own_type = self._answer_type(query.get("gold_answer", ""))
+        all_candidates = [
             q["gold_answer"] for q in all_queries
             if q.get("gold_answer") and q["gold_answer"] != query.get("gold_answer") and q["query_id"] != query["query_id"]
         ]
-        if not candidates:
+        if not all_candidates:
             raise ValueError(f"No valid cross-query target answer available for query {query['query_id']!r}")
-        return rng.choice(candidates)
+
+        same_type_candidates = [a for a in all_candidates if self._answer_type(a) == own_type]
+        pool = same_type_candidates if same_type_candidates else all_candidates
+        return rng.choice(pool)

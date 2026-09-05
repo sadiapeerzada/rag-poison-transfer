@@ -58,9 +58,11 @@ class TestSemanticFluentAttack:
         attack = SemanticFluentFalseEvidenceAttack(StubGenerator())
         rng = random.Random(1)
         query = clean["queries"][0]
-        doc = attack.generate(query, clean["queries"], rng, poison_index=0)
+        target_answer = attack.pick_cross_query_target_answer(query, clean["queries"], rng)
+        doc = attack.generate(query, clean["queries"], rng, poison_index=0, target_answer=target_answer)
         assert doc.query_id == query["query_id"]
         assert doc.attack_family == "semantic_fluent_false_evidence"
+        assert doc.target_answer == target_answer
         assert doc.target_answer != query["gold_answer"]
         assert doc.text  # non-empty
 
@@ -70,7 +72,8 @@ class TestSemanticFluentAttack:
         attack = SemanticFluentFalseEvidenceAttack(generator)
         rng = random.Random(1)
         query = clean["queries"][0]
-        doc = attack.generate(query, clean["queries"], rng, poison_index=0)
+        target_answer = attack.pick_cross_query_target_answer(query, clean["queries"], rng)
+        doc = attack.generate(query, clean["queries"], rng, poison_index=0, target_answer=target_answer)
         sent_prompt = generator.calls[0]
         assert query["question"] in sent_prompt
         assert doc.target_answer in sent_prompt
@@ -80,8 +83,9 @@ class TestSemanticFluentAttack:
         attack = SemanticFluentFalseEvidenceAttack(EmptyGenerator())
         rng = random.Random(1)
         query = clean["queries"][0]
+        target_answer = attack.pick_cross_query_target_answer(query, clean["queries"], rng)
         with pytest.raises(ValueError, match="empty text"):
-            attack.generate(query, clean["queries"], rng, poison_index=0)
+            attack.generate(query, clean["queries"], rng, poison_index=0, target_answer=target_answer)
 
     def test_integrates_with_inject_poisons(self):
         clean = make_clean_data(6)
@@ -101,5 +105,7 @@ class TestSemanticFluentAttack:
         generator = RecordingGenerator()
         attack = SemanticFluentFalseEvidenceAttack(generator, max_tokens=99)
         rng = random.Random(1)
-        attack.generate(clean["queries"][0], clean["queries"], rng, poison_index=0)
+        query = clean["queries"][0]
+        target_answer = attack.pick_cross_query_target_answer(query, clean["queries"], rng)
+        attack.generate(query, clean["queries"], rng, poison_index=0, target_answer=target_answer)
         assert generator.last_max_tokens == 99
