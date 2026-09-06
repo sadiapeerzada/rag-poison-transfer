@@ -146,7 +146,59 @@ Configs: `configs/exp_013`-`exp_016` (HotpotQA), `configs/exp_017`-`exp_020`
 
 Dataset revisions pinned:
 - HotpotQA (`hotpotqa/hotpot_qa`): `1908d6afbbead072334abe2965f91bd2709910ab`
-- 2WikiMultiHopQA (`xanhho/2WikiMultihopQA`, parquet-converted): `612bc5039a457880d9e7d84c3b0a4cf154b70e4f`
+- 2WikiMultiHopQA (`Salesforce/ContextualBench`, config `2WikiMultihopQA`): `9823f70484dea525100394220b0ea5184d0eeb7b`
+  (superseded during Week 5-6: the previously-pinned `xanhho/2WikiMultihopQA`
+  revision `612bc5039a457880d9e7d84c3b0a4cf154b70e4f`, despite bug #6 below
+  documenting a fix for it, still failed under a real `datasets` load with
+  `RuntimeError: Dataset scripts are no longer supported` -- see bug #9.)
+
+## Week 5-6: Knowledge-poisoning attack benchmark
+
+Built and validated per the Week 5-6 deliverable. Two attack families,
+configurable intensity and global poison rate, a 7-point structural
+validator that runs before any result is reported, and a cross-pipeline
+evaluation harness measuring Poison Retrieval Rate@k against all four
+retrievers from the same poisoned corpus.
+
+**Attack families** (`src/attacks/`):
+- **Lexical / influential-token attack** (`lexical.py`) -- repeats
+  question keywords plus a direct false-answer statement. Free (no
+  generation calls), expected to favor lexical retrievers.
+- **Semantic-fluent false-evidence attack** (`semantic_fluent.py`) --
+  uses the real generator to write a fluent, encyclopedia-style
+  paragraph asserting a false answer as fact. Costs one real generation
+  call per poison document; expected to transfer more evenly across
+  retrievers than the lexical attack.
+
+Both support intensity (1, 3, or 5 poison documents per attacked query)
+and a configurable global poison rate, coordinated multi-document
+attacks (all poison documents for one query argue for the same false
+target answer, chosen once per query, not once per document), and
+per-document phrasing variation so multi-document attacks aren't
+byte-identical copies of each other.
+
+**Validation gate** (`injection.py`): every poisoned dataset is checked
+against 7 criteria -- same query set, byte-identical gold answers and
+gold doc IDs, clean corpus preserved unmodified, no poison/clean ID
+collisions, no duplicate poison IDs, correct poison count per query,
+correct global rate -- before any PRR number is reported.
+`run_attack_intensity_sweep()` (`sweep.py`) enforces this automatically
+and raises rather than silently reporting unvalidated numbers.
+
+**Results** (`results/week5_attack_intensity_sweep_full.csv`, 48 rows:
+2 attacks x {1,3,5} intensities x 4 retrievers on HotpotQA, plus a
+low-poison-rate condition, plus 2Wiki at intensities 1 and 3): the
+lexical-weaker-against-Dense / semantic-fluent-more-even-across-
+retrievers pattern (research plan Section 4's hypothesis) holds on
+HotpotQA and largely replicates on 2Wiki, though 2Wiki's much smaller
+pooled corpus (218 documents for N=25, vs. HotpotQA's larger pool)
+appears to compress cross-retriever differences. One question remains
+explicitly open, not resolved: an early N=30 exploratory run showed a
+different transfer pattern than the systematic N=25 sweep -- flagged
+for a larger-N confirmatory run in Weeks 9-10, not swept under the rug.
+
+Full tables, per-condition caveats, and the complete readiness
+checklist: `docs/WEEK5_6_BENCHMARK_VALIDATION_REPORT.md`.
 
 ## Bugs found and fixed along the way
 
@@ -248,6 +300,27 @@ engineering work, not something to hide:
    JSON files directly (re-running them would have wasted GPU quota for a
    metadata-only fix).
 
+9. **Bug #6's fix didn't actually hold up under a real load (found in
+   Week 5-6).** Bug #6 documented switching `load_2wikimultihopqa` to
+   HuggingFace's `refs/convert/parquet` branch of `xanhho/2WikiMultihopQA`
+   and pinning its commit SHA. When this was actually exercised for real
+   during the Week 5-6 attack-intensity sweep (the first real end-to-end
+   2Wiki run since that fix), it failed outright:
+   `RuntimeError: Dataset scripts are no longer supported, but found
+   2WikiMultihopQA.py` -- the pinned commit resolved to a script-bearing
+   state after all, not the promised script-free parquet branch. This is
+   why the Week 5-6 report had marked 2Wiki as "not yet run for real":
+   the revision had been pinned but never actually validated against a
+   live load. Fixed by switching to an independent parquet-native
+   mirror, `Salesforce/ContextualBench` (config `2WikiMultihopQA`,
+   commit `9823f70484dea525100394220b0ea5184d0eeb7b`), which also
+   required (a) mapping the `"validation"` split name used throughout
+   this repo's configs to that mirror's `"dev"` split, and (b)
+   rewriting the row parser, since this mirror's `context` /
+   `supporting_facts` fields are native nested dicts, not the
+   JSON-encoded strings bug #6 worked around. All four 2Wiki configs'
+   `dataset_revision` field updated to the new hash.
+
 ## Two working environments
 
 - **Local (MacBook Air M4):** dev/debug loop, `generator_backend: mlx`
@@ -329,9 +402,10 @@ benchmark result the plan calls for.
 | **2WikiMultiHopQA Clean Baseline v1 (N=300), all 4 retrievers** | **Real, frozen, tag `clean-baseline-v1`. Required switching to the parquet-converted mirror + a loader fix for JSON-string-encoded fields (see bugs below)** |
 | NQ-open real runs | Loader built, not yet run on real data -- not required before Week 5 per supervisor review |
 | Corpus metadata logging | Real; corpus statistics (num_queries, num_unique_documents, corpus_type) recorded in every experiment summary |
-| Attack metrics (PRR@k, ASR, ATR) | Infrastructure built and tested; ready for poison-generation implementations |
+| Attack metrics (PRR@k, ASR, ATR) | PRR@k real and validated (see Week 5-6 section above); ASR/ATR infrastructure built and tested, awaiting RCD (Weeks 7-8) to compare against |
 | Transfer matrix framework | Real, ready for source→target pipeline evaluation |
-| Attacks, RCD, full transfer experiments | Not yet built -- Weeks 5-10 |
+| Knowledge-poisoning attack benchmark (lexical + semantic-fluent, intensity 1/3/5, low poison-rate, HotpotQA + 2Wiki) | **Real, validated, Week 5-6 deliverable complete** -- see Week 5-6 section above and `docs/WEEK5_6_BENCHMARK_VALIDATION_REPORT.md` |
+| RCD (Retrieval-Consistency Defense), full transfer experiments | Not yet built -- Weeks 7-10 |
 
 ## Corpus construction methodology (HotpotQA)
 
@@ -516,7 +590,7 @@ relying on a hand-maintained count here, which has drifted before.
 
 Final verification of the frozen Clean Baseline v1 commit (`clean-baseline-v1`): 139 tests passed, 0 failed.
 
-`main` has since grown to 153 tests as of the ATR/PRR and 2Wiki-labeling fixes (review 3.5); the frozen tag's count remains 139 by design.
+`main` has since grown further with the Week 5-6 attack-injection, evaluation, and sweep test suites (`test_poison_injection.py`, `test_semantic_fluent_attack.py`, `test_cross_pipeline_evaluation.py`, `test_sweep.py`) on top of the 153 counted after the ATR/PRR and 2Wiki-labeling fixes (review 3.5); the frozen tag's count remains 139 by design. Run `pytest tests/ -v` for the current total rather than trusting a hand-maintained number here.
 
 ### Running specific test suites
 ```bash

@@ -134,19 +134,30 @@ def load_2wikimultihopqa(split: str = "validation", n_samples: int | None = None
                           seed: int = 42, revision: str | None = None) -> dict:
     """2WikiMultiHopQA.
 
+    NOTE (fixed after Week 5-6 attack-sweep attempt): the original mirror
+    ("xanhho/2WikiMultihopQA") ships a Python loading script, which
+    current `datasets` (v4+) refuses to execute -- same class of problem
+    documented in load_hotpotqa_distractor()'s docstring for the original
+    bare "hotpot_qa" repo. Switched to "Salesforce/ContextualBench"
+    (config "2WikiMultihopQA"), a parquet-native mirror with no script.
+    Its split names are train/dev/test (not train/validation/test), so
+    "validation" is mapped to "dev" here to keep existing configs
+    (dataset_split: validation) working unchanged. Unlike the old
+    xanhho mirror, context/supporting_facts here are native nested
+    dicts, not JSON-encoded strings -- no json.loads() needed.
+
     Same corpus-scope correction as `load_hotpotqa_distractor` (review
     #3/#4/#5): merges per-question candidate pools into one
-    deduplicated, canonically-ID'd pooled corpus (see
-    `load_hotpotqa_distractor`'s docstring for the full rationale)
-    rather than keeping each question's pool separate, and attaches
-    `gold_doc_ids` / `gold_supporting_facts` resolved against those
-    canonical IDs.
+    deduplicated, canonically-ID'd pooled corpus rather than keeping
+    each question's pool separate, and attaches `gold_doc_ids` /
+    `gold_supporting_facts` resolved against those canonical IDs.
     """
     from datasets import load_dataset
-    kwargs = {"split": split}
+    hf_split = "dev" if split == "validation" else split
+    kwargs = {"split": hf_split}
     if revision is not None:
         kwargs["revision"] = revision
-    ds = load_dataset("xanhho/2WikiMultihopQA", **kwargs)
+    ds = load_dataset("Salesforce/ContextualBench", "2WikiMultihopQA", **kwargs)
 
     if n_samples is not None:
         rng = random.Random(seed)
@@ -159,17 +170,12 @@ def load_2wikimultihopqa(split: str = "validation", n_samples: int | None = None
 
     for row in ds:
         query_id = row["_id"]
-
-        # The parquet-converted mirror stores nested fields (context,
-        # supporting_facts) as JSON-encoded strings rather than native
-        # lists -- parse them before use.
-        row_context = json.loads(row["context"]) if isinstance(row["context"], str) else row["context"]
+        context = row["context"]  # {'title': [...], 'content': [[sentences...], ...]}
+        titles = context["title"]
+        contents = context["content"]
 
         title_to_doc_id = {}
-        for entry in row_context:
-            if len(entry) != 2:
-                continue
-            title, sentences = entry
+        for title, sentences in zip(titles, contents):
             text = " ".join(sentences)
             doc_id = _canonical_doc_id("2wikimultihopqa", title, text)
             title_to_doc_id[title] = doc_id
@@ -177,17 +183,14 @@ def load_2wikimultihopqa(split: str = "validation", n_samples: int | None = None
                 seen_doc_ids.add(doc_id)
                 corpus.append({"doc_id": doc_id, "text": text})
 
-        # 2WikiMultiHopQA's supporting_facts is a list of [title, sent_id]
-        # pairs (same shape idea as HotpotQA, different container).
-        supporting_facts = row.get("supporting_facts", [])
-        if isinstance(supporting_facts, str):
-            supporting_facts = json.loads(supporting_facts)
-        clean_facts = [f for f in supporting_facts if len(f) == 2]
+        supporting_facts = row["supporting_facts"]  # {'title': [...], 'sent_id': [...]}
+        sf_titles = supporting_facts["title"]
+        sf_sent_ids = supporting_facts["sent_id"]
         gold_doc_ids = sorted({
-            title_to_doc_id[t] for t, _ in clean_facts if t in title_to_doc_id
+            title_to_doc_id[t] for t in sf_titles if t in title_to_doc_id
         })
         gold_supporting_facts = [
-            {"title": t, "sent_id": s} for t, s in clean_facts
+            {"title": t, "sent_id": s} for t, s in zip(sf_titles, sf_sent_ids)
         ]
 
         queries.append({

@@ -1,0 +1,9 @@
+attack,n_poison,poison_rate,retriever,n_attacked_queries,prr@1,prr@3,prr@5,prr@10
+lexical,1,0.3,bm25,8,1.0,1.0,1.0,1.0
+lexical,1,0.3,dense,8,0.75,1.0,1.0,1.0
+lexical,1,0.3,hybrid,8,1.0,1.0,1.0,1.0
+lexical,1,0.3,reranker,8,1.0,1.0,1.0,1.0
+semantic_fluent,1,0.3,bm25,8,0.75,1.0,1.0,1.0
+semantic_fluent,1,0.3,dense,8,0.75,1.0,1.0,1.0
+semantic_fluent,1,0.3,hybrid,8,0.625,1.0,1.0,1.0
+semantic_fluent,1,0.3,reranker,8,0.875,1.0,1.0,1.0

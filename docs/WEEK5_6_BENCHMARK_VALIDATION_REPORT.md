@@ -117,6 +117,61 @@ less competition to filter poison out), or aggressive term-repetition
 producing incidental semantic signal. **This is flagged as an open
 question for a larger-N confirmatory run, not resolved by this report.**
 
+## 5b. Additional Conditions: Intensity=5, Low Poison-Rate, and 2Wiki (added post-initial-report)
+
+### Intensity=5 (HotpotQA, N=25, same pinned revision as Section 5)
+
+| Attack | Retriever | PRR@1 | PRR@3 | PRR@5 | PRR@10 |
+|---|---|---|---|---|---|
+| Lexical | BM25 | 1.00 | 1.00 | 1.00 | 1.00 |
+| Lexical | Dense | 0.68 | 1.00 | 1.00 | 1.00 |
+| Lexical | Hybrid | 1.00 | 1.00 | 1.00 | 1.00 |
+| Lexical | Reranker | 1.00 | 1.00 | 1.00 | 1.00 |
+| Semantic-fluent | BM25 | 0.72 | 0.92 | 0.96 | 1.00 |
+| Semantic-fluent | Dense | 0.80 | 1.00 | 1.00 | 1.00 |
+| Semantic-fluent | Hybrid | 0.84 | 1.00 | 1.00 | 1.00 |
+| Semantic-fluent | Reranker | 1.00 | 1.00 | 1.00 | 1.00 |
+
+Lexical-vs-Dense continues strengthening with intensity (0.52 at n=1 -> 0.60 at n=3 -> 0.68 at n=5), consistent with the "more coordinated documents increase retrieval chance" expectation. Semantic-fluent-vs-BM25 dipped from 0.80 (n=3) to 0.72 (n=5) -- noted rather than smoothed over; at 25 attacked queries this is a small enough sample that a single-query swing moves the mean by 0.04, so this is not treated as evidence against the hypothesis.
+
+### Low global poison-rate (HotpotQA, N=25, intensity=1, poison_rate=0.3 -> 8 queries actually attacked)
+
+| Attack | Retriever | PRR@1 | PRR@3 | PRR@5 | PRR@10 |
+|---|---|---|---|---|---|
+| Lexical | BM25 | 1.000 | 1.0 | 1.0 | 1.0 |
+| Lexical | Dense | 0.750 | 1.0 | 1.0 | 1.0 |
+| Lexical | Hybrid | 1.000 | 1.0 | 1.0 | 1.0 |
+| Lexical | Reranker | 1.000 | 1.0 | 1.0 | 1.0 |
+| Semantic-fluent | BM25 | 0.750 | 1.0 | 1.0 | 1.0 |
+| Semantic-fluent | Dense | 0.750 | 1.0 | 1.0 | 1.0 |
+| Semantic-fluent | Hybrid | 0.625 | 1.0 | 1.0 | 1.0 |
+| Semantic-fluent | Reranker | 0.875 | 1.0 | 1.0 | 1.0 |
+
+**Caveat, stated plainly:** with only 8 attacked queries, PRR@3-and-above saturating to 1.0 everywhere is a small-N ceiling effect, not a finding that low poison-rate defeats all retrievers equally at higher k. This condition demonstrates the injection/validation mechanism works correctly at a reduced rate; it should not be cited as a statistically comparable result to the N=25-attacked-query conditions elsewhere in this report.
+
+### 2Wiki (N=25, intensity 1 and 3, both attacks, all 4 retrievers)
+
+| Attack | Intensity | Retriever | PRR@1 | PRR@3 | PRR@5 | PRR@10 |
+|---|---|---|---|---|---|---|
+| Lexical | 1 | BM25 | 0.96 | 0.96 | 0.96 | 0.96 |
+| Lexical | 1 | Dense | 0.64 | 1.00 | 1.00 | 1.00 |
+| Lexical | 1 | Hybrid | 0.96 | 0.96 | 1.00 | 1.00 |
+| Lexical | 1 | Reranker | 0.88 | 1.00 | 1.00 | 1.00 |
+| Lexical | 3 | BM25 | 0.96 | 0.96 | 0.96 | 0.96 |
+| Lexical | 3 | Dense | 0.68 | 0.96 | 1.00 | 1.00 |
+| Lexical | 3 | Hybrid | 0.96 | 1.00 | 1.00 | 1.00 |
+| Lexical | 3 | Reranker | 0.88 | 1.00 | 1.00 | 1.00 |
+| Semantic-fluent | 1 | BM25 | 0.76 | 0.80 | 0.88 | 0.88 |
+| Semantic-fluent | 1 | Dense | 0.84 | 0.96 | 1.00 | 1.00 |
+| Semantic-fluent | 1 | Hybrid | 0.84 | 0.88 | 0.96 | 1.00 |
+| Semantic-fluent | 1 | Reranker | 0.84 | 1.00 | 1.00 | 1.00 |
+| Semantic-fluent | 3 | BM25 | 0.84 | 0.88 | 0.96 | 1.00 |
+| Semantic-fluent | 3 | Dense | 0.96 | 1.00 | 1.00 | 1.00 |
+| Semantic-fluent | 3 | Hybrid | 0.84 | 1.00 | 1.00 | 1.00 |
+| Semantic-fluent | 3 | Reranker | 0.96 | 1.00 | 1.00 | 1.00 |
+
+The lexical-weaker-against-Dense pattern replicates on 2Wiki (0.64-0.68 vs. 0.88-0.96 on other retrievers), consistent with HotpotQA. The semantic-fluent pattern is less clean here than on HotpotQA: Reranker is not consistently the strongest target (Dense and Hybrid tie or exceed it in several rows), and BM25's resistance (0.76-0.84) is notably higher than on HotpotQA (0.44-0.80 depending on intensity). The 2Wiki corpus built by this loader is much smaller (218 documents for 25 queries, vs. HotpotQA's larger pooled corpus) -- less competition for a poisoned document to out-rank likely compresses cross-retriever differences. This is a plausible explanation, not a confirmed one, and is flagged here rather than asserted as fact.
+
 ## 6. Bugs Found and Fixed During This Phase
 
 Documented in full in the repo's commit history and README; summarized here:
@@ -141,15 +196,16 @@ Documented in full in the repo's commit history and README; summarized here:
 5. **Sweep script had no progress output**: a real, long-running sweep
    (up to hundreds of real generation calls) was indistinguishable from
    a frozen kernel. Fixed by adding per-condition progress printing.
+6. **2Wiki dataset loader used a dead Hugging Face mirror**: `load_2wikimultihopqa()` pointed at `xanhho/2WikiMultihopQA`, which ships a Python loading script; current `datasets` (v4+) refuses to execute dataset loading scripts at all, so any real attempt to load 2Wiki failed outright with `RuntimeError: Dataset scripts are no longer supported`. This is why 2Wiki was marked "not yet run for real" in the original version of this report -- the revision hash had been pinned but never actually validated against a live load. Fixed by switching to `Salesforce/ContextualBench` (a parquet-native mirror of the same data, commit `9823f70484dea525100394220b0ea5184d0eeb7b`), which also required mapping the "validation" split name to that mirror's "dev" split and updating the row-parsing code since its `context`/`supporting_facts` fields are native nested structures rather than JSON-encoded strings. All four 2Wiki configs' `dataset_revision` field was updated from the old (dead) hash to the new one.
 
 ## 7. Readiness Assessment
 
 - [x] Poisoning does not corrupt ground-truth labels (validated, 7-point check, 100% pass rate across all conditions run)
 - [x] Both required attack content families implemented and tested
 - [x] Intensity levels 1 and 3 validated with real data and real generation
-- [ ] Intensity level 5 -- implemented, unit-tested, not yet run at scale
-- [ ] Low global poison-rate condition -- implemented, unit-tested, not yet run at scale
+- [x] Intensity level 5 -- run at scale (N=25, HotpotQA, both attack families, all 4 retrievers). Both attacks strengthen further at intensity 5 vs. 3 for lexical-vs-Dense (0.52 -> 0.60 -> 0.68 PRR@1); semantic-fluent-vs-BM25 dipped slightly at intensity 5 (0.72) vs. intensity 3 (0.80), within expected noise at N=25 attacked queries -- not treated as a reversal of the hypothesis.
+- [x] Low global poison-rate condition (poison_rate=0.3) -- run at scale, HotpotQA, intensity=1. Only 8 of 25 queries were attacked at this rate, so PRR@3 and above saturating to 1.0 across all retrievers reflects small-N ceiling effects rather than a strong finding -- reported as an existence proof that the mechanism functions correctly at low rate, not as a statistically weighted comparison point.
 - [x] Cross-pipeline transferability mechanism built and producing real, hypothesis-relevant results
-- [x] 2Wiki dataset -- poisoning mechanism is dataset-agnostic (operates on the same `{corpus, queries}` schema used for both HotpotQA and 2Wiki); not yet run for real on 2Wiki in this phase
+- [x] 2Wiki dataset -- run for real (N=25, intensity 1 and 3, both attack families, all 4 retrievers). See Section 5b and Section 6 (new bug #6) for details, including a real dataset-loading bug found and fixed during this run.
 
-**Overall: the benchmark itself is built, tested, and validated as required for Weeks 5-6.** Full-scale sweeps (intensity=5, low poison rate, 2Wiki, larger N to resolve the open question in Section 5) are recommended next steps, either as an extension of this phase or folded into Weeks 9-10's "run full test experiments" per the roadmap. Attack Success Rate (ASR) -- comparing generated answers against true vs. targeted false answers -- is scoped for Weeks 9-10 per the roadmap, once the RCD defense (Weeks 7-8) exists to compare against.
+**Overall: the benchmark itself is built, tested, and validated as required for Weeks 5-6, and all previously-deferred conditions (intensity=5, low poison-rate, 2Wiki) have now been run at scale.** One item remains open by design, not oversight: the N=30-vs-N=25 discrepancy in Section 5's discussion (lexical attack transferring near-perfectly to all retrievers in an early exploratory run, vs. a cleaner hypothesis-consistent gap in the systematic N=25 sweep) is still unresolved and is explicitly deferred to Weeks 9-10, where a larger-N confirmatory run and a repeat_factor ablation are the planned next steps. Attack Success Rate (ASR) -- comparing generated answers against true vs. targeted false answers -- remains scoped for Weeks 9-10 per the roadmap, once the RCD defense (Weeks 7-8) exists to compare against.
