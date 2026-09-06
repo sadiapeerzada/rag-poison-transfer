@@ -75,3 +75,33 @@ class TestRunAttackIntensitySweep:
         monkeypatch.setattr(sweep_module, "validate_poisoned_dataset", fake_validate)
         with pytest.raises(ValueError, match="failed validation"):
             run_attack_intensity_sweep(clean, attacks, retrievers, n_poison_values=(1,), poison_rate=1.0, seed=42)
+
+
+class TestReproducibilityMetadata:
+    """Research plan Section 12: every experiment row must carry enough
+    metadata to reproduce it (seed, top_k, generator, query counts,
+    timestamp), not rely only on prose documentation."""
+
+    def test_rows_include_reproducibility_metadata(self):
+        clean = make_clean_data(12)
+        attacks = {"lexical": LexicalInfluentialTokenAttack()}
+        retrievers = {"bm25": BM25Retriever()}
+        rows = run_attack_intensity_sweep(clean, attacks, retrievers, n_poison_values=(1,), poison_rate=1.0, seed=42, top_k=10)
+        row = rows[0]
+        for field in ("seed", "top_k", "n_total_queries", "timestamp"):
+            assert field in row
+
+    def test_seed_and_top_k_match_call_arguments(self):
+        clean = make_clean_data(12)
+        attacks = {"lexical": LexicalInfluentialTokenAttack()}
+        retrievers = {"bm25": BM25Retriever()}
+        rows = run_attack_intensity_sweep(clean, attacks, retrievers, n_poison_values=(1,), poison_rate=1.0, seed=99, top_k=7)
+        assert rows[0]["seed"] == 99
+        assert rows[0]["top_k"] == 7
+
+    def test_n_total_queries_matches_dataset_size(self):
+        clean = make_clean_data(15)
+        attacks = {"lexical": LexicalInfluentialTokenAttack()}
+        retrievers = {"bm25": BM25Retriever()}
+        rows = run_attack_intensity_sweep(clean, attacks, retrievers, n_poison_values=(1,), poison_rate=1.0, seed=42)
+        assert rows[0]["n_total_queries"] == 15

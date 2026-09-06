@@ -74,12 +74,22 @@ def run_attack_intensity_sweep(
             print(f"    done ({time.time()-t0:.1f}s total for this condition)", flush=True)
 
             for retriever_name, r in results.items():
+                # Reproducibility metadata (research plan Section 12):
+                # everything needed to reproduce this exact row, recorded
+                # in the structured output itself rather than only in prose.
+                generator_model = getattr(getattr(attack, "generator", None), "model_name", None) \
+                    or getattr(attack, "generator", None).__class__.__name__ if getattr(attack, "generator", None) else None
                 row = {
                     "attack": attack_name,
                     "n_poison": n_poison,
                     "poison_rate": poison_rate,
                     "retriever": retriever_name,
                     "n_attacked_queries": n_attacked,
+                    "n_total_queries": len(poisoned["queries"]),
+                    "seed": seed,
+                    "top_k": top_k,
+                    "generator_model": generator_model,
+                    "timestamp": __import__("datetime").datetime.now().isoformat(timespec="seconds"),
                 }
                 row.update({f"prr@{k}": v for k, v in r["mean_prr"].items()})
                 rows.append(row)
