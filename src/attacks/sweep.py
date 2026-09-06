@@ -49,9 +49,15 @@ def run_attack_intensity_sweep(
         (gold-label corruption, ID collision, wrong intensity/rate) --
         the sweep refuses to report numbers from data it hasn't verified.
     """
+    import time
     rows = []
+    total_conditions = len(attacks) * len(n_poison_values)
+    condition_num = 0
     for attack_name, attack in attacks.items():
         for n_poison in n_poison_values:
+            condition_num += 1
+            t0 = time.time()
+            print(f"[{condition_num}/{total_conditions}] {attack_name}, n_poison={n_poison}: injecting poison...", flush=True)
             poisoned = inject_poisons(clean_data, attack, n_poison=n_poison, poison_rate=poison_rate, seed=seed)
             validation = validate_poisoned_dataset(
                 clean_data, poisoned, expected_n_poison=n_poison, expected_poison_rate=poison_rate
@@ -63,7 +69,9 @@ def run_attack_intensity_sweep(
                 )
 
             n_attacked = sum(1 for q in poisoned["queries"] if q["poison_doc_ids"])
+            print(f"    injected ({time.time()-t0:.1f}s), evaluating {n_attacked} attacked queries against {len(retrievers)} retrievers...", flush=True)
             results = evaluate_poison_across_retrievers(poisoned, retrievers, top_k=top_k)
+            print(f"    done ({time.time()-t0:.1f}s total for this condition)", flush=True)
 
             for retriever_name, r in results.items():
                 row = {
