@@ -277,3 +277,28 @@ class TestCoordinatedMultiDocumentTargets:
                 assert query["poison_target_answer"] is not None
             else:
                 assert query["poison_target_answer"] is None
+
+
+class TestLexicalMultiDocumentVariation:
+    """Same issue and fix as the semantic-fluent attack: multi-document
+    lexical poison must produce genuinely different text per document,
+    not literal duplicates that BM25 (or any retriever) scores identically."""
+
+    def test_different_poison_index_gives_different_text(self):
+        clean = make_clean_data(6)
+        attack = LexicalInfluentialTokenAttack()
+        rng = random.Random(1)
+        query = clean["queries"][0]
+        target_answer = attack.pick_cross_query_target_answer(query, clean["queries"], rng)
+
+        texts = [
+            attack.generate(query, clean["queries"], rng, poison_index=i, target_answer=target_answer).text
+            for i in range(3)
+        ]
+        assert len(set(texts)) == 3, "expected 3 distinct texts for 3 different poison_index values"
+
+    def test_template_cycles_for_index_beyond_template_count(self):
+        attack = LexicalInfluentialTokenAttack()
+        template_0 = attack._TEMPLATES[0 % len(attack._TEMPLATES)]
+        template_5 = attack._TEMPLATES[5 % len(attack._TEMPLATES)]
+        assert template_0 == template_5
