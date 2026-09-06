@@ -300,26 +300,35 @@ engineering work, not something to hide:
    JSON files directly (re-running them would have wasted GPU quota for a
    metadata-only fix).
 
-9. **Bug #6's fix didn't actually hold up under a real load (found in
-   Week 5-6).** Bug #6 documented switching `load_2wikimultihopqa` to
+9. **Bug #6's fix was correct but never actually got committed -- only
+   its results were (found in Week 5-6).** During Clean Baseline v1,
+   `load_hotpotqa_distractor`'s sibling loader for 2Wiki was pointed at
    HuggingFace's `refs/convert/parquet` branch of `xanhho/2WikiMultihopQA`
-   and pinning its commit SHA. When this was actually exercised for real
-   during the Week 5-6 attack-intensity sweep (the first real end-to-end
-   2Wiki run since that fix), it failed outright:
-   `RuntimeError: Dataset scripts are no longer supported, but found
-   2WikiMultihopQA.py` -- the pinned commit resolved to a script-bearing
-   state after all, not the promised script-free parquet branch. This is
-   why the Week 5-6 report had marked 2Wiki as "not yet run for real":
-   the revision had been pinned but never actually validated against a
-   live load. Fixed by switching to an independent parquet-native
-   mirror, `Salesforce/ContextualBench` (config `2WikiMultihopQA`,
-   commit `9823f70484dea525100394220b0ea5184d0eeb7b`), which also
-   required (a) mapping the `"validation"` split name used throughout
-   this repo's configs to that mirror's `"dev"` split, and (b)
-   rewriting the row parser, since this mirror's `context` /
+   and its real commit SHA (`e37a4050605363be62f1d02e6eb888fe5f56530e`)
+   -- this fix was genuinely correct and genuinely produced all four real
+   2Wiki N=300 results in the table above. However, the `git add` that
+   followed only staged the results files and the loader fix, not the
+   four `configs/exp_01[7-9]*`/`exp_020*` YAML files -- so the corrected
+   revision only ever existed locally in that session and was never
+   committed. The tag's actual committed config still carried the
+   original *broken* main-branch SHA
+   (`612bc5039a457880d9e7d84c3b0a4cf154b70e4f`). When Week 5-6 re-exercised
+   the *committed* config for a real 2Wiki attack sweep, it naturally hit
+   the original failure again: `RuntimeError: Dataset scripts are no
+   longer supported, but found 2WikiMultihopQA.py`. This is why the
+   Week 5-6 report had marked 2Wiki as "not yet run for real" -- not
+   because bug #6's fix was wrong, but because it had never actually
+   been saved. **The frozen Clean Baseline v1 2Wiki numbers themselves
+   are unaffected and remain real** -- this was a config-provenance gap,
+   not a data problem. Fixed for good by switching to an independent
+   parquet-native mirror, `Salesforce/ContextualBench` (config
+   `2WikiMultihopQA`, commit `9823f70484dea525100394220b0ea5184d0eeb7b`),
+   which also required (a) mapping the `"validation"` split name used
+   throughout this repo's configs to that mirror's `"dev"` split, and
+   (b) rewriting the row parser, since this mirror's `context` /
    `supporting_facts` fields are native nested dicts, not the
    JSON-encoded strings bug #6 worked around. All four 2Wiki configs'
-   `dataset_revision` field updated to the new hash.
+   `dataset_revision` field is now committed with the new hash.
 
 ## Two working environments
 
