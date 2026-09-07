@@ -185,17 +185,28 @@ correct global rate -- before any PRR number is reported.
 `run_attack_intensity_sweep()` (`sweep.py`) enforces this automatically
 and raises rather than silently reporting unvalidated numbers.
 
-**Results** (`results/week5_attack_intensity_sweep_full.csv`, 48 rows:
+**Results** (`results/week5_attack_intensity_sweep_full.csv`, plus
+`results/week5_6_2wiki_sweep.csv` and `results/week5_6_nq_sweep.csv`):
 2 attacks x {1,3,5} intensities x 4 retrievers on HotpotQA, plus a
-low-poison-rate condition, plus 2Wiki at intensities 1 and 3): the
-lexical-weaker-against-Dense / semantic-fluent-more-even-across-
-retrievers pattern (research plan Section 4's hypothesis) holds on
-HotpotQA and largely replicates on 2Wiki, though 2Wiki's much smaller
-pooled corpus (218 documents for N=25, vs. HotpotQA's larger pool)
-appears to compress cross-retriever differences. One question remains
-explicitly open, not resolved: an early N=30 exploratory run showed a
-different transfer pattern than the systematic N=25 sweep -- flagged
-for a larger-N confirmatory run in Weeks 9-10, not swept under the rug.
+low-poison-rate condition, plus 2Wiki and Natural Questions at
+intensities 1 and 3. The lexical-favors-BM25 / semantic-fluent-favors-
+Reranker pattern (research plan Section 4's hypothesis) holds on
+HotpotQA, largely replicates on 2Wiki (though 2Wiki's much smaller
+pooled corpus -- 218 documents for N=25 -- appears to compress
+cross-retriever differences), and is **most clearly confirmed on NQ**:
+lexical PRR@1 = 1.00 on BM25 vs. 0.60-0.64 elsewhere; semantic-fluent
+PRR@1 = 0.24-0.36 on BM25 vs. 0.64-0.76 on Reranker. NQ's real
+`long_answer_candidates`-based pooled corpus (see `load_natural_questions`
+in `src/data/loaders.py`) required building genuinely new dataset-
+parsing code -- unlike HotpotQA/2Wiki's shared distractor pool, NQ has no
+built-in per-question candidate passages at all in its open-domain form,
+so this loader reconstructs plain text from raw HTML-tagged tokens and
+uses NQ's own long-answer-candidate segmentation as the distractor
+pool -- and it worked correctly on the first real run, no dataset-loading
+surprises this time. One question remains explicitly open, not resolved:
+an early N=30 exploratory run on HotpotQA showed a different transfer
+pattern than the systematic N=25 sweep -- flagged for a larger-N
+confirmatory run in Weeks 9-10, not swept under the rug.
 
 Full tables, per-condition caveats, and the complete readiness
 checklist: `docs/WEEK5_6_BENCHMARK_VALIDATION_REPORT.md`.
@@ -409,7 +420,7 @@ benchmark result the plan calls for.
 | Per-record environment metadata (`git_commit_sha`, library versions, device) | Real, tested (8 tests), wired into every experiment log |
 | Pinned Kaggle dependencies (`requirements-kaggle-lock.txt`) | Real, captured from a verified-working Kaggle T4 run |
 | **2WikiMultiHopQA Clean Baseline v1 (N=300), all 4 retrievers** | **Real, frozen, tag `clean-baseline-v1`. Required switching to the parquet-converted mirror + a loader fix for JSON-string-encoded fields (see bugs below)** |
-| NQ-open real runs | Loader built, not yet run on real data -- not required before Week 5 per supervisor review |
+| **Natural Questions real attack sweep (N=25, both attacks, intensities 1 and 3, all 4 retrievers)** | **Real, validated -- `load_natural_questions` builds a genuine pooled corpus from NQ's own long_answer_candidates; clearest hypothesis-confirming result of the three datasets. See Week 5-6 section above.** |
 | Corpus metadata logging | Real; corpus statistics (num_queries, num_unique_documents, corpus_type) recorded in every experiment summary |
 | Attack metrics (PRR@k, ASR, ATR) | PRR@k real and validated (see Week 5-6 section above); ASR/ATR infrastructure built and tested, awaiting RCD (Weeks 7-8) to compare against |
 | Transfer matrix framework | Real, ready for source→target pipeline evaluation |
