@@ -1,0 +1,17 @@
+attack,n_poison,poison_rate,retriever,n_attacked_queries,n_total_queries,seed,top_k,generator_model,timestamp,prr@1,prr@3,prr@5,prr@10
+lexical,1,1.0,bm25,25,25,42,10,,2026-09-07T11:19:46,1.0,1.0,1.0,1.0
+lexical,1,1.0,dense,25,25,42,10,,2026-09-07T11:19:46,0.6,0.76,0.8,0.84
+lexical,1,1.0,hybrid,25,25,42,10,,2026-09-07T11:19:46,0.76,0.8,0.92,0.96
+lexical,1,1.0,reranker,25,25,42,10,,2026-09-07T11:19:46,0.64,0.76,0.84,0.96
+lexical,3,1.0,bm25,25,25,42,10,,2026-09-07T11:20:06,1.0,1.0,1.0,1.0
+lexical,3,1.0,dense,25,25,42,10,,2026-09-07T11:20:06,0.6,0.8,0.84,0.84
+lexical,3,1.0,hybrid,25,25,42,10,,2026-09-07T11:20:06,0.8,0.92,0.92,1.0
+lexical,3,1.0,reranker,25,25,42,10,,2026-09-07T11:20:06,0.64,0.76,0.84,0.96
+semantic_fluent,1,1.0,bm25,25,25,42,10,TransformersGenerator,2026-09-07T11:23:26,0.24,0.28,0.4,0.52
+semantic_fluent,1,1.0,dense,25,25,42,10,TransformersGenerator,2026-09-07T11:23:26,0.48,0.64,0.68,0.76
+semantic_fluent,1,1.0,hybrid,25,25,42,10,TransformersGenerator,2026-09-07T11:23:26,0.32,0.52,0.52,0.64
+semantic_fluent,1,1.0,reranker,25,25,42,10,TransformersGenerator,2026-09-07T11:23:26,0.64,0.76,0.8,0.84
+semantic_fluent,3,1.0,bm25,25,25,42,10,TransformersGenerator,2026-09-07T11:33:03,0.36,0.48,0.52,0.68
+semantic_fluent,3,1.0,dense,25,25,42,10,TransformersGenerator,2026-09-07T11:33:03,0.52,0.72,0.72,0.88
+semantic_fluent,3,1.0,hybrid,25,25,42,10,TransformersGenerator,2026-09-07T11:33:03,0.4,0.64,0.68,0.76
+semantic_fluent,3,1.0,reranker,25,25,42,10,TransformersGenerator,2026-09-07T11:33:03,0.76,0.84,0.88,0.88
