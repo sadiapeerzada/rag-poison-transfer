@@ -237,26 +237,65 @@ specified by this report's prose (seed=42, top_k=10,
 `Qwen/Qwen2.5-7B-Instruct` 4-bit throughout) even though their raw CSV
 files predate the metadata columns.
 
-## 10. Explicitly Deferred (Not Overlooked)
+## 10. Natural Questions (Added Post-Initial-Report)
 
-Two items sometimes associated with a "complete" Weeks 5-6 benchmark
-are intentionally NOT done here, per direct supervisor guidance rather
-than oversight:
+NQ was initially deferred per the Pre-Week-5 Supervisor Review
+("NQ-open can wait") and is not required by the Weeks 5-6 roadmap entry
+itself. It has since been integrated and run for real, on request.
 
-- **Natural Questions (NQ)**: listed in the research plan's Section 6
-  as one of three eventual primary datasets for the full study, but the
-  Pre-Week-5 Supervisor Review explicitly stated *"NQ-open can wait"*
-  and only required HotpotQA + 2WikiMultiHopQA before Week 5 could
-  begin. Nothing in the Weeks 5-6 roadmap entry itself names specific
-  datasets. NQ integration is deferred to whenever it's next required
-  -- most likely Weeks 9-10's full experimental battery.
+Unlike HotpotQA/2Wiki, NQ's open-domain form (`nq_open`) ships zero
+passage/context data -- no per-question candidate pool to build a
+corpus from at all. `load_natural_questions()`
+(`src/data/loaders.py`) instead uses the full
+`google-research-datasets/natural_questions` dataset's own
+`long_answer_candidates` field: Google's pre-segmented list of
+candidate paragraph spans per question, functionally equivalent to
+HotpotQA's distractor pool. Plain text is reconstructed from raw
+HTML-tagged tokens (`<P>`, `<H1>`, etc. tokens are dropped). Streamed
+rather than fully downloaded (the full dataset is 100+ GB). Pinned
+revision: `e8103d566bef4154c2c12b17c6095ec5275840cc`. 10 new tests,
+all using a mocked dataset (no real network calls in the test suite).
+
+**Real attack sweep results** (N=25, both attacks, intensities 1 and 3,
+all 4 retrievers, `results/week5_6_nq_sweep.csv`):
+
+| Attack | Intensity | Retriever | PRR@1 | PRR@3 | PRR@5 | PRR@10 |
+|---|---|---|---|---|---|---|
+| Lexical | 1 | BM25 | 1.00 | 1.00 | 1.00 | 1.00 |
+| Lexical | 1 | Dense | 0.60 | 0.76 | 0.80 | 0.84 |
+| Lexical | 1 | Hybrid | 0.76 | 0.80 | 0.92 | 0.96 |
+| Lexical | 1 | Reranker | 0.64 | 0.76 | 0.84 | 0.96 |
+| Lexical | 3 | BM25 | 1.00 | 1.00 | 1.00 | 1.00 |
+| Lexical | 3 | Dense | 0.60 | 0.80 | 0.84 | 0.84 |
+| Lexical | 3 | Hybrid | 0.80 | 0.92 | 0.92 | 1.00 |
+| Lexical | 3 | Reranker | 0.64 | 0.76 | 0.84 | 0.96 |
+| Semantic-fluent | 1 | BM25 | 0.24 | 0.28 | 0.40 | 0.52 |
+| Semantic-fluent | 1 | Dense | 0.48 | 0.64 | 0.68 | 0.76 |
+| Semantic-fluent | 1 | Hybrid | 0.32 | 0.52 | 0.52 | 0.64 |
+| Semantic-fluent | 1 | Reranker | 0.64 | 0.76 | 0.80 | 0.84 |
+| Semantic-fluent | 3 | BM25 | 0.36 | 0.48 | 0.52 | 0.68 |
+| Semantic-fluent | 3 | Dense | 0.52 | 0.72 | 0.72 | 0.88 |
+| Semantic-fluent | 3 | Hybrid | 0.40 | 0.64 | 0.68 | 0.76 |
+| Semantic-fluent | 3 | Reranker | 0.76 | 0.84 | 0.88 | 0.88 |
+
+This is the **cleanest hypothesis-confirming result across all three
+datasets**: lexical attack PRR@1 on BM25 (1.00) vs. its weakest
+retriever (Dense/Reranker, 0.60-0.64) is the largest such gap observed
+in this phase; semantic-fluent shows the mirror pattern (weakest on
+BM25 at 0.24-0.36, strongest on Reranker at 0.64-0.76). No new bugs
+were hit integrating NQ or running this sweep -- the first dataset
+integration this phase without a real, unexpected failure.
+
+## 11. Still Explicitly Deferred
+
 - **N=50 / N=100 confirmatory runs**: all real results in this report
-  use N=25 attacked queries, which is enough to validate that the
-  mechanism works correctly and to observe a directionally consistent
-  pattern (Section 5), but not enough to resolve the open N=30-vs-N=25
-  discrepancy noted in Section 5, nor to support a statistical
-  significance claim. A larger-N confirmatory run is recommended before
-  Weeks 9-10's full experiments, not required to close out Weeks 5-6.
+  (HotpotQA, 2Wiki, and NQ alike) use N=25 attacked queries, which is
+  enough to validate that the mechanism works correctly and to observe
+  a directionally consistent pattern, but not enough to resolve the
+  open N=30-vs-N=25 discrepancy noted in Section 5, nor to support a
+  statistical significance claim. A larger-N confirmatory run is
+  recommended before Weeks 9-10's full experiments, not required to
+  close out Weeks 5-6.
 
 ## 11. Weeks 5-6 Completion Checklist
 
@@ -279,14 +318,15 @@ than oversight:
 - [x] Reproducibility metadata recorded in structured output (Section 9)
 - [x] HotpotQA validated (all attacks, all intensities, all retrievers)
 - [x] 2WikiMultiHopQA validated (intensities 1 and 3, all attacks, all retrievers)
-- [ ] Natural Questions integrated -- explicitly deferred, not required for Weeks 5-6 (Section 10)
-- [ ] N=50/N=100 confirmatory run -- explicitly deferred, recommended before Weeks 9-10 (Section 10)
+- [x] Natural Questions integrated and validated (intensities 1 and 3, all attacks, all retrievers -- Section 10)
+- [ ] N=50/N=100 confirmatory run -- explicitly deferred, recommended before Weeks 9-10 (Section 11)
 - [x] Final benchmark report updated (this document)
 
-**Final statement: Weeks 5-6 can legitimately be marked COMPLETE** against
-the actual roadmap requirement ("implement stress/attack/shift benchmark
-and validate labels/conditions") and the actual supervisor-approved
-scope (HotpotQA + 2WikiMultiHopQA, NQ deferred). The two unchecked items
-above are explicitly out of scope for this phase per supervisor
-guidance, not gaps in execution, and are carried forward as documented
-next steps rather than silently dropped.
+**Final statement: Weeks 5-6 can legitimately be marked COMPLETE**,
+now across all three datasets in the research plan (HotpotQA,
+2WikiMultiHopQA, and Natural Questions), against the actual roadmap
+requirement ("implement stress/attack/shift benchmark and validate
+labels/conditions"). The one remaining unchecked item (larger-N
+confirmatory run) is explicitly out of scope for this phase, not a gap
+in execution, and is carried forward as a documented next step for
+Weeks 9-10 rather than silently dropped.
