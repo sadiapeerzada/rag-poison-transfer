@@ -13,6 +13,7 @@ MockGenerator) -- constructing poison content IS a generation call, so
 this attack costs GPU time per document, unlike the free lexical attack.
 """
 from src.attacks.base import PoisonAttack, PoisonDocument, poison_doc_id
+from src.pipelines.generator import MockGenerator
 
 
 class SemanticFluentFalseEvidenceAttack(PoisonAttack):
@@ -32,6 +33,13 @@ class SemanticFluentFalseEvidenceAttack(PoisonAttack):
                 produce identical, useless poison text for every query.
             max_tokens: generation length cap for each poison paragraph.
         """
+        if isinstance(generator, MockGenerator):
+            raise TypeError(
+                "SemanticFluentFalseEvidenceAttack requires a real generator "
+                "(TransformersGenerator or MLXGenerator) -- MockGenerator "
+                "cannot be used for scientific poison generation."
+            )
+
         self.generator = generator
         self.max_tokens = max_tokens
 
