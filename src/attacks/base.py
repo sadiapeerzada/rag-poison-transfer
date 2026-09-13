@@ -76,28 +76,8 @@ class PoisonAttack(ABC):
 
     @staticmethod
     def _answer_type(answer: str) -> str:
-        """Rough answer-type classifier: yes/no vs. numeric/year vs. free text.
-
-        Cross-query target selection must respect this, or a "what
-        year" question can get handed a person's name as its intended
-        false answer -- the generator then has no coherent way to
-        assert it, and produces garbled content that undermines ASR
-        scoring (which checks whether the model's answer matches this
-        target). This is deliberately coarse (yes/no vs. numeric vs.
-        not), not a full answer-type taxonomy (no PERSON/LOCATION/ORG
-        distinction yet -- see supervisor review) -- good enough to
-        avoid the worst mismatches without a separate classifier model.
-
-        The yes/no bucket matters specifically for HotpotQA's
-        comparison-style questions, whose gold_answer is literally
-        "yes" or "no" -- without this bucket those fell into "text"
-        alongside proper nouns, so a numeric or named-entity question
-        could get "yes" as its false target and vice versa (confirmed
-        via a real N=10 HotpotQA pilot run).
-        """
+        """Rough answer-type classifier: numeric/year vs. free text."""
         stripped = answer.strip().lower()
-        if stripped in ("yes", "no"):
-            return "yes_no"
         return "numeric" if stripped.replace(",", "").isdigit() else "text"
 
     def pick_cross_query_target_answer(self, query: dict, all_queries: list[dict], rng) -> str:
