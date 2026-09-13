@@ -18,6 +18,7 @@ def inject_poisons(
     n_poison: int = 1,
     poison_rate: float = 1.0,
     seed: int = 42,
+    attacked_query_ids: list[str] | None = None,
 ) -> dict:
     """Inject poison documents into a clean {corpus, queries} dataset.
 
@@ -33,6 +34,9 @@ def inject_poisons(
             value simulates the "low global poison-rate setting" from
             the research plan).
         seed: for reproducible query selection and attack content.
+        attacked_query_ids: optional explicit frozen set of query IDs to
+            attack. When supplied, this overrides random query selection
+            and is used by the final frozen research protocol.
 
     Returns:
         New dataset dict (does not mutate the input). Every query keeps
@@ -49,9 +53,33 @@ def inject_poisons(
     existing_ids = {d["doc_id"] for d in corpus}
 
     n_to_attack = round(len(queries) * poison_rate)
-    attacked_ids = set(
-        rng.sample([q["query_id"] for q in queries], n_to_attack)
-    ) if n_to_attack > 0 else set()
+
+    if attacked_query_ids is not None:
+        available_ids = {q["query_id"] for q in queries}
+        requested_ids = list(dict.fromkeys(attacked_query_ids))
+
+        unknown_ids = set(requested_ids) - available_ids
+        if unknown_ids:
+            raise ValueError(
+                "attacked_query_ids contains unknown query IDs: "
+                f"{sorted(unknown_ids)}"
+            )
+
+        if len(requested_ids) != n_to_attack:
+            raise ValueError(
+                "Frozen attacked query count does not match poison_rate: "
+                f"expected {n_to_attack}, got {len(requested_ids)}"
+            )
+
+        attacked_ids = set(requested_ids)
+
+    else:
+        attacked_ids = set(
+            rng.sample(
+                [q["query_id"] for q in queries],
+                n_to_attack,
+            )
+        ) if n_to_attack > 0 else set()
 
     new_queries = []
     for query in queries:

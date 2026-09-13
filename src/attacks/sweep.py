@@ -22,63 +22,133 @@ def run_attack_intensity_sweep(
     top_k: int = 10,
 ) -> list[dict]:
     """
-    Args:
-        clean_data: clean {corpus, queries} dataset.
-        attacks: dict mapping attack_name -> PoisonAttack instance.
-        retrievers: dict mapping retriever_name -> UNBUILT retriever
-            instance (e.g. from build_standard_retrievers()). Built once
-            by the caller, reused across the sweep -- .build() gets
-            called again per condition, but model weights (embedder,
-            reranker) load only once, so this is far cheaper than
-            reconstructing retrievers each iteration.
-        n_poison_values: intensities to sweep (e.g. (1, 3, 5) per the
-            research plan).
-        poison_rate: global poison rate -- pass a low value separately
-            to cover the "low global poison-rate setting" condition.
-        seed: shared seed for reproducibility across the whole sweep.
-        top_k: retrieval depth for PRR computation.
+    Run a frozen, reproducible attack-intensity sweep.
 
-    Returns:
-        Flat list of row dicts, one per (attack, n_poison, retriever)
-        combination: {"attack", "n_poison", "poison_rate", "retriever",
-        "prr@1", "prr@3", "prr@5", "prr@10", "n_attacked_queries"}.
-        Suitable for pandas.DataFrame(rows) directly.
-
-    Raises:
-        ValueError if any generated poisoned dataset fails validation
-        (gold-label corruption, ID collision, wrong intensity/rate) --
-        the sweep refuses to report numbers from data it hasn't verified.
+    The same attacked query IDs are used for every attack family and
+    poison intensity within this sweep. Clean gold labels and clean
+    corpus documents are verified before results are recorded.
     """
     import time
+
     rows = []
     total_conditions = len(attacks) * len(n_poison_values)
     condition_num = 0
+
+    # Freeze the attacked query set ONCE for this sweep.
+    n_attacked_queries = round(len(clean_data["queries"]) * poison_rate)
+
+    if n_attacked_queries > 0:
+        from src.experiments.protocol import freeze_attack_query_ids
+
+        attacked_query_ids, attacked_query_fingerprint = (
+            freeze_attack_query_ids(
+                    clean_data["queries"],
+                    n_queries=n_attacked_queries,
+                    seed=seed,
+                )
+        )
+    else:
+        attacked_query_ids = []
+        attacked_query_fingerprint = None
+
+    from src.experiments.protocol import (
+        corpus_fingerprint,
+        query_set_fingerprint,
+        assert_same_corpus,
+    )
+
+    clean_corpus_fp = corpus_fingerprint(clean_data["corpus"])
+    query_set_fp = query_set_fingerprint(clean_data["queries"])
+
     for attack_name, attack in attacks.items():
         for n_poison in n_poison_values:
             condition_num += 1
             t0 = time.time()
-            print(f"[{condition_num}/{total_conditions}] {attack_name}, n_poison={n_poison}: injecting poison...", flush=True)
-            poisoned = inject_poisons(clean_data, attack, n_poison=n_poison, poison_rate=poison_rate, seed=seed)
-            validation = validate_poisoned_dataset(
-                clean_data, poisoned, expected_n_poison=n_poison, expected_poison_rate=poison_rate
+
+            print(
+                f"[{condition_num}/{total_conditions}] "
+                f"{attack_name}, n_poison={n_poison}: injecting poison...",
+                flush=True,
             )
+
+            poisoned = inject_poisons(
+                clean_data,
+                attack,
+                n_poison=n_poison,
+                poison_rate=poison_rate,
+                seed=seed,
+                attacked_query_ids=attacked_query_ids,
+            )
+
+            validation = validate_poisoned_dataset(
+                clean_data,
+                poisoned,
+                expected_n_poison=n_poison,
+                expected_poison_rate=poison_rate,
+            )
+
             if not validation["valid"]:
                 raise ValueError(
-                    f"Poisoned dataset failed validation for attack={attack_name!r}, "
-                    f"n_poison={n_poison}, poison_rate={poison_rate}: {validation['checks']}"
+                    f"Poisoned dataset failed validation for "
+                    f"attack={attack_name!r}, n_poison={n_poison}, "
+                    f"poison_rate={poison_rate}: {validation['checks']}"
                 )
 
-            n_attacked = sum(1 for q in poisoned["queries"] if q["poison_doc_ids"])
-            print(f"    injected ({time.time()-t0:.1f}s), evaluating {n_attacked} attacked queries against {len(retrievers)} retrievers...", flush=True)
-            results = evaluate_poison_across_retrievers(poisoned, retrievers, top_k=top_k)
-            print(f"    done ({time.time()-t0:.1f}s total for this condition)", flush=True)
+            # Verify the frozen attack set was actually respected.
+            actual_attacked_ids = sorted(
+                q["query_id"]
+                for q in poisoned["queries"]
+                if q["poison_doc_ids"]
+            )
+
+            if actual_attacked_ids != sorted(attacked_query_ids):
+                raise ValueError(
+                    "Frozen attacked-query set was not respected. "
+                    f"Expected {sorted(attacked_query_ids)}, "
+                    f"got {actual_attacked_ids}."
+                )
+
+            # Verify that clean documents were not modified.
+            assert_same_corpus(
+                clean_data["corpus"],
+                poisoned["corpus"],
+            )
+
+            n_attacked = len(actual_attacked_ids)
+
+            print(
+                f"    injected ({time.time()-t0:.1f}s), "
+                f"evaluating {n_attacked} attacked queries against "
+                f"{len(retrievers)} retrievers...",
+                flush=True,
+            )
+
+            results = evaluate_poison_across_retrievers(
+                poisoned,
+                retrievers,
+                top_k=top_k,
+            )
+
+            print(
+                f"    done ({time.time()-t0:.1f}s total for this condition)",
+                flush=True,
+            )
+
+            poisoned_corpus_fp = corpus_fingerprint(
+                poisoned["corpus"]
+            )
 
             for retriever_name, r in results.items():
-                # Reproducibility metadata (research plan Section 12):
-                # everything needed to reproduce this exact row, recorded
-                # in the structured output itself rather than only in prose.
-                generator_model = getattr(getattr(attack, "generator", None), "model_name", None) \
-                    or getattr(attack, "generator", None).__class__.__name__ if getattr(attack, "generator", None) else None
+                generator = getattr(attack, "generator", None)
+
+                if generator is not None:
+                    generator_model = (
+                        getattr(generator, "model_name", None)
+                        or generator.__class__.__name__
+                    )
+                else:
+                    generator_model = None
+
                 row = {
                     "attack": attack_name,
                     "n_poison": n_poison,
@@ -89,9 +159,24 @@ def run_attack_intensity_sweep(
                     "seed": seed,
                     "top_k": top_k,
                     "generator_model": generator_model,
-                    "timestamp": __import__("datetime").datetime.now().isoformat(timespec="seconds"),
+
+                    # Frozen experiment identity.
+                    "query_set_fingerprint": query_set_fp,
+                    "attacked_query_ids": attacked_query_ids,
+                    "attacked_query_fingerprint": attacked_query_fingerprint,
+                    "clean_corpus_fingerprint": clean_corpus_fp,
+                    "poisoned_corpus_fingerprint": poisoned_corpus_fp,
+
+                    "timestamp": __import__("datetime").datetime.now().isoformat(
+                        timespec="seconds"
+                    ),
                 }
-                row.update({f"prr@{k}": v for k, v in r["mean_prr"].items()})
+
+                row.update({
+                    f"prr@{k}": v
+                    for k, v in r["mean_prr"].items()
+                })
+
                 rows.append(row)
 
     return rows

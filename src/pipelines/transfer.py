@@ -241,6 +241,107 @@ class TransferMatrix:
             f.write("\n")
 
 
+
+def _validate_transfer_pair_metadata(
+    source_results: list[dict],
+    target_results: list[dict],
+) -> None:
+    """Validate that source/target results belong to the same experiment.
+
+    Transfer must compare the same queries, dataset, seed, and poison
+    configuration. The target pipeline may differ, but the experiment
+    identity must otherwise remain fixed.
+    """
+    if not source_results or not target_results:
+        raise ValueError("Cannot validate empty result lists")
+
+    def metadata_values(results, field):
+        return {
+            result.get(field)
+            for result in results
+            if result.get(field) is not None
+        }
+
+    # Fields that must remain identical across source and target.
+    invariant_fields = (
+        "dataset",
+        "seed",
+        "poison_id",
+    )
+
+    for field in invariant_fields:
+        source_values = metadata_values(source_results, field)
+        target_values = metadata_values(target_results, field)
+
+        if len(source_values) > 1:
+            raise ValueError(
+                f"source_results has inconsistent {field} values: "
+                f"{sorted(map(str, source_values))}"
+            )
+
+        if len(target_values) > 1:
+            raise ValueError(
+                f"target_results has inconsistent {field} values: "
+                f"{sorted(map(str, target_values))}"
+            )
+
+        if source_values and target_values and source_values != target_values:
+            raise ValueError(
+                f"Source/target {field} mismatch: "
+                f"source={source_values}, target={target_values}"
+            )
+
+    # A transfer experiment must never silently use a mock generator.
+    for label, results in (
+        ("source_results", source_results),
+        ("target_results", target_results),
+    ):
+        for result in results:
+            model_identifier = str(result.get("model_identifier", ""))
+
+            if "mockgenerator" in model_identifier.lower():
+                raise ValueError(
+                    f"{label} contains MockGenerator results. "
+                    "MockGenerator is prohibited for research transfer evaluation."
+                )
+
+    # If poison document IDs are recorded, source and target must evaluate
+    # the same poison set for each query.
+    #
+    # Do not assume query IDs exist here: the public
+    # compute_transfer_statistics() function performs explicit query_id
+    # validation immediately after this helper returns. This helper therefore
+    # only performs poison-set validation when both sides have usable IDs.
+    source_by_id = {
+        result.get("query_id"): result
+        for result in source_results
+        if result.get("query_id") is not None
+    }
+    target_by_id = {
+        result.get("query_id"): result
+        for result in target_results
+        if result.get("query_id") is not None
+    }
+
+    # Only compare the intersection. Missing/extra query IDs are handled by
+    # compute_transfer_statistics(), which gives the expected explicit error.
+    for query_id in source_by_id.keys() & target_by_id.keys():
+        source_poison = set(
+            source_by_id[query_id].get("poison_doc_ids", []) or []
+        )
+        target_poison = set(
+            target_by_id[query_id].get("poison_doc_ids", []) or []
+        )
+
+        if source_poison != target_poison:
+            raise ValueError(
+                f"Poison set mismatch for query_id={query_id!r}: "
+                f"source={sorted(source_poison)}, "
+                f"target={sorted(target_poison)}"
+            )
+
+
+
 def compute_transfer_statistics(
     source_results: list[dict],
     target_results: list[dict],
@@ -267,6 +368,11 @@ def compute_transfer_statistics(
     """
     if not source_results or not target_results:
         raise ValueError("Empty result lists")
+
+    _validate_transfer_pair_metadata(
+        source_results,
+        target_results,
+    )
 
     # Build dicts indexed by query_id for alignment
     source_by_id = {}
