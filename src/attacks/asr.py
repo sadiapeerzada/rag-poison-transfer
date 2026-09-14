@@ -200,6 +200,125 @@ def conditional_asr(results: list[dict]) -> dict:
     }
 
 
+def run_source_target_asr(
+    clean_data: dict,
+    poisoned_data: dict,
+    generator,
+    retriever_factories: dict,
+    source_pipeline: str,
+    top_k: int = 5,
+    max_tokens: int = 64,
+):
+    """True source->target transfer, per the supervisor's protocol -- NOT
+    the "same poison vs. every retriever" robustness check evaluate.py's
+    evaluate_poison_across_retrievers() does. That measures whether a
+    retriever-agnostic poison happens to transfer; this measures whether
+    attacks specifically selected/frozen as successful on ONE source
+    pipeline still succeed, unchanged, on other pipelines.
+
+    Protocol:
+      1. Build the source pipeline on clean_data/poisoned_data and run
+         ASR on EVERY attacked query.
+      2. Freeze the subset that actually succeeded on the source
+         (select_source_successful) -- this frozen query_id set IS the
+         attack, from here on. Nothing about the poison is regenerated
+         or retuned for any target.
+      3. For every pipeline (including the source itself, as a
+         diagonal sanity check), build fresh retrievers on the SAME
+         clean_data/poisoned_data, run ASR restricted to the frozen
+         query_id set, and feed (frozen source results, frozen target
+         results) into compute_transfer_statistics().
+
+    Args:
+        retriever_factories: dict of pipeline_name -> zero-arg callable
+            returning a FRESH, unbuilt retriever instance each call
+            (e.g. {"bm25": lambda: BM25Retriever(), "dense": lambda:
+            DenseRetriever(embedder_model=...), ...}, or wrap
+            evaluate.build_standard_retrievers()'s per-name configs the
+            same way). A callable, not a built instance, because this
+            function needs TWO separate builds per pipeline (once on
+            the clean corpus, once on the poisoned corpus) and .build()
+            is not safe to call twice on one instance.
+        source_pipeline: must be a key in retriever_factories.
+
+    Returns:
+        src.pipelines.transfer.TransferMatrix with one populated cell
+        per (source_pipeline, target) for every target in
+        retriever_factories -- i.e. one ROW of the full pipelines x
+        pipelines grid, not the whole grid. Call this once per desired
+        source pipeline and merge into one TransferMatrix (matrix.results
+        dicts can be merged, or just call add_result again on the same
+        instance) to build the complete 4x4 matrix across all sources.
+
+    Raises:
+        ValueError if source_pipeline isn't in retriever_factories, or
+        if zero attacks succeeded on the source pipeline (nothing to
+        transfer -- ATR is undefined, not zero, in that case).
+    """
+    from src.pipelines.transfer import TransferMatrix, compute_transfer_statistics
+
+    if source_pipeline not in retriever_factories:
+        raise ValueError(
+            f"source_pipeline {source_pipeline!r} not in retriever_factories "
+            f"keys: {sorted(retriever_factories)}"
+        )
+
+    def _build_pair(name):
+        clean_r = retriever_factories[name]()
+        clean_r.build(clean_data["corpus"])
+        poison_r = retriever_factories[name]()
+        poison_r.build(poisoned_data["corpus"])
+        return clean_r, poison_r
+
+    # Step 1: source ASR over every attacked query.
+    src_clean_r, src_poison_r = _build_pair(source_pipeline)
+    source_results_full = evaluate_asr_for_retriever(
+        src_clean_r, src_poison_r, clean_data, poisoned_data, generator,
+        source_pipeline=source_pipeline, target_pipeline=source_pipeline,
+        top_k=top_k, max_tokens=max_tokens,
+    )
+
+    # Step 2: freeze the source-successful subset. This IS the attack set
+    # for every target below -- no regeneration, no retuning.
+    frozen = select_source_successful(source_results_full)
+    frozen_ids = {r["query_id"] for r in frozen}
+    if not frozen_ids:
+        raise ValueError(
+            f"No attacks succeeded on source pipeline {source_pipeline!r} "
+            "(0 / {} queries) -- ATR is undefined with zero source "
+            "successes, not zero. Try a stronger attack, a higher "
+            "poison rate/intensity, or a different source pipeline "
+            "before computing transfer.".format(len(source_results_full))
+        )
+    source_results_frozen = [r for r in source_results_full if r["query_id"] in frozen_ids]
+
+    # Step 3: replay the frozen set, unchanged, on every target pipeline.
+    matrix = TransferMatrix()
+    for target_name, factory in retriever_factories.items():
+        if target_name == source_pipeline:
+            # Diagonal cell: reuse step-1 results rather than re-running
+            # generation twice for the identical pipeline.
+            target_results_full = source_results_full
+        else:
+            tgt_clean_r, tgt_poison_r = _build_pair(target_name)
+            target_results_full = evaluate_asr_for_retriever(
+                tgt_clean_r, tgt_poison_r, clean_data, poisoned_data, generator,
+                source_pipeline=source_pipeline, target_pipeline=target_name,
+                top_k=top_k, max_tokens=max_tokens,
+            )
+        target_results_frozen = [r for r in target_results_full if r["query_id"] in frozen_ids]
+
+        # compute_transfer_statistics reads target_pipeline off the SOURCE
+        # results' first entry, so relabel per target before calling it.
+        source_side_for_this_target = [
+            {**r, "target_pipeline": target_name} for r in source_results_frozen
+        ]
+        stats = compute_transfer_statistics(source_side_for_this_target, target_results_frozen)
+        matrix.add_result(stats)
+
+    return matrix
+
+
 def select_source_successful(source_results: list[dict]) -> list[dict]:
     """Freeze the subset of attacks that succeeded on the SOURCE pipeline
     (attack_success == True), per the supervisor's true-transfer protocol:
