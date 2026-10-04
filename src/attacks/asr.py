@@ -208,6 +208,7 @@ def run_source_target_asr(
     source_pipeline: str,
     top_k: int = 5,
     max_tokens: int = 64,
+    target_factories: dict | None = None,
 ):
     """True source->target transfer, per the supervisor's protocol -- NOT
     the "same poison vs. every retriever" robustness check evaluate.py's
@@ -240,6 +241,14 @@ def run_source_target_asr(
             the clean corpus, once on the poisoned corpus) and .build()
             is not safe to call twice on one instance.
         source_pipeline: must be a key in retriever_factories.
+        target_factories: optional dict with the SAME keys as
+            retriever_factories, used to build the TARGET pipelines in
+            step 3 (e.g. RCD-defended versions). The source pipeline and
+            the frozen attack set are always built/selected from
+            retriever_factories, so the attack is frozen on the
+            UNDEFENDED source and replayed against defended targets. When
+            None (default), targets use retriever_factories -- identical
+            to the previous behaviour.
 
     Returns:
         src.pipelines.transfer.TransferMatrix with one populated cell
@@ -263,10 +272,17 @@ def run_source_target_asr(
             f"keys: {sorted(retriever_factories)}"
         )
 
-    def _build_pair(name):
-        clean_r = retriever_factories[name]()
+    if target_factories is not None and set(target_factories) != set(retriever_factories):
+        raise ValueError(
+            "target_factories must have the same keys as retriever_factories: "
+            f"{sorted(target_factories)} vs {sorted(retriever_factories)}"
+        )
+
+    def _build_pair(name, factories=None):
+        factories = factories or retriever_factories
+        clean_r = factories[name]()
         clean_r.build(clean_data["corpus"])
-        poison_r = retriever_factories[name]()
+        poison_r = factories[name]()
         poison_r.build(poisoned_data["corpus"])
         return clean_r, poison_r
 
@@ -294,13 +310,15 @@ def run_source_target_asr(
 
     # Step 3: replay the frozen set, unchanged, on every target pipeline.
     matrix = TransferMatrix()
-    for target_name, factory in retriever_factories.items():
-        if target_name == source_pipeline:
+    for target_name in retriever_factories:
+        if target_name == source_pipeline and target_factories is None:
             # Diagonal cell: reuse step-1 results rather than re-running
-            # generation twice for the identical pipeline.
+            # generation twice for the identical pipeline. (Skipped when
+            # target_factories is given: the defended source->source cell
+            # is a different pipeline from the undefended source.)
             target_results_full = source_results_full
         else:
-            tgt_clean_r, tgt_poison_r = _build_pair(target_name)
+            tgt_clean_r, tgt_poison_r = _build_pair(target_name, target_factories)
             target_results_full = evaluate_asr_for_retriever(
                 tgt_clean_r, tgt_poison_r, clean_data, poisoned_data, generator,
                 source_pipeline=source_pipeline, target_pipeline=target_name,
