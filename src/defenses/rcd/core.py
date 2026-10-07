@@ -145,7 +145,9 @@ def cross_query_rank_stability(
             if doc_id in ranks
         ]
 
-        if not observed:
+        # A document seen in only one ranking has no
+        # cross-ranking stability evidence.
+        if len(observed) < 2:
             output[doc_id] = 0.0
             continue
 
@@ -160,11 +162,6 @@ def build_consistency_signals(
     *,
     top_k: int = 10,
 ) -> Dict[str, ConsistencySignals]:
-    agreement = retriever_agreement(
-        retriever_rankings,
-        top_k=top_k,
-    )
-
     retriever_rank_stability = cross_query_rank_stability(
         retriever_rankings,
         top_k=top_k,
@@ -185,16 +182,19 @@ def build_consistency_signals(
 
     output = {}
 
+    retriever_count = len(retriever_rankings)
+
     for doc_id in doc_ids:
+        if retriever_count == 0:
+            agreement = 1.0
+        else:
+            agreement = sum(
+                doc_id in ranking[:top_k]
+                for ranking in retriever_rankings
+            ) / retriever_count
+
         output[doc_id] = ConsistencySignals(
-            agreement=(
-                agreement
-                if any(
-                    doc_id in ranking[:top_k]
-                    for ranking in retriever_rankings
-                )
-                else 0.0
-            ),
+            agreement=agreement,
             rank_stability=retriever_rank_stability.get(
                 doc_id,
                 0.0,

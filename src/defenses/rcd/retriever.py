@@ -37,6 +37,31 @@ class RCDRetriever:
         self.conflict_weight = conflict_weight
         self.base_rank_weight = base_rank_weight
 
+        # Diagnostics from the most recent retrieval call.
+        # Kept separate from the public retrieve() return value so
+        # existing retrieval/evaluation code remains backward compatible.
+        self.last_diagnostics = None
+
+    def build(self, corpus: list[dict]) -> None:
+        """Build all configured retriever components on the same corpus."""
+        built = set()
+
+        for retriever in (
+            self.base_retriever,
+            self.sparse_retriever,
+            self.dense_retriever,
+        ):
+            if retriever is None:
+                continue
+
+            retriever_id = id(retriever)
+
+            if retriever_id in built:
+                continue
+
+            retriever.build(corpus)
+            built.add(retriever_id)
+
     def _retrieve_rankings(
         self,
         queries: Sequence[str],
@@ -74,6 +99,13 @@ class RCDRetriever:
             top_k=self.candidate_k,
         )
 
+        # Keep a document-object pool so evidence found by any
+        # configured retriever or rewrite can be selected downstream.
+        candidate_docs = {
+            doc.doc_id: doc
+            for doc in primary_docs
+        }
+
         retriever_rankings = [
             [doc.doc_id for doc in primary_docs]
         ]
@@ -89,8 +121,15 @@ class RCDRetriever:
                 [doc.doc_id for doc in sparse_docs]
             )
 
+            candidate_docs.update(
+                {doc.doc_id: doc for doc in sparse_docs}
+            )
+
         # Dense ranking
-        if self.dense_retriever is not None:
+        if (
+            self.dense_retriever is not None
+            and self.dense_retriever is not self.base_retriever
+        ):
             dense_docs = self.dense_retriever.retrieve(
                 query,
                 top_k=self.candidate_k,
@@ -98,6 +137,10 @@ class RCDRetriever:
 
             retriever_rankings.append(
                 [doc.doc_id for doc in dense_docs]
+            )
+
+            candidate_docs.update(
+                {doc.doc_id: doc for doc in dense_docs}
             )
 
         # Query rewrites
@@ -117,6 +160,11 @@ class RCDRetriever:
             for ranking in rewrite_rankings_objects
         ]
 
+        for ranking in rewrite_rankings_objects:
+            candidate_docs.update(
+                {doc.doc_id: doc for doc in ranking}
+            )
+
         # Consistency signals
         signals = build_consistency_signals(
             retriever_rankings,
@@ -125,12 +173,14 @@ class RCDRetriever:
         )
 
         # Evidence-level signals
+        all_candidate_docs = list(candidate_docs.values())
+
         redundancy_scores = evidence_redundancy(
-            primary_docs
+            all_candidate_docs
         )
 
         conflict_scores = evidence_conflict_scores(
-            primary_docs
+            all_candidate_docs
         )
 
         # Final RCD scoring
@@ -149,7 +199,7 @@ class RCDRetriever:
         )
 
         ranked_docs = sorted(
-            primary_docs,
+            all_candidate_docs,
             key=lambda doc: (
                 scores.get(doc.doc_id).final_score
                 if doc.doc_id in scores
@@ -157,5 +207,38 @@ class RCDRetriever:
             ),
             reverse=True,
         )
+
+        # Preserve the internal RCD signals for experiment logging,
+        # analysis, ablations, and later failure/error analysis.
+        self.last_diagnostics = {
+            "rewrite_queries": list(rewrite_queries),
+            "retriever_rankings": retriever_rankings,
+            "rewrite_rankings": rewrite_rankings,
+            "consistency_signals": {
+                doc_id: {
+                    "agreement": signal.agreement,
+                    "rank_stability": signal.rank_stability,
+                    "rewrite_stability": signal.rewrite_stability,
+                    "consistency": signal.consistency,
+                }
+                for doc_id, signal in signals.items()
+            },
+            "redundancy_scores": dict(redundancy_scores),
+            "conflict_scores": dict(conflict_scores),
+            "scores": {
+                doc_id: {
+                    "consistency": score.consistency,
+                    "redundancy": score.redundancy,
+                    "conflict": score.conflict,
+                    "base_rank_score": score.base_rank_score,
+                    "final_score": score.final_score,
+                }
+                for doc_id, score in scores.items()
+            },
+            "selected_doc_ids": [
+                doc.doc_id
+                for doc in ranked_docs[:output_k]
+            ],
+        }
 
         return ranked_docs[:output_k]

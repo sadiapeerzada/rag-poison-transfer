@@ -1,0 +1,25 @@
+{
+  "corpus": {
+    "corpus_type": "pooled_hotpotqa",
+    "dataset": "load_hotpotqa_distractor",
+    "dataset_split": "validation",
+    "num_queries": 300,
+    "num_unique_documents": 2988,
+    "seed": 42
+  },
+  "experiment_id": "exp_023_hotpotqa_rcd_v1_mlx_frozen",
+  "mean_em": 0.4066666666666667,
+  "mean_f1": 0.5078415935915936,
+  "mean_retrieval_metrics": {
+    "mrr@1": 0.9033333333333333,
+    "mrr@10": 0.9411428571428572,
+    "mrr@3": 0.9355555555555556,
+    "mrr@5": 0.9395555555555556,
+    "ndcg@10": 0.8565158887610043,
+    "recall@1": 0.45166666666666666,
+    "recall@10": 0.94,
+    "recall@3": 0.7466666666666667,
+    "recall@5": 0.8316666666666667
+  },
+  "query_count": 300
+}

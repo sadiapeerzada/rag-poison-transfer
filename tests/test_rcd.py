@@ -64,3 +64,25 @@ def test_claim_conflict_distinguishes_related_and_unrelated_years():
         "The company was founded in 1990.",
         "The company was founded in 1990.",
     ) == 0.0
+
+
+def test_agreement_is_document_specific():
+    retriever_rankings = [
+        ["d1", "d2"],
+        ["d1", "d3"],
+    ]
+
+    rewrite_rankings = [
+        ["d1"],
+        ["d2"],
+    ]
+
+    signals = build_consistency_signals(
+        retriever_rankings,
+        rewrite_rankings,
+        top_k=3,
+    )
+
+    assert signals["d1"].agreement == 1.0
+    assert signals["d2"].agreement == 0.5
+    assert signals["d3"].agreement == 0.5

@@ -18,6 +18,7 @@ from src.retrieval.bm25 import BM25Retriever
 from src.retrieval.dense import DenseRetriever, SentenceTransformerEmbedder
 from src.retrieval.hybrid import HybridRetriever
 from src.retrieval.reranker import Reranker, CrossEncoderScorer
+from src.defenses.rcd.retriever import RCDRetriever
 from src.pipelines.generator import MockGenerator, MLXGenerator, TransformersGenerator
 from src.evaluation.metrics import (
     exact_match,
@@ -48,6 +49,33 @@ def build_retriever(config: dict):
             BM25Retriever(),
             DenseRetriever(
                 SentenceTransformerEmbedder(embedder_model)
+            ),
+        )
+
+    elif kind == "rcd":
+        embedder_model = config.get("embedder_model", "BAAI/bge-small-en-v1.5")
+        top_k = int(config.get("top_k", 3))
+        dense = DenseRetriever(
+            SentenceTransformerEmbedder(embedder_model)
+        )
+        return RCDRetriever(
+            dense,
+            sparse_retriever=BM25Retriever(),
+            dense_retriever=dense,
+            candidate_k=int(config.get("rcd_candidate_k", 10)),
+            output_k=top_k,
+            rewrite_count=int(config.get("rcd_rewrite_count", 3)),
+            consistency_weight=float(
+                config.get("rcd_consistency_weight", 0.55)
+            ),
+            redundancy_weight=float(
+                config.get("rcd_redundancy_weight", 0.05)
+            ),
+            conflict_weight=float(
+                config.get("rcd_conflict_weight", 0.20)
+            ),
+            base_rank_weight=float(
+                config.get("rcd_base_rank_weight", 0.20)
             ),
         )
 
@@ -146,6 +174,14 @@ def main(config_path: str):
         )
         retrieved = retrieved_for_metrics[:config["top_k"]]
 
+        # Capture RCD internals from the retrieval call without changing
+        # the retrieval API used by the rest of the experiment.
+        rcd_diagnostics = (
+            retriever.last_diagnostics
+            if isinstance(retriever, RCDRetriever)
+            else None
+        )
+
         prompt = build_prompt(q["question"], retrieved)
         gen_result = generator.generate(prompt, max_tokens=config["max_tokens"])
         extracted = gen_result.text.split("\n")[0].split(". ")[0].strip()
@@ -219,6 +255,7 @@ def main(config_path: str):
             "mrr": mrr_10,
             "ndcg_at_10": retrieval_ndcg_10,
             "generator_backend": config["generator_backend"],
+            "rcd_diagnostics": rcd_diagnostics,
         })
 
     retrieval_metric_means = {
