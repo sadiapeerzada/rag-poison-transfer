@@ -252,7 +252,7 @@ class TestAnswerTypeMatching:
         assert LexicalInfluentialTokenAttack._answer_type("1755") == "numeric"
         assert LexicalInfluentialTokenAttack._answer_type("1,024") == "numeric"
         assert LexicalInfluentialTokenAttack._answer_type("Marie Curie") == "text"
-        assert LexicalInfluentialTokenAttack._answer_type("Yes") == "text"
+        assert LexicalInfluentialTokenAttack._answer_type("Yes") == "yes_no"
 
 
 class TestCoordinatedMultiDocumentTargets:
