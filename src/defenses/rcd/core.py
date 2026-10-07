@@ -165,7 +165,7 @@ def build_consistency_signals(
         top_k=top_k,
     )
 
-    retriever_rank_stability = cross_retriever_rank_stability(
+    retriever_rank_stability = cross_query_rank_stability(
         retriever_rankings,
         top_k=top_k,
     )
