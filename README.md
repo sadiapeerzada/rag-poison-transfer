@@ -422,10 +422,10 @@ benchmark result the plan calls for.
 | **2WikiMultiHopQA Clean Baseline v1 (N=300), all 4 retrievers** | **Real, frozen, tag `clean-baseline-v1`. Required switching to the parquet-converted mirror + a loader fix for JSON-string-encoded fields (see bugs below)** |
 | **Natural Questions real attack sweep (N=25, both attacks, intensities 1 and 3, all 4 retrievers)** | **Real, validated -- `load_natural_questions` builds a genuine pooled corpus from NQ's own long_answer_candidates; clearest hypothesis-confirming result of the three datasets. See Week 5-6 section above.** |
 | Corpus metadata logging | Real; corpus statistics (num_queries, num_unique_documents, corpus_type) recorded in every experiment summary |
-| Attack metrics (PRR@k, ASR, ATR) | PRR@k real and validated (see Week 5-6 section above); ASR/ATR infrastructure built and tested, awaiting RCD (Weeks 7-8) to compare against |
+| Attack metrics (PRR@k, ASR, ATR) | PRR@k real and validated (see Week 5-6 section above); ASR/ATR infrastructure built and tested |
 | Transfer matrix framework | Real, ready for source→target pipeline evaluation |
 | Knowledge-poisoning attack benchmark (lexical + semantic-fluent, intensity 1/3/5, low poison-rate, HotpotQA + 2Wiki) | **Real, validated, Week 5-6 deliverable complete** -- see Week 5-6 section above and `docs/WEEK5_6_BENCHMARK_VALIDATION_REPORT.md` |
-| RCD (Retrieval-Consistency Defense), full transfer experiments | Not yet built -- Weeks 7-10 |
+| RCD (Retrieval-Consistency Defense) | **Real, implemented, tested, tuned on 300-query HotpotQA dev data, and frozen for Week 7-8. Frozen config: `exp_023_hotpotqa_rcd_v1_mlx_frozen`** |
 
 ## Corpus construction methodology (HotpotQA)
 
@@ -590,7 +590,12 @@ poison_id: "poison_001"
 ### Current Status
 - Transfer matrix framework is built and tested
 - All four retrievers can be swapped via config (no code changes)
-- Awaiting attack-generation implementations to populate the matrix
+- Knowledge-poisoning attack benchmark and evaluation infrastructure are complete through Week 5-6
+- RCD (Retrieval-Consistency Defense) is implemented, tested, tuned on 300-query HotpotQA development data, and frozen for Week 7-8
+- Frozen RCD weights: consistency=0.45, redundancy=0.00, conflict=0.10, base_rank=0.45
+- Frozen RCD run: `exp_023_hotpotqa_rcd_v1_mlx_frozen` (N=300)
+- Frozen RCD results: EM=0.407, F1=0.508, Recall@3=0.7467, MRR@10=0.9411, nDCG@10=0.8565
+- Week 7-8 is complete; Week 9 work has not started
 
 ## Testing
 
@@ -599,7 +604,7 @@ Run the full test suite:
 pytest tests/ -v
 ```
 
-**139 tests**, all passing, across 12 files covering: retrieval metrics
+**218 tests**, all passing, across the current test suite covering: retrieval metrics
 (Recall/MRR/nDCG), attack metrics (PRR/ASR/ATR), transfer framework
 (including query-ID alignment fail-fast and PRR@k export, added per
 supervisor review 3.5), corpus construction (determinism, dedup, canonical
@@ -608,7 +613,7 @@ metadata, gold retrieval labels, and dataset revision pinning. Run
 `pytest tests/ -v` for the exact current per-file breakdown rather than
 relying on a hand-maintained count here, which has drifted before.
 
-Final verification of the frozen Clean Baseline v1 commit (`clean-baseline-v1`): 139 tests passed, 0 failed.
+Final verification of the current RCD implementation: 218 tests passed, 0 failed.
 
 `main` has since grown further with the Week 5-6 attack-injection, evaluation, and sweep test suites (`test_poison_injection.py`, `test_semantic_fluent_attack.py`, `test_cross_pipeline_evaluation.py`, `test_sweep.py`) on top of the 153 counted after the ATR/PRR and 2Wiki-labeling fixes (review 3.5); the frozen tag's count remains 139 by design. Run `pytest tests/ -v` for the current total rather than trusting a hand-maintained number here.
 
@@ -634,8 +639,7 @@ that existed when they were produced.
 
 ## Next phase
 
-After supervisor confirmation of the experimental scope, the project
-moves toward the knowledge-poisoning experiments: attack construction,
-attack transfer evaluation across retrievers, RCD (Retrieval-Consistency
-Defense) implementation, and the full metric suite -- see the foundation
-doc for the complete roadmap.
+Week 7-8 is complete and the RCD configuration is frozen. The next phase
+is Week 9, covering the remaining experimental roadmap and transfer
+evaluation work; Week 9 has not started yet. See the foundation document
+for the complete roadmap.
