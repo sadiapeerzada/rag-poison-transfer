@@ -425,7 +425,54 @@ benchmark result the plan calls for.
 | Attack metrics (PRR@k, ASR, ATR) | PRR@k real and validated (see Week 5-6 section above); ASR/ATR infrastructure built and tested |
 | Transfer matrix framework | Real, ready for source→target pipeline evaluation |
 | Knowledge-poisoning attack benchmark (lexical + semantic-fluent, intensity 1/3/5, low poison-rate, HotpotQA + 2Wiki) | **Real, validated, Week 5-6 deliverable complete** -- see Week 5-6 section above and `docs/WEEK5_6_BENCHMARK_VALIDATION_REPORT.md` |
-| RCD (Retrieval-Consistency Defense) | **Real, implemented, tested, tuned on 300-query HotpotQA dev data, and frozen for Week 7-8. Frozen config: `exp_023_hotpotqa_rcd_v1_mlx_frozen`** |
+| RCD (Retrieval-Consistency Defense) | **Real, implemented, tested, tuned on 300-query HotpotQA development data, and frozen for Week 7-8. Frozen config: `exp_023_hotpotqa_rcd_v1_mlx_frozen`. Frozen results are committed in `results/exp_023_hotpotqa_rcd_v1_mlx_frozen.jsonl` and `results/exp_023_hotpotqa_rcd_v1_mlx_frozen.summary.json`.** |
+
+## Week 7-8: Retrieval-Consistency Defense (RCD)
+
+The Retrieval-Consistency Defense was implemented, tested, tuned on a
+300-query HotpotQA development run, and frozen at the end of Week 8.
+RCD is a training-free retrieval-time defense that combines retrieval
+consistency across deterministic query reformulations with evidence
+signals and the base retriever ranking.
+
+### Frozen configuration
+
+- **Experiment:** `exp_023_hotpotqa_rcd_v1_mlx_frozen`
+- **Dataset:** HotpotQA validation split
+- **Queries:** N=300
+- **Seed:** 42
+- **Embedding model:** `BAAI/bge-small-en-v1.5`
+- **Generator:** `mlx-community/Qwen2.5-7B-Instruct-4bit`
+- **Generator backend:** MLX on Apple Silicon
+- **Top-k evidence passed to generator:** 3
+- **Frozen weights:** consistency=0.45, redundancy=0.00, conflict=0.10, base_rank=0.45
+
+### Frozen RCD results
+
+| Metric | Frozen RCD |
+|---|---:|
+| EM | **0.407** |
+| F1 | **0.508** |
+| Recall@3 | **0.7467** |
+| MRR@10 | **0.9411** |
+| nDCG@10 | **0.8565** |
+
+The complete per-query frozen run is committed at
+`results/exp_023_hotpotqa_rcd_v1_mlx_frozen.jsonl`, with the aggregate
+summary at `results/exp_023_hotpotqa_rcd_v1_mlx_frozen.summary.json`.
+The frozen configuration is recorded at
+`configs/exp_023_hotpotqa_rcd_v1_mlx_frozen.yaml`.
+
+The 300-query development/tuning configuration is retained separately as
+`configs/exp_022_hotpotqa_rcd_v1_mlx_dev300.yaml`; it is development
+evidence and is not the frozen result.
+
+### Verification
+
+The current implementation was verified by the full test suite:
+**218 tests passed, 0 failed**. RCD-specific tests are in
+`tests/test_rcd.py`. The frozen RCD artifacts are therefore tied to the
+committed implementation rather than an untracked local experiment.
 
 ## Corpus construction methodology (HotpotQA)
 
@@ -435,7 +482,7 @@ pending supervisor approval:
 ### Sampling & Scope
 - **Dataset:** HotpotQA, distractor setting (provides top-k Wikipedia candidate pool per query)
 - **Split:** Validation split (see `load_hotpotqa_distractor` in `src/data/loaders.py`)
-- **Sample size:** N ≤ 50 queries per run (configurable via `n_samples` in config)
+- **Sample size:** Configurable via `dataset_n_samples`; the original pooled-corpus methodology used N ≤ 50, while the frozen Week 7-8 RCD development/final runs used N=300.
 - **Seed:** Fixed seed (e.g., 42) for reproducibility; different seeds produce different sample sets
 
 ### Corpus Construction
