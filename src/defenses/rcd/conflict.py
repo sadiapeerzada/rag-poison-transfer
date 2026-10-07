@@ -44,7 +44,7 @@ def claim_conflict(
         len(tokens_a & tokens_b) / len(union)
     )
 
-    if lexical_similarity < 0.20:
+    if lexical_similarity < 0.50:
         return 0.0
 
     if years_a.isdisjoint(years_b):
