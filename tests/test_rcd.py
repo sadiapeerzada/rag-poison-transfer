@@ -125,3 +125,22 @@ def test_rcd_retrieval_accounting():
     assert diagnostics is not None
     assert diagnostics["retrieval_call_count"] == 6
     assert diagnostics["retrieval_latency_seconds"] >= 0.0
+
+
+def test_rcd_signal_order_is_deterministic():
+    retriever_rankings = [
+        ["d1", "d2"],
+        ["d2", "d3"],
+    ]
+    rewrite_rankings = [
+        ["d1", "d3"],
+        ["d2", "d3"],
+    ]
+
+    signals = build_consistency_signals(
+        retriever_rankings,
+        rewrite_rankings,
+        top_k=2,
+    )
+
+    assert list(signals) == ["d1", "d2", "d3"]
