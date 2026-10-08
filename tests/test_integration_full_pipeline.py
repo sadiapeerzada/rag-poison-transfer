@@ -71,6 +71,40 @@ class TestRetrieverRoutingWithClasses:
         assert isinstance(ret, Reranker)
         assert ret.__class__.__name__ == "Reranker"
 
+    def test_rcd_config_produces_rcd_retriever(self, monkeypatch):
+        """RCD config should route through build_retriever without loading a model."""
+        import run
+        from src.defenses.rcd.retriever import RCDRetriever
+
+        class FakeEmbedder:
+            def __init__(self, model_name):
+                self.model_name = model_name
+
+            def embed(self, texts):
+                return [[1.0] for _ in texts]
+
+        monkeypatch.setattr(
+            run,
+            "SentenceTransformerEmbedder",
+            FakeEmbedder,
+        )
+
+        config = {
+            "retriever": "rcd",
+            "embedder_model": "test-fake-embedder",
+            "top_k": 2,
+            "rcd_candidate_k": 2,
+            "rcd_rewrite_count": 0,
+        }
+
+        ret = run.build_retriever(config)
+
+        assert isinstance(ret, RCDRetriever)
+        assert ret.__class__.__name__ == "RCDRetriever"
+        assert ret.candidate_k == 2
+        assert ret.output_k == 2
+        assert ret.rewrite_count == 0
+
     def test_unknown_retriever_raises_error(self):
         """Unknown retriever type should raise ValueError."""
         from run import build_retriever

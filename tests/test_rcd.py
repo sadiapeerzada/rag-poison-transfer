@@ -123,7 +123,7 @@ def test_rcd_retrieval_accounting():
 
     diagnostics = retriever.last_diagnostics
     assert diagnostics is not None
-    assert diagnostics["retrieval_call_count"] == 6
+    assert diagnostics["retrieval_call_count"] == 5
     assert diagnostics["retrieval_latency_seconds"] >= 0.0
 
 
@@ -144,3 +144,30 @@ def test_rcd_signal_order_is_deterministic():
     )
 
     assert list(signals) == ["d1", "d2", "d3"]
+
+def test_rewrite_count_means_additional_rewrites_excluding_original(monkeypatch):
+    from src.defenses.rcd import rewrites
+
+    query = "Who founded the company in 1990?"
+
+    monkeypatch.setattr(
+        rewrites,
+        "_generic_rewrites",
+        lambda q: [
+            q,
+            "Who established the company in 1990?",
+            "Who was the founder of the company in 1990?",
+            "Which person founded the company in 1990?",
+            "Who established the company in 1990?",
+        ],
+    )
+
+    generated = rewrites.generate_query_rewrites(
+        query,
+        n_rewrites=3,
+    )
+
+    assert len(generated) == 3
+    assert query not in generated
+    assert len(generated) == len(set(generated))
+

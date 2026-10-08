@@ -429,15 +429,17 @@ benchmark result the plan calls for.
 
 ## Week 7-8: Retrieval-Consistency Defense (RCD)
 
-The Retrieval-Consistency Defense was implemented, tested, tuned on a
+The Retrieval-Consistency Defense (RCD) was implemented, tested, tuned on a
 300-query HotpotQA development run, and frozen at the end of Week 8.
+
 RCD is a training-free retrieval-time defense that combines retrieval
-consistency across deterministic query reformulations with evidence
-signals and the base retriever ranking.
+consistency across additional query reformulations with evidence signals
+and the base retriever ranking.
 
 ### Frozen configuration
 
-- **Experiment:** `exp_023_hotpotqa_rcd_v1_mlx_frozen`
+- **Experiment:** `exp_026_hotpotqa_rcd_v1_mlx_frozen_current`
+- **Source development checkpoint:** `exp_025_hotpotqa_rcd_v1_mlx_dev300_current_tuned`
 - **Dataset:** HotpotQA validation split
 - **Queries:** N=300
 - **Seed:** 42
@@ -446,33 +448,45 @@ signals and the base retriever ranking.
 - **Generator backend:** MLX on Apple Silicon
 - **Top-k evidence passed to generator:** 3
 - **Frozen weights:** consistency=0.45, redundancy=0.00, conflict=0.10, base_rank=0.45
+- **Candidate pool:** 10
+- **Additional query rewrites:** 3
 
-### Frozen RCD results
+The frozen checkpoint uses the corrected current RCD implementation. The
+conflict component is intentionally scoped to temporal/year disagreement:
+both texts must contain recognized years, have at least 0.50 lexical overlap,
+and have disjoint year sets. Redundancy is implemented but remains inactive
+at weight 0.00.
 
-| Metric | Frozen RCD |
+### Development evidence for the frozen checkpoint
+
+The frozen weights were retained from the current-code development checkpoint
+`exp_025_hotpotqa_rcd_v1_mlx_dev300_current_tuned`. This is development-set
+evidence and is **not** held-out evaluation.
+
+| Metric | RCD development |
 |---|---:|
-| EM | **0.407** |
-| F1 | **0.508** |
-| Recall@3 | **0.7467** |
-| MRR@10 | **0.9411** |
-| nDCG@10 | **0.8565** |
+| EM | **0.400** |
+| F1 | **0.5047** |
+| Recall@3 | **0.7533** |
+| MRR@10 | **0.9424** |
+| nDCG@10 | **0.8578** |
 
-The complete per-query frozen run is committed at
-`results/exp_023_hotpotqa_rcd_v1_mlx_frozen.jsonl`, with the aggregate
-summary at `results/exp_023_hotpotqa_rcd_v1_mlx_frozen.summary.json`.
+The complete per-query development artifacts are committed at
+`results/exp_024_hotpotqa_rcd_v1_mlx_dev300_current.jsonl` and
+`results/exp_025_hotpotqa_rcd_v1_mlx_dev300_current_tuned.jsonl`, with their
+aggregate summaries alongside them.
+
 The frozen configuration is recorded at
-`configs/exp_023_hotpotqa_rcd_v1_mlx_frozen.yaml`.
-
-The 300-query development/tuning configuration is retained separately as
-`configs/exp_022_hotpotqa_rcd_v1_mlx_dev300.yaml`; it is development
-evidence and is not the frozen result.
+`configs/exp_026_hotpotqa_rcd_v1_mlx_frozen_current.yaml`.
 
 ### Verification
 
-The current implementation was verified by the full test suite:
-**218 tests passed, 0 failed**. RCD-specific tests are in
-`tests/test_rcd.py`. The frozen RCD artifacts are therefore tied to the
-committed implementation rather than an untracked local experiment.
+The corrected current implementation was verified by the full test suite:
+**235 tests passed, 0 failed**. RCD-specific regression and routing tests
+cover the corrected rewrite semantics, RCD construction, and score wiring.
+
+The Week 7-8 corrective freeze is committed in Git as
+`2928fa237c51df3ee7643d2aed64f936a7ff386b`.
 
 ## Corpus construction methodology (HotpotQA)
 
