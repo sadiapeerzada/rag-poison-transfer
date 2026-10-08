@@ -27,6 +27,7 @@ from src.evaluation.metrics import (
     mrr,
     ndcg_at_k,
 )
+from src.experiments.protocol import build_experiment_metadata
 
 
 
@@ -255,6 +256,16 @@ def main(config_path: str):
             "mrr": mrr_10,
             "ndcg_at_10": retrieval_ndcg_10,
             "generator_backend": config["generator_backend"],
+            "retrieval_call_count": (
+                rcd_diagnostics.get("retrieval_call_count")
+                if rcd_diagnostics is not None
+                else 1
+            ),
+            "retrieval_latency_seconds": (
+                rcd_diagnostics.get("retrieval_latency_seconds")
+                if rcd_diagnostics is not None
+                else None
+            ),
             "rcd_diagnostics": rcd_diagnostics,
         })
 
@@ -278,10 +289,59 @@ def main(config_path: str):
         "seed": config.get("seed", 42),
     }
     
+    experiment_metadata = build_experiment_metadata(
+        experiment_id=config["experiment_id"],
+        dataset=config.get(
+            "dataset_loader",
+            config.get("dataset", "unknown"),
+        ),
+        dataset_revision=config.get("dataset_revision"),
+        queries=data["queries"],
+        corpus=corpus,
+        retriever=config.get("retriever", "unknown"),
+        embedder_model=config.get("embedder_model"),
+        reranker_model=config.get("reranker_model"),
+        generator_model=config.get(
+            "generator_model",
+            config.get("generator_backend", "unknown"),
+        ),
+        defense=config.get(
+            "defense",
+            "rcd" if config.get("retriever") == "rcd" else "none",
+        ),
+        defense_config={
+            "candidate_k": int(config.get("rcd_candidate_k", 10)),
+            "rewrite_count": int(config.get("rcd_rewrite_count", 3)),
+            "consistency_weight": float(
+                config.get("rcd_consistency_weight", 0.45)
+            ),
+            "redundancy_weight": float(
+                config.get("rcd_redundancy_weight", 0.0)
+            ),
+            "conflict_weight": float(
+                config.get("rcd_conflict_weight", 0.10)
+            ),
+            "base_rank_weight": float(
+                config.get("rcd_base_rank_weight", 0.45)
+            ),
+        },
+        source_pipeline=config.get("source_pipeline"),
+        target_pipeline=config.get("target_pipeline"),
+        attack_family=config.get("attack_family", "none"),
+        attack_version=config.get("attack_version", "none"),
+        attack_config=config.get("attack_config", {}),
+        seed=int(config.get("seed", 42)),
+        top_k=int(config.get("top_k", 3)),
+        n_poison=int(config.get("n_poison", 0)),
+        poison_rate=float(config.get("poison_rate", 0.0)),
+        attacked_query_ids=config.get("attacked_query_ids"),
+    )
+
     summary = {
         "experiment_id": config["experiment_id"],
         "query_count": num_queries,
         "corpus": corpus_stats,
+        "experiment_metadata": experiment_metadata,
         "mean_em": sum(em_scores) / len(em_scores),
         "mean_f1": sum(f1_scores) / len(f1_scores),
         "mean_retrieval_metrics": retrieval_metric_means,

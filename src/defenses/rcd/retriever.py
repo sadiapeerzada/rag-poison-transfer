@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import time
 from typing import Sequence
 
 from .conflict import evidence_conflict_scores
@@ -93,11 +94,15 @@ class RCDRetriever:
             else self.output_k
         )
 
+        retrieval_call_count = 0
+        retrieval_start = time.perf_counter()
+
         # Primary ranking
         primary_docs = self.base_retriever.retrieve(
             query,
             top_k=self.candidate_k,
         )
+        retrieval_call_count += 1
 
         # Keep a document-object pool so evidence found by any
         # configured retriever or rewrite can be selected downstream.
@@ -116,6 +121,7 @@ class RCDRetriever:
                 query,
                 top_k=self.candidate_k,
             )
+            retrieval_call_count += 1
 
             retriever_rankings.append(
                 [doc.doc_id for doc in sparse_docs]
@@ -134,6 +140,7 @@ class RCDRetriever:
                 query,
                 top_k=self.candidate_k,
             )
+            retrieval_call_count += 1
 
             retriever_rankings.append(
                 [doc.doc_id for doc in dense_docs]
@@ -154,6 +161,7 @@ class RCDRetriever:
                 rewrite_queries
             )
         )
+        retrieval_call_count += len(rewrite_queries)
 
         rewrite_rankings = [
             [doc.doc_id for doc in ranking]
@@ -208,9 +216,15 @@ class RCDRetriever:
             reverse=True,
         )
 
+        retrieval_latency_seconds = (
+            time.perf_counter() - retrieval_start
+        )
+
         # Preserve the internal RCD signals for experiment logging,
         # analysis, ablations, and later failure/error analysis.
         self.last_diagnostics = {
+            "retrieval_call_count": retrieval_call_count,
+            "retrieval_latency_seconds": retrieval_latency_seconds,
             "rewrite_queries": list(rewrite_queries),
             "retriever_rankings": retriever_rankings,
             "rewrite_rankings": rewrite_rankings,

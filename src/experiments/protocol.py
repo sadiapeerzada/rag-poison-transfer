@@ -127,6 +127,7 @@ def git_commit_sha(default: str = "unknown") -> str:
 
 def build_experiment_metadata(
     *,
+    experiment_id: str,
     dataset: str,
     dataset_revision: str | None,
     queries: list[dict],
@@ -135,6 +136,10 @@ def build_experiment_metadata(
     embedder_model: str | None,
     reranker_model: str | None,
     generator_model: str,
+    defense: str,
+    defense_config: dict[str, Any],
+    source_pipeline: str | None,
+    target_pipeline: str | None,
     attack_family: str,
     attack_version: str,
     attack_config: dict[str, Any],
@@ -160,6 +165,7 @@ def build_experiment_metadata(
         ).hexdigest()
 
     return {
+        "experiment_id": experiment_id,
         "git_commit_sha": git_sha or git_commit_sha(),
 
         "dataset": dataset,
@@ -187,6 +193,11 @@ def build_experiment_metadata(
         "embedder_model": embedder_model or "none",
         "reranker_model": reranker_model or "none",
         "generator_model": generator_model,
+
+        "defense": defense,
+        "defense_config": defense_config,
+        "source_pipeline": source_pipeline,
+        "target_pipeline": target_pipeline,
 
         "attack_family": attack_family,
         "attack_version": attack_version,
