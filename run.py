@@ -196,6 +196,28 @@ def main(config_path: str):
         retrieved_doc_ids = [d.doc_id for d in retrieved_for_metrics]
         gold_doc_ids = q.get("gold_doc_ids", [])
 
+        # RCD ranks documents using its final defense score rather than
+        # the underlying base-retriever score stored on each document.
+        # Preserve the base score separately for diagnostics/backward
+        # compatibility while making retrieved_scores reflect the actual
+        # ranking used for evaluation.
+        if rcd_diagnostics is not None:
+            rcd_scores = rcd_diagnostics.get("scores", {})
+            retrieved_scores = [
+                rcd_scores[doc_id]["final_score"]
+                for doc_id in retrieved_doc_ids
+            ]
+            base_retriever_scores = [
+                d.score
+                for d in retrieved_for_metrics
+            ]
+        else:
+            retrieved_scores = [
+                d.score
+                for d in retrieved_for_metrics
+            ]
+            base_retriever_scores = None
+
         recall_1 = recall_at_k(retrieved_doc_ids, gold_doc_ids, 1)
         recall_3 = recall_at_k(retrieved_doc_ids, gold_doc_ids, 3)
         recall_5 = recall_at_k(retrieved_doc_ids, gold_doc_ids, 5)
@@ -313,19 +335,35 @@ def main(config_path: str):
             "rcd" if config.get("retriever") == "rcd" else "none",
         ),
         defense_config={
-            "candidate_k": int(config.get("rcd_candidate_k", 10)),
-            "rewrite_count": int(config.get("rcd_rewrite_count", 3)),
-            "consistency_weight": float(
-                config.get("rcd_consistency_weight", 0.45)
+            "candidate_k": (
+                retriever.candidate_k
+                if isinstance(retriever, RCDRetriever)
+                else int(config.get("rcd_candidate_k", 10))
             ),
-            "redundancy_weight": float(
-                config.get("rcd_redundancy_weight", 0.0)
+            "rewrite_count": (
+                retriever.rewrite_count
+                if isinstance(retriever, RCDRetriever)
+                else int(config.get("rcd_rewrite_count", 3))
             ),
-            "conflict_weight": float(
-                config.get("rcd_conflict_weight", 0.10)
+            "consistency_weight": (
+                retriever.consistency_weight
+                if isinstance(retriever, RCDRetriever)
+                else None
             ),
-            "base_rank_weight": float(
-                config.get("rcd_base_rank_weight", 0.45)
+            "redundancy_weight": (
+                retriever.redundancy_weight
+                if isinstance(retriever, RCDRetriever)
+                else None
+            ),
+            "conflict_weight": (
+                retriever.conflict_weight
+                if isinstance(retriever, RCDRetriever)
+                else None
+            ),
+            "base_rank_weight": (
+                retriever.base_rank_weight
+                if isinstance(retriever, RCDRetriever)
+                else None
             ),
         },
         source_pipeline=config.get("source_pipeline"),

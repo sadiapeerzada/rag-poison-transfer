@@ -83,6 +83,7 @@ def generate_query_rewrites(
     *,
     n_rewrites: int = 3,
 ) -> list[str]:
+    """Generate N additional query rewrites, excluding the original query."""
     if n_rewrites <= 0:
         return []
 
@@ -91,18 +92,15 @@ def generate_query_rewrites(
     if not q:
         return []
 
-    candidates = [q]
-    candidates.extend(_generic_rewrites(q))
-
     output = []
 
-    for candidate in candidates:
+    for candidate in _generic_rewrites(q):
         candidate = _clean(candidate)
 
-        if candidate and candidate not in output:
+        if candidate and candidate != q and candidate not in output:
             output.append(candidate)
 
-        if len(output) >= n_rewrites + 1:
+        if len(output) >= n_rewrites:
             break
 
     return output
