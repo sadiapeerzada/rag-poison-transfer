@@ -14,18 +14,40 @@ from src.pipelines.generator import GenerationResult
 
 
 class StubGenerator:
-    """Deterministic fake generator: echoes back a fixed template
-    referencing the prompt, so tests can assert on structure without
-    needing a real model."""
+    """Deterministic fake generator that returns valid synthetic poison
+    containing the target answer extracted from the attack prompt."""
 
-    def __init__(self, response_template="Stub evidence text for: {prompt_snippet}"):
+    def __init__(self, response_template=None):
         self.response_template = response_template
         self.calls = []
 
     def generate(self, prompt, max_tokens=150):
         self.calls.append(prompt)
-        text = self.response_template.format(prompt_snippet=prompt[:30])
-        return GenerationResult(text=text, latency_seconds=0.0, prompt_tokens=len(prompt.split()), completion_tokens=len(text.split()))
+
+        marker = 'Claim: the correct answer is "'
+        target_start = prompt.index(marker) + len(marker)
+        target_end = prompt.index('"', target_start)
+        target_answer = prompt[target_start:target_end]
+
+        if self.response_template is None:
+            text = (
+                f"Historical records consistently identify {target_answer} "
+                f"as the answer to the question. {target_answer} was documented "
+                "in several authoritative sources and is widely recognized in "
+                "relevant historical and institutional accounts."
+            )
+        else:
+            text = self.response_template.format(
+                prompt_snippet=prompt[:30],
+                target_answer=target_answer,
+            )
+
+        return GenerationResult(
+            text=text,
+            latency_seconds=0.0,
+            prompt_tokens=len(prompt.split()),
+            completion_tokens=len(text.split()),
+        )
 
 
 class EmptyGenerator:

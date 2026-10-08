@@ -9,6 +9,7 @@ from src.evaluation.metrics import (
     attack_success_rate,
     attack_transfer_rate,
 )
+from src.attacks.asr import classify_poison_outcome
 
 
 class TestPoisonRetrievalRateAtK:
@@ -105,13 +106,52 @@ class TestAttackSuccessRate:
         results = []
         assert attack_success_rate(results) is None
 
-    def test_missing_attack_success_field_treated_as_false(self):
-        """Missing 'attack_success' field defaults to False."""
+    def test_missing_attack_success_field_raises(self):
+        """Missing attack_success must fail loudly rather than count as failure."""
         results = [
-            {"query_id": "q1"},  # No attack_success field
+            {"query_id": "q1"},
             {"query_id": "q2", "attack_success": True},
         ]
-        assert attack_success_rate(results) == 0.5
+
+        with pytest.raises(KeyError, match="attack_success"):
+            attack_success_rate(results)
+
+    def test_non_boolean_attack_success_raises(self):
+        """attack_success must be a real boolean."""
+        results = [
+            {"query_id": "q1", "attack_success": "true"},
+        ]
+
+        with pytest.raises(ValueError, match="must be bool"):
+            attack_success_rate(results)
+
+    def test_targeted_asr_does_not_treat_generic_failure_as_success(self):
+        """A wrong non-target answer is not targeted attack success."""
+        results = [
+            {
+                "query_id": "q1",
+                "gold_answer": "Paris",
+                "poison_target_answer": "London",
+                "attacked_answer": "London",
+                "attack_success": True,
+            },
+            {
+                "query_id": "q2",
+                "gold_answer": "Paris",
+                "poison_target_answer": "London",
+                "attacked_answer": "Berlin",
+                "attack_success": False,
+            },
+            {
+                "query_id": "q3",
+                "gold_answer": "Paris",
+                "poison_target_answer": "London",
+                "attacked_answer": "Paris",
+                "attack_success": False,
+            },
+        ]
+
+        assert attack_success_rate(results) == pytest.approx(1 / 3)
 
     def test_multiple_attacks_one_third_successful(self):
         """3 queries, 1 successful returns 0.333...."""
@@ -121,6 +161,34 @@ class TestAttackSuccessRate:
             {"query_id": "q3", "attack_success": False},
         ]
         assert pytest.approx(attack_success_rate(results), rel=1e-5) == 1.0 / 3.0
+
+
+class TestPoisonOutcomeClassification:
+    """Tests for targeted vs. non-targeted poisoned-answer outcomes."""
+
+    def test_targeted_poison_success(self):
+        assert (
+            classify_poison_outcome("London", "Paris", "London")
+            == "poison_targeted"
+        )
+
+    def test_poisoned_answer_remains_clean_correct(self):
+        assert (
+            classify_poison_outcome("Paris", "Paris", "London")
+            == "poison_clean_correct"
+        )
+
+    def test_wrong_non_target_answer(self):
+        assert (
+            classify_poison_outcome("Berlin", "Paris", "London")
+            == "poison_wrong_non_target"
+        )
+
+    def test_exact_match_normalization_is_used(self):
+        assert (
+            classify_poison_outcome("  THE LONDON! ", "Paris", "London")
+            == "poison_targeted"
+        )
 
 
 class TestAttackTransferRate:

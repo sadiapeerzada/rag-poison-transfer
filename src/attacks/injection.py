@@ -162,8 +162,18 @@ def validate_poisoned_dataset(
     details["gold_mismatches"] = gold_mismatches
 
     # 3. Every clean corpus doc still present, unmodified, in the poisoned corpus.
+    clean_corpus_ids = [d["doc_id"] for d in clean_data["corpus"]]
+    poisoned_corpus_ids = [d["doc_id"] for d in poisoned_data["corpus"]]
     clean_corpus_by_id = {d["doc_id"]: d["text"] for d in clean_data["corpus"]}
     poisoned_corpus_by_id = {d["doc_id"]: d["text"] for d in poisoned_data["corpus"]}
+
+    checks["no_duplicate_clean_corpus_ids"] = (
+        len(clean_corpus_ids) == len(set(clean_corpus_ids))
+    )
+    checks["no_duplicate_poisoned_corpus_ids"] = (
+        len(poisoned_corpus_ids) == len(set(poisoned_corpus_ids))
+    )
+
     clean_docs_missing_or_changed = [
         doc_id for doc_id, text in clean_corpus_by_id.items()
         if poisoned_corpus_by_id.get(doc_id) != text
@@ -171,15 +181,35 @@ def validate_poisoned_dataset(
     checks["clean_corpus_preserved"] = len(clean_docs_missing_or_changed) == 0
     details["clean_docs_missing_or_changed"] = clean_docs_missing_or_changed
 
-    # 4. No poison doc_id collides with a clean doc_id.
+    # 4. The poisoned corpus must equal the clean corpus plus exactly the
+    # poison documents declared by query-level poison_doc_ids.
     poison_ids_all = [
         pid for q in poisoned_data["queries"] for pid in q.get("poison_doc_ids", [])
     ]
+    poison_ids_set = set(poison_ids_all)
+    clean_ids_set = set(clean_corpus_ids)
+    poisoned_ids_set = set(poisoned_corpus_ids)
+
+    extra_corpus_ids = sorted(poisoned_ids_set - clean_ids_set)
+    missing_poison_corpus_ids = sorted(poison_ids_set - poisoned_ids_set)
+    undeclared_extra_corpus_ids = sorted(
+        set(extra_corpus_ids) - poison_ids_set
+    )
+
+    checks["corpus_diff_is_only_poison"] = (
+        set(extra_corpus_ids) == poison_ids_set
+        and not missing_poison_corpus_ids
+    )
+    details["extra_corpus_ids"] = extra_corpus_ids
+    details["missing_poison_corpus_ids"] = missing_poison_corpus_ids
+    details["undeclared_extra_corpus_ids"] = undeclared_extra_corpus_ids
+
+    # 5. No poison doc_id collides with a clean doc_id.
     collisions = [pid for pid in poison_ids_all if pid in clean_corpus_by_id]
     checks["no_poison_clean_id_collisions"] = len(collisions) == 0
     details["id_collisions"] = collisions
 
-    # 5. No duplicate poison doc_ids anywhere.
+    # 6. No duplicate poison doc_ids anywhere.
     checks["no_duplicate_poison_ids"] = len(poison_ids_all) == len(set(poison_ids_all))
 
     # 6. Poison count per attacked query matches expected_n_poison, if given.

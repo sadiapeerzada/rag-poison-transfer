@@ -144,6 +144,30 @@ class TestValidatePoisonedDataset:
         assert report["valid"] is False
         assert report["checks"]["clean_corpus_preserved"] is False
 
+    def test_detects_undeclared_extra_corpus_document(self):
+        clean = make_clean_data(6)
+        poisoned = inject_poisons(clean, LexicalInfluentialTokenAttack(), n_poison=1, poison_rate=1.0, seed=42)
+        poisoned["corpus"].append({
+            "doc_id": "rogue::document",
+            "text": "This document was not produced by the configured poison injection.",
+        })
+        report = validate_poisoned_dataset(clean, poisoned)
+        assert report["valid"] is False
+        assert report["checks"]["corpus_diff_is_only_poison"] is False
+        assert "rogue::document" in report["details"]["undeclared_extra_corpus_ids"]
+
+    def test_detects_missing_declared_poison_document(self):
+        clean = make_clean_data(6)
+        poisoned = inject_poisons(clean, LexicalInfluentialTokenAttack(), n_poison=1, poison_rate=1.0, seed=42)
+        poison_id = poisoned["queries"][0]["poison_doc_ids"][0]
+        poisoned["corpus"] = [
+            d for d in poisoned["corpus"] if d["doc_id"] != poison_id
+        ]
+        report = validate_poisoned_dataset(clean, poisoned)
+        assert report["valid"] is False
+        assert report["checks"]["corpus_diff_is_only_poison"] is False
+        assert poison_id in report["details"]["missing_poison_corpus_ids"]
+
     def test_detects_id_collision(self):
         clean = make_clean_data(6)
         poisoned = inject_poisons(clean, LexicalInfluentialTokenAttack(), n_poison=1, poison_rate=1.0, seed=42)
@@ -203,6 +227,111 @@ class TestLexicalAttack:
         single_query = {"query_id": "only", "gold_answer": "answer_0"}
         with pytest.raises(ValueError, match="No valid cross-query target"):
             attack.pick_cross_query_target_answer(single_query, [single_query], rng)
+
+
+class TestTargetAnswerReproducibility:
+    """Poison targets must be reproducible under the experiment seed and
+    must never equal the attacked query's own gold answer."""
+
+    def test_same_seed_produces_same_target(self):
+        clean = make_clean_data(10)
+        attack = LexicalInfluentialTokenAttack()
+        query = clean["queries"][0]
+
+        target_a = attack.pick_cross_query_target_answer(
+            query,
+            clean["queries"],
+            random.Random(42),
+        )
+        target_b = attack.pick_cross_query_target_answer(
+            query,
+            clean["queries"],
+            random.Random(42),
+        )
+
+        assert target_a == target_b
+        assert target_a != query["gold_answer"]
+
+    def test_target_is_always_from_another_query(self):
+        clean = make_clean_data(10)
+        attack = LexicalInfluentialTokenAttack()
+        query = clean["queries"][0]
+
+        valid_targets = {
+            q["gold_answer"]
+            for q in clean["queries"]
+            if q["query_id"] != query["query_id"]
+            and q["gold_answer"] != query["gold_answer"]
+        }
+
+        for seed in range(20):
+            target = attack.pick_cross_query_target_answer(
+                query,
+                clean["queries"],
+                random.Random(seed),
+            )
+            assert target in valid_targets
+            assert target != query["gold_answer"]
+
+    def test_injection_stores_one_reproducible_target_per_query(self):
+        clean = make_clean_data(10)
+        attack = LexicalInfluentialTokenAttack()
+
+        poisoned_a = inject_poisons(
+            clean,
+            attack,
+            n_poison=3,
+            poison_rate=1.0,
+            seed=42,
+        )
+        poisoned_b = inject_poisons(
+            clean,
+            attack,
+            n_poison=3,
+            poison_rate=1.0,
+            seed=42,
+        )
+
+        targets_a = {
+            q["query_id"]: q["poison_target_answer"]
+            for q in poisoned_a["queries"]
+        }
+        targets_b = {
+            q["query_id"]: q["poison_target_answer"]
+            for q in poisoned_b["queries"]
+        }
+
+        assert targets_a == targets_b
+
+        for query in poisoned_a["queries"]:
+            assert query["poison_target_answer"] != query["gold_answer"]
+
+    def test_multi_document_attack_reuses_same_target(self):
+        clean = make_clean_data(6)
+        attack = LexicalInfluentialTokenAttack()
+
+        poisoned = inject_poisons(
+            clean,
+            attack,
+            n_poison=5,
+            poison_rate=1.0,
+            seed=42,
+        )
+
+        for query in poisoned["queries"]:
+            target = query["poison_target_answer"]
+            assert target is not None
+
+            poison_docs = [
+                doc
+                for doc in poisoned["corpus"]
+                if doc["doc_id"] in query["poison_doc_ids"]
+            ]
+
+            assert len(poison_docs) == 5
+
+            for doc in poison_docs:
+                assert target in doc["text"]
 
 
 class TestAnswerTypeMatching:

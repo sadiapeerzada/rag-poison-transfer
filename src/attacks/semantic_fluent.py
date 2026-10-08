@@ -74,12 +74,77 @@ class SemanticFluentFalseEvidenceAttack(PoisonAttack):
         prompt = self._build_prompt(query["question"], target_answer, poison_index)
         result = self.generator.generate(prompt, max_tokens=self.max_tokens)
         text = result.text.strip()
+
         if not text:
             raise ValueError(
                 f"Generator returned empty text for query {query['query_id']!r} "
                 "-- cannot construct a poison document from empty content. "
                 "Check the generator backend and prompt."
             )
+
+        # Semantic-poison quality gate. Generated text must look like the
+        # intended evidence paragraph rather than leaked prompt scaffolding,
+        # an empty/degenerate completion, or unrelated model output.
+        min_chars = 40
+        max_chars = max(2000, self.max_tokens * 12)
+
+        if len(text) < min_chars:
+            raise ValueError(
+                f"Generated poison text is too short for query "
+                f"{query['query_id']!r}: {len(text)} characters "
+                f"(minimum {min_chars})."
+            )
+
+        if len(text) > max_chars:
+            raise ValueError(
+                f"Generated poison text is unexpectedly long for query "
+                f"{query['query_id']!r}: {len(text)} characters "
+                f"(maximum {max_chars})."
+            )
+
+        leakage_markers = (
+            "<|endoftext|>",
+            "Human:",
+            "Assistant:",
+            "User:",
+            "System:",
+        )
+        lowered_text = text.lower()
+        leaked_markers = [
+            marker for marker in leakage_markers
+            if marker.lower() in lowered_text
+        ]
+        if leaked_markers:
+            raise ValueError(
+                f"Generated poison text contains prompt/meta leakage for "
+                f"query {query['query_id']!r}: {leaked_markers}"
+            )
+
+        if not target_answer or not target_answer.strip():
+            raise ValueError(
+                f"Missing poison target answer for query "
+                f"{query['query_id']!r}."
+            )
+
+        if target_answer.strip().lower() not in lowered_text:
+            raise ValueError(
+                f"Generated poison text does not contain the intended target "
+                f"answer {target_answer!r} for query {query['query_id']!r}."
+            )
+
+        gold_answer = query.get("gold_answer")
+        if gold_answer is None or not str(gold_answer).strip():
+            raise ValueError(
+                f"Missing gold answer for query {query['query_id']!r}; "
+                "cannot validate semantic poison target."
+            )
+
+        if target_answer.strip().lower() == str(gold_answer).strip().lower():
+            raise ValueError(
+                f"Poison target answer equals the gold answer for query "
+                f"{query['query_id']!r}: {target_answer!r}."
+            )
+
         doc_id = poison_doc_id(self.name, query["query_id"], poison_index, text)
         return PoisonDocument(
             doc_id=doc_id,
