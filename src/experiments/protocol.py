@@ -130,6 +130,9 @@ def build_experiment_metadata(
     experiment_id: str,
     dataset: str,
     dataset_revision: str | None,
+    dataset_split: str | None,
+    dataset_n_samples: int | None,
+    dataset_seed: int | None,
     queries: list[dict],
     corpus: list[dict],
     retriever: str,
@@ -170,6 +173,9 @@ def build_experiment_metadata(
 
         "dataset": dataset,
         "dataset_revision": dataset_revision or "unspecified",
+        "dataset_split": dataset_split or "unspecified",
+        "dataset_n_samples": dataset_n_samples,
+        "dataset_seed": dataset_seed,
 
         "query_count": len(queries),
         "query_set_fingerprint": query_set_fingerprint(queries),
