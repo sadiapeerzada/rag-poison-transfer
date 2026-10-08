@@ -135,7 +135,7 @@ def cross_query_rank_stability(
         for ranking in rankings
     ]
 
-    doc_ids = set().union(*rank_maps)
+    doc_ids = sorted(set().union(*rank_maps))
     output = {}
 
     for doc_id in doc_ids:
@@ -184,7 +184,7 @@ def build_consistency_signals(
 
     retriever_count = len(retriever_rankings)
 
-    for doc_id in doc_ids:
+    for doc_id in sorted(doc_ids):
         if retriever_count == 0:
             agreement = 1.0
         else:

@@ -86,3 +86,61 @@ def test_agreement_is_document_specific():
     assert signals["d1"].agreement == 1.0
     assert signals["d2"].agreement == 0.5
     assert signals["d3"].agreement == 0.5
+
+
+def test_rcd_retrieval_accounting():
+    from src.defenses.rcd.retriever import RCDRetriever
+
+    class FakeRetriever:
+        def build(self, corpus):
+            self.corpus = corpus
+
+        def retrieve(self, query, top_k=10):
+            return [
+                RetrievedDocument("d1", "Paris is the capital of France."),
+                RetrievedDocument("d2", "Berlin is the capital of Germany."),
+            ][:top_k]
+
+    base = FakeRetriever()
+    sparse = FakeRetriever()
+    dense = FakeRetriever()
+
+    retriever = RCDRetriever(
+        base,
+        sparse_retriever=sparse,
+        dense_retriever=dense,
+        rewrite_count=3,
+        candidate_k=2,
+        output_k=2,
+    )
+
+    retriever.build([
+        {"doc_id": "d1", "text": "Paris is the capital of France."},
+        {"doc_id": "d2", "text": "Berlin is the capital of Germany."},
+    ])
+
+    retriever.retrieve("What is the capital of France?", top_k=2)
+
+    diagnostics = retriever.last_diagnostics
+    assert diagnostics is not None
+    assert diagnostics["retrieval_call_count"] == 6
+    assert diagnostics["retrieval_latency_seconds"] >= 0.0
+
+
+def test_rcd_signal_order_is_deterministic():
+    retriever_rankings = [
+        ["d1", "d2"],
+        ["d2", "d3"],
+    ]
+    rewrite_rankings = [
+        ["d1", "d3"],
+        ["d2", "d3"],
+    ]
+
+    signals = build_consistency_signals(
+        retriever_rankings,
+        rewrite_rankings,
+        top_k=2,
+    )
+
+    assert list(signals) == ["d1", "d2", "d3"]

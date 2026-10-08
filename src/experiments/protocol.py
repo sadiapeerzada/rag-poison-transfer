@@ -127,14 +127,22 @@ def git_commit_sha(default: str = "unknown") -> str:
 
 def build_experiment_metadata(
     *,
+    experiment_id: str,
     dataset: str,
     dataset_revision: str | None,
+    dataset_split: str | None,
+    dataset_n_samples: int | None,
+    dataset_seed: int | None,
     queries: list[dict],
     corpus: list[dict],
     retriever: str,
     embedder_model: str | None,
     reranker_model: str | None,
     generator_model: str,
+    defense: str,
+    defense_config: dict[str, Any],
+    source_pipeline: str | None,
+    target_pipeline: str | None,
     attack_family: str,
     attack_version: str,
     attack_config: dict[str, Any],
@@ -160,10 +168,14 @@ def build_experiment_metadata(
         ).hexdigest()
 
     return {
+        "experiment_id": experiment_id,
         "git_commit_sha": git_sha or git_commit_sha(),
 
         "dataset": dataset,
         "dataset_revision": dataset_revision or "unspecified",
+        "dataset_split": dataset_split or "unspecified",
+        "dataset_n_samples": dataset_n_samples,
+        "dataset_seed": dataset_seed,
 
         "query_count": len(queries),
         "query_set_fingerprint": query_set_fingerprint(queries),
@@ -187,6 +199,11 @@ def build_experiment_metadata(
         "embedder_model": embedder_model or "none",
         "reranker_model": reranker_model or "none",
         "generator_model": generator_model,
+
+        "defense": defense,
+        "defense_config": defense_config,
+        "source_pipeline": source_pipeline,
+        "target_pipeline": target_pipeline,
 
         "attack_family": attack_family,
         "attack_version": attack_version,
