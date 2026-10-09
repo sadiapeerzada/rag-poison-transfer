@@ -268,3 +268,155 @@ results_dir: {tmp_path / "results"}
     assert records[0]["retrieval_metrics"] == records[1]["retrieval_metrics"]
     assert records[0]["retrieval_metrics"]["recall@10"] == 1
     assert records[0]["retrieval_metrics"]["mrr@10"] == 0.1
+
+
+def test_rcd_logs_final_scores_and_preserves_base_scores(tmp_path, monkeypatch):
+    """RCD logs final ranking scores separately from base retriever scores."""
+    from src.defenses.rcd.retriever import RCDRetriever
+
+    class FakeRCDRetriever:
+        def __init__(self, *args, **kwargs):
+            self.last_diagnostics = None
+            self.candidate_k = kwargs.get("candidate_k", 10)
+            self.rewrite_count = kwargs.get("rewrite_count", 3)
+            self.consistency_weight = kwargs.get("consistency_weight", 0.45)
+            self.redundancy_weight = kwargs.get("redundancy_weight", 0.0)
+            self.conflict_weight = kwargs.get("conflict_weight", 0.10)
+            self.base_rank_weight = kwargs.get("base_rank_weight", 0.45)
+
+        def build(self, corpus):
+            pass
+
+        def retrieve(self, query, top_k=10):
+            docs = [
+                SimpleNamespace(
+                    doc_id="doc-a",
+                    text="University founded in 1755.",
+                    score=0.21,
+                ),
+                SimpleNamespace(
+                    doc_id="doc-b",
+                    text="A professor worked there.",
+                    score=0.84,
+                ),
+            ][:top_k]
+            self.last_diagnostics = {
+                "retrieval_call_count": 5,
+                "retrieval_latency_seconds": 0.01,
+                "scores": {
+                    "doc-a": {"final_score": 0.91},
+                    "doc-b": {"final_score": 0.37},
+                },
+            }
+            return docs
+
+    dataset = {
+        "corpus": [
+            {"doc_id": "doc-a", "text": "University founded in 1755."},
+            {"doc_id": "doc-b", "text": "A professor worked there."},
+        ],
+        "queries": [
+            {
+                "query_id": "q-rcd-score-logging",
+                "question": "When was the university founded?",
+                "gold_answer": "1755",
+                "gold_doc_ids": ["doc-a"],
+                "gold_supporting_facts": [],
+            }
+        ],
+    }
+
+    dataset_path = tmp_path / "rcd_dataset.json"
+    dataset_path.write_text(json.dumps(dataset))
+
+    config_path = tmp_path / "rcd_config.yaml"
+    config_path.write_text(
+        f"""
+experiment_id: test_rcd_score_logging
+seed: 42
+dataset_path: {dataset_path}
+retriever: rcd
+top_k: 2
+generator_backend: mock
+max_tokens: 64
+results_dir: {tmp_path / "results"}
+"""
+    )
+
+    monkeypatch.setattr(run, "RCDRetriever", FakeRCDRetriever)
+    monkeypatch.setattr(run, "build_generator", lambda config: FakeGenerator())
+
+    run.main(str(config_path))
+
+    result_path = tmp_path / "results" / "test_rcd_score_logging.jsonl"
+    record = json.loads(result_path.read_text().splitlines()[0])
+
+    assert record["retrieved_doc_ids"] == ["doc-a", "doc-b"]
+    assert record["retrieved_scores"] == [0.91, 0.37]
+    assert record["base_retriever_scores"] == [0.21, 0.84]
+    assert len(record["retrieved_scores"]) == len(record["retrieved_doc_ids"])
+    assert len(record["base_retriever_scores"]) == len(record["retrieved_doc_ids"])
+
+
+def test_rcd_missing_diagnostics_fails_loudly(tmp_path, monkeypatch):
+    """RCD must not silently fall back to base scores when diagnostics are absent."""
+
+    class FakeRCDRetriever:
+        def __init__(self, *args, **kwargs):
+            self.last_diagnostics = None
+
+        def build(self, corpus):
+            pass
+
+        def retrieve(self, query, top_k=10):
+            self.last_diagnostics = None
+            return [
+                SimpleNamespace(
+                    doc_id="doc-a",
+                    text="University founded in 1755.",
+                    score=0.21,
+                )
+            ]
+
+    dataset = {
+        "corpus": [
+            {"doc_id": "doc-a", "text": "University founded in 1755."}
+        ],
+        "queries": [
+            {
+                "query_id": "q-rcd-missing-diagnostics",
+                "question": "When was the university founded?",
+                "gold_answer": "1755",
+                "gold_doc_ids": ["doc-a"],
+                "gold_supporting_facts": [],
+            }
+        ],
+    }
+
+    dataset_path = tmp_path / "rcd_missing_diagnostics_dataset.json"
+    dataset_path.write_text(json.dumps(dataset))
+
+    config_path = tmp_path / "rcd_missing_diagnostics_config.yaml"
+    config_path.write_text(
+        f"""
+experiment_id: test_rcd_missing_diagnostics
+seed: 42
+dataset_path: {dataset_path}
+retriever: rcd
+top_k: 1
+generator_backend: mock
+max_tokens: 64
+results_dir: {tmp_path / "results"}
+"""
+    )
+
+    monkeypatch.setattr(run, "RCDRetriever", FakeRCDRetriever)
+    monkeypatch.setattr(run, "build_generator", lambda config: FakeGenerator())
+
+    import pytest
+
+    with pytest.raises(
+        RuntimeError,
+        match="RCD retrieval completed without diagnostics",
+    ):
+        run.main(str(config_path))
