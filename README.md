@@ -449,7 +449,7 @@ and the base retriever ranking.
 - **Top-k evidence passed to generator:** 3
 - **Frozen weights:** consistency=0.45, redundancy=0.00, conflict=0.10, base_rank=0.45
 - **Candidate pool:** 10
-- **Additional query rewrites:** 3
+- **Maximum additional query rewrites:** 3 (up to three additional unique rule-based rewrites; the original query is excluded)
 
 The frozen checkpoint uses the corrected current RCD implementation. The
 conflict component is intentionally scoped to temporal/year disagreement:
