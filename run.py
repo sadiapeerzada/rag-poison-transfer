@@ -261,20 +261,43 @@ def main(config_path: str):
         # Preserve the base score separately for diagnostics/backward
         # compatibility while making retrieved_scores reflect the actual
         # ranking used for evaluation.
-        if rcd_diagnostics is not None:
-            rcd_scores = rcd_diagnostics.get("scores", {})
+        if isinstance(retriever, RCDRetriever):
+            if not isinstance(rcd_diagnostics, dict):
+                raise RuntimeError(
+                    "RCD retrieval completed without diagnostics."
+                )
+
+            rcd_scores = rcd_diagnostics.get("scores")
+            if not isinstance(rcd_scores, dict):
+                raise RuntimeError(
+                    "RCD diagnostics are missing the score mapping."
+                )
+
+            missing_scores = [
+                doc_id
+                for doc_id in retrieved_doc_ids
+                if (
+                    doc_id not in rcd_scores
+                    or not isinstance(rcd_scores[doc_id], dict)
+                    or "final_score" not in rcd_scores[doc_id]
+                )
+            ]
+            if missing_scores:
+                raise RuntimeError(
+                    "RCD final scores missing for retrieved documents: "
+                    f"{missing_scores}"
+                )
+
             retrieved_scores = [
                 rcd_scores[doc_id]["final_score"]
                 for doc_id in retrieved_doc_ids
             ]
             base_retriever_scores = [
-                d.score
-                for d in retrieved_for_metrics
+                d.score for d in retrieved_for_metrics
             ]
         else:
             retrieved_scores = [
-                d.score
-                for d in retrieved_for_metrics
+                d.score for d in retrieved_for_metrics
             ]
             base_retriever_scores = None
 
@@ -315,7 +338,8 @@ def main(config_path: str):
             "question": q["question"],
             "gold_answer": q["gold_answer"],
             "retrieved_doc_ids": retrieved_doc_ids,
-            "retrieved_scores": [d.score for d in retrieved_for_metrics],
+            "retrieved_scores": retrieved_scores,
+            "base_retriever_scores": base_retriever_scores,
             "gold_doc_ids": gold_doc_ids,
             "gold_supporting_facts": q.get("gold_supporting_facts", []),
             "prompt": prompt,
