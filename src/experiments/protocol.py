@@ -152,6 +152,8 @@ def build_experiment_metadata(
     poison_rate: float,
     attacked_query_ids: list[str] | None = None,
     git_sha: str | None = None,
+    dataset_query_ids_manifest: str | None = None,
+    heldout_query_ids_fingerprint: str | None = None,
 ) -> dict[str, Any]:
     """Build canonical experiment metadata."""
     attack_config_hash = hashlib.sha256(
@@ -176,6 +178,8 @@ def build_experiment_metadata(
         "dataset_split": dataset_split or "unspecified",
         "dataset_n_samples": dataset_n_samples,
         "dataset_seed": dataset_seed,
+        "dataset_query_ids_manifest": dataset_query_ids_manifest,
+        "heldout_query_ids_fingerprint": heldout_query_ids_fingerprint,
 
         "query_count": len(queries),
         "query_set_fingerprint": query_set_fingerprint(queries),
