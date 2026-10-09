@@ -119,7 +119,28 @@ def _heldout_manifest_fingerprint(config: dict) -> str | None:
     with open(manifest_path, encoding="utf-8") as manifest_file:
         manifest = json.load(manifest_file)
 
-    return manifest.get("heldout_query_ids_fingerprint")
+    query_ids = manifest.get("heldout_query_ids")
+    if not isinstance(query_ids, list):
+        raise ValueError("Held-out manifest has no query ID list.")
+    if not all(isinstance(query_id, str) and query_id for query_id in query_ids):
+        raise ValueError("Held-out manifest contains invalid query IDs.")
+    if len(query_ids) != manifest.get("heldout_query_count"):
+        raise ValueError("Held-out manifest query count mismatch.")
+    if len(query_ids) != len(set(query_ids)):
+        raise ValueError("Held-out manifest contains duplicate query IDs.")
+
+    fingerprint = hashlib.sha256(
+        "\n".join(query_ids).encode("utf-8")
+    ).hexdigest()
+
+    if fingerprint != manifest.get("heldout_query_ids_fingerprint"):
+        raise ValueError("Held-out manifest fingerprint mismatch.")
+    if manifest.get("dataset_revision") != config.get("dataset_revision"):
+        raise ValueError("Manifest and config dataset revisions differ.")
+    if manifest.get("dataset_split") != config.get("dataset_split"):
+        raise ValueError("Manifest and config dataset splits differ.")
+
+    return fingerprint
 
 
 def load_dataset(config: dict) -> dict:
