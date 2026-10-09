@@ -39,8 +39,13 @@ def _canonical_doc_id(dataset_tag: str, title: str, text: str) -> str:
     return f"{dataset_tag}::{normalized_title}::{content_hash}"
 
 
-def load_hotpotqa_distractor(split: str = "validation", n_samples: int | None = None,
-                              seed: int = 42, revision: str | None = None) -> dict:
+def load_hotpotqa_distractor(
+    split: str = "validation",
+    n_samples: int | None = None,
+    seed: int = 42,
+    revision: str | None = None,
+    query_ids: list[str] | None = None,
+) -> dict:
     """HotpotQA, distractor setting.
 
     [RESEARCH INFERENCE, corrected per supervisor review #3] Each HF
@@ -83,7 +88,35 @@ def load_hotpotqa_distractor(split: str = "validation", n_samples: int | None = 
         kwargs["revision"] = revision
     ds = load_dataset("hotpotqa/hotpot_qa", "distractor", **kwargs)
 
-    if n_samples is not None:
+    if query_ids is not None:
+        if n_samples is not None:
+            raise ValueError("Use either query_ids or n_samples, not both.")
+        if not isinstance(query_ids, list) or not query_ids:
+            raise ValueError("query_ids must be a non-empty list.")
+        if not all(isinstance(qid, str) and qid for qid in query_ids):
+            raise ValueError("query_ids must contain non-empty strings.")
+        if len(query_ids) != len(set(query_ids)):
+            raise ValueError("query_ids contains duplicate IDs.")
+
+        requested_ids = set(query_ids)
+        id_to_index = {}
+        for index, query_id in enumerate(ds["id"]):
+            if query_id in requested_ids:
+                if query_id in id_to_index:
+                    raise ValueError(
+                        f"Dataset contains duplicate requested query ID: {query_id}"
+                    )
+                id_to_index[query_id] = index
+
+        missing_ids = requested_ids - id_to_index.keys()
+        if missing_ids:
+            raise ValueError(
+                f"Requested query IDs missing from dataset: {sorted(missing_ids)[:5]}"
+            )
+
+        ds = ds.select([id_to_index[qid] for qid in query_ids])
+
+    elif n_samples is not None:
         rng = random.Random(seed)
         indices = rng.sample(range(len(ds)), min(n_samples, len(ds)))
         ds = ds.select(indices)
