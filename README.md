@@ -482,7 +482,7 @@ The frozen configuration is recorded at
 ### Verification
 
 The current local implementation was verified on 2026-10-09:
-**248 tests passed, 0 failed**. This count reflects the tested local working
+**254 tests passed, 0 failed**. This count reflects the tested local working
 tree and should not be interpreted as a count for the frozen commit unless
 the same tests are run against that commit. RCD-specific regression tests
 verify final-score logging, preservation of base retriever scores, and
@@ -669,7 +669,7 @@ pytest tests/ -v
 ```
 
 The historical test count below is outdated; the latest verified local run
-passed **248 tests**. Run `pytest tests/ -v` for the current per-file breakdown.
+passed **254 tests**. Run `pytest tests/ -v` for the current per-file breakdown.
 
 The suite covers retrieval metrics (Recall/MRR/nDCG), attack metrics
 (PRR/ASR/ATR), transfer framework (including query-ID alignment fail-fast
