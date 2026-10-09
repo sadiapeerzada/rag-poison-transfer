@@ -155,7 +155,7 @@ RCD identifies evidence that is **unstable, inconsistent, redundant, or conflict
 | Dedicated tests | `tests/test_rcd.py` | ✓ | ✓ | ✓ | Complete |
 | Smoke experiments | `exp_021_…_smoke*` | ✓ | ✓ | ✓ | Complete |
 | Dev experiment | `exp_022_…_dev300` | ✓ | ✓ | ✓ | Complete |
-| Frozen configuration | `exp_023_…_frozen.yaml` | ✓ | ✓ | ✓ | Complete |
+| Corrective development freeze | `exp_026_hotpotqa_rcd_v1_mlx_frozen_current.yaml` (not held-out) | ✓ | ✓ | ✓ | Complete |
 
 ### 4.3 Component notes
 
@@ -171,8 +171,8 @@ RCD identifies evidence that is **unstable, inconsistent, redundant, or conflict
 ### 4.4 Frozen configuration
 
 ```text
-configs/exp_023_hotpotqa_rcd_v1_mlx_frozen.yaml
-# Week 7-8 frozen RCD configuration.
+configs/exp_026_hotpotqa_rcd_v1_mlx_frozen_current.yaml
+# Corrective development freeze; not a held-out evaluation. exp_023 is historical.
 
 rcd_candidate_k:         10
 rcd_rewrite_count:        3
@@ -233,7 +233,7 @@ Weeks 9–10 move the project from **building RCD** to **scientifically evaluati
 
 ### 5.2 Gap to flag: dataset coverage
 
-All RCD experiment IDs found (`exp_021`–`exp_023`) are **HotpotQA** runs. The Weeks 1–6 benchmark covers **two datasets** and **four retrievers**. No RCD evidence on **2WikiMultiHopQA** or across all four pipelines was identified in this audit. Cross-pipeline transferability is the project's headline topic, so RCD should be evaluated on every pipeline and dataset the attack benchmark covers, not only the one it was tuned on.
+The identified RCD experiments include historical runs `exp_021`–`exp_023` and the corrective development freeze `exp_026`; these are **HotpotQA** runs. The Weeks 1–6 benchmark covers **two datasets** and **four retrievers**. No RCD evidence on **2WikiMultiHopQA** or across all four pipelines was identified in this audit. Cross-pipeline transferability is the project's headline topic, so RCD should be evaluated on every pipeline and dataset the attack benchmark covers, not only the one it was tuned on.
 
 ### 5.3 Proposed evaluation matrix
 
@@ -343,7 +343,7 @@ tests/test_rcd.py::test_agreement_is_document_specific PASSED
 |---|---|---|---|
 | `exp_021_hotpotqa_rcd_v1_mlx_smoke` … `smoke5` | Smoke iterations | L3 | "Pipeline runs end to end"; **not** benchmark results |
 | `exp_022_hotpotqa_rcd_v1_mlx_dev300` | Development evaluation (300 examples) | L3 | Development evidence; used for tuning |
-| `exp_023_hotpotqa_rcd_v1_mlx_frozen` | Frozen configuration | L4 | "Frozen config exists for final evaluation" (provenance and held-out status to be verified) |
+| `exp_023_hotpotqa_rcd_v1_mlx_frozen` | Historical frozen configuration | L4 (historical) | Superseded for current-code development by `exp_026`; neither establishes held-out evaluation |
 
 JSONL and summary result files exist for the smoke and dev runs.
 
@@ -399,10 +399,10 @@ The main gap is **not RCD implementation**. It is the full experimental evaluati
 | R4 | **Non-adaptive attacker**: attacks were built without knowledge of RCD | Defense may look stronger than it is | State the threat model explicitly; if feasible, add at least one RCD-aware attack (e.g. poison crafted to stay stable across rewrites) |
 | R5 | **Redundancy weight = 0.00** | Described method ≠ effective method | Document in paper; include ablation arm |
 | R6 | **Clean-utility cost** | Defense "works" but hurts normal QA | Gate G2; always report clean EM/F1 beside ASR |
-| R7 | **Compute overhead** (3 rewrites ⇒ more retrieval calls) | Practicality concerns | Measure and report overhead (Step 6) |
+| R7 | **Compute overhead** (up to three additional rewrites may require more retrieval calls) | Practicality concerns | Measure and report overhead (Step 6) |
 | R8 | **Generator nondeterminism** (local MLX inference) | Noisy ASR estimates | Multiple seeds, fixed decoding where possible, bootstrap CIs |
 | R9 | **Test count as a false proxy** | Over-claiming | Use the claims ledger below |
-| R10 | **Dev vs. held-out split ambiguity**: `exp_022` and `exp_023` reportedly both use the HotpotQA validation split (per reviewer note; confirm in the configs) | A "frozen" run on the dev split is not a held-out test | Define a genuinely held-out subset/split that was never used for tuning before any Week 9–10 run |
+| R10 | **Dev vs. held-out split ambiguity**: `exp_022`, `exp_023`, and `exp_026` do not establish held-out evaluation; `exp_026` explicitly uses HotpotQA validation | A "frozen" run on the dev split is not a held-out test | Verify a genuinely held-out subset/split and its query IDs before Week 9–10 |
 
 ### 9.3 Non-blocking improvements
 
@@ -423,7 +423,7 @@ None of these require reimplementing RCD.
 | "RCD is implemented and integrated into the retrieval workflow." | ✅ | L1–L2 |
 | "RCD's components pass unit and integration tests." | ✅ | Dedicated tests exist; see the explicitly identified test run and commit provenance |
 | "RCD runs end to end on HotpotQA at development scale." | ✅ | `exp_021`, `exp_022` |
-| "A frozen RCD configuration exists and is intended for use before final test evaluation." | ✅ | `exp_023` frozen config; provenance and held-out status to be verified (see Appendix A, items 4 and 13) |
+| "A corrective RCD development configuration exists." | ✅ | `exp_026_hotpotqa_rcd_v1_mlx_frozen_current.yaml`; validation split, so not held-out evidence. `exp_023` is historical. |
 | "RCD reduces attack success rate." | ❌ | No full defended-vs-undefended result |
 | "RCD preserves clean accuracy." | ❌ | Not verified at full scale |
 | "RCD generalises across datasets / pipelines." | ❌ | No 2Wiki or multi-pipeline RCD evidence found |
@@ -474,7 +474,7 @@ The project should **not** go back and redo Weeks 7–8.
 
 ### Bottom line
 
-**Is the Week 7–8 implementation complete? Substantially, yes; the scientific validation is not yet complete.** RCD is integrated, dedicated tests exist, development and smoke experiments have been executed, and a configuration labelled *"Week 7-8 frozen RCD configuration"* exists. The current working-tree test run passed `258 tests in 105.02s`. However, passing tests and the existence of a frozen config do not establish that the config was frozen before evaluation, that its provenance is reproducible, or that the final evaluation uses genuinely held-out data. Those checks remain open.
+**Is the Week 7–8 implementation complete? Substantially, yes; the scientific validation is not yet complete.** RCD is integrated, dedicated tests exist, and development and smoke experiments have been executed. The corrective configuration `exp_026_hotpotqa_rcd_v1_mlx_frozen_current.yaml` preserves the selected RCD weights under the corrected implementation, but uses the HotpotQA validation split (300 samples), so it is not held-out evaluation. The recorded 258-test result applies to its associated branch state, not automatically to the current working tree. Test success and a frozen configuration do not establish defense effectiveness or held-out generalisation; those checks remain open.
 
 **What remains?** The key question changes from
 
@@ -502,10 +502,10 @@ Use this block when handing the report and repository to Claude (or any collabor
 
 Treat this report as the current baseline.
 
-1. **Do not re-implement or retune RCD unless there is an actual correctness bug.** Implementation, integration, tests, the dev run, and the frozen config are complete. The frozen config is `configs/exp_023_hotpotqa_rcd_v1_mlx_frozen.yaml`; its weights are frozen for all Week 9–10 test experiments.
+1. **Do not re-implement or retune RCD unless there is an actual correctness bug.** The corrective current-code development freeze is `configs/exp_026_hotpotqa_rcd_v1_mlx_frozen_current.yaml`. Preserve its existing weights; `exp_023` is historical. This configuration uses the HotpotQA validation split and is not held-out evaluation evidence.
 2. **Do not use test results to modify the frozen config.** Tuning stays on development data only. If there is evidence the frozen weights were not selected by the documented development procedure, flag it as a reproducibility/documentation issue; do not silently change them.
 3. **Use the evidence levels strictly** (§2): L1 implemented, L2 tested, L3 smoke/dev executed, L4 frozen, L5 full test-scale evaluation. Never present L3/L4 as proof of defense effectiveness.
-4. **`exp_022` (dev300) and `exp_023` (frozen) are not a held-out final evaluation.** Per the reviewer note, both use the HotpotQA validation split; confirm this in the configs. Week 9–10 must use a genuinely held-out subset/split not used for tuning.
+4. **`exp_022` (dev300), `exp_023` (historical freeze), and `exp_026` (corrective development freeze) are not a held-out final evaluation.** The `exp_026` config explicitly uses the HotpotQA validation split with 300 samples. Before Week 9–10, identify and verify a genuinely held-out subset/split and its query IDs; do not use validation results as held-out results.
 5. **Inspect the repository's actual CLI/config interface before proposing any command.** Do not invent flags, config keys, experiment IDs, or scripts.
 6. **Audit execution flow, not just source.** For each proposed experiment, trace `config → dataset → corpus → poisoning → retriever → RCD/undefended path → generator → metrics → JSONL → summary`, and verify the intended condition is the one executed.
 7. **Preserve the retrieval-depth / generator-`top_k` separation.** Generator `top_k` must not truncate the retrieval depth used for Recall@K/MRR.
