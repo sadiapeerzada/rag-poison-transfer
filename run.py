@@ -110,8 +110,10 @@ def build_generator(config: dict):
         raise ValueError(f"Unknown generator_backend: {config['generator_backend']}")
 
 
-def _heldout_manifest_fingerprint(config: dict) -> str | None:
-    """Validate and return the held-out query-ID fingerprint."""
+def _load_heldout_manifest(
+    config: dict,
+) -> tuple[list[str], str] | None:
+    """Load and validate held-out IDs and return them with their fingerprint."""
     manifest_path = config.get("dataset_query_ids_manifest")
     if not manifest_path:
         return None
@@ -140,7 +142,13 @@ def _heldout_manifest_fingerprint(config: dict) -> str | None:
     if manifest.get("dataset_split") != config.get("dataset_split"):
         raise ValueError("Manifest and config dataset splits differ.")
 
-    return fingerprint
+    return query_ids, fingerprint
+
+
+def _heldout_manifest_fingerprint(config: dict) -> str | None:
+    """Validate the held-out manifest and return its fingerprint, if present."""
+    validated = _load_heldout_manifest(config)
+    return None if validated is None else validated[1]
 
 
 def load_dataset(config: dict) -> dict:
@@ -166,28 +174,10 @@ def load_dataset(config: dict) -> dict:
         if "dataset_revision" in config:
             kwargs["revision"] = config["dataset_revision"]
         if "dataset_query_ids_manifest" in config:
-            manifest_path = config["dataset_query_ids_manifest"]
-            with open(manifest_path, encoding="utf-8") as manifest_file:
-                manifest = json.load(manifest_file)
-
-            query_ids = manifest.get("heldout_query_ids")
-            if not isinstance(query_ids, list):
-                raise ValueError("Held-out manifest has no query ID list.")
-            if len(query_ids) != manifest.get("heldout_query_count"):
-                raise ValueError("Held-out manifest query count mismatch.")
-            if len(query_ids) != len(set(query_ids)):
-                raise ValueError("Held-out manifest contains duplicate query IDs.")
-
-            fingerprint = hashlib.sha256(
-                "\n".join(query_ids).encode("utf-8")
-            ).hexdigest()
-            if fingerprint != manifest.get("heldout_query_ids_fingerprint"):
-                raise ValueError("Held-out manifest fingerprint mismatch.")
-            if manifest.get("dataset_revision") != config.get("dataset_revision"):
-                raise ValueError("Manifest and config dataset revisions differ.")
-            if manifest.get("dataset_split") != config.get("dataset_split"):
-                raise ValueError("Manifest and config dataset splits differ.")
-
+            validated = _load_heldout_manifest(config)
+            if validated is None:
+                raise ValueError("Held-out manifest path must be provided.")
+            query_ids, _ = validated
             kwargs["query_ids"] = query_ids
         elif "dataset_query_ids" in config:
             kwargs["query_ids"] = config["dataset_query_ids"]

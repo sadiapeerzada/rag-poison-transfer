@@ -481,9 +481,12 @@ The frozen configuration is recorded at
 
 ### Verification
 
-The corrected current implementation was verified by the full test suite:
-**235 tests passed, 0 failed**. RCD-specific regression and routing tests
-cover the corrected rewrite semantics, RCD construction, and score wiring.
+The current local implementation was verified on 2026-10-09:
+**248 tests passed, 0 failed**. This count reflects the tested local working
+tree and should not be interpreted as a count for the frozen commit unless
+the same tests are run against that commit. RCD-specific regression tests
+verify final-score logging, preservation of base retriever scores, and
+fail-fast behavior when RCD diagnostics are missing.
 
 The Week 7-8 corrective freeze is committed in Git as
 `2928fa237c51df3ee7643d2aed64f936a7ff386b`.
@@ -665,18 +668,15 @@ Run the full test suite:
 pytest tests/ -v
 ```
 
-**218 tests**, all passing, across the current test suite covering: retrieval metrics
-(Recall/MRR/nDCG), attack metrics (PRR/ASR/ATR), transfer framework
-(including query-ID alignment fail-fast and PRR@k export, added per
-supervisor review 3.5), corpus construction (determinism, dedup, canonical
-IDs, gold mapping), config routing, end-to-end integration, environment
-metadata, gold retrieval labels, and dataset revision pinning. Run
-`pytest tests/ -v` for the exact current per-file breakdown rather than
-relying on a hand-maintained count here, which has drifted before.
+The historical test count below is outdated; the latest verified local run
+passed **248 tests**. Run `pytest tests/ -v` for the current per-file breakdown.
 
-Final verification of the current RCD implementation: 218 tests passed, 0 failed.
-
-`main` has since grown further with the Week 5-6 attack-injection, evaluation, and sweep test suites (`test_poison_injection.py`, `test_semantic_fluent_attack.py`, `test_cross_pipeline_evaluation.py`, `test_sweep.py`) on top of the 153 counted after the ATR/PRR and 2Wiki-labeling fixes (review 3.5); the frozen tag's count remains 139 by design. Run `pytest tests/ -v` for the current total rather than trusting a hand-maintained number here.
+The suite covers retrieval metrics (Recall/MRR/nDCG), attack metrics
+(PRR/ASR/ATR), transfer framework (including query-ID alignment fail-fast
+and PRR@k export), corpus construction, config routing, end-to-end
+integration, environment metadata, gold retrieval labels, and dataset
+revision pinning. Run `pytest tests/ -v` for the exact current per-file
+breakdown.
 
 ### Running specific test suites
 ```bash
