@@ -62,3 +62,4 @@ def test_legacy_experiment_without_manifest_remains_supported():
     assert metadata["heldout_query_ids_fingerprint"] is None
     assert metadata["query_count"] == 1
     assert metadata["query_set_fingerprint"]
+    assert metadata["git_dirty"] in (True, False, None)
