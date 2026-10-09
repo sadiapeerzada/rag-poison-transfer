@@ -6,7 +6,7 @@
 |---|---|
 | **Repository** | `sadiapeerzada/rag-poison-transfer` |
 | **Audit focus** | Research progress vs. the planned 12-week experimental roadmap |
-| **Recorded test result** | `248 passed in 95.77s` (`python -m pytest -q`; associated branch state only) |
+| **Recorded test result** | `258 passed in 105.02s` (`python -m pytest -q`; associated branch state only) |
 | **Current phase** | Weeks 7–8 **complete** → Weeks 9–10 **next** |
 | **Overall verdict** | Methodology and infrastructure established; scientific validation of RCD still outstanding |
 
@@ -319,7 +319,7 @@ python -m pytest -q
 ```
 
 ```text
-==================== 248 passed in 95.77s (0:01:57) =====================
+==================== 258 passed in 105.02s (0:01:57) =====================
 ```
 
 - An earlier run with bare `pytest tests/ -v` failed at collection with `ModuleNotFoundError: No module named 'src'`. This was an **invocation/environment issue**, not a code failure, and is resolved by `python -m pytest`.
@@ -474,7 +474,7 @@ The project should **not** go back and redo Weeks 7–8.
 
 ### Bottom line
 
-**Is Week 7–8 actually complete? Yes.** RCD is implemented as an integrated subsystem, dedicated tests pass, development and smoke experiments have been executed, and a configuration explicitly labelled *"Week 7-8 frozen RCD configuration"* exists. The full test run also passes (`248 passed in 95.77s`).
+**Is the Week 7–8 implementation complete? Substantially, yes; the scientific validation is not yet complete.** RCD is integrated, dedicated tests exist, development and smoke experiments have been executed, and a configuration labelled *"Week 7-8 frozen RCD configuration"* exists. The current working-tree test run passed `258 tests in 105.02s`. However, passing tests and the existence of a frozen config do not establish that the config was frozen before evaluation, that its provenance is reproducible, or that the final evaluation uses genuinely held-out data. Those checks remain open.
 
 **What remains?** The key question changes from
 
