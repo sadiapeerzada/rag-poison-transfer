@@ -39,7 +39,7 @@
 | Weeks 1–2 | Datasets, clean baseline setup | ✅ Complete | Code + tests + experiments |
 | Weeks 3–4 | Clean retrieval baselines | ✅ Complete | Code + tests + experiments |
 | Weeks 5–6 | Poisoning and transfer benchmark | ✅ Complete (confirmatory stats deferred) | Code + tests + experiments |
-| **Weeks 7–8** | **RCD implementation, dev validation, freeze** | ✅ **Complete** | Code + tests + dev/smoke runs + frozen config |
+| **Weeks 7–8** | **RCD implementation and development validation** | **Substantially complete; held-out validation pending** | Code + tests + dev/smoke runs + frozen config |
 | **Weeks 9–10** | **Full defended-vs-undefended evaluation** | 🔶 **Next phase** (dev runs only so far) | Infrastructure ready; full results not verified |
 | Weeks 11–12 | Statistics, figures, paper | ⬜ Not started / not verified | None |
 
@@ -467,7 +467,7 @@ The project should **not** go back and redo Weeks 7–8.
 |---|---|
 | **Current research phase** | Transition from Week 7–8 RCD development to Weeks 9–10 full evaluation |
 | **Weeks 1–6** | Complete (confirmatory statistics deferred) |
-| **Weeks 7–8** | **Complete** |
+| **Weeks 7–8** | **Implementation substantially complete; scientific validation pending** |
 | **Weeks 9–10** | **Next major phase**; development-stage evidence exists, full evaluation not yet verified |
 | **Weeks 11–12** | Not yet started |
 | **Overall** | Core methodology and experimental infrastructure substantially established; final defense evaluation and scientific validation remain |
