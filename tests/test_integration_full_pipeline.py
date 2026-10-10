@@ -104,6 +104,9 @@ class TestRetrieverRoutingWithClasses:
         assert ret.candidate_k == 2
         assert ret.output_k == 2
         assert ret.rewrite_count == 0
+        assert isinstance(ret.base_retriever, DenseRetriever)
+        assert isinstance(ret.sparse_retriever, BM25Retriever)
+        assert ret.dense_retriever is ret.base_retriever
 
     def test_unknown_retriever_raises_error(self):
         """Unknown retriever type should raise ValueError."""
