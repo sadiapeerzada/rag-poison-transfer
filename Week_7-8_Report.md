@@ -201,7 +201,7 @@ Weights sum to **1.00**, which is consistent with a normalised linear combinatio
 - [x] Smoke experiments executed (5 iterations)
 - [x] Development experiment executed (`dev300`)
 - [x] Frozen configuration explicitly labelled "Week 7-8"
-- [x] Full test suite passes (248)
+- [x] Full test suite passes (258)
 
 There is no justification for classifying Weeks 7–8 as "not started" or "incomplete implementation."
 
@@ -209,7 +209,9 @@ There is no justification for classifying Weeks 7–8 as "not started" or "incom
 
 ### Test-count and source-provenance caveat
 
-The report records a run of 248 passing tests in 95.77 seconds. Treat this as the recorded result for its associated branch state, not as a fresh test run on the current commit. The report alone does not establish a complete source fingerprint for every experiment; verify the relevant commit, working-tree state, configuration, and result artifacts before attributing experimental results to a specific source revision.
+The report's summary table records `258 passed in 105.02s`. A separate test run on commit `5ca3013` recorded `258 passed in 99.94s`. Both report 258 passing tests, but the available evidence does not establish that the two runs used identical source states. The older `248` figure is historical and should not be presented as the current test count.
+
+The report alone does not establish a complete source fingerprint for every experiment. Verify the relevant commit, working-tree state, configuration, and result artifacts before attributing experimental results to a specific source revision.
 
 ## 5. Weeks 9–10: Evaluation Readiness and Plan
 
@@ -346,6 +348,8 @@ tests/test_rcd.py::test_agreement_is_document_specific PASSED
 | `exp_023_hotpotqa_rcd_v1_mlx_frozen` | Historical frozen configuration | L4 (historical) | Superseded for current-code development by `exp_026`; neither establishes held-out evaluation |
 
 JSONL and summary result files exist for the smoke and dev runs.
+
+> **Provenance note for Exp-024 / Exp-025:** The recorded runtime Git SHA in the summary files for `exp_024_hotpotqa_rcd_v1_mlx_dev300_current` and `exp_025_hotpotqa_rcd_v1_mlx_dev300_current_tuned` is `d45c4909a86925583e1a36ea350ccad6320291b8`. That value reflects the HEAD at the time of the run, but these runs were executed while the corrective working-tree changes were still present. Those changes were later captured in the freeze commit `2928fa237c51df3ee7643d2aed64f936a7ff386b` (tag: `week7-8-rcd-freeze`). The repository history therefore does not support treating the recorded runtime Git SHA alone as a complete source fingerprint for the exact code used by Exp-024/025, because the runtime source state was not a clean commit checkout. The evidence supports a development/current-tree provenance statement, not a claim that the runs were executed from the later freeze commit.
 
 ---
 
