@@ -1,4 +1,5 @@
 import pytest
+from datasets import load_dataset as real_load_dataset
 from src.data import loaders
 
 

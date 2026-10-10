@@ -425,7 +425,7 @@ benchmark result the plan calls for.
 | Attack metrics (PRR@k, ASR, ATR) | PRR@k real and validated (see Week 5-6 section above); ASR/ATR infrastructure built and tested |
 | Transfer matrix framework | Real, ready for source→target pipeline evaluation |
 | Knowledge-poisoning attack benchmark (lexical + semantic-fluent, intensity 1/3/5, low poison-rate, HotpotQA + 2Wiki) | **Real, validated, Week 5-6 deliverable complete** -- see Week 5-6 section above and `docs/WEEK5_6_BENCHMARK_VALIDATION_REPORT.md` |
-| RCD (Retrieval-Consistency Defense) | **Real, implemented, tested, tuned on 300-query HotpotQA development data, and frozen for Week 7-8. Frozen config: `exp_023_hotpotqa_rcd_v1_mlx_frozen`. Frozen results are committed in `results/exp_023_hotpotqa_rcd_v1_mlx_frozen.jsonl` and `results/exp_023_hotpotqa_rcd_v1_mlx_frozen.summary.json`.** |
+| RCD (Retrieval-Consistency Defense) | **Real, implemented, tested, tuned on 300-query HotpotQA development data, and frozen for Week 7-8. Historical run: `exp_023_hotpotqa_rcd_v1_mlx_frozen`. Corrective Week 7-8 freeze: `exp_026_hotpotqa_rcd_v1_mlx_frozen_current`. Frozen results are committed in `results/exp_023_hotpotqa_rcd_v1_mlx_frozen.jsonl` and `results/exp_023_hotpotqa_rcd_v1_mlx_frozen.summary.json`.** |
 
 ## Week 7-8: Retrieval-Consistency Defense (RCD)
 
@@ -482,7 +482,7 @@ The frozen configuration is recorded at
 ### Verification
 
 The current local implementation was verified on 2026-10-09:
-**248 tests passed, 0 failed**. This count reflects the tested local working
+**258 tests passed, 0 failed**. This count reflects the tested local working
 tree and should not be interpreted as a count for the frozen commit unless
 the same tests are run against that commit. RCD-specific regression tests
 verify final-score logging, preservation of base retriever scores, and
@@ -669,7 +669,7 @@ pytest tests/ -v
 ```
 
 The historical test count below is outdated; the latest verified local run
-passed **248 tests**. Run `pytest tests/ -v` for the current per-file breakdown.
+passed **258 tests**. Run `pytest tests/ -v` for the current per-file breakdown.
 
 The suite covers retrieval metrics (Recall/MRR/nDCG), attack metrics
 (PRR/ASR/ATR), transfer framework (including query-ID alignment fail-fast

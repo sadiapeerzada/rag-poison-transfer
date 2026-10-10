@@ -98,23 +98,34 @@ def load_hotpotqa_distractor(
         if len(query_ids) != len(set(query_ids)):
             raise ValueError("query_ids contains duplicate IDs.")
 
-        requested_ids = set(query_ids)
-        id_to_index = {}
-        for index, query_id in enumerate(ds["id"]):
-            if query_id in requested_ids:
-                if query_id in id_to_index:
-                    raise ValueError(
-                        f"Dataset contains duplicate requested query ID: {query_id}"
-                    )
-                id_to_index[query_id] = index
+        requested_ids = list(query_ids)
+        dataset_ids = list(ds["id"])
 
-        missing_ids = requested_ids - id_to_index.keys()
-        if missing_ids:
+        seen_ids = set()
+        duplicate_ids = set()
+        for dataset_id in dataset_ids:
+            if dataset_id in seen_ids:
+                duplicate_ids.add(dataset_id)
+            seen_ids.add(dataset_id)
+
+        if duplicate_ids:
+            duplicates = sorted(duplicate_ids)
             raise ValueError(
-                f"Requested query IDs missing from dataset: {sorted(missing_ids)[:5]}"
+                f"Found duplicate requested query ID(s) in dataset: {duplicates[:5]}"
             )
 
-        ds = ds.select([id_to_index[qid] for qid in query_ids])
+        dataset_id_set = set(dataset_ids)
+        unknown_ids = sorted(set(requested_ids) - dataset_id_set)
+        if unknown_ids:
+            raise ValueError(
+                f"Requested query IDs missing from dataset: {unknown_ids[:5]}"
+            )
+
+        id_to_index = {
+            query_id: index
+            for index, query_id in enumerate(dataset_ids)
+        }
+        ds = ds.select([id_to_index[query_id] for query_id in requested_ids])
 
     elif n_samples is not None:
         rng = random.Random(seed)
