@@ -26,9 +26,9 @@ ATTACK_RESULT_SCHEMA = {
     "source_pipeline": str,
     "target_pipeline": str,
     "poison_doc_ids": "list[str]",
-    "retrieved_doc_ids": "list[str]",  # Ranked list from target retriever
-    "poison_retrieved": bool,  # At least one poison in top-k
-    "poison_rank": "int | None",  # Rank of first poison, if retrieved
+    "retrieved_doc_ids": "list[str]",  # Ranked diagnostic retrieval window
+    "poison_retrieved": bool,  # Poison appears in evidence passed to generator
+    "poison_rank": "int | None",  # First poison rank in diagnostic retrieval window
     "clean_answer": str,  # Model output on clean evidence
     "attacked_answer": str,  # Model output on poisoned evidence
     "gold_answer": str,  # Ground truth

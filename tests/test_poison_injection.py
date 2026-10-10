@@ -192,6 +192,35 @@ class TestValidatePoisonedDataset:
         assert report["checks"]["poison_rate_matches_request"] is False
 
 
+    def test_target_is_not_equivalent_to_gold_after_normalization(self):
+        attack = LexicalInfluentialTokenAttack()
+        query = {"query_id": "q1", "gold_answer": "Paris"}
+        all_queries = [
+            query,
+            {"query_id": "q2", "gold_answer": "the PARIS!"},
+            {"query_id": "q3", "gold_answer": "London"},
+        ]
+
+        for seed in range(20):
+            target = attack.pick_cross_query_target_answer(
+                query, all_queries, random.Random(seed)
+            )
+            assert target == "London"
+
+    def test_raises_when_only_normalized_equivalent_targets_exist(self):
+        attack = LexicalInfluentialTokenAttack()
+        query = {"query_id": "q1", "gold_answer": "Paris"}
+        all_queries = [
+            query,
+            {"query_id": "q2", "gold_answer": "the PARIS!"},
+        ]
+
+        with pytest.raises(ValueError, match="No valid cross-query target"):
+            attack.pick_cross_query_target_answer(
+                query, all_queries, random.Random(42)
+            )
+
+
 class TestLexicalAttack:
     def test_extract_keywords_drops_stopwords_and_short_words(self):
         keywords = _extract_keywords("What is the capital of France?")
@@ -431,3 +460,42 @@ class TestLexicalMultiDocumentVariation:
         template_0 = attack._TEMPLATES[0 % len(attack._TEMPLATES)]
         template_5 = attack._TEMPLATES[5 % len(attack._TEMPLATES)]
         assert template_0 == template_5
+
+
+class TestAdditionalInjectionValidation:
+    def test_validator_rejects_duplicate_query_ids(self):
+        clean = make_clean_data(6)
+        poisoned = inject_poisons(
+            clean, LexicalInfluentialTokenAttack(),
+            n_poison=1, poison_rate=1.0, seed=42,
+        )
+        poisoned["queries"].append(dict(poisoned["queries"][0]))
+
+        report = validate_poisoned_dataset(clean, poisoned)
+
+        assert report["valid"] is False
+        assert report["checks"]["no_duplicate_poisoned_query_ids"] is False
+        assert report["details"]["duplicate_poisoned_query_ids"] == [
+            poisoned["queries"][0]["query_id"]
+        ]
+        assert report["checks"]["gold_labels_untouched"] is False
+        assert report["checks"]["poison_targets_differ_from_gold"] is False
+        assert report["details"]["query_level_checks_skipped_due_to_duplicate_ids"] is True
+
+    def test_validator_rejects_normalized_target_equal_to_gold(self):
+        clean = make_clean_data(6)
+        poisoned = inject_poisons(
+            clean, LexicalInfluentialTokenAttack(),
+            n_poison=1, poison_rate=1.0, seed=42,
+        )
+        attacked = next(q for q in poisoned["queries"] if q["poison_doc_ids"])
+        clean_q = next(
+            q for q in clean["queries"]
+            if q["query_id"] == attacked["query_id"]
+        )
+        attacked["poison_target_answer"] = f"the {clean_q['gold_answer']}!"
+
+        report = validate_poisoned_dataset(clean, poisoned)
+
+        assert report["valid"] is False
+        assert report["checks"]["poison_targets_differ_from_gold"] is False
