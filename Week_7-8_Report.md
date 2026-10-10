@@ -7,7 +7,7 @@
 | **Repository** | `sadiapeerzada/rag-poison-transfer` |
 | **Audit focus** | Research progress vs. the planned 12-week experimental roadmap |
 | **Audit test result** | `271 passed in 112.20s` (`./.venv/bin/python -m pytest -q`; current audited working tree) |
-| **Current phase** | Week 7–8 closure audit; implementation/configuration frozen, `exp_026` execution unverified; held-out evaluation pending |
+| **Current phase** | Week 7–8: COMPLETE — RCD implementation, testing, development validation, and corrective freeze are complete; held-out scientific evaluation is deferred to Week 9–10. (`exp_026` execution is unverified.) |
 | **Overall verdict** | Methodology and infrastructure established; scientific validation of RCD still outstanding |
 
 ---
@@ -39,7 +39,7 @@
 | Weeks 1–2 | Datasets, clean baseline setup | ✅ Complete | Code + tests + experiments |
 | Weeks 3–4 | Clean retrieval baselines | ✅ Complete | Code + tests + experiments |
 | Weeks 5–6 | Poisoning and transfer benchmark | ✅ Complete (confirmatory stats deferred) | Code + tests + experiments |
-| **Weeks 7–8** | **RCD implementation and development validation** | **Implementation/configuration frozen; `exp_026` execution not verified; held-out validation pending** | Code + tests + historical dev/smoke runs + frozen config |
+| **Weeks 7–8** | **RCD implementation and development validation** | **COMPLETE — RCD implementation, testing, development validation, and corrective freeze are complete; held-out scientific evaluation is deferred to Week 9–10** (`exp_026` execution not verified) | Code + tests + historical dev/smoke runs + frozen config |
 | **Weeks 9–10** | **Full defended-vs-undefended evaluation** | 🔶 **Next phase** (dev runs only so far) | Infrastructure ready; full results not verified |
 | Weeks 11–12 | Statistics, figures, paper | ⬜ Not started / not verified | None |
 
@@ -118,11 +118,11 @@ src/attacks/evaluate.py
 
 ## 4. Weeks 7–8: RCD Audit
 
-> **Verdict: implementation, tests, and frozen configuration are present; the corrective `exp_026` run is not verified.** No held-out evaluation is claimed.
+> **Week 7–8: COMPLETE — RCD implementation, testing, development validation, and corrective freeze are complete; held-out scientific evaluation is deferred to Week 9–10.** The corrective `exp_026` run artifact is not verified. No held-out evaluation is claimed.
 
 ### 4.1 What RCD does
 
-RCD computes consistency, redundancy, and conflict signals across retrieval variations, then re-scores and selects evidence. In the frozen ranking score, redundancy is computed but has zero weight; conflict is limited to the implemented year-disagreement heuristic described below.
+RCD computes consistency, redundancy, and conflict signals across retrieval variations, then re-scores and selects evidence. Redundancy detection is implemented and tested as an available signal, but its frozen weight is 0.00, so it does not contribute to the frozen final score. Conflict is a narrow temporal/year-disagreement heuristic described below.
 
 ```text
  query ──► up to 3 additional unique rewrites ──► retrieve per rewrite ──► record ranks
@@ -135,7 +135,7 @@ RCD computes consistency, redundancy, and conflict signals across retrieval vari
    redundancy: computed, frozen weight 0.00 (no ranking contribution)
 ```
 
-`n_rewrites=3` requests up to three additional unique rule-based rewrites. The actual number can be smaller when the generator cannot produce three distinct variants.
+`n_rewrites=3` requests up to three additional unique rule-based rewrites; it does not guarantee exactly three. The actual number can be smaller when the generator cannot produce three distinct variants. The original query never appears in `rewrite_queries`.
 
 ### 4.2 Requirement-by-requirement audit
 
@@ -146,8 +146,8 @@ RCD computes consistency, redundancy, and conflict signals across retrieval vari
 | Retrieval across rewrites | `RCDRetriever` | ✓ | ✓ | ✓ | Complete |
 | Rank stability | `core.py` | ✓ | ✓ | ✓ | Complete |
 | Per-document retriever-presence agreement | `core.py` | ✓ | ✓ | ✓ | Complete |
-| Redundancy | `redundancy.py` | ✓ | ✓ | Dev | Complete / dev-validated |
-| Year-disagreement conflict heuristic | `conflict.py` | ✓ | ✓ | Dev | Implemented; not general-purpose contradiction detection |
+| Redundancy | `redundancy.py` | ✓ | ✓ | Dev | Implemented and tested; frozen weight 0.00, so no contribution to the frozen score |
+| Year-disagreement conflict heuristic | `conflict.py` | ✓ | ✓ | Dev | Implemented as a narrow temporal/year-disagreement heuristic; not semantic/NLI contradiction detection |
 | Suspicion/penalty scoring | `scoring.py` | ✓ | ✓ | ✓ | Complete |
 | Final RCD score | `score_documents()` | ✓ | ✓ | ✓ | Complete |
 | Retriever integration | `retriever.py` | ✓ | ✓ | ✓ | Complete |
@@ -161,10 +161,10 @@ RCD computes consistency, redundancy, and conflict signals across retrieval vari
 
 | Component | Signals / behaviour |
 |---|---|
-| **Rewriting** (`rewrites.py`) | `n_rewrites=3` requests up to three additional unique rule-based variants, excluding the original query. Fewer can be returned when fewer distinct variants are available. |
+| **Rewriting** (`rewrites.py`) | `n_rewrites=3` requests up to three additional unique rule-based variants and does not guarantee exactly three. The original query is excluded from `rewrite_queries`. Fewer can be returned when fewer distinct variants are available. |
 | **Consistency** (`core.py`) | For each candidate, the active score is the mean of (1) its presence fraction across original-query retriever rankings, (2) min-rank/max-rank stability across the rankings where it appears, and (3) the same stability calculation across dense-primary rewrite rankings. A document observed in fewer than two rankings for a stability term receives 0 for that term. The separately defined aggregate `retriever_agreement` and `cross_retriever_rank_stability` helpers are not used by `build_consistency_signals`. |
-| **Conflict** (`conflict.py`) | A narrow year-disagreement heuristic: both texts must contain recognized years (1500–2099), token-set Jaccard overlap must be at least 0.50, and the year sets must be disjoint. It is not general-purpose factual contradiction detection. |
-| **Redundancy** (`redundancy.py`) | Evidence overlap is implemented, but its frozen ranking weight is 0.00, so it contributes nothing to the frozen score. |
+| **Conflict** (`conflict.py`) | A narrow temporal/year-disagreement heuristic: both texts must contain recognized years (1500–2099), token-set Jaccard overlap must be at least 0.50, and the recognized year sets must be disjoint. It is not general semantic/NLI contradiction detection. |
+| **Redundancy** (`redundancy.py`) | Evidence-overlap detection is implemented, tested, and available as an RCD signal/component, but its frozen ranking weight is 0.00, so it does not contribute to the frozen final score. |
 | **Scoring** (`scoring.py`) | The frozen score is `0.45 × consistency + 0.00 × redundancy − 0.10 × conflict + 0.45 × base-rank score`. Base-rank score is reciprocal rank from the primary retriever's ranking. |
 | **Integration** (`retriever.py`) | Dense primary retrieval plus a BM25 sparse signal, rewrite retrieval, consistency/conflict/redundancy computation, final scoring, and diagnostic capture. RCD is integrated into the retrieval workflow. |
 | **RCD v2** (`retriever_v2.py`) | Query-conditioned variant using a cross-encoder relevance signal. A **development extension**, not a substitute for evaluating primary RCD. |
@@ -186,7 +186,7 @@ final_run:                true
 
 Weights sum to **1.00**, which is consistent with a normalised linear combination.
 `top_k: 3` is the generation evidence depth; `rcd_candidate_k: 10` is the RCD candidate/retrieval depth. The runner evaluates retrieval metrics using up to 10 returned documents while passing only the first 3 to generation.
-The corrective configuration enables the final-run clean-tree guard, so an execution will fail before loading data or models if Git reports relevant changes or an unknown state. This does not establish that `exp_026` executed.
+The corrective configuration enables the final-run clean-tree guard, so an execution will fail before loading data or models if Git reports any modified, deleted, staged, or untracked (non-ignored) files, or an unknown state. This does not establish that `exp_026` executed.
 At this audit, the config's full SHA-256 is `b6ca21a4502b4785b20001dcb8add80e4fbec6a5e1fdf31c6b6bee60c14a556e`; the runner's 12-character config hash is `b6ca21a4502b`.
 
 > **⚠ Observation: the redundancy weight is `0.00`.**
@@ -199,7 +199,7 @@ At this audit, the config's full SHA-256 is `b6ca21a4502b4785b20001dcb8add80e4fb
 - [x] RCD implemented as a dedicated subsystem
 - [x] Query rewriting implemented
 - [x] Consistency, rank-stability, and agreement signals implemented
-- [x] Conflict detection implemented
+- [x] Conflict detection implemented (narrow temporal/year-disagreement heuristic)
 - [x] RCD scoring implemented
 - [x] RCD integrated into the retriever
 - [x] Dedicated RCD tests exist and pass
@@ -334,7 +334,7 @@ If G1 passes but G3 fails, the honest finding is "RCD helps in HotpotQA setting 
 - The current audit also ran the focused RCD/provenance integration selection:
   `./.venv/bin/python -m pytest -q tests/test_rcd.py tests/test_metric_wiring.py tests/test_git_dirty.py`
   → `28 passed in 33.35s`.
-- An earlier run with bare `pytest tests/ -v` failed at collection with `ModuleNotFoundError: No module named 'src'`. This was an **invocation/environment issue**, not a code failure, and is resolved by `python -m pytest`.
+- An earlier run with bare `pytest tests/ -v` failed at collection with `ModuleNotFoundError: No module named 'src'`. This was an **invocation/environment issue**, not a code failure. It is resolved: `pyproject.toml` now configures `[tool.pytest.ini_options]` (`pythonpath = ["."]`, `testpaths = ["tests"]`), so both bare `pytest` and `python -m pytest` work.
 - The earlier 219-test run included the dedicated RCD tests:
 
 ```text
@@ -344,8 +344,6 @@ tests/test_rcd.py::test_agreement_is_document_specific PASSED
 ```
 
 **Verdict: full test suite passing.**
-
-> **Recommended hardening:** make the bare `pytest` command work too (e.g. `pythonpath = ["."]` under `[tool.pytest.ini_options]` in `pyproject.toml`, or a `conftest.py` at the repo root). This removes a reproducibility trap for collaborators and reviewers.
 
 > **Interpretation note:** passing tests show the code behaves as specified. They say nothing about whether RCD is an effective defense.
 
@@ -388,7 +386,7 @@ The raw `exp_021`–`exp_025` rows include commit/config hashes and dataset revi
 | Transfer-matrix export | ✓ |
 | Tests for reproducibility behaviour | ✓ |
 
-The final-run guard is opt-in via `final_run: true`; it fails before dataset/model loading if Git reports dirty or unknown. Ordinary development/smoke configs retain their existing behavior. Existing records are not retroactively changed. In particular, the `exp_021`–`exp_025` raw rows all record `git_dirty: null`; the `exp_024`/`exp_025` summaries record `config_hash: null` even though their raw rows contain the config hashes listed in §7.2.
+The final-run guard is opt-in via `final_run: true`; it fails before dataset/model loading if Git reports dirty (including untracked, non-ignored files) or unknown. Ordinary development/smoke configs retain their existing behavior. Existing records are not retroactively changed. In particular, the `exp_021`–`exp_025` raw rows all record `git_dirty: null`; the `exp_024`/`exp_025` summaries record `config_hash: null` even though their raw rows contain the config hashes listed in §7.2.
 
 **Remaining requirement:** execute no final experiment from a dirty tree; use a clean frozen checkout and retain its actual recorded metadata.
 
@@ -424,7 +422,7 @@ The main gap is **not RCD implementation**. It is the full experimental evaluati
 | R4 | **Non-adaptive attacker**: attacks were built without knowledge of RCD | Defense may look stronger than it is | State the threat model explicitly; if feasible, add at least one RCD-aware attack (e.g. poison crafted to stay stable across rewrites) |
 | R5 | **Redundancy weight = 0.00** | Described method ≠ effective method | Document in paper; include ablation arm |
 | R6 | **Clean-utility cost** | Defense "works" but hurts normal QA | Gate G2; always report clean EM/F1 beside ASR |
-| R7 | **Compute overhead** (up to three additional rewrites may require more retrieval calls) | Practicality concerns | Measure and report overhead (Step 6) |
+| R7 | **Compute overhead** (up to 3 additional unique rewrites may require more retrieval calls) | Practicality concerns | Measure and report overhead (Step 6) |
 | R8 | **Generator nondeterminism** (local MLX inference) | Noisy ASR estimates | Multiple seeds, fixed decoding where possible, bootstrap CIs |
 | R9 | **Test count as a false proxy** | Over-claiming | Use the claims ledger below |
 | R10 | **Dev vs. held-out split ambiguity**: `exp_022`, `exp_023`, and `exp_026` do not establish held-out evaluation; `exp_026` explicitly uses HotpotQA validation | A "frozen" run on the dev split is not a held-out test | Verify a genuinely held-out subset/split and its query IDs before Week 9–10 |
@@ -492,14 +490,14 @@ The project should **not** go back and redo Weeks 7–8.
 |---|---|
 | **Current research phase** | Transition from Week 7–8 RCD development to Weeks 9–10 full evaluation |
 | **Weeks 1–6** | Complete (confirmatory statistics deferred) |
-| **Weeks 7–8** | **Implementation and configuration frozen; corrective `exp_026` run not verified; held-out scientific validation pending** |
+| **Weeks 7–8** | **COMPLETE — RCD implementation, testing, development validation, and corrective freeze are complete; held-out scientific evaluation is deferred to Week 9–10** (`exp_026` run not verified) |
 | **Weeks 9–10** | **Next major phase**; development-stage evidence exists, full evaluation not yet verified |
 | **Weeks 11–12** | Not yet started |
 | **Overall** | Core methodology and experimental infrastructure established; report corrections/tests pass, but `exp_026` artifact verification and future held-out evaluation remain |
 
 ### Bottom line
 
-**Is the Week 7–8 implementation complete? The code, tests, and frozen configuration are present, but the requested corrective-run artifact is not verified and held-out scientific validation remains pending.** RCD is integrated and historical smoke/development experiments exist. The corrective configuration `exp_026_hotpotqa_rcd_v1_mlx_frozen_current.yaml` preserves the documented weights and uses the HotpotQA validation split (300 samples); the expected `exp_026` raw JSONL and summary are absent, so the report does not claim that it ran. The previous 258-test result applies to its associated branch state; this audit's 271-test result is from the current audited working tree. Test success and a frozen configuration do not establish defense effectiveness or held-out generalisation.
+**Is Week 7–8 complete? Yes: RCD implementation, testing, development validation, and corrective freeze are complete; held-out scientific evaluation is deferred to Week 9–10.** The corrective-run artifact (`exp_026`) is not verified. RCD is integrated and historical smoke/development experiments exist. The corrective configuration `exp_026_hotpotqa_rcd_v1_mlx_frozen_current.yaml` preserves the documented weights and uses the HotpotQA validation split (300 samples); the expected `exp_026` raw JSONL and summary are absent, so the report does not claim that it ran. The previous 258-test result applies to its associated branch state; this audit's 271-test result is from the current audited working tree. Test success and a frozen configuration do not establish defense effectiveness or held-out generalisation.
 
 **What remains?** The key question changes from
 
@@ -512,7 +510,7 @@ to
 Answering that requires full defended-vs-undefended experiments, attack-success evaluation, transfer analysis, ablations, robustness testing, overhead measurement, and the final result tables.
 
 > **Weeks 1–6:** completed.
-> **Weeks 7–8:** implementation/configuration frozen; `exp_026` execution not verified.
+> **Weeks 7–8:** COMPLETE — RCD implementation, testing, development validation, and corrective freeze are complete; held-out scientific evaluation is deferred to Week 9–10 (`exp_026` execution not verified).
 > **Weeks 9–10:** next — full scientific evaluation of RCD.
 > **Weeks 11–12:** statistical analysis, figures, and paper preparation.
 

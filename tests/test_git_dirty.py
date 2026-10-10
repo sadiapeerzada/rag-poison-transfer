@@ -95,14 +95,17 @@ def test_git_dirty_detects_relevant_untracked_source_file(
     assert env_info._git_dirty() is True
 
 
-def test_git_dirty_ignores_untracked_results_and_backup_files(
+def test_git_dirty_detects_untracked_results_and_backup_files(
     tmp_path, monkeypatch
 ):
     repo = tmp_path / "repo"
     _init_git_repo(repo)
     monkeypatch.chdir(repo)
+
     (repo / "results").mkdir()
     (repo / "results" / "run.jsonl").write_text("{}\n")
-    (repo / "tracked.py.bak").write_text("VALUE = 0\n")
+    assert env_info._git_dirty() is True
 
-    assert env_info._git_dirty() is False
+    (repo / "results" / "run.jsonl").unlink()
+    (repo / "tracked.py.bak").write_text("VALUE = 0\n")
+    assert env_info._git_dirty() is True

@@ -429,8 +429,11 @@ benchmark result the plan calls for.
 
 ## Week 7-8: Retrieval-Consistency Defense (RCD)
 
+**Week 7–8: COMPLETE — RCD implementation, testing, development validation, and corrective freeze are complete; held-out scientific evaluation is deferred to Week 9–10.**
+
 The Retrieval-Consistency Defense (RCD) was implemented, tested, tuned on a
 300-query HotpotQA development run, and frozen at the end of Week 8.
+Development validation does not establish RCD effectiveness on held-out data.
 
 RCD is a training-free retrieval-time defense that combines retrieval
 consistency across additional query reformulations with evidence signals
@@ -449,14 +452,16 @@ and the base retriever ranking.
 - **Top-k evidence passed to generator:** 3
 - **Frozen weights:** consistency=0.45, redundancy=0.00, conflict=0.10, base_rank=0.45
 - **Candidate pool:** 10
-- **Maximum additional query rewrites:** 3 (`n_rewrites=3` requests up to three additional unique rule-based rewrites; the actual number can be smaller when the generator cannot produce three distinct variants; the original query is excluded)
+- **Additional query rewrites:** up to 3 additional unique rule-based rewrites (`n_rewrites=3` requests up to three; it does not guarantee exactly three, since fewer may be produced when fewer distinct variants exist; the original query is never included in `rewrite_queries`)
 - **Final-run provenance guard:** enabled (`final_run: true`); execution fails if Git is dirty or its state is unknown
 
-The frozen checkpoint uses the corrected current RCD implementation. The
-conflict component is intentionally scoped to temporal/year disagreement:
-both texts must contain recognized years, have at least 0.50 lexical overlap,
-and have disjoint year sets. Redundancy is implemented but remains inactive
-at weight 0.00.
+The frozen checkpoint uses the corrected current RCD implementation. Conflict
+detection is a narrow temporal/year-disagreement heuristic: both texts must
+contain recognized years, have at least 0.50 lexical overlap, and have
+disjoint recognized year sets. It is not general semantic/NLI contradiction
+detection. Redundancy detection is implemented, tested, and available as an
+RCD signal/component, but its frozen weight is 0.00, so it does not contribute
+to the frozen final score.
 
 ### Development evidence for the frozen checkpoint
 
@@ -656,14 +661,14 @@ poison_id: "poison_001"
 - Transfer matrix framework is built and tested
 - All four retrievers can be swapped via config (no code changes)
 - Knowledge-poisoning attack benchmark and evaluation infrastructure are complete through Week 5-6
-- RCD (Retrieval-Consistency Defense) is implemented, tested, tuned on 300-query HotpotQA development data, and its Week 7-8 configuration is frozen. The corrective `exp_026` config exists, but its raw run log and summary are not present, so its execution is not verified.
+- Week 7–8: COMPLETE — RCD implementation, testing, development validation, and corrective freeze are complete; held-out scientific evaluation is deferred to Week 9–10. The corrective `exp_026` config exists, but its raw run log and summary are not present, so its execution is not verified.
 - Frozen RCD weights: consistency=0.45, redundancy=0.00, conflict=0.10, base_rank=0.45
-- Frozen score: `0.45 × consistency + 0.00 × redundancy − 0.10 × conflict + 0.45 × base-rank score`. Redundancy is implemented but contributes nothing at weight 0.00. Conflict is the implemented year-disagreement heuristic, not general-purpose factual contradiction detection.
+- Frozen score: `0.45 × consistency + 0.00 × redundancy − 0.10 × conflict + 0.45 × base-rank score`. Redundancy detection is implemented and tested as an available RCD signal, but at weight 0.00 it does not contribute to the frozen final score. Conflict is a narrow temporal/year-disagreement heuristic (recognized years, sufficient lexical overlap, disjoint year sets), not general semantic/NLI contradiction detection.
 - Active consistency score: the mean of per-document retriever-presence agreement, cross-retriever rank stability, and rewrite-rank stability. With the configured dense primary retriever and BM25 secondary signal, agreement is the fraction of those two rankings containing the document; either stability term is zero when the document appears in fewer than two respective rankings.
 - RCD retrieves up to `rcd_candidate_k` documents from the dense primary and BM25 signal for the original query, then uses the dense primary for each rewrite. The runner requests up to 10 ranked documents for retrieval metrics but passes only configured `top_k` documents (3 in the frozen config) to generation.
 - Historical frozen development run: `exp_023_hotpotqa_rcd_v1_mlx_frozen` (N=300, HotpotQA validation split; not held-out)
 - Historical `exp_023` results: EM=0.407, F1=0.508, Recall@3=0.7467, MRR@10=0.9411, nDCG@10=0.8565. Its score fields predate the correction and `exp_023` is not evidence that the corrective `exp_026` config ran.
-- Week 7-8 implementation/configuration is frozen; held-out evaluation remains pending for Weeks 9-10
+- Held-out evaluation remains pending for Weeks 9-10
 
 ## Testing
 
