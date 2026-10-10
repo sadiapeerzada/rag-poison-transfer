@@ -5,6 +5,8 @@ import os
 import sys
 from types import SimpleNamespace
 
+import pytest
+
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
 import run
@@ -125,6 +127,7 @@ results_dir: {tmp_path / "results"}
     # gold labels themselves.
     assert record["retrieved_doc_ids"]
     assert len(record["retrieved_doc_ids"]) == len(record["retrieved_scores"])
+    assert record["base_retriever_scores"] is None
     assert record["gold_doc_ids"] == ["doc-a", "doc-b"]
 
     assert metrics["recall@1"] > 0
@@ -265,6 +268,10 @@ results_dir: {tmp_path / "results"}
     assert [record["prompt"].count("\n- ") for record in records] == [3, 5]
     assert all(len(record["retrieved_doc_ids"]) == 10 for record in records)
     assert all(len(record["retrieved_doc_ids"]) == len(record["retrieved_scores"]) for record in records)
+    assert records[0]["retrieved_scores"] == [
+        11.0 - rank for rank in range(1, 11)
+    ]
+    assert all(record["base_retriever_scores"] is None for record in records)
     assert records[0]["retrieval_metrics"] == records[1]["retrieval_metrics"]
     assert records[0]["retrieval_metrics"]["recall@10"] == 1
     assert records[0]["retrieval_metrics"]["mrr@10"] == 0.1
@@ -272,8 +279,6 @@ results_dir: {tmp_path / "results"}
 
 def test_rcd_logs_final_scores_and_preserves_base_scores(tmp_path, monkeypatch):
     """RCD logs final ranking scores separately from base retriever scores."""
-    from src.defenses.rcd.retriever import RCDRetriever
-
     class FakeRCDRetriever:
         def __init__(self, *args, **kwargs):
             self.last_diagnostics = None
@@ -356,9 +361,45 @@ results_dir: {tmp_path / "results"}
     assert record["base_retriever_scores"] == [0.21, 0.84]
     assert len(record["retrieved_scores"]) == len(record["retrieved_doc_ids"])
     assert len(record["base_retriever_scores"]) == len(record["retrieved_doc_ids"])
+    assert [
+        (
+            doc_id,
+            final_score,
+            base_score,
+        )
+        for doc_id, final_score, base_score in zip(
+            record["retrieved_doc_ids"],
+            record["retrieved_scores"],
+            record["base_retriever_scores"],
+        )
+    ] == [
+        ("doc-a", record["rcd_diagnostics"]["scores"]["doc-a"]["final_score"], 0.21),
+        ("doc-b", record["rcd_diagnostics"]["scores"]["doc-b"]["final_score"], 0.84),
+    ]
+    assert isinstance(record["git_dirty"], bool)
+    summary = json.loads(
+        (tmp_path / "results" / "test_rcd_score_logging.summary.json").read_text()
+    )
+    assert isinstance(summary["experiment_metadata"]["git_dirty"], bool)
 
 
-def test_rcd_missing_diagnostics_fails_loudly(tmp_path, monkeypatch):
+@pytest.mark.parametrize(
+    ("diagnostics", "expected_message"),
+    [
+        (None, "RCD retrieval completed without diagnostics"),
+        (
+            {"scores": {"doc-a": {}}},
+            "RCD final scores missing or invalid for retrieved documents",
+        ),
+        (
+            {"scores": {"doc-a": {"final_score": None}}},
+            "RCD final scores missing or invalid for retrieved documents",
+        ),
+    ],
+)
+def test_rcd_missing_required_scores_fails_loudly(
+    tmp_path, monkeypatch, diagnostics, expected_message
+):
     """RCD must not silently fall back to base scores when diagnostics are absent."""
 
     class FakeRCDRetriever:
@@ -369,7 +410,7 @@ def test_rcd_missing_diagnostics_fails_loudly(tmp_path, monkeypatch):
             pass
 
         def retrieve(self, query, top_k=10):
-            self.last_diagnostics = None
+            self.last_diagnostics = diagnostics
             return [
                 SimpleNamespace(
                     doc_id="doc-a",
@@ -413,10 +454,57 @@ results_dir: {tmp_path / "results"}
     monkeypatch.setattr(run, "RCDRetriever", FakeRCDRetriever)
     monkeypatch.setattr(run, "build_generator", lambda config: FakeGenerator())
 
-    import pytest
-
     with pytest.raises(
         RuntimeError,
-        match="RCD retrieval completed without diagnostics",
+        match=expected_message,
     ):
         run.main(str(config_path))
+
+
+def test_dirty_final_run_is_refused_before_loading_data(tmp_path, monkeypatch):
+    config_path = tmp_path / "final.yaml"
+    config_path.write_text(
+        """
+experiment_id: dirty_final_run
+seed: 42
+final_run: true
+"""
+    )
+    monkeypatch.setattr(run, "_git_dirty", lambda: True)
+    monkeypatch.setattr(
+        run,
+        "load_dataset",
+        lambda config: (_ for _ in ()).throw(
+            AssertionError("dataset loading must not start")
+        ),
+    )
+
+    import pytest
+
+    with pytest.raises(RuntimeError, match="Final runs require a clean Git"):
+        run.main(str(config_path))
+
+
+def test_final_run_rejects_unknown_git_state(monkeypatch):
+    monkeypatch.setattr(run, "_git_dirty", lambda: None)
+
+    with pytest.raises(RuntimeError, match="current Git state is unknown"):
+        run._ensure_clean_final_run({"final_run": True})
+
+
+def test_clean_final_run_is_allowed(monkeypatch):
+    monkeypatch.setattr(run, "_git_dirty", lambda: False)
+
+    assert run._ensure_clean_final_run({"final_run": True}) is None
+
+
+def test_ordinary_run_does_not_check_git_dirty_state(monkeypatch):
+    monkeypatch.setattr(
+        run,
+        "_git_dirty",
+        lambda: (_ for _ in ()).throw(
+            AssertionError("ordinary runs must not enforce final-run cleanliness")
+        ),
+    )
+
+    assert run._ensure_clean_final_run({}) is None

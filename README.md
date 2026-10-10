@@ -438,7 +438,7 @@ and the base retriever ranking.
 
 ### Frozen configuration
 
-- **Experiment:** `exp_026_hotpotqa_rcd_v1_mlx_frozen_current`
+- **Configuration:** `exp_026_hotpotqa_rcd_v1_mlx_frozen_current` (not verified as executed)
 - **Source development checkpoint:** `exp_025_hotpotqa_rcd_v1_mlx_dev300_current_tuned`
 - **Dataset:** HotpotQA validation split
 - **Queries:** N=300
@@ -449,7 +449,8 @@ and the base retriever ranking.
 - **Top-k evidence passed to generator:** 3
 - **Frozen weights:** consistency=0.45, redundancy=0.00, conflict=0.10, base_rank=0.45
 - **Candidate pool:** 10
-- **Maximum additional query rewrites:** 3 (up to three additional unique rule-based rewrites; the original query is excluded)
+- **Maximum additional query rewrites:** 3 (`n_rewrites=3` requests up to three additional unique rule-based rewrites; the actual number can be smaller when the generator cannot produce three distinct variants; the original query is excluded)
+- **Final-run provenance guard:** enabled (`final_run: true`); execution fails if Git is dirty or its state is unknown
 
 The frozen checkpoint uses the corrected current RCD implementation. The
 conflict component is intentionally scoped to temporal/year disagreement:
@@ -499,7 +500,7 @@ pending supervisor approval:
 ### Sampling & Scope
 - **Dataset:** HotpotQA, distractor setting (provides top-k Wikipedia candidate pool per query)
 - **Split:** Validation split (see `load_hotpotqa_distractor` in `src/data/loaders.py`)
-- **Sample size:** Configurable via `dataset_n_samples`; the original pooled-corpus methodology used N ≤ 50, while the frozen Week 7-8 RCD development/final runs used N=300.
+- **Sample size:** Configurable via `dataset_n_samples`; the original pooled-corpus methodology used N ≤ 50. Historical RCD development runs used N=300 on HotpotQA validation; the corrective `exp_026` config requests 300 examples, but its execution is unverified.
 - **Seed:** Fixed seed (e.g., 42) for reproducibility; different seeds produce different sample sets
 
 ### Corpus Construction
@@ -655,27 +656,30 @@ poison_id: "poison_001"
 - Transfer matrix framework is built and tested
 - All four retrievers can be swapped via config (no code changes)
 - Knowledge-poisoning attack benchmark and evaluation infrastructure are complete through Week 5-6
-- RCD (Retrieval-Consistency Defense) is implemented, tested, tuned on 300-query HotpotQA development data, and frozen for Week 7-8
+- RCD (Retrieval-Consistency Defense) is implemented, tested, tuned on 300-query HotpotQA development data, and its Week 7-8 configuration is frozen. The corrective `exp_026` config exists, but its raw run log and summary are not present, so its execution is not verified.
 - Frozen RCD weights: consistency=0.45, redundancy=0.00, conflict=0.10, base_rank=0.45
-- Frozen RCD run: `exp_023_hotpotqa_rcd_v1_mlx_frozen` (N=300)
-- Frozen RCD results: EM=0.407, F1=0.508, Recall@3=0.7467, MRR@10=0.9411, nDCG@10=0.8565
-- Week 7-8 is complete; Week 9 work has not started
+- Frozen score: `0.45 × consistency + 0.00 × redundancy − 0.10 × conflict + 0.45 × base-rank score`. Redundancy is implemented but contributes nothing at weight 0.00. Conflict is the implemented year-disagreement heuristic, not general-purpose factual contradiction detection.
+- Active consistency score: the mean of per-document retriever-presence agreement, cross-retriever rank stability, and rewrite-rank stability. With the configured dense primary retriever and BM25 secondary signal, agreement is the fraction of those two rankings containing the document; either stability term is zero when the document appears in fewer than two respective rankings.
+- RCD retrieves up to `rcd_candidate_k` documents from the dense primary and BM25 signal for the original query, then uses the dense primary for each rewrite. The runner requests up to 10 ranked documents for retrieval metrics but passes only configured `top_k` documents (3 in the frozen config) to generation.
+- Historical frozen development run: `exp_023_hotpotqa_rcd_v1_mlx_frozen` (N=300, HotpotQA validation split; not held-out)
+- Historical `exp_023` results: EM=0.407, F1=0.508, Recall@3=0.7467, MRR@10=0.9411, nDCG@10=0.8565. Its score fields predate the correction and `exp_023` is not evidence that the corrective `exp_026` config ran.
+- Week 7-8 implementation/configuration is frozen; held-out evaluation remains pending for Weeks 9-10
 
 ## Testing
 
 Run the full test suite:
 ```bash
-pytest tests/ -v
+python -m pytest -q
 ```
 
-The historical test count below is outdated; the latest verified local run
-passed **258 tests**. Run `pytest tests/ -v` for the current per-file breakdown.
+The latest verified local run passed **271 tests**. Test totals are
+working-tree-specific; rerun the command above for the current summary.
 
 The suite covers retrieval metrics (Recall/MRR/nDCG), attack metrics
 (PRR/ASR/ATR), transfer framework (including query-ID alignment fail-fast
 and PRR@k export), corpus construction, config routing, end-to-end
 integration, environment metadata, gold retrieval labels, and dataset
-revision pinning. Run `pytest tests/ -v` for the exact current per-file
+revision pinning. Run `python -m pytest -q` for the exact current summary.
 breakdown.
 
 ### Running specific test suites
@@ -700,7 +704,7 @@ that existed when they were produced.
 
 ## Next phase
 
-Week 7-8 is complete and the RCD configuration is frozen. The next phase
-is Week 9, covering the remaining experimental roadmap and transfer
-evaluation work; Week 9 has not started yet. See the foundation document
-for the complete roadmap.
+The RCD implementation and configuration are frozen for Week 7-8. The
+corrective `exp_026` configuration exists, but its raw log and summary are
+absent, so the run is unverified. Held-out evaluation remains pending for
+Weeks 9-10. See the foundation document for the complete roadmap.

@@ -17,6 +17,24 @@ looks identical to "we forgot to check."
 """
 import platform
 import subprocess
+from pathlib import PurePosixPath
+
+
+_RELEVANT_UNTRACKED_SUFFIXES = {
+    ".cfg",
+    ".ini",
+    ".json",
+    ".lock",
+    ".md",
+    ".py",
+    ".pyi",
+    ".sh",
+    ".toml",
+    ".txt",
+    ".yaml",
+    ".yml",
+}
+_GENERATED_UNTRACKED_ROOTS = {"logs", "results"}
 
 
 def _try_import_version(module_name: str) -> str | None:
@@ -52,21 +70,44 @@ def _git_commit_sha() -> str | None:
 
 
 def _git_dirty() -> bool | None:
-    """True if tracked files differ from HEAD when the run starts.
+    """True for tracked changes or untracked source/configuration files.
 
     git_commit_sha alone does not identify the code that ran if the
-    working tree had uncommitted changes. Untracked files are ignored
-    because a run writes its own result files into the repo. None if
-    git is unavailable, so it shows as unknown rather than clean.
+    working tree had uncommitted changes. Generated result and log files
+    are ignored when untracked; source and configuration files are not.
+    None if git is unavailable, so it shows as unknown rather than clean.
     """
     try:
         result = subprocess.run(
-            ["git", "status", "--porcelain", "--untracked-files=no"],
+            [
+                "git",
+                "status",
+                "--porcelain=v1",
+                "-z",
+                "--untracked-files=all",
+            ],
             capture_output=True, text=True, timeout=5,
         )
-        if result.returncode == 0:
-            return bool(result.stdout.strip())
-        return None
+        if result.returncode != 0:
+            return None
+
+        for entry in result.stdout.split("\0"):
+            if not entry:
+                continue
+
+            status = entry[:2]
+            if status != "??":
+                return True
+
+            path = PurePosixPath(entry[3:])
+            if (
+                path.parts
+                and path.parts[0] not in _GENERATED_UNTRACKED_ROOTS
+                and path.suffix.lower() in _RELEVANT_UNTRACKED_SUFFIXES
+            ):
+                return True
+
+        return False
     except (FileNotFoundError, subprocess.TimeoutExpired):
         return None
 

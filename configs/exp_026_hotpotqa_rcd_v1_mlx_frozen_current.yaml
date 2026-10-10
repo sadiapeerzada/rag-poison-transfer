@@ -1,4 +1,5 @@
 experiment_id: exp_026_hotpotqa_rcd_v1_mlx_frozen_current
+final_run: true
 seed: 42
 dataset_loader: load_hotpotqa_distractor
 dataset_split: validation

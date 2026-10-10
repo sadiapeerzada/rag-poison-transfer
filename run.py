@@ -11,6 +11,7 @@ Supports two data sources, chosen by config:
 import argparse
 import json
 import hashlib
+import math
 
 from src.utils.config import load_config
 from src.utils.seeding import set_seed
@@ -21,6 +22,7 @@ from src.retrieval.hybrid import HybridRetriever
 from src.retrieval.reranker import Reranker, CrossEncoderScorer
 from src.defenses.rcd.retriever import RCDRetriever
 from src.pipelines.generator import MockGenerator, MLXGenerator, TransformersGenerator
+from src.utils.env_info import _git_dirty
 from src.evaluation.metrics import (
     exact_match,
     f1_score,
@@ -151,6 +153,22 @@ def _heldout_manifest_fingerprint(config: dict) -> str | None:
     return None if validated is None else validated[1]
 
 
+def _ensure_clean_final_run(config: dict) -> None:
+    final_run = config.get("final_run", False)
+    if not isinstance(final_run, bool):
+        raise ValueError("final_run must be a boolean when provided.")
+    if not final_run:
+        return
+
+    dirty = _git_dirty()
+    if dirty is not False:
+        state = "dirty" if dirty else "unknown"
+        raise RuntimeError(
+            "Final runs require a clean Git working tree; "
+            f"current Git state is {state}."
+        )
+
+
 def load_dataset(config: dict) -> dict:
     """Returns {"corpus": [...], "queries": [...]}, from either a static
     JSON file (toy dataset) or a real loader in src/data/loaders.py.
@@ -201,6 +219,7 @@ def build_prompt(question: str, evidence_docs: list) -> str:
 
 def main(config_path: str):
     config = load_config(config_path)
+    _ensure_clean_final_run(config)
     set_seed(config["seed"])
 
     data = load_dataset(config)
@@ -263,19 +282,22 @@ def main(config_path: str):
                     "RCD diagnostics are missing the score mapping."
                 )
 
-            missing_scores = [
+            invalid_scores = [
                 doc_id
                 for doc_id in retrieved_doc_ids
-                if (
-                    doc_id not in rcd_scores
-                    or not isinstance(rcd_scores[doc_id], dict)
-                    or "final_score" not in rcd_scores[doc_id]
+                if doc_id not in rcd_scores
+                or not isinstance(rcd_scores[doc_id], dict)
+                or not isinstance(
+                    rcd_scores[doc_id].get("final_score"),
+                    (int, float),
                 )
+                or isinstance(rcd_scores[doc_id].get("final_score"), bool)
+                or not math.isfinite(rcd_scores[doc_id]["final_score"])
             ]
-            if missing_scores:
+            if invalid_scores:
                 raise RuntimeError(
-                    "RCD final scores missing for retrieved documents: "
-                    f"{missing_scores}"
+                    "RCD final scores missing or invalid for retrieved documents: "
+                    f"{invalid_scores}"
                 )
 
             retrieved_scores = [
