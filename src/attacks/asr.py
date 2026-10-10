@@ -115,10 +115,12 @@ def evaluate_asr_for_retriever(
             generated/selected using this same retriever as its source,
             pass the same name for both -- see run_source_target_asr for
             the actual source-freeze / target-replay workflow.
-        top_k: number of evidence docs passed to the generator.
-        retrieval_metric_k: retrieval depth used for poison-rank bookkeeping
-            (kept >= top_k so a poison doc retrieved just outside the
-            generation window is still visible in poison_rank).
+        top_k: number of evidence docs passed to the generator. The
+            poison_retrieved flag indicates whether poison appears within
+            this generator-visible evidence window.
+        retrieval_metric_k: retrieval depth used for diagnostic ranking.
+            poison_rank and retrieved_doc_ids describe this broader window,
+            which may include documents not passed to the generator.
 
     Returns:
         list[dict], one per attacked query, matching
@@ -154,11 +156,16 @@ def evaluate_asr_for_retriever(
         # --- Poisoned side: retrieve + generate from the POISONED corpus/index.
         poisoned_retrieved_full = poisoned_retriever.retrieve(q["question"], top_k=retrieval_metric_k)
         retrieved_doc_ids = [d.doc_id for d in poisoned_retrieved_full]
-        poison_ranks = [i + 1 for i, doc_id in enumerate(retrieved_doc_ids) if doc_id in poison_doc_ids]
-        poison_retrieved = len(poison_ranks) > 0
+        poison_ranks = [
+            i + 1
+            for i, doc_id in enumerate(retrieved_doc_ids)
+            if doc_id in poison_doc_ids
+        ]
         poison_rank = min(poison_ranks) if poison_ranks else None
 
         evidence_for_generation = poisoned_retrieved_full[:top_k]
+        evidence_doc_ids = {d.doc_id for d in evidence_for_generation}
+        poison_retrieved = bool(poison_doc_ids & evidence_doc_ids)
         poisoned_prompt = build_prompt(q["question"], [d.text for d in evidence_for_generation])
         attacked_raw = generator.generate(poisoned_prompt, max_tokens=max_tokens)
         attacked_answer = _extract_answer(attacked_raw.text)

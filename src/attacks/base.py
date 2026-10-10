@@ -16,6 +16,8 @@ import hashlib
 from abc import ABC, abstractmethod
 from dataclasses import dataclass
 
+from src.evaluation.metrics import exact_match
+
 
 def poison_doc_id(attack_family: str, query_id: str, poison_index: int, text: str) -> str:
     """Canonical ID for a poison document.
@@ -113,9 +115,13 @@ class PoisonAttack(ABC):
         if no same-type candidate exists.
         """
         own_type = self._answer_type(query.get("gold_answer", ""))
+        own_gold = query.get("gold_answer", "")
         all_candidates = [
-            q["gold_answer"] for q in all_queries
-            if q.get("gold_answer") and q["gold_answer"] != query.get("gold_answer") and q["query_id"] != query["query_id"]
+            q["gold_answer"]
+            for q in all_queries
+            if q.get("gold_answer")
+            and q["query_id"] != query["query_id"]
+            and exact_match(q["gold_answer"], own_gold) == 0.0
         ]
         if not all_candidates:
             raise ValueError(f"No valid cross-query target answer available for query {query['query_id']!r}")

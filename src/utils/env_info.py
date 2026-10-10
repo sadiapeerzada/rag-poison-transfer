@@ -51,6 +51,26 @@ def _git_commit_sha() -> str | None:
         return None
 
 
+def _git_dirty() -> bool | None:
+    """True if tracked files differ from HEAD when the run starts.
+
+    git_commit_sha alone does not identify the code that ran if the
+    working tree had uncommitted changes. Untracked files are ignored
+    because a run writes its own result files into the repo. None if
+    git is unavailable, so it shows as unknown rather than clean.
+    """
+    try:
+        result = subprocess.run(
+            ["git", "status", "--porcelain", "--untracked-files=no"],
+            capture_output=True, text=True, timeout=5,
+        )
+        if result.returncode == 0:
+            return bool(result.stdout.strip())
+        return None
+    except (FileNotFoundError, subprocess.TimeoutExpired):
+        return None
+
+
 def _detect_device() -> str:
     """Best real device the current run would actually use, not just
     'is a GPU present' -- e.g. reports 'mps' correctly on Apple
@@ -76,6 +96,7 @@ def capture_environment_metadata(config: dict) -> dict:
     """
     return {
         "git_commit_sha": _git_commit_sha(),
+        "git_dirty": _git_dirty(),
         "python_version": platform.python_version(),
         "platform": platform.platform(),
         "torch_version": _try_import_version("torch"),
@@ -91,4 +112,5 @@ def capture_environment_metadata(config: dict) -> dict:
         "dataset_loader": config.get("dataset_loader"),
         "dataset_split": config.get("dataset_split"),
         "dataset_revision": config.get("dataset_revision"),
+        "config_hash": config.get("_config_hash"),
     }

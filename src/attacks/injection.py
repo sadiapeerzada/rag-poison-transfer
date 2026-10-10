@@ -11,6 +11,8 @@ extra corpus entries and one extra field per query.
 """
 import random
 
+from src.evaluation.metrics import exact_match
+
 
 def inject_poisons(
     data: dict,
@@ -142,11 +144,63 @@ def validate_poisoned_dataset(
     checks = {}
     details = {}
 
+    clean_query_ids = [q["query_id"] for q in clean_data["queries"]]
+    poisoned_query_ids = [q["query_id"] for q in poisoned_data["queries"]]
+
+    checks["no_duplicate_clean_query_ids"] = (
+        len(clean_query_ids) == len(set(clean_query_ids))
+    )
+    checks["no_duplicate_poisoned_query_ids"] = (
+        len(poisoned_query_ids) == len(set(poisoned_query_ids))
+    )
+    clean_query_id_counts = {}
+    for qid in clean_query_ids:
+        clean_query_id_counts[qid] = clean_query_id_counts.get(qid, 0) + 1
+    poisoned_query_id_counts = {}
+    for qid in poisoned_query_ids:
+        poisoned_query_id_counts[qid] = poisoned_query_id_counts.get(qid, 0) + 1
+
+    details["duplicate_clean_query_ids"] = sorted(
+        qid for qid, count in clean_query_id_counts.items() if count > 1
+    )
+    details["duplicate_poisoned_query_ids"] = sorted(
+        qid for qid, count in poisoned_query_id_counts.items() if count > 1
+    )
+
     clean_by_id = {q["query_id"]: q for q in clean_data["queries"]}
     poisoned_by_id = {q["query_id"]: q for q in poisoned_data["queries"]}
 
     # 1. Same set of queries, nothing added or dropped.
     checks["same_query_set"] = set(clean_by_id) == set(poisoned_by_id)
+
+    # 1b. Each attacked query must have a nonempty target that differs
+    # from its original clean gold answer under the project's EM normalization.
+    invalid_targets = []
+    for q in poisoned_data["queries"]:
+        if not q.get("poison_doc_ids"):
+            continue
+
+        qid = q["query_id"]
+        target = q.get("poison_target_answer")
+        clean_q = clean_by_id.get(qid)
+
+        if (
+            not isinstance(target, str)
+            or not target.strip()
+            or clean_q is None
+            or exact_match(target, clean_q.get("gold_answer", "")) == 1.0
+        ):
+            invalid_targets.append(qid)
+
+    query_ids_unique = (
+        checks["no_duplicate_clean_query_ids"]
+        and checks["no_duplicate_poisoned_query_ids"]
+    )
+    checks["poison_targets_differ_from_gold"] = (
+        query_ids_unique and len(invalid_targets) == 0
+    )
+    details["invalid_poison_target_query_ids"] = invalid_targets
+    details["query_level_checks_skipped_due_to_duplicate_ids"] = not query_ids_unique
 
     # 2. Gold labels byte-identical for every query.
     gold_mismatches = []
@@ -158,7 +212,9 @@ def validate_poisoned_dataset(
             gold_mismatches.append((qid, "gold_answer"))
         if poisoned_q.get("gold_doc_ids") != clean_q.get("gold_doc_ids"):
             gold_mismatches.append((qid, "gold_doc_ids"))
-    checks["gold_labels_untouched"] = len(gold_mismatches) == 0
+    checks["gold_labels_untouched"] = (
+        query_ids_unique and len(gold_mismatches) == 0
+    )
     details["gold_mismatches"] = gold_mismatches
 
     # 3. Every clean corpus doc still present, unmodified, in the poisoned corpus.
