@@ -346,6 +346,8 @@ def test_paired_metrics_and_zero_conditional_denominator():
     )
     assert paired["conditional_asr_comparison"]["dense_minus_rcd_rate"] is None
     assert len(paired["per_query"]) == 2
+    assert "same 2 queries" in paired["interpretation"]
+    assert "not statistical significance or causal proof" in paired["interpretation"]
 
 
 def test_exclusive_outputs_and_failure_record_are_honest(tmp_path):
