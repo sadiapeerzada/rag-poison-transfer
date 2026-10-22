@@ -83,7 +83,7 @@ def generate_query_rewrites(
     *,
     n_rewrites: int = 3,
 ) -> list[str]:
-    """Generate N additional query rewrites, excluding the original query."""
+    """Generate up to N additional unique query rewrites, excluding the original query."""
     if n_rewrites <= 0:
         return []
 

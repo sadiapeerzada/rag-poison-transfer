@@ -91,14 +91,16 @@ def load_hotpotqa_distractor(
     if query_ids is not None:
         if n_samples is not None:
             raise ValueError("Use either query_ids or n_samples, not both.")
-
-        requested_ids = list(query_ids)
-        if len(requested_ids) != len(set(requested_ids)):
+        if not isinstance(query_ids, list) or not query_ids:
+            raise ValueError("query_ids must be a non-empty list.")
+        if not all(isinstance(qid, str) and qid for qid in query_ids):
+            raise ValueError("query_ids must contain non-empty strings.")
+        if len(query_ids) != len(set(query_ids)):
             raise ValueError("query_ids contains duplicate IDs.")
 
+        requested_ids = list(query_ids)
         dataset_ids = list(ds["id"])
 
-        # Reject duplicate source IDs before constructing the lookup.
         seen_ids = set()
         duplicate_ids = set()
         for dataset_id in dataset_ids:

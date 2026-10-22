@@ -72,3 +72,13 @@ def test_captured_git_dirty_state_is_used():
     )
 
     assert metadata["git_dirty"] is False
+
+
+def test_final_run_status_is_recorded():
+    ordinary = build_experiment_metadata(**_metadata_kwargs())
+    final = build_experiment_metadata(
+        **_metadata_kwargs(),
+        final_run=True,
+    )
+    assert ordinary["final_run"] is False
+    assert final["final_run"] is True
