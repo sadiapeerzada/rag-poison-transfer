@@ -476,6 +476,7 @@ def main(config_path: str):
         heldout_query_ids_fingerprint=(
             _heldout_manifest_fingerprint(config)
         ),
+        final_run=config.get("final_run", False),
     )
 
     summary = {

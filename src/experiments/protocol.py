@@ -156,6 +156,7 @@ def build_experiment_metadata(
     git_sha: str | None = None,
     dataset_query_ids_manifest: str | None = None,
     heldout_query_ids_fingerprint: str | None = None,
+    final_run: bool = False,
 ) -> dict[str, Any]:
     """Build canonical experiment metadata."""
     attack_config_hash = hashlib.sha256(
@@ -175,6 +176,7 @@ def build_experiment_metadata(
         "experiment_id": experiment_id,
         "git_commit_sha": git_sha or git_commit_sha(),
         "git_dirty": _git_dirty(),
+        "final_run": final_run,
 
         "dataset": dataset,
         "dataset_revision": dataset_revision or "unspecified",
