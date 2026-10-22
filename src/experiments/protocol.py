@@ -13,8 +13,6 @@ import subprocess
 from datetime import datetime, timezone
 from typing import Any, Iterable
 
-from src.utils.env_info import _git_dirty
-
 
 def _stable_json(value: Any) -> str:
     return json.dumps(
@@ -154,6 +152,7 @@ def build_experiment_metadata(
     poison_rate: float,
     attacked_query_ids: list[str] | None = None,
     git_sha: str | None = None,
+    git_dirty: bool | None = None,
     dataset_query_ids_manifest: str | None = None,
     heldout_query_ids_fingerprint: str | None = None,
 ) -> dict[str, Any]:
@@ -174,7 +173,7 @@ def build_experiment_metadata(
     return {
         "experiment_id": experiment_id,
         "git_commit_sha": git_sha or git_commit_sha(),
-        "git_dirty": _git_dirty(),
+        "git_dirty": git_dirty,
 
         "dataset": dataset,
         "dataset_revision": dataset_revision or "unspecified",

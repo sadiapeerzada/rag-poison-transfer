@@ -62,4 +62,13 @@ def test_legacy_experiment_without_manifest_remains_supported():
     assert metadata["heldout_query_ids_fingerprint"] is None
     assert metadata["query_count"] == 1
     assert metadata["query_set_fingerprint"]
-    assert metadata["git_dirty"] in (True, False, None)
+    assert metadata["git_dirty"] is None
+
+
+def test_captured_git_dirty_state_is_used():
+    metadata = build_experiment_metadata(
+        **_metadata_kwargs(),
+        git_dirty=False,
+    )
+
+    assert metadata["git_dirty"] is False

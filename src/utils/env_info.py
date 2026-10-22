@@ -94,17 +94,21 @@ def _detect_device() -> str:
     return "cpu"
 
 
-def capture_environment_metadata(config: dict) -> dict:
+def capture_environment_metadata(
+    config: dict,
+    *,
+    git_dirty: bool | None = None,
+) -> dict:
     """One dict, safe to attach to every logged record. Config-derived
     fields (model identifiers) come straight from the experiment
     config rather than being re-derived, since the config IS the
     source of truth for what was requested -- this only adds what the
     config can't know about itself (actual installed versions, actual
-    hardware, actual code state).
+    hardware). Git state is supplied by the run startup check.
     """
     return {
         "git_commit_sha": _git_commit_sha(),
-        "git_dirty": _git_dirty(),
+        "git_dirty": git_dirty,
         "python_version": platform.python_version(),
         "platform": platform.platform(),
         "torch_version": _try_import_version("torch"),

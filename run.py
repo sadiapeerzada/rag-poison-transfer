@@ -153,20 +153,19 @@ def _heldout_manifest_fingerprint(config: dict) -> str | None:
     return None if validated is None else validated[1]
 
 
-def _ensure_clean_final_run(config: dict) -> None:
+def _ensure_clean_final_run(config: dict) -> bool | None:
     final_run = config.get("final_run", False)
     if not isinstance(final_run, bool):
         raise ValueError("final_run must be a boolean when provided.")
-    if not final_run:
-        return
 
     dirty = _git_dirty()
-    if dirty is not False:
+    if final_run and dirty is not False:
         state = "dirty" if dirty else "unknown"
         raise RuntimeError(
             "Final runs require a clean Git working tree; "
             f"current Git state is {state}."
         )
+    return dirty
 
 
 def load_dataset(config: dict) -> dict:
@@ -219,7 +218,7 @@ def build_prompt(question: str, evidence_docs: list) -> str:
 
 def main(config_path: str):
     config = load_config(config_path)
-    _ensure_clean_final_run(config)
+    git_dirty_at_start = _ensure_clean_final_run(config)
     set_seed(config["seed"])
 
     data = load_dataset(config)
@@ -228,7 +227,12 @@ def main(config_path: str):
     retriever.build(data["corpus"])
 
     generator = build_generator(config)
-    logger = ExperimentLogger(config["results_dir"], config["experiment_id"], config=config)
+    logger = ExperimentLogger(
+        config["results_dir"],
+        config["experiment_id"],
+        config=config,
+        git_dirty=git_dirty_at_start,
+    )
 
     em_scores, f1_scores = [], []
     retrieval_metric_scores = {}
@@ -472,6 +476,7 @@ def main(config_path: str):
         n_poison=int(config.get("n_poison", 0)),
         poison_rate=float(config.get("poison_rate", 0.0)),
         attacked_query_ids=config.get("attacked_query_ids"),
+        git_dirty=git_dirty_at_start,
         dataset_query_ids_manifest=config.get("dataset_query_ids_manifest"),
         heldout_query_ids_fingerprint=(
             _heldout_manifest_fingerprint(config)
