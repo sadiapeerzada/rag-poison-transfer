@@ -389,6 +389,7 @@ def evaluate_cell(
     retrievers = build_matched_retrievers(dense_config, rcd_config, clean_data, poisoned_data)
     records_written = 0
     retrieval_seconds = 0.0
+    diagnostic_retrieval_seconds = 0.0
     generation_seconds = 0.0
     with results_path.open("x", encoding="utf-8") as output:
         for pipeline, (clean_retriever, poisoned_retriever) in retrievers.items():
@@ -406,6 +407,9 @@ def evaluate_cell(
             for row in rows:
                 for record in flatten_query_result_records(row):
                     retrieval_seconds += record["retrieval_elapsed_seconds"]
+                    diagnostic_retrieval_seconds += record.get(
+                        "diagnostic_retrieval_elapsed_seconds", 0.0
+                    )
                     generation_seconds += record["generation"]["elapsed_seconds"]
                     output.write(
                         json.dumps(
@@ -427,6 +431,7 @@ def evaluate_cell(
             "raw_record_count": records_written,
             "expected_raw_record_count": len(clean_data["queries"]) * 4,
             "retrieval_elapsed_seconds": retrieval_seconds,
+            "diagnostic_retrieval_elapsed_seconds": diagnostic_retrieval_seconds,
             "generation_elapsed_seconds": generation_seconds,
         },
     }
@@ -675,6 +680,7 @@ def run_smoke_test(
         if (
             evidence["raw_record_count"] != evidence["expected_raw_record_count"]
             or evidence["retrieval_elapsed_seconds"] < 0
+            or evidence.get("diagnostic_retrieval_elapsed_seconds", 0.0) < 0
             or evidence["generation_elapsed_seconds"] < 0
         ):
             raise RuntimeError("Smoke test lacks complete retrieval/generation evidence.")

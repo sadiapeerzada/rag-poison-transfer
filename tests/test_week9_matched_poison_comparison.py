@@ -235,8 +235,10 @@ def test_query_degradation_truth_table_and_jsonl_pair(
     class FakeRetriever:
         def __init__(self, document):
             self.document = document
+            self.top_k_calls = []
 
         def retrieve(self, question, top_k):
+            self.top_k_calls.append(top_k)
             return [SimpleNamespace(**self.document)]
 
     class FakeGenerator:
@@ -275,18 +277,33 @@ def test_query_degradation_truth_table_and_jsonl_pair(
             }
         ],
     }
+    clean_retriever = FakeRetriever(clean_doc)
+    poisoned_retriever = FakeRetriever(poison_doc)
     paired = comparison.evaluate_pipeline(
         pipeline="dense",
-        clean_retriever=FakeRetriever(clean_doc),
-        poisoned_retriever=FakeRetriever(poison_doc),
+        clean_retriever=clean_retriever,
+        poisoned_retriever=poisoned_retriever,
         clean_data=clean_data,
         poisoned_data=poisoned_data,
         generator=FakeGenerator(),
         top_k=1,
         max_tokens=64,
     )[0]
+    assert clean_retriever.top_k_calls == [1]
+    expected_poison_calls = [1]
+    if comparison.RETRIEVAL_METRIC_K > 1:
+        expected_poison_calls.append(comparison.RETRIEVAL_METRIC_K)
+    assert poisoned_retriever.top_k_calls == expected_poison_calls
     expected = clean_correct and not poisoned_correct
     assert paired["query_untargeted_degradation"] is expected
+
+    # Both conditions time retrieval at the generation evidence depth.
+    assert paired["clean_condition"]["retrieval_elapsed_seconds"] >= 0
+    assert paired["poisoned_condition"]["retrieval_elapsed_seconds"] >= 0
+    assert paired["clean_condition"]["diagnostic_retrieval_elapsed_seconds"] == 0.0
+    assert paired["poisoned_condition"]["diagnostic_retrieval_elapsed_seconds"] >= 0
+    assert paired["clean_condition"]["generation_evidence_doc_ids"] == ["clean-doc"]
+    assert paired["poisoned_condition"]["generation_evidence_doc_ids"] == ["poison-doc"]
 
     clean_record, poisoned_record = [
         json.loads(line)

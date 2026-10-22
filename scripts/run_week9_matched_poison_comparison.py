@@ -85,6 +85,15 @@ METRIC_DEFINITIONS = {
         "selected queries. The same value is repeated on that query's clean "
         "and poisoned JSONL condition records."
     ),
+    "retrieval_elapsed_seconds": (
+        "Wall-clock retrieval time at the generation evidence depth (top_k) "
+        "for both clean and poisoned conditions. Excludes additional "
+        "top-10 diagnostic retrieval."
+    ),
+    "diagnostic_retrieval_elapsed_seconds": (
+        "Additional wall-clock time for the poisoned condition's top-10 "
+        "retrieval used for retrieval diagnostics; zero for clean records."
+    ),
 }
 
 
@@ -363,11 +372,22 @@ def evaluate_pipeline(
             generator, clean_query["question"], clean_retrieved, max_tokens
         )
         retrieval_started = time.perf_counter()
-        poisoned_retrieved = poisoned_retriever.retrieve(
-            poisoned_query["question"], top_k=RETRIEVAL_METRIC_K
+        poison_evidence = poisoned_retriever.retrieve(
+            poisoned_query["question"], top_k=top_k
         )
         poisoned_retrieval_seconds = time.perf_counter() - retrieval_started
-        poison_evidence = poisoned_retrieved[:top_k]
+
+        diagnostic_retrieval_seconds = 0.0
+        if RETRIEVAL_METRIC_K > top_k:
+            retrieval_started = time.perf_counter()
+            poisoned_retrieved = poisoned_retriever.retrieve(
+                poisoned_query["question"], top_k=RETRIEVAL_METRIC_K
+            )
+            diagnostic_retrieval_seconds = (
+                time.perf_counter() - retrieval_started
+            )
+        else:
+            poisoned_retrieved = poison_evidence
         poisoned_answer, poisoned_generation = _generate(
             generator, poisoned_query["question"], poison_evidence, max_tokens
         )
@@ -406,6 +426,7 @@ def evaluate_pipeline(
                     ],
                     "prr_at_k": {str(k): 0.0 for k in CUTOFFS},
                     "retrieval_elapsed_seconds": clean_retrieval_seconds,
+                    "diagnostic_retrieval_elapsed_seconds": 0.0,
                     "generation": clean_generation,
                 },
                 "poisoned_condition": {
@@ -426,6 +447,9 @@ def evaluate_pipeline(
                         for k in CUTOFFS
                     },
                     "retrieval_elapsed_seconds": poisoned_retrieval_seconds,
+                    "diagnostic_retrieval_elapsed_seconds": (
+                        diagnostic_retrieval_seconds
+                    ),
                     "generation": poisoned_generation,
                 },
                 "query_untargeted_degradation": (
