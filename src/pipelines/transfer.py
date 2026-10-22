@@ -38,6 +38,10 @@ ATTACK_RESULT_SCHEMA = {
     "model_identifier": str,
     "seed": int,
     "dataset": str,
+    "attack_family": str,
+    "attack_config": "dict[str, Any]",
+    "poison_manifest_fingerprint": str,
+    "query_set_fingerprint": str,
     "retrieval_metrics": "dict[str, float]",  # Recall@k, MRR@k, etc.
 }
 
@@ -66,6 +70,13 @@ class TransferExperimentResult:
     attack_success_rate_target: float | None = None
     attack_transfer_rate: float | None = None
 
+    source_queries_evaluated: int = 0
+    source_successful_query_count: int = 0
+    overall_source_asr: float | None = None
+    conditional_target_asr: float | None = None
+    transfer_count: int = 0
+    atr_denominator: int = 0
+    source_asr_results: list[dict] = field(default_factory=list)
     per_query_results: list[dict] = field(default_factory=list)
 
     def to_dict(self) -> dict[str, Any]:
@@ -87,6 +98,13 @@ class TransferExperimentResult:
             "attack_success_rate_source": self.attack_success_rate_source,
             "attack_success_rate_target": self.attack_success_rate_target,
             "attack_transfer_rate": self.attack_transfer_rate,
+            "source_queries_evaluated": self.source_queries_evaluated,
+            "source_successful_query_count": self.source_successful_query_count,
+            "overall_source_asr": self.overall_source_asr,
+            "conditional_target_asr": self.conditional_target_asr,
+            "transfer_count": self.transfer_count,
+            "atr_denominator": self.atr_denominator,
+            "source_asr_results": self.source_asr_results,
             "per_query_results": self.per_query_results,
         }
 
@@ -242,9 +260,216 @@ class TransferMatrix:
 
 
 
+_TRANSFER_SHARED_METADATA_FIELDS = (
+    "dataset",
+    "seed",
+    "attack_family",
+    "attack_config",
+    "model_identifier",
+    "git_commit_sha",
+    "query_set_fingerprint",
+)
+
+
+def _validate_strict_metadata_values(
+    results: list[dict],
+    *,
+    side: str,
+    expected_source_pipeline: str,
+    expected_target_pipeline: str,
+    validate_query_ids: bool = True,
+) -> dict:
+    """Require complete, internally consistent metadata on every result."""
+    required_fields = (
+        *_TRANSFER_SHARED_METADATA_FIELDS,
+        "source_pipeline",
+        "target_pipeline",
+    )
+    if not results:
+        raise ValueError(f"{side} results are empty")
+
+    for field_name in required_fields:
+        values = [result.get(field_name) for result in results]
+        for value in values:
+            if value is None or (isinstance(value, str) and not value.strip()):
+                raise ValueError(
+                    f"{side} result is missing required metadata field "
+                    f"{field_name!r}"
+                )
+            if isinstance(value, str) and value.strip().lower() in {
+                "unknown",
+                "none",
+                "null",
+            }:
+                raise ValueError(
+                    f"{side} metadata field {field_name!r} cannot use "
+                    f"placeholder value {value!r}"
+                )
+        if any(value != values[0] for value in values[1:]):
+            raise ValueError(
+                f"{side} results have inconsistent {field_name!r} metadata"
+            )
+
+    seed = results[0]["seed"]
+    if isinstance(seed, bool) or not isinstance(seed, int):
+        raise ValueError(f"{side} metadata field 'seed' must be an integer")
+    if not isinstance(results[0]["attack_config"], dict):
+        raise ValueError(
+            f"{side} metadata field 'attack_config' must be a mapping"
+        )
+    if not results[0]["attack_config"]:
+        raise ValueError(
+            f"{side} metadata field 'attack_config' must include the "
+            "attack/intensity configuration"
+        )
+    for field_name in (
+        "dataset",
+        "attack_family",
+        "model_identifier",
+        "git_commit_sha",
+        "query_set_fingerprint",
+        "source_pipeline",
+        "target_pipeline",
+    ):
+        if not isinstance(results[0][field_name], str):
+            raise ValueError(
+                f"{side} metadata field {field_name!r} must be a string"
+            )
+
+    poison_fingerprints = []
+    for result in results:
+        manifest_fingerprint = result.get("poison_manifest_fingerprint")
+        instance_fingerprint = result.get("poison_instance_fingerprint")
+        fingerprint = manifest_fingerprint or instance_fingerprint
+        if not isinstance(fingerprint, str) or not fingerprint.strip():
+            raise ValueError(
+                f"{side} result is missing required metadata field "
+                "'poison_manifest_fingerprint' or "
+                "'poison_instance_fingerprint'"
+            )
+        if fingerprint.strip().lower() in {"unknown", "none", "null"}:
+            raise ValueError(
+                f"{side} poison fingerprint cannot use placeholder "
+                f"value {fingerprint!r}"
+            )
+        if (
+            manifest_fingerprint
+            and instance_fingerprint
+            and manifest_fingerprint != instance_fingerprint
+        ):
+            raise ValueError(
+                f"{side} result has conflicting poison fingerprint metadata"
+            )
+        poison_fingerprints.append(fingerprint)
+
+    if any(value != poison_fingerprints[0] for value in poison_fingerprints[1:]):
+        raise ValueError(
+            f"{side} results have inconsistent poison fingerprint metadata"
+        )
+
+    pipeline_expectations = (
+        ("source_pipeline", expected_source_pipeline),
+        ("target_pipeline", expected_target_pipeline),
+    )
+    for field_name, expected in pipeline_expectations:
+        if not isinstance(expected, str) or not expected.strip():
+            raise ValueError(
+                f"Strict metadata validation requires expected "
+                f"{field_name}"
+            )
+        actual = results[0][field_name]
+        if actual != expected:
+            raise ValueError(
+                f"{side} {field_name} mismatch: "
+                f"expected={expected!r}, actual={actual!r}"
+            )
+
+    if validate_query_ids:
+        for index, result in enumerate(results):
+            query_id = result.get("query_id")
+            if not isinstance(query_id, str) or not query_id.strip():
+                raise ValueError(
+                    f"{side} result at index {index} is missing a valid query_id"
+                )
+        query_ids = [result["query_id"] for result in results]
+        if len(query_ids) != len(set(query_ids)):
+            raise ValueError(f"{side} results contain duplicate query_ids")
+
+    return {
+        **{field_name: results[0][field_name]
+           for field_name in _TRANSFER_SHARED_METADATA_FIELDS},
+        "poison_fingerprint": poison_fingerprints[0],
+    }
+
+
+def validate_transfer_experiment_metadata(
+    metadata: dict | None,
+    *,
+    expected_source_pipeline: str,
+    expected_target_pipeline: str,
+) -> dict:
+    """Validate the shared metadata required for a strict transfer run.
+
+    Metadata is caller-supplied; this function never guesses dataset,
+    attack, poison, model, Git, or query-set provenance.
+    """
+    if not isinstance(metadata, dict):
+        raise ValueError(
+            "Strict transfer evaluation requires an explicit "
+            "experiment_metadata mapping"
+        )
+    probe = {**metadata}
+    probe["source_pipeline"] = expected_source_pipeline
+    probe["target_pipeline"] = expected_target_pipeline
+    return _validate_strict_metadata_values(
+        [probe],
+        side="experiment_metadata",
+        expected_source_pipeline=expected_source_pipeline,
+        expected_target_pipeline=expected_target_pipeline,
+        validate_query_ids=False,
+    )
+
+
+def validate_transfer_result_metadata(
+    results: list[dict],
+    *,
+    side: str,
+    expected_source_pipeline: str,
+    expected_target_pipeline: str,
+) -> dict:
+    """Validate complete metadata and unique query IDs for one result side."""
+    return _validate_strict_metadata_values(
+        results,
+        side=side,
+        expected_source_pipeline=expected_source_pipeline,
+        expected_target_pipeline=expected_target_pipeline,
+    )
+
+
+def validate_transfer_result_pair_metadata(
+    source_results: list[dict],
+    target_results: list[dict],
+    *,
+    expected_source_pipeline: str,
+    expected_target_pipeline: str,
+) -> None:
+    """Validate full source/target result sets for a strict transfer run."""
+    _validate_transfer_pair_metadata(
+        source_results,
+        target_results,
+        strict=True,
+        expected_source_pipeline=expected_source_pipeline,
+        expected_target_pipeline=expected_target_pipeline,
+    )
+
+
 def _validate_transfer_pair_metadata(
     source_results: list[dict],
     target_results: list[dict],
+    *,
+    strict: bool = False,
+    expected_source_pipeline: str | None = None,
+    expected_target_pipeline: str | None = None,
 ) -> None:
     """Validate that source/target results belong to the same experiment.
 
@@ -254,6 +479,41 @@ def _validate_transfer_pair_metadata(
     """
     if not source_results or not target_results:
         raise ValueError("Cannot validate empty result lists")
+
+    if strict:
+        if expected_source_pipeline is None:
+            raise ValueError(
+                "Strict metadata validation requires expected_source_pipeline"
+            )
+        if expected_target_pipeline is None:
+            raise ValueError(
+                "Strict metadata validation requires expected_target_pipeline"
+            )
+        source_metadata = _validate_strict_metadata_values(
+            source_results,
+            side="source_results",
+            expected_source_pipeline=expected_source_pipeline,
+            expected_target_pipeline=expected_target_pipeline,
+        )
+        target_metadata = _validate_strict_metadata_values(
+            target_results,
+            side="target_results",
+            expected_source_pipeline=expected_source_pipeline,
+            expected_target_pipeline=expected_target_pipeline,
+        )
+        for field_name, source_value in source_metadata.items():
+            target_value = target_metadata[field_name]
+            if source_value != target_value:
+                raise ValueError(
+                    f"Source/target {field_name} mismatch: "
+                    f"source={source_value!r}, target={target_value!r}"
+                )
+        source_ids = {result["query_id"] for result in source_results}
+        target_ids = {result["query_id"] for result in target_results}
+        if source_ids != target_ids:
+            raise ValueError(
+                "source_results and target_results have mismatched query_ids"
+            )
 
     def metadata_values(results, field):
         return {
@@ -345,6 +605,10 @@ def _validate_transfer_pair_metadata(
 def compute_transfer_statistics(
     source_results: list[dict],
     target_results: list[dict],
+    *,
+    strict_metadata: bool = False,
+    expected_source_pipeline: str | None = None,
+    expected_target_pipeline: str | None = None,
 ) -> TransferExperimentResult:
     """Compute transfer metrics from source/target result lists, aligned by query_id.
     
@@ -353,6 +617,9 @@ def compute_transfer_statistics(
                        Each dict should have 'query_id' and 'attack_success' fields.
         target_results: Same queries re-evaluated on target pipeline.
                        Aligned to source_results by query_id, not by position.
+        strict_metadata: Require complete and consistent final-run metadata.
+        expected_source_pipeline: Required source label in strict mode.
+        expected_target_pipeline: Required target label in strict mode.
     
     Returns:
         TransferExperimentResult with computed statistics.
@@ -372,6 +639,9 @@ def compute_transfer_statistics(
     _validate_transfer_pair_metadata(
         source_results,
         target_results,
+        strict=strict_metadata,
+        expected_source_pipeline=expected_source_pipeline,
+        expected_target_pipeline=expected_target_pipeline,
     )
 
     # Build dicts indexed by query_id for alignment
@@ -419,12 +689,27 @@ def compute_transfer_statistics(
 
     # Extract metadata from first source result (assume consistent across all)
     first_result = list(source_by_id.values())[0]
+    if strict_metadata:
+        poison_id = (
+            first_result.get("poison_manifest_fingerprint")
+            or first_result.get("poison_instance_fingerprint")
+        )
+        source_pipeline = expected_source_pipeline
+        target_pipeline = expected_target_pipeline
+        dataset = first_result["dataset"]
+        seed = first_result["seed"]
+    else:
+        poison_id = first_result.get("poison_id", "unknown")
+        source_pipeline = first_result.get("source_pipeline", "unknown")
+        target_pipeline = first_result.get("target_pipeline", "unknown")
+        dataset = first_result.get("dataset", "unknown")
+        seed = first_result.get("seed", 0)
     result = TransferExperimentResult(
-        source_pipeline=first_result.get("source_pipeline", "unknown"),
-        target_pipeline=first_result.get("target_pipeline", "unknown"),
-        poison_id=first_result.get("poison_id", "unknown"),
-        dataset=first_result.get("dataset", "unknown"),
-        seed=first_result.get("seed", 0),
+        source_pipeline=source_pipeline,
+        target_pipeline=target_pipeline,
+        poison_id=poison_id,
+        dataset=dataset,
+        seed=seed,
         total_queries=len(source_by_id),
     )
 

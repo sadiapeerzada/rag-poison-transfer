@@ -23,6 +23,10 @@ ATR matrix -- see run_source_target_asr() below for that wiring.
 """
 from src.pipelines.generator import MockGenerator
 from src.evaluation.metrics import exact_match
+from src.experiments.protocol import (
+    poison_instances_fingerprint,
+    query_set_fingerprint,
+)
 
 
 def build_prompt(question: str, evidence_texts: list[str]) -> str:
@@ -95,6 +99,7 @@ def evaluate_asr_for_retriever(
     top_k: int = 5,
     max_tokens: int = 64,
     retrieval_metric_k: int = 10,
+    experiment_metadata: dict | None = None,
 ) -> list[dict]:
     """Compute clean vs. poisoned ASR for every attacked query, against
     ONE target retriever family.
@@ -121,6 +126,8 @@ def evaluate_asr_for_retriever(
         retrieval_metric_k: retrieval depth used for diagnostic ranking.
             poison_rank and retrieved_doc_ids describe this broader window,
             which may include documents not passed to the generator.
+        experiment_metadata: caller-supplied provenance copied onto every
+            result. Strict source-to-target orchestration validates it.
 
     Returns:
         list[dict], one per attacked query, matching
@@ -182,6 +189,7 @@ def evaluate_asr_for_retriever(
         )
 
         results.append({
+            **(experiment_metadata or {}),
             "query_id": query_id,
             "source_pipeline": source_pipeline,
             "target_pipeline": target_pipeline,
@@ -249,6 +257,9 @@ def run_source_target_asr(
     source_pipeline: str,
     top_k: int = 5,
     max_tokens: int = 64,
+    *,
+    experiment_metadata: dict | None = None,
+    strict_metadata: bool = True,
 ):
     """True source->target transfer, per the supervisor's protocol -- NOT
     the "same poison vs. every retriever" robustness check evaluate.py's
@@ -269,6 +280,16 @@ def run_source_target_asr(
          clean_data/poisoned_data, run ASR restricted to the frozen
          query_id set, and feed (frozen source results, frozen target
          results) into compute_transfer_statistics().
+
+    Strict metadata validation is enabled by default. Supply
+    ``experiment_metadata`` with dataset, seed, attack family/config,
+    the ``poison_manifest_fingerprint`` or
+    ``poison_instance_fingerprint`` equal to
+    ``poison_instances_fingerprint(clean_data, poisoned_data)``, model
+    identifier, Git commit SHA, and query-set fingerprint. This binds
+    provenance to the actual injected document IDs/text and their
+    query associations. Set ``strict_metadata=False`` only for
+    lightweight, non-final utility use.
 
     Args:
         retriever_factories: dict of pipeline_name -> zero-arg callable
@@ -292,11 +313,18 @@ def run_source_target_asr(
         instance) to build the complete 4x4 matrix across all sources.
 
     Raises:
-        ValueError if source_pipeline isn't in retriever_factories, or
+        ValueError if required strict metadata is missing,
+        source_pipeline isn't in retriever_factories, or
         if zero attacks succeeded on the source pipeline (nothing to
         transfer -- ATR is undefined, not zero, in that case).
     """
-    from src.pipelines.transfer import TransferMatrix, compute_transfer_statistics
+    from src.pipelines.transfer import (
+        TransferMatrix,
+        compute_transfer_statistics,
+        validate_transfer_experiment_metadata,
+        validate_transfer_result_metadata,
+        validate_transfer_result_pair_metadata,
+    )
 
     if source_pipeline not in retriever_factories:
         raise ValueError(
@@ -304,11 +332,52 @@ def run_source_target_asr(
             f"keys: {sorted(retriever_factories)}"
         )
 
+    if strict_metadata:
+        validated_metadata = validate_transfer_experiment_metadata(
+            experiment_metadata,
+            expected_source_pipeline=source_pipeline,
+            expected_target_pipeline=source_pipeline,
+        )
+        actual_poison_fingerprint = poison_instances_fingerprint(
+            clean_data,
+            poisoned_data,
+        )
+        if validated_metadata["poison_fingerprint"] != actual_poison_fingerprint:
+            raise ValueError(
+                "experiment_metadata poison fingerprint does not match "
+                "the actual poisoned corpus and query associations"
+            )
+        for query in poisoned_data["queries"]:
+            if query.get("poison_doc_ids") and query.get(
+                "attack_family"
+            ) != experiment_metadata["attack_family"]:
+                raise ValueError(
+                    "poisoned_data attack_family annotation does not match "
+                    "experiment_metadata for query "
+                    f"{query['query_id']!r}"
+                )
+        if experiment_metadata["query_set_fingerprint"] != query_set_fingerprint(
+            clean_data["queries"]
+        ):
+            raise ValueError(
+                "experiment_metadata query_set_fingerprint does not match "
+                "clean_data query set"
+            )
+        # Keep the exact validated corpus as the immutable source for every
+        # pipeline build, even if a retriever mutates the list passed to it.
+        poisoned_corpus_snapshot = [
+            dict(document) for document in poisoned_data["corpus"]
+        ]
+    else:
+        poisoned_corpus_snapshot = poisoned_data["corpus"]
+
     def _build_pair(name):
         clean_r = retriever_factories[name]()
         clean_r.build(clean_data["corpus"])
         poison_r = retriever_factories[name]()
-        poison_r.build(poisoned_data["corpus"])
+        poison_r.build(
+            [dict(document) for document in poisoned_corpus_snapshot]
+        )
         return clean_r, poison_r
 
     # Step 1: source ASR over every attacked query.
@@ -317,7 +386,15 @@ def run_source_target_asr(
         src_clean_r, src_poison_r, clean_data, poisoned_data, generator,
         source_pipeline=source_pipeline, target_pipeline=source_pipeline,
         top_k=top_k, max_tokens=max_tokens,
+        experiment_metadata=experiment_metadata,
     )
+    if strict_metadata:
+        validate_transfer_result_metadata(
+            source_results_full,
+            side="source_results",
+            expected_source_pipeline=source_pipeline,
+            expected_target_pipeline=source_pipeline,
+        )
 
     # Step 2: freeze the source-successful subset. This IS the attack set
     # for every target below -- no regeneration, no retuning.
@@ -346,15 +423,52 @@ def run_source_target_asr(
                 tgt_clean_r, tgt_poison_r, clean_data, poisoned_data, generator,
                 source_pipeline=source_pipeline, target_pipeline=target_name,
                 top_k=top_k, max_tokens=max_tokens,
+                experiment_metadata=experiment_metadata,
+            )
+            if strict_metadata:
+                validate_transfer_result_metadata(
+                    target_results_full,
+                    side="target_results",
+                    expected_source_pipeline=source_pipeline,
+                    expected_target_pipeline=target_name,
+                )
+        source_full_for_target = [
+            {**result, "target_pipeline": target_name}
+            for result in source_results_full
+        ]
+        if strict_metadata:
+            validate_transfer_result_pair_metadata(
+                source_full_for_target,
+                target_results_full,
+                expected_source_pipeline=source_pipeline,
+                expected_target_pipeline=target_name,
             )
         target_results_frozen = [r for r in target_results_full if r["query_id"] in frozen_ids]
 
         # compute_transfer_statistics reads target_pipeline off the SOURCE
         # results' first entry, so relabel per target before calling it.
         source_side_for_this_target = [
-            {**r, "target_pipeline": target_name} for r in source_results_frozen
+            {**r, "target_pipeline": target_name}
+            for r in source_results_frozen
         ]
-        stats = compute_transfer_statistics(source_side_for_this_target, target_results_frozen)
+        stats = compute_transfer_statistics(
+            source_side_for_this_target,
+            target_results_frozen,
+            strict_metadata=strict_metadata,
+            expected_source_pipeline=source_pipeline,
+            expected_target_pipeline=target_name,
+        )
+        stats.source_queries_evaluated = len(source_results_full)
+        stats.source_successful_query_count = len(frozen)
+        stats.overall_source_asr = (
+            len(frozen) / len(source_results_full)
+            if source_results_full
+            else None
+        )
+        stats.conditional_target_asr = stats.attack_success_rate_target
+        stats.transfer_count = stats.transferred_attacks
+        stats.atr_denominator = len(frozen)
+        stats.source_asr_results = source_results_full
         matrix.add_result(stats)
 
     return matrix
