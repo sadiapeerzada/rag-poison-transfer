@@ -1,0 +1,15 @@
+experiment_id: exp_030_hotpotqa_dense_heldout_mlx
+seed: 42
+final_run: true
+dataset_loader: load_hotpotqa_distractor
+dataset_split: validation
+dataset_revision: "1908d6afbbead072334abe2965f91bd2709910ab"
+dataset_query_ids_manifest: configs/exp_027_hotpotqa_heldout_manifest.json
+retriever: dense
+embedder_model: BAAI/bge-small-en-v1.5
+top_k: 3
+generator_backend: mlx
+generator_model: mlx-community/Qwen2.5-7B-Instruct-4bit
+load_in_4bit: true
+max_tokens: 64
+results_dir: results
