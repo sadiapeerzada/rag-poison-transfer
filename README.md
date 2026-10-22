@@ -605,6 +605,28 @@ python scripts/run_week9_multiseed_matched_evaluation.py \
   --experiment-id week9_multiseed_exploratory_01
 ```
 
+### Held-out matrix smoke test
+
+The final held-out matrix runner is separate from the exploratory pilot:
+`scripts/run_week9_heldout_poison_matrix.py`. Before starting its full
+12-cell matrix, run a real, non-final smoke test with the configured MLX
+generator and frozen Dense/RCD retrievers. The smoke test uses a deterministic
+prefix of the frozen held-out IDs, writes only to a new directory outside the
+repository, and refuses an existing output directory:
+
+```bash
+.venv/bin/python scripts/run_week9_heldout_poison_matrix.py \
+  --smoke-test \
+  --smoke-query-count 2 \
+  --output-dir ~/Downloads/rag-rcd-week9-final-results/smoke \
+  --experiment-id week9_heldout_smoke_01
+```
+
+Its manifest and summary are labelled `smoke_test_not_final` /
+`complete_smoke_test_not_final` and must not be aggregated as held-out matrix
+results. The runner checks only relevant tracked source/configuration inputs;
+unrelated untracked artifacts are preserved and not consumed.
+
 ### Metrics and denominators
 
 - **PRR@k:** the fraction of attacked queries with at least one associated

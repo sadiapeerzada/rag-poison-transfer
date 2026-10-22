@@ -569,7 +569,8 @@ def paired_differences(dense_rows: list[dict], rcd_rows: list[dict]) -> dict:
     ]
     return {
         "interpretation": (
-            "Exploratory paired differences on the same ten queries; not "
+            f"Paired Dense-vs-RCD differences on the same {len(dense_by_id)} "
+            "queries; not "
             "statistical significance or causal proof."
         ),
         "metrics": summaries,
