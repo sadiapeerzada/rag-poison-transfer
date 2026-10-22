@@ -461,7 +461,16 @@ results_dir: {tmp_path / "results"}
         run.main(str(config_path))
 
 
-def test_dirty_final_run_is_refused_before_loading_data(tmp_path, monkeypatch):
+@pytest.mark.parametrize(
+    ("git_dirty", "expected_state"),
+    [(True, "dirty"), (None, "unknown")],
+)
+def test_final_run_rejects_untrusted_git_state_before_loading_data(
+    tmp_path,
+    monkeypatch,
+    git_dirty,
+    expected_state,
+):
     config_path = tmp_path / "final.yaml"
     config_path.write_text(
         """
@@ -470,7 +479,13 @@ seed: 42
 final_run: true
 """
     )
-    monkeypatch.setattr(run, "_git_dirty", lambda: True)
+    git_status_calls = []
+
+    def fake_git_dirty():
+        git_status_calls.append(None)
+        return git_dirty
+
+    monkeypatch.setattr(run, "_git_dirty", fake_git_dirty)
     monkeypatch.setattr(
         run,
         "load_dataset",
@@ -481,8 +496,12 @@ final_run: true
 
     import pytest
 
-    with pytest.raises(RuntimeError, match="Final runs require a clean Git"):
+    with pytest.raises(
+        RuntimeError,
+        match=f"current Git state is {expected_state}",
+    ):
         run.main(str(config_path))
+    assert len(git_status_calls) == 1
 
 
 def test_final_run_rejects_unknown_git_state(monkeypatch):
@@ -492,19 +511,110 @@ def test_final_run_rejects_unknown_git_state(monkeypatch):
         run._ensure_clean_final_run({"final_run": True})
 
 
-def test_clean_final_run_is_allowed(monkeypatch):
-    monkeypatch.setattr(run, "_git_dirty", lambda: False)
-
-    assert run._ensure_clean_final_run({"final_run": True}) is None
-
-
-def test_ordinary_run_does_not_check_git_dirty_state(monkeypatch):
+@pytest.mark.parametrize("final_run", [None, 1, "true"])
+def test_final_run_must_remain_boolean(monkeypatch, final_run):
     monkeypatch.setattr(
         run,
         "_git_dirty",
         lambda: (_ for _ in ()).throw(
-            AssertionError("ordinary runs must not enforce final-run cleanliness")
+            AssertionError("invalid final_run must fail before checking Git")
         ),
     )
 
-    assert run._ensure_clean_final_run({}) is None
+    with pytest.raises(ValueError, match="final_run must be a boolean"):
+        run._ensure_clean_final_run({"final_run": final_run})
+
+
+def test_clean_final_run_is_allowed(monkeypatch):
+    monkeypatch.setattr(run, "_git_dirty", lambda: False)
+
+    assert run._ensure_clean_final_run({"final_run": True}) is False
+
+
+@pytest.mark.parametrize("git_dirty", [True, False, None])
+def test_ordinary_run_captures_git_dirty_state_without_restriction(
+    monkeypatch,
+    git_dirty,
+):
+    status_calls = []
+
+    def fake_git_dirty():
+        status_calls.append(None)
+        return git_dirty
+
+    monkeypatch.setattr(run, "_git_dirty", fake_git_dirty)
+
+    assert run._ensure_clean_final_run({}) is git_dirty
+    assert len(status_calls) == 1
+
+
+@pytest.mark.parametrize(
+    ("final_run", "git_dirty"),
+    [(True, False), (False, True), (False, None)],
+)
+def test_main_reuses_startup_git_status_for_run_metadata(
+    tmp_path,
+    monkeypatch,
+    final_run,
+    git_dirty,
+):
+    dataset_path = tmp_path / "dataset.json"
+    dataset_path.write_text(
+        json.dumps(
+            {
+                "corpus": [{"doc_id": "doc-a", "text": "Evidence."}],
+                "queries": [
+                    {
+                        "query_id": "q1",
+                        "question": "Question?",
+                        "gold_answer": "Answer",
+                        "gold_doc_ids": ["doc-a"],
+                    }
+                ],
+            }
+        )
+    )
+    config_path = tmp_path / "final.yaml"
+    config_path.write_text(
+        f"""
+experiment_id: final_provenance
+seed: 42
+final_run: {str(final_run).lower()}
+dataset_path: {dataset_path}
+retriever: bm25
+top_k: 1
+generator_backend: mock
+max_tokens: 64
+results_dir: {tmp_path / "results"}
+"""
+    )
+    status_calls = []
+
+    def captured_starting_status():
+        status_calls.append(None)
+        return git_dirty
+
+    monkeypatch.setattr(run, "_git_dirty", captured_starting_status)
+    monkeypatch.setattr(
+        "src.utils.env_info._git_dirty",
+        lambda: (_ for _ in ()).throw(
+            AssertionError("Git status must not be checked again")
+        ),
+    )
+    monkeypatch.setattr(run, "build_retriever", lambda config: RecordingRetriever())
+    monkeypatch.setattr(run, "build_generator", lambda config: FakeGenerator())
+
+    run.main(str(config_path))
+
+    result_path = tmp_path / "results" / "final_provenance.jsonl"
+    summary_path = tmp_path / "results" / "final_provenance.summary.json"
+    record = json.loads(result_path.read_text().splitlines()[0])
+    summary = json.loads(summary_path.read_text())
+
+    assert len(status_calls) == 1
+    assert result_path.exists()
+    assert summary_path.exists()
+    assert record["git_dirty"] is git_dirty
+    assert summary["experiment_metadata"]["git_dirty"] is git_dirty
+    assert record["experiment_id"] == "final_provenance"
+    assert summary["experiment_id"] == "final_provenance"

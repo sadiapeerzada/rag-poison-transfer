@@ -13,8 +13,6 @@ import subprocess
 from datetime import datetime, timezone
 from typing import Any, Iterable
 
-from src.utils.env_info import _git_dirty
-
 
 def _stable_json(value: Any) -> str:
     return json.dumps(
@@ -154,11 +152,17 @@ def build_experiment_metadata(
     poison_rate: float,
     attacked_query_ids: list[str] | None = None,
     git_sha: str | None = None,
+    git_dirty: bool | None = None,
     dataset_query_ids_manifest: str | None = None,
     heldout_query_ids_fingerprint: str | None = None,
     final_run: bool = False,
 ) -> dict[str, Any]:
-    """Build canonical experiment metadata."""
+    """Build canonical experiment metadata.
+
+    ``git_dirty`` is the Git working-tree state captured at run startup.
+    ``None`` means that state was unknown or was not supplied; metadata
+    construction does not perform another Git status check.
+    """
     attack_config_hash = hashlib.sha256(
         _stable_json(attack_config).encode("utf-8")
     ).hexdigest()
@@ -175,7 +179,7 @@ def build_experiment_metadata(
     return {
         "experiment_id": experiment_id,
         "git_commit_sha": git_sha or git_commit_sha(),
-        "git_dirty": _git_dirty(),
+        "git_dirty": git_dirty,
         "final_run": final_run,
 
         "dataset": dataset,

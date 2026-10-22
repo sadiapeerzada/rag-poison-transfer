@@ -23,7 +23,14 @@ from src.utils.env_info import capture_environment_metadata
 
 
 class ExperimentLogger:
-    def __init__(self, results_dir: str, experiment_id: str, config: dict | None = None):
+    def __init__(
+        self,
+        results_dir: str,
+        experiment_id: str,
+        config: dict | None = None,
+        *,
+        git_dirty: bool | None = None,
+    ):
         os.makedirs(results_dir, exist_ok=True)
         self.path = os.path.join(results_dir, f"{experiment_id}.jsonl")
         self.summary_path = os.path.join(results_dir, f"{experiment_id}.summary.json")
@@ -33,7 +40,10 @@ class ExperimentLogger:
                 f"use a new experiment_id or delete the file deliberately if this "
                 f"was an intentional rerun."
             )
-        self._env_metadata = capture_environment_metadata(config or {})
+        self._env_metadata = capture_environment_metadata(
+            config or {},
+            git_dirty=git_dirty,
+        )
 
     def log(self, record: dict) -> None:
         record = dict(record)
