@@ -7,10 +7,17 @@ import json
 import os
 import pytest
 import tempfile
+from types import SimpleNamespace
 from src.pipelines.transfer import (
     TransferExperimentResult,
     TransferMatrix,
     compute_transfer_statistics,
+)
+from src.attacks.asr import run_source_target_asr
+from src.attacks.base import poison_doc_id
+from src.experiments.protocol import (
+    poison_instances_fingerprint,
+    query_set_fingerprint,
 )
 
 
@@ -429,6 +436,412 @@ class TestComputeTransferStatistics:
         result = compute_transfer_statistics(source, target)
         assert pytest.approx(result.attack_success_rate_source) == 2.0 / 3.0
         assert pytest.approx(result.attack_success_rate_target) == 1.0 / 3.0
+
+
+def _strict_metadata_record(query_id, *, source_pipeline="bm25", target_pipeline="dense"):
+    return {
+        "query_id": query_id,
+        "attack_success": query_id == "q1",
+        "source_pipeline": source_pipeline,
+        "target_pipeline": target_pipeline,
+        "dataset": "hotpotqa",
+        "seed": 42,
+        "attack_family": "semantic",
+        "attack_config": {"intensity": 2},
+        "poison_manifest_fingerprint": "manifest-fingerprint",
+        "model_identifier": "test-model",
+        "git_commit_sha": "commit-sha",
+        "query_set_fingerprint": "query-set-fingerprint",
+    }
+
+
+def _strict_pair():
+    source = [_strict_metadata_record("q1"), _strict_metadata_record("q2")]
+    target = [_strict_metadata_record("q1"), _strict_metadata_record("q2")]
+    return source, target
+
+
+class TestStrictTransferMetadata:
+    def test_strict_mode_rejects_missing_required_metadata(self):
+        source, target = _strict_pair()
+        del source[0]["dataset"]
+
+        with pytest.raises(ValueError, match="source_results.*'dataset'"):
+            compute_transfer_statistics(
+                source,
+                target,
+                strict_metadata=True,
+                expected_source_pipeline="bm25",
+                expected_target_pipeline="dense",
+            )
+
+    def test_strict_mode_rejects_dataset_mismatch(self):
+        source, target = _strict_pair()
+        for record in target:
+            record["dataset"] = "2wikimultihopqa"
+
+        with pytest.raises(ValueError, match="Source/target dataset mismatch"):
+            compute_transfer_statistics(
+                source,
+                target,
+                strict_metadata=True,
+                expected_source_pipeline="bm25",
+                expected_target_pipeline="dense",
+            )
+
+    def test_strict_mode_rejects_seed_mismatch(self):
+        source, target = _strict_pair()
+        for record in target:
+            record["seed"] = 43
+
+        with pytest.raises(ValueError, match="Source/target seed mismatch"):
+            compute_transfer_statistics(
+                source,
+                target,
+                strict_metadata=True,
+                expected_source_pipeline="bm25",
+                expected_target_pipeline="dense",
+            )
+
+    def test_strict_mode_rejects_poison_fingerprint_mismatch(self):
+        source, target = _strict_pair()
+        for record in target:
+            record["poison_manifest_fingerprint"] = "different-manifest"
+
+        with pytest.raises(ValueError, match="Source/target poison_fingerprint mismatch"):
+            compute_transfer_statistics(
+                source,
+                target,
+                strict_metadata=True,
+                expected_source_pipeline="bm25",
+                expected_target_pipeline="dense",
+            )
+
+    def test_strict_mode_rejects_inconsistent_metadata_within_one_side(self):
+        source, target = _strict_pair()
+        source[1]["attack_config"] = {"intensity": 3}
+
+        with pytest.raises(ValueError, match="source_results.*inconsistent 'attack_config'"):
+            compute_transfer_statistics(
+                source,
+                target,
+                strict_metadata=True,
+                expected_source_pipeline="bm25",
+                expected_target_pipeline="dense",
+            )
+
+    @pytest.mark.parametrize("case", ["duplicate", "mismatched"])
+    def test_strict_mode_rejects_duplicate_or_mismatched_query_ids(self, case):
+        source, target = _strict_pair()
+        if case == "duplicate":
+            source[1]["query_id"] = "q1"
+        else:
+            target[1]["query_id"] = "q3"
+
+        with pytest.raises(ValueError, match="duplicate query_ids|mismatched query_ids"):
+            compute_transfer_statistics(
+                source,
+                target,
+                strict_metadata=True,
+                expected_source_pipeline="bm25",
+                expected_target_pipeline="dense",
+            )
+
+    def test_strict_mode_accepts_expected_different_pipeline_names(self):
+        source, target = _strict_pair()
+        result = compute_transfer_statistics(
+            source,
+            target,
+            strict_metadata=True,
+            expected_source_pipeline="bm25",
+            expected_target_pipeline="dense",
+        )
+
+        assert result.source_pipeline == "bm25"
+        assert result.target_pipeline == "dense"
+
+    def test_non_strict_utility_accepts_legacy_metadata_free_fixture(self):
+        result = compute_transfer_statistics(
+            [{"query_id": "q1", "attack_success": True}],
+            [{"query_id": "q1", "attack_success": False}],
+        )
+
+        assert result.total_queries == 1
+
+    def test_source_orchestration_requires_metadata_before_building_retrievers(self):
+        factory_calls = []
+
+        def factory():
+            factory_calls.append(True)
+            return _TransferFakeRetriever()
+
+        with pytest.raises(
+            ValueError,
+            match="requires an explicit experiment_metadata",
+        ):
+            run_source_target_asr(
+                {"corpus": [], "queries": []},
+                {"corpus": [], "queries": []},
+                _TransferFakeGenerator(),
+                {"bm25": factory},
+                source_pipeline="bm25",
+            )
+
+        assert factory_calls == []
+
+
+class _TransferFakeRetriever:
+    def build(self, corpus):
+        self.corpus = [
+            SimpleNamespace(doc_id=doc["doc_id"], text=doc["text"])
+            for doc in corpus
+        ]
+
+    def retrieve(self, question, top_k):
+        return self.corpus[:top_k]
+
+
+class _TransferFakeGenerator:
+    def generate(self, prompt, max_tokens):
+        class Result:
+            pass
+
+        result = Result()
+        if "Question: q1?" in prompt:
+            result.text = "target1" if "poison marker" in prompt else "gold1"
+        else:
+            result.text = "gold2"
+        return result
+
+
+def test_source_subset_and_overall_source_asr_are_reported_separately():
+    clean_data = {
+        "corpus": [
+            {"doc_id": "d1", "text": "clean evidence"},
+            {"doc_id": "d2", "text": "clean evidence"},
+        ],
+        "queries": [
+            {
+                "query_id": "q1",
+                "question": "q1?",
+                "gold_answer": "gold1",
+                "poison_doc_ids": [],
+            },
+            {
+                "query_id": "q2",
+                "question": "q2?",
+                "gold_answer": "gold2",
+                "poison_doc_ids": [],
+            },
+        ],
+    }
+    poisoned_data = {
+        "corpus": [
+            {"doc_id": "d1", "text": "clean evidence"},
+            {"doc_id": "d2", "text": "clean evidence"},
+            {
+                "doc_id": poison_doc_id("semantic", "q1", 0, "poison marker"),
+                "text": "poison marker",
+            },
+            {
+                "doc_id": poison_doc_id("semantic", "q2", 0, "poison marker"),
+                "text": "poison marker",
+            },
+        ],
+        "queries": [
+            {
+                **clean_data["queries"][0],
+                "attack_family": "semantic",
+                "poison_doc_ids": [
+                    poison_doc_id("semantic", "q1", 0, "poison marker")
+                ],
+                "poison_target_answer": "target1",
+            },
+            {
+                **clean_data["queries"][1],
+                "attack_family": "semantic",
+                "poison_doc_ids": [
+                    poison_doc_id("semantic", "q2", 0, "poison marker")
+                ],
+                "poison_target_answer": "target2",
+            },
+        ],
+    }
+    metadata = {
+        "dataset": "hotpotqa",
+        "seed": 42,
+        "attack_family": "semantic",
+        "attack_config": {"intensity": 2},
+        "poison_manifest_fingerprint": poison_instances_fingerprint(
+            clean_data,
+            poisoned_data,
+        ),
+        "model_identifier": "test-model",
+        "git_commit_sha": "commit-sha",
+        "query_set_fingerprint": query_set_fingerprint(clean_data["queries"]),
+    }
+
+    matrix = run_source_target_asr(
+        clean_data,
+        poisoned_data,
+        _TransferFakeGenerator(),
+        {"bm25": _TransferFakeRetriever, "dense": _TransferFakeRetriever},
+        source_pipeline="bm25",
+        experiment_metadata=metadata,
+        top_k=5,
+    )
+    result = matrix.get_result("bm25", "dense")
+
+    assert result.source_queries_evaluated == 2
+    assert result.source_successful_query_count == 1
+    assert result.overall_source_asr == 0.5
+    assert result.conditional_target_asr == 1.0
+    assert result.transfer_count == 1
+    assert result.atr_denominator == 1
+    assert {row["query_id"] for row in result.source_asr_results} == {"q1", "q2"}
+    assert result.source_pipeline == "bm25"
+    assert result.target_pipeline == "dense"
+
+
+def _poison_fingerprint_fixture():
+    clean_data = {
+        "corpus": [{"doc_id": "clean-1", "text": "clean evidence"}],
+        "queries": [
+            {
+                "query_id": "q1",
+                "question": "q1?",
+                "gold_answer": "gold1",
+                "gold_doc_ids": ["clean-1"],
+            },
+            {
+                "query_id": "q2",
+                "question": "q2?",
+                "gold_answer": "gold2",
+                "gold_doc_ids": ["clean-1"],
+            },
+        ],
+    }
+    first_poison_id = poison_doc_id(
+        "semantic", "q1", 0, "poison marker"
+    )
+    second_poison_id = poison_doc_id(
+        "semantic", "q2", 0, "another poison"
+    )
+    poisoned_data = {
+        "corpus": [
+            *clean_data["corpus"],
+            {"doc_id": first_poison_id, "text": "poison marker"},
+            {"doc_id": second_poison_id, "text": "another poison"},
+        ],
+        "queries": [
+            {
+                **clean_data["queries"][0],
+                "attack_family": "semantic",
+                "poison_doc_ids": [first_poison_id],
+                "poison_target_answer": "target1",
+            },
+            {
+                **clean_data["queries"][1],
+                "attack_family": "semantic",
+                "poison_doc_ids": [second_poison_id],
+                "poison_target_answer": "target2",
+            },
+        ],
+    }
+    metadata = {
+        "dataset": "hotpotqa",
+        "seed": 42,
+        "attack_family": "semantic",
+        "attack_config": {"intensity": 1},
+        "poison_manifest_fingerprint": poison_instances_fingerprint(
+            clean_data,
+            poisoned_data,
+        ),
+        "model_identifier": "test-model",
+        "git_commit_sha": "commit-sha",
+        "query_set_fingerprint": query_set_fingerprint(clean_data["queries"]),
+    }
+    return clean_data, poisoned_data, metadata
+
+
+class TestActualPoisonFingerprint:
+    @staticmethod
+    def _run(clean_data, poisoned_data, metadata):
+        return run_source_target_asr(
+            clean_data,
+            poisoned_data,
+            _TransferFakeGenerator(),
+            {"bm25": _TransferFakeRetriever, "dense": _TransferFakeRetriever},
+            source_pipeline="bm25",
+            experiment_metadata=metadata,
+        )
+
+    def test_correct_fingerprint_is_accepted_for_distinct_pipelines(self):
+        clean_data, poisoned_data, metadata = _poison_fingerprint_fixture()
+
+        matrix = self._run(clean_data, poisoned_data, metadata)
+
+        assert matrix.get_result("bm25", "dense").target_pipeline == "dense"
+
+    def test_source_and_target_builds_receive_the_same_poison_snapshot(self):
+        clean_data, poisoned_data, metadata = _poison_fingerprint_fixture()
+        observed_poison_corpora = []
+
+        class MutatingRetriever:
+            def build(self, corpus):
+                self.corpus = [
+                    SimpleNamespace(doc_id=doc["doc_id"], text=doc["text"])
+                    for doc in corpus
+                ]
+                poison_docs = [
+                    doc for doc in corpus if doc["doc_id"].startswith("poison::")
+                ]
+                if poison_docs:
+                    observed_poison_corpora.append(
+                        tuple(sorted((doc["doc_id"], doc["text"]) for doc in poison_docs))
+                    )
+                    poison_docs[0]["text"] = "retriever-side mutation"
+
+            def retrieve(self, question, top_k):
+                return self.corpus[:top_k]
+
+        run_source_target_asr(
+            clean_data,
+            poisoned_data,
+            _TransferFakeGenerator(),
+            {"bm25": MutatingRetriever, "dense": MutatingRetriever},
+            source_pipeline="bm25",
+            experiment_metadata=metadata,
+        )
+
+        assert len(observed_poison_corpora) == 2
+        assert observed_poison_corpora[0] == observed_poison_corpora[1]
+
+    @pytest.mark.parametrize("mutation", ["text", "document_id"])
+    def test_altered_poison_document_is_rejected(self, mutation):
+        clean_data, poisoned_data, metadata = _poison_fingerprint_fixture()
+        if mutation == "text":
+            poisoned_data["corpus"][-1]["text"] = "altered poison"
+        else:
+            old_id = poisoned_data["corpus"][-1]["doc_id"]
+            new_id = f"{old_id}-altered"
+            poisoned_data["corpus"][-1]["doc_id"] = new_id
+            poisoned_data["queries"][1]["poison_doc_ids"] = [new_id]
+
+        with pytest.raises(ValueError, match="poison fingerprint does not match"):
+            self._run(clean_data, poisoned_data, metadata)
+
+    def test_changed_query_to_poison_association_is_rejected(self):
+        clean_data, poisoned_data, metadata = _poison_fingerprint_fixture()
+        poisoned_data["queries"][0]["poison_doc_ids"], poisoned_data["queries"][1][
+            "poison_doc_ids"
+        ] = (
+            poisoned_data["queries"][1]["poison_doc_ids"],
+            poisoned_data["queries"][0]["poison_doc_ids"],
+        )
+
+        with pytest.raises(ValueError, match="poison fingerprint does not match"):
+            self._run(clean_data, poisoned_data, metadata)
 
 
 class TestQueryIDAlignment:

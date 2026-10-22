@@ -54,6 +54,133 @@ def corpus_fingerprint(corpus: list[dict]) -> str:
     )
 
 
+def poison_instances_fingerprint(
+    clean_data: dict,
+    poisoned_data: dict,
+) -> str:
+    """Fingerprint the actual injected documents and their query associations.
+
+    The fingerprint covers each query ID, its attack-family and target-answer
+    annotations, the sorted poison document IDs associated with it, and the
+    exact ID/text pairs for those documents. The poisoned corpus must contain
+    precisely the clean corpus plus the documents declared by those
+    associations.
+    """
+    clean_corpus = clean_data.get("corpus")
+    poisoned_corpus = poisoned_data.get("corpus")
+    queries = poisoned_data.get("queries")
+    if not isinstance(clean_corpus, list):
+        raise ValueError("clean_data corpus must be a list")
+    if not isinstance(poisoned_corpus, list):
+        raise ValueError("poisoned_data corpus must be a list")
+    if not isinstance(queries, list):
+        raise ValueError("poisoned_data queries must be a list")
+
+    def documents_by_id(documents: list[dict], label: str) -> dict[str, str]:
+        result = {}
+        for index, document in enumerate(documents):
+            if not isinstance(document, dict):
+                raise ValueError(f"{label} document at index {index} must be a mapping")
+            doc_id = document.get("doc_id")
+            text = document.get("text")
+            if not isinstance(doc_id, str) or not doc_id:
+                raise ValueError(
+                    f"{label} document at index {index} has an invalid doc_id"
+                )
+            if not isinstance(text, str):
+                raise ValueError(
+                    f"{label} document {doc_id!r} has invalid text"
+                )
+            if doc_id in result:
+                raise ValueError(f"{label} corpus has duplicate doc_id={doc_id!r}")
+            result[doc_id] = text
+        return result
+
+    clean_documents = documents_by_id(clean_corpus, "clean_data")
+    poisoned_documents = documents_by_id(poisoned_corpus, "poisoned_data")
+    if any(
+        poisoned_documents.get(doc_id) != text
+        for doc_id, text in clean_documents.items()
+    ):
+        raise ValueError(
+            "poisoned_data does not preserve the clean corpus documents exactly"
+        )
+
+    query_ids = set()
+    associated_documents = set()
+    fingerprint_queries = []
+    for index, query in enumerate(queries):
+        if not isinstance(query, dict):
+            raise ValueError(
+                f"poisoned_data query at index {index} must be a mapping"
+            )
+        query_id = query.get("query_id")
+        if not isinstance(query_id, str) or not query_id:
+            raise ValueError(
+                f"poisoned_data query at index {index} has an invalid query_id"
+            )
+        if query_id in query_ids:
+            raise ValueError(
+                f"poisoned_data has duplicate query_id={query_id!r}"
+            )
+        query_ids.add(query_id)
+
+        poison_ids = query.get("poison_doc_ids", [])
+        if not isinstance(poison_ids, list) or any(
+            not isinstance(doc_id, str) or not doc_id for doc_id in poison_ids
+        ):
+            raise ValueError(
+                f"query {query_id!r} has invalid poison_doc_ids"
+            )
+        if len(poison_ids) != len(set(poison_ids)):
+            raise ValueError(
+                f"query {query_id!r} has duplicate poison_doc_ids"
+            )
+
+        documents = []
+        for doc_id in sorted(poison_ids):
+            if doc_id in clean_documents:
+                raise ValueError(
+                    f"query {query_id!r} associates a clean document "
+                    f"{doc_id!r} as poison"
+                )
+            if doc_id in associated_documents:
+                raise ValueError(
+                    f"poison document {doc_id!r} is associated with multiple queries"
+                )
+            if doc_id not in poisoned_documents:
+                raise ValueError(
+                    f"query {query_id!r} references missing poison document "
+                    f"{doc_id!r}"
+                )
+            associated_documents.add(doc_id)
+            documents.append(
+                {"doc_id": doc_id, "text": poisoned_documents[doc_id]}
+            )
+
+        fingerprint_queries.append(
+            {
+                "query_id": query_id,
+                "attack_family": query.get("attack_family"),
+                "poison_target_answer": query.get("poison_target_answer"),
+                "poison_doc_ids": sorted(poison_ids),
+                "documents": documents,
+            }
+        )
+
+    added_document_ids = set(poisoned_documents) - set(clean_documents)
+    if added_document_ids != associated_documents:
+        raise ValueError(
+            "poisoned corpus documents do not match query poison_doc_ids "
+            "associations"
+        )
+
+    fingerprint_queries.sort(key=lambda query: query["query_id"])
+    return hashlib.sha256(
+        _stable_json(fingerprint_queries).encode("utf-8")
+    ).hexdigest()
+
+
 def query_set_fingerprint(queries: list[dict]) -> str:
     """Fingerprint the frozen evaluation query set."""
     return fingerprint_records(
