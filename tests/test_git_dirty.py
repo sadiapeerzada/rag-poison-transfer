@@ -65,22 +65,19 @@ def test_git_dirty_none_on_git_error(monkeypatch):
 def test_git_dirty_detects_real_clean_and_modified_repository(tmp_path, monkeypatch):
     repo = tmp_path / "repo"
     _init_git_repo(repo)
-    monkeypatch.chdir(repo)
-
-    assert env_info._git_dirty() is False
+    assert env_info._git_dirty(repo) is False
 
     (repo / "tracked.py").write_text("VALUE = 2\n")
-    assert env_info._git_dirty() is True
+    assert env_info._git_dirty(repo) is True
 
 
 def test_git_dirty_detects_relevant_untracked_configuration(tmp_path, monkeypatch):
     repo = tmp_path / "repo"
     _init_git_repo(repo)
-    monkeypatch.chdir(repo)
     (repo / "configs").mkdir()
     (repo / "configs" / "new_experiment.yaml").write_text("seed: 42\n")
 
-    assert env_info._git_dirty() is True
+    assert env_info._git_dirty(repo) is True
 
 
 def test_git_dirty_detects_relevant_untracked_source_file(
@@ -88,11 +85,10 @@ def test_git_dirty_detects_relevant_untracked_source_file(
 ):
     repo = tmp_path / "repo"
     _init_git_repo(repo)
-    monkeypatch.chdir(repo)
     (repo / "src").mkdir()
     (repo / "src" / "new_component.py").write_text("VALUE = 1\n")
 
-    assert env_info._git_dirty() is True
+    assert env_info._git_dirty(repo) is True
 
 
 def test_git_dirty_detects_untracked_results_and_backup_files(
@@ -100,12 +96,48 @@ def test_git_dirty_detects_untracked_results_and_backup_files(
 ):
     repo = tmp_path / "repo"
     _init_git_repo(repo)
-    monkeypatch.chdir(repo)
-
     (repo / "results").mkdir()
     (repo / "results" / "run.jsonl").write_text("{}\n")
-    assert env_info._git_dirty() is True
+    assert env_info._git_dirty(repo) is True
 
     (repo / "results" / "run.jsonl").unlink()
     (repo / "tracked.py.bak").write_text("VALUE = 0\n")
-    assert env_info._git_dirty() is True
+    assert env_info._git_dirty(repo) is True
+
+
+def test_git_dirty_ignores_callers_working_directory(tmp_path, monkeypatch):
+    """AUDIT-021: a dirty foreign repo as cwd must not change the answer."""
+    foreign = tmp_path / "foreign"
+    _init_git_repo(foreign)
+    (foreign / "untracked.txt").write_text("x\n")
+    monkeypatch.chdir(foreign)
+    assert env_info._git_dirty(foreign) is True
+    clean = tmp_path / "clean"
+    _init_git_repo(clean)
+    assert env_info._git_dirty(clean) is False  # cwd still the dirty repo
+
+
+def test_default_git_commands_target_repository_root(monkeypatch, tmp_path):
+    calls = []
+
+    def fake(cmd, **kwargs):
+        calls.append(cmd)
+        return SimpleNamespace(stdout="", returncode=0)
+
+    monkeypatch.setattr(env_info.subprocess, "run", fake)
+    monkeypatch.chdir(tmp_path)
+    env_info._git_dirty()
+    env_info._git_commit_sha()
+    for cmd in calls:
+        assert cmd[:3] == ["git", "-C", str(env_info.REPOSITORY_ROOT)]
+
+
+def test_commit_sha_ignores_callers_working_directory(tmp_path, monkeypatch):
+    foreign = tmp_path / "foreign"
+    _init_git_repo(foreign)
+    foreign_sha = subprocess.run(
+        ["git", "rev-parse", "HEAD"], cwd=foreign, capture_output=True, text=True, check=True
+    ).stdout.strip()
+    monkeypatch.chdir(foreign)
+    assert env_info._git_commit_sha() != foreign_sha
+    assert env_info._git_commit_sha(foreign) == foreign_sha

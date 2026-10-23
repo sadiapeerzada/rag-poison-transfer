@@ -1,3 +1,41 @@
+# Re-audit addendum (2026-10-23, HEAD `ac5da6c5253aaa47625de6522a6d55a311e3d31a`)
+
+**Checkout:** fresh anonymous clone of the public repo (no credential was used), branch `audit/week9-bug-fixes` (the clone started on `main` = `a635945`, a merge of this branch; I switched to the audit branch, so this audit and its edits are on that branch only). `origin/main` = `a63594526b2b…`, `origin/audit/week9-bug-fixes` = `ac5da6c5253a…`, `origin/week7-8-rcd` = `0b8051dfbd07…` (the three differ). **The author's local working tree, uncommitted files and external result directories were not available.** GitHub Actions results were not accessible. Python 3.12.3; no MLX, no `sentence-transformers`, no Hugging Face access. Nothing was committed, pushed or staged.
+
+**Not run:** the Week 9 matrix, any model inference, poison generation, API calls, dataset/model downloads. `tests/test_corpus_construction.py` was excluded (real-loader/network, see AUDIT-023) and not run.
+
+| ID | Status now | Evidence / change |
+|---|---|---|
+| **A. Incomplete-cell recovery** (new **AUDIT-036**) | **Confirmed at HEAD, now fixed (opt-in)** | `run_matrix` still did `continue` for any existing cell dir without summary, so one failed cell blocked the matrix forever. Added `--resume --recover-incomplete` (`recover_incomplete=True`): the incomplete dir is **moved intact** (`os.rename`, no copy, never deleted/overwritten) to `_recovery_archive/<cell>/attempt_NNN` with a sidecar record and file SHA-256s in `plan.json["recoveries"]`; a poison manifest is reused only if it passes `verify_cell_provenance`, its recomputed poison fingerprint matches, it was written at the current commit, and all candidate manifests are the same instance, else recovery is **refused** and nothing is modified; results are always regenerated (partial or unsummarised results are never trusted); the fresh cell must pass `validate_completed_cell` before it counts as complete. If no manifest was ever written, poison is generated normally (no instance existed to preserve). A crash between archive and re-creation reuses the archived manifest. **Default resume is unchanged** (still preserves and skips). Cells whose *summary exists but fails validation* are deliberately **not** recoverable (possible tampering; operator decision). 11 new tests (evaluation failure, pre-manifest failure, results-without-summary, repeated interruptions, corrupt manifest, failed verification, wrong commit, crash mid-archive, untouched completed cells, flag misuse, default-resume unchanged); a mutation that disabled manifest reuse failed 3 of them. **Protocol impact:** none to design, seeds, IDs or metrics, but re-evaluating a recovered cell re-runs generation (seeded; MLX determinism unverified, U-2). Supervisor should confirm that a recovered cell may replace the failed attempt in the matrix. |
+| **AUDIT-021** git cwd in `run.py` guard | **Confirmed, fixed** | Reproduced: from a foreign dirty repo `_git_dirty()` returned `True` and `_git_commit_sha()` returned the foreign SHA (`93dbf534`). Both now run `git -C <repo root>` (`repo_root=` override). Tests that relied on `chdir` now pass `repo_root`; 3 new tests fail on the old code (7 failures) and pass now. |
+| **AUDIT-022** `test_smoke.py` dirties tracked `results/` | **Confirmed, fixed** | Test now writes to `tmp_path`; the full suite left `git status` showing only intended edits. |
+| **AUDIT-032** CI skips `scripts/` | **Fixed** | `compileall` now covers `scripts`; CI also runs on `audit/**` pushes. `python -m compileall -q run.py src scripts tests` passes. CI is still not run on a runner here; optional-dependency tests (below) still make it red unless `sentence-transformers` is available and network tests are mocked/marked. |
+| **AUDIT-020** `q[7:]` vs `"which "` | **Reproduced, intentionally NOT changed (supervisor gate)** | `"Which city hosts the Eiffel Tower?"` → `"what ity hosts…"`; `"Which film…"` → `"what ilm…"`. Committed raw rows: **41/300** dev questions (exp_022–026; the earlier audit said 43, I could not reproduce 43) and **47/300** held-out (exp_028b) begin with "Which". Minimal fix is `q[6:]`; the strict-xfail test in `tests/test_audit_regressions.py` records it. Fixing changes RCD rewrite scores for ~14–16% of queries, so exp_026/exp_028b/the matrix would no longer be the frozen method and would need re-running; freezing it means the method description must say rewrites are partly garbled. Decision required. (Also noted: the `who` rewrite uses a case-sensitive `"Who "` replace, so a lowercase "who" yields a duplicate rewrite.) |
+| AUDIT-001…013 | **Not re-derived in full**; the 97 focused tests passed unchanged in the matrix and matched-comparison suites, and the recovery change did not alter their behaviour (62 pre-existing matrix tests passed after the change). | |
+| AUDIT-023 non-hermetic tests | **Still open** | 8 tests need `sentence-transformers`, 2 need Hub access; identical at the unmodified HEAD (see ledger). |
+| AUDIT-024/025/026/027/028/029/030/031/033/034/035 | **Still open / unverified, unchanged** | Not modified: each needs a protocol decision, new experiment component, or evidence I do not have. |
+
+**Open items I did not fix, and why:** AUDIT-028 (missing RCD keys fall back to non-frozen weights) and AUDIT-027 (`revision=None`) would reject or alter older configs and need a decision on which legacy configs must keep loading; AUDIT-031 changes tie ordering; AUDIT-030 changes the poison acceptance protocol. I did not hunt exhaustively for new bugs in `bm25.py`, `hybrid.py`, `reranker.py`, `transfer.py`, `conflict.py`, `redundancy.py`, `scoring.py`, 2Wiki/NQ loaders or `metrics.py` beyond the targeted checks above; this re-audit **does not** supersede the "not read in depth" list in §1.
+
+**Test ledger (this re-audit, offline, `HF_*_OFFLINE=1`):**
+
+| Command | Result |
+|---|---|
+| `pytest -q tests/test_week9_heldout_poison_matrix.py` (before recovery tests) | 62 passed |
+| same, with 11 new recovery tests | 73 passed in the full run (a `-k` filter selected 10 of the 11; all 11 pass in the full run) |
+| `pytest -q tests/test_git_dirty.py tests/test_metric_wiring.py tests/test_env_metadata.py tests/test_heldout_metadata.py` | 39 passed, 4 failed (all `sentence-transformers` ImportError) |
+| `pytest -q --ignore=tests/test_corpus_construction.py` (full) | **415 passed, 10 failed, 1 xfailed** |
+| same 10 failing tests at unmodified HEAD | the same 10 fail (8 `sentence-transformers` ImportError, 2 Hub `OfflineModeIsEnabled`) |
+| `python -m compileall -q run.py src scripts tests` | ok |
+
+**Files changed:** `.github/workflows/tests.yml`, `scripts/run_week9_heldout_poison_matrix.py`, `src/utils/env_info.py`, `tests/test_git_dirty.py`, `tests/test_smoke.py`, `tests/test_week9_heldout_poison_matrix.py`, this document.
+
+**Readiness (separate):** *Code correctness:* improved, not complete (10 environment-blocked tests unexecuted; several modules not audited in depth). *Reproducibility:* a fresh preflight is reasonable to attempt; the full matrix should wait for AUDIT-020 decision and AUDIT-034 baselines. *Scientific validity:* **not ready**.
+
+---
+
+## Previous audit (history preserved, dated at its own HEAD `1da874c`)
+
 # Final Repository Deep Audit — `rag-poison-transfer` (Week 9–10 readiness)
 
 **Audit date:** 2026-10-23
