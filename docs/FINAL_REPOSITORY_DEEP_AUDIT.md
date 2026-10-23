@@ -1,3 +1,9 @@
+# Addendum: validator missing-field hardening (on candidate `ac5da6c`)
+
+**AUDIT-037 (Medium, confirmed, fixed).** `validate_completed_cell()` read `generation_evidence_doc_ids`, `retrieved_doc_ids`, `poison_rank`, `poison_retrieved` and `prr_at_k` with `.get()` defaults or conditional skips, so a row missing them could pass: a missing `generation_evidence_doc_ids` skipped the evidence and `poison_retrieved` checks; a missing `retrieved_doc_ids` became `[]`; a missing `poison_rank` skipped the rank check; a non-dict `prr_at_k` raised `AttributeError`; `True` passed as `1.0`; extra PRR cutoffs were accepted; clean rows were not checked; missing `answer`/`gold_answer` defaulted to `""`. Fix: `_validate_retrieval_record()` requires all five fields on every row (absent key is an error, stored `null` rank is valid), validates types and exact cutoffs, and re-derives every value; `answer`/`gold_answer` must be strings. 54 regression tests added: **46 failed and 8 passed against the unpatched validator** (the 8 are the valid-cell baseline, two legitimate-null acceptance cases and four checks the old code already made); **54 passed after the fix**. Schema source: `run_week9_matched_poison_comparison.py` writes all five fields for both conditions; clean rows are fixed to `poison_retrieved=False`, `poison_rank=None`, PRR all `0.0`.
+
+---
+
 # Final Repository Deep Audit — `rag-poison-transfer` (Week 9–10 readiness)
 
 **Audit date:** 2026-10-23

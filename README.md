@@ -4,12 +4,15 @@ Undergraduate thesis project by Sadia Peerzada. The research question is how
 knowledge-poisoning attacks transfer across retrieval pipelines in adaptive
 Retrieval-Augmented Generation (RAG), and how this transfer is affected by the
 frozen Retrieval-Consistency Defense (RCD). Clean held-out utility baselines
-are complete; they are not poisoning-defense evaluations. See the project
+(`exp_030`/`exp_031`) are reported as complete by the author, but their raw
+results are archived outside this repository and are **UNVERIFIED** here (see
+[Status labels](#status-labels-and-evidence)); they are not poisoning-defense
+evaluations. See the project
 foundation doc (shared separately) for the full 12-week roadmap and plan.
 
 > **Clean Baseline v1 is frozen** as of commit tag [`clean-baseline-v1`](../../tree/clean-baseline-v1):
 > HotpotQA + 2WikiMultiHopQA, N=300 real queries each, all 4 retrievers,
-> pinned dataset revisions, real 7B generator, 139/139 tests passing. See
+> pinned dataset revisions, real 7B generator, 139/139 tests passing *at that tag* (historical; the suite has since grown, see Testing). See
 > the [Clean Baseline v1 results](#clean-baseline-v1-results) section below.
 > Approved per supervisor review, pre-Week-5 readiness assessment.
 
@@ -31,7 +34,7 @@ found and fixed along the way rather than hidden:
   evaluated on the same 50 real HotpotQA questions (same seed, so it's a
   fair comparison), with a real 7B instruction model doing the generation
   -- not a toy dataset, not a mock model.
-- **Found and fixed five real bugs** during development (details below),
+- **Found and fixed nine documented bugs** during development (details below),
   rather than shipping results that happened to work by accident.
 - **Closed a reproducibility gap** (review issue #8): every logged result now
   carries `git_commit_sha`, Python/torch/transformers/sentence-transformers
@@ -73,8 +76,9 @@ excluded from retrieval-metric averages.
 
 Each run writes per-query records to `<experiment_id>.jsonl` and a separate
 `<experiment_id>.summary.json` containing EM, F1, and mean retrieval metrics.
-The regenerated mock smoke artifact, `results/exp_000_smoke_test.jsonl`,
-verifies the end-to-end schema (10 aligned IDs/scores and all cutoff fields),
+The mock smoke run's raw log, `results/exp_000_smoke_test.jsonl`, is
+git-ignored (not committed; only its summary is tracked). It verifies the
+end-to-end schema (10 aligned IDs/scores and all cutoff fields),
 but it has no gold document labels, so its retrieval metrics are intentionally
 `null` and its summary has no retrieval averages.
 
@@ -342,6 +346,24 @@ engineering work, not something to hide:
    JSON-encoded strings bug #6 worked around. All four 2Wiki configs'
    `dataset_revision` field is now committed with the new hash.
 
+## Status labels and evidence
+
+Labels used for claims in this README: **IMPLEMENTED** (code exists), **TESTED**
+(automated tests exist and pass offline), **EXECUTED** (a real run happened),
+**EXPLORATORY** (small or non-final run), **NOT YET RUN**, **UNVERIFIED**
+(artifact or evidence is not available in this repository).
+
+| Item | Label | Evidence in this repository |
+|---|---|---|
+| `exp_026` frozen-config development run (validation split, not held-out) | EXECUTED | `results/exp_026_*` : 300 rows, 300 unique query IDs, `git_dirty=false` on every row |
+| `exp_028b` held-out recovery run | EXPLORATORY | rows record `git_dirty: null`; not a publication baseline |
+| `exp_030` / `exp_031` clean held-out baselines | EXECUTED per the author; UNVERIFIED here | configs only; raw results are outside Git |
+| Week 9 held-out 12-cell poison matrix | NOT YET RUN | runner and validator are IMPLEMENTED and TESTED on synthetic cells |
+| Matched Dense-vs-RCD poison pilot (10 queries) | EXPLORATORY; no significance claim | tooling in `scripts/`; no committed results are cited |
+| Cross-pipeline transfer results (BM25/Hybrid/Reranker as source or target) | NOT YET RUN | `TransferMatrix` framework is IMPLEMENTED and TESTED |
+| 2Wiki held-out RCD / transfer evaluation | NOT YET RUN | earlier 2Wiki baselines and sweeps exist, not this phase |
+| Statistical significance, effect sizes, McNemar, F1 retention for the poison matrix | NOT YET RUN | not computed |
+
 ## Two working environments
 
 - **Local (MacBook Air M4):** dev/debug loop, `generator_backend: mlx`
@@ -430,8 +452,9 @@ starting a new run.
 | Transfer matrix framework | Source-to-target orchestration implemented in `run_source_target_asr()` and `compute_transfer_statistics()`; strict metadata validation is the default for orchestration. No dedicated transfer CLI exists. |
 | Knowledge-poisoning attack benchmark (lexical + semantic-fluent, intensity 1/3/5, low poison-rate, HotpotQA + 2Wiki) | **Real, validated, Week 5-6 deliverable complete** -- see Week 5-6 section above and `docs/WEEK5_6_BENCHMARK_VALIDATION_REPORT.md` |
 | RCD (Retrieval-Consistency Defense) | **Implemented and frozen for Week 7–8.** Its clean held-out utility baseline is complete as `exp_031`; this is not a poisoning-defense result. |
-| Week 9–10 clean HotpotQA held-out comparison | **Complete:** dense `exp_030` and frozen RCD `exp_031`, 300 queries each. Archived summaries and raw logs are in `../rag-rcd-week9-final-results/results/`. |
-| Week 9–10 poisoned source-to-target evaluation | **Pending.** No results are inferred from the clean `n_poison=0` baselines. |
+| Week 9–10 clean HotpotQA held-out comparison | **EXECUTED per the author; UNVERIFIED in this repository.** Configs `exp_030`/`exp_031` are committed; their raw logs and summaries are not (they are archived in `../rag-rcd-week9-final-results/results/`, outside Git). The numbers below cannot be re-derived from committed files. |
+| Week 9–10 poisoned source-to-target evaluation | **NOT YET RUN.** No results are inferred from the clean `n_poison=0` baselines. |
+| Week 9 held-out 12-cell poison matrix runner + validator (`scripts/run_week9_heldout_poison_matrix.py`) | **IMPLEMENTED and TESTED on synthetic fixtures only; NOT YET RUN** (no real cell, no model inference). See the validator guarantees below. |
 
 ## Week 7-8: Retrieval-Consistency Defense (RCD)
 
@@ -531,8 +554,9 @@ HotpotQA evaluation set and generator evidence depth (`top_k=3`).
 
 ### Completed clean held-out baselines
 
-The verified raw logs and summaries are in the sibling archive directory
-`../rag-rcd-week9-final-results/results/`:
+The raw logs and summaries are reported to be in the sibling archive directory
+`../rag-rcd-week9-final-results/results/` (**not committed; UNVERIFIED in this
+repository**, only the author's local copy can confirm them):
 `exp_030_hotpotqa_dense_heldout_mlx.{jsonl,summary.json}` and
 `exp_031_hotpotqa_rcd_heldout_mlx.{jsonl,summary.json}`.
 Values below are from the summaries (rounded to four decimal places).
@@ -624,7 +648,39 @@ repository, and refuses an existing output directory:
 
 Its manifest and summary are labelled `smoke_test_not_final` /
 `complete_smoke_test_not_final` and must not be aggregated as held-out matrix
-results. The runner checks only relevant tracked source/configuration inputs;
+results. No real smoke test or matrix cell is claimed to have been executed by
+this README.
+
+#### Matrix validator guarantees (IMPLEMENTED; TESTED on synthetic cells; NOT YET RUN on real cells)
+
+`validate_completed_cell()` (also used by resume and by
+`scripts/aggregate_week9_heldout_poison_matrix.py`) fails closed. It requires
+the frozen inputs (held-out manifest, configs, clean data) and will not accept
+a cell merely because its own files agree. Per cell it checks:
+
+- **Frozen inputs:** dataset name/config/revision/split, exact 300 held-out IDs
+  in order, config SHA-256s, retriever/generator settings, seed, cell ID.
+- **Poison replay:** the manifest is replayed over the frozen clean data, the
+  poison-instance fingerprint is recomputed and compared with the manifest,
+  summary and every raw row; lexical poison is also regenerated
+  deterministically. Semantic-fluent poison comes from an LLM and can only be
+  verified by replay and document identity, not regenerated offline.
+- **Raw rows:** exactly 2 pipelines x 2 conditions x 300 queries, unique,
+  correctly paired; answer correctness, targeted ASR and degradation
+  re-derived from the raw answers.
+- **Retrieval fields (every row, clean and poisoned):** `retrieved_doc_ids`,
+  `generation_evidence_doc_ids`, `poison_retrieved`, `poison_rank` and
+  `prr_at_k` must be present (an absent key is an error; a stored `null`
+  `poison_rank` is valid data when no poison was retrieved), correctly typed
+  (lists of non-empty strings, a real boolean, `None` or a positive integer,
+  numeric PRR values with exactly the cutoffs 1/3/5/10), and consistent with
+  each other: evidence is a prefix of the diagnostic ranking,
+  `poison_retrieved` matches the generator's evidence, `poison_rank` and PRR@k
+  match the ranking, and clean rows contain no poison document.
+
+These checks establish internal and frozen-input consistency of a cell's
+records. They do not show that a real run happened, that MLX retrieval is
+deterministic, or that any result is scientifically valid. The runner checks only relevant tracked source/configuration inputs;
 unrelated untracked artifacts are preserved and not consumed.
 
 ### Metrics and denominators
@@ -703,9 +759,11 @@ Full test suite:
 python -m pytest -q
 ```
 
-**Completed:** Week 7–8 RCD implementation and freeze; Week 9–10 held-out
-HotpotQA clean dense and RCD baselines (`exp_030`/`exp_031`).
-**Pending:** poisoned source-to-target transfer evaluation (including
+**Completed (verifiable in this repository):** Week 7–8 RCD implementation and
+freeze, with the `exp_026` development run. **Reported complete, UNVERIFIED
+here:** Week 9–10 held-out HotpotQA clean dense and RCD baselines
+(`exp_030`/`exp_031`).
+**Pending / NOT YET RUN:** poisoned source-to-target transfer evaluation (including
 source-success-conditioned transfer reporting) and Week 9–10 held-out RCD /
 transfer evaluation on 2WikiMultiHopQA. Existing earlier 2Wiki baseline and
 attack-sweep artifacts do not establish completion of this held-out phase.

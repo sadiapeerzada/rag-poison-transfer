@@ -971,3 +971,173 @@ def test_every_guarded_path_exists_and_is_unique():
     assert len(paths) == len(set(paths))
     missing = [p for p in paths if not (matrix.REPOSITORY_ROOT / p).is_file()]
     assert missing == []
+
+
+# ---------------------------------------------------------------------------
+# Validator: required retrieval fields and metric structure
+# (each row, clean OR poisoned, must carry all five fields; clean rows are
+# producer-fixed: poison_retrieved False, poison_rank None, PRR all 0.0)
+# ---------------------------------------------------------------------------
+REQUIRED_RETRIEVAL_FIELDS = (
+    "retrieved_doc_ids",
+    "generation_evidence_doc_ids",
+    "poison_retrieved",
+    "poison_rank",
+    "prr_at_k",
+)
+UNRELATED_PREREQUISITE_ERRORS = ("Independent poison-provenance", "Cell is incomplete", "unsupported schema")
+
+
+def _rewrite_rows(cell_dir, condition, mutate, pipeline="dense"):
+    """Apply ``mutate`` to the first (pipeline, condition) row and write results back."""
+    path = cell_dir / "results.jsonl"
+    rows = [json.loads(line) for line in path.read_text(encoding="utf-8").splitlines()]
+    target = next(r for r in rows if r["condition"] == condition and r["pipeline"] == pipeline)
+    mutate(target)
+    path.write_text("".join(json.dumps(r) + "\n" for r in rows), encoding="utf-8")
+
+
+def _assert_rejected(cell_dir, pattern):
+    with pytest.raises(ValueError) as caught:
+        matrix.validate_completed_cell(cell_dir, frozen_inputs=_frozen())
+    message = str(caught.value)
+    assert not any(text in message for text in UNRELATED_PREREQUISITE_ERRORS), message
+    assert pattern in message, message
+
+
+def test_valid_synthetic_cell_passes_validation(tmp_path):
+    cell_dir, _ = _write_cell(tmp_path, 42)
+    matrix.validate_completed_cell(cell_dir, frozen_inputs=_frozen())
+
+
+@pytest.mark.parametrize("condition", ["clean", "poisoned"])
+@pytest.mark.parametrize("field", REQUIRED_RETRIEVAL_FIELDS)
+def test_missing_required_retrieval_field_is_rejected(tmp_path, field, condition):
+    cell_dir, _ = _write_cell(tmp_path, 42)
+    _rewrite_rows(cell_dir, condition, lambda row: row.pop(field))
+    _assert_rejected(cell_dir, f"missing required field '{field}'")
+
+
+@pytest.mark.parametrize("cutoff", ["1", "3", "5", "10"])
+def test_missing_prr_cutoff_is_rejected(tmp_path, cutoff):
+    cell_dir, _ = _write_cell(tmp_path, 42)
+    _rewrite_rows(cell_dir, "poisoned", lambda row: row["prr_at_k"].pop(cutoff))
+    _assert_rejected(cell_dir, "prr_at_k cutoffs")
+
+
+def test_unexpected_prr_cutoff_is_rejected(tmp_path):
+    cell_dir, _ = _write_cell(tmp_path, 42)
+    _rewrite_rows(cell_dir, "poisoned", lambda row: row["prr_at_k"].update({"7": 1.0}))
+    _assert_rejected(cell_dir, "prr_at_k cutoffs")
+
+
+@pytest.mark.parametrize("bad", [None, [1.0, 1.0], "1.0", {}], ids=["null", "list", "string", "empty"])
+def test_malformed_prr_container_is_a_value_error(tmp_path, bad):
+    cell_dir, _ = _write_cell(tmp_path, 42)
+    _rewrite_rows(cell_dir, "poisoned", lambda row: row.__setitem__("prr_at_k", bad))
+    _assert_rejected(cell_dir, "prr_at_k")
+
+
+@pytest.mark.parametrize("bad", ["1.0", None, True, [1.0]], ids=["string", "null", "bool", "list"])
+def test_malformed_prr_value_is_rejected(tmp_path, bad):
+    cell_dir, _ = _write_cell(tmp_path, 42)
+    _rewrite_rows(cell_dir, "poisoned", lambda row: row["prr_at_k"].__setitem__("3", bad))
+    _assert_rejected(cell_dir, "must be a number")
+
+
+def test_inconsistent_prr_value_is_rejected(tmp_path):
+    cell_dir, _ = _write_cell(tmp_path, 42)
+    _rewrite_rows(cell_dir, "poisoned", lambda row: row["prr_at_k"].__setitem__("1", 0.0))
+    _assert_rejected(cell_dir, "Poison retrieval rate at 1 is inconsistent")
+
+
+@pytest.mark.parametrize("field", ["retrieved_doc_ids", "generation_evidence_doc_ids"])
+@pytest.mark.parametrize(
+    "bad", [None, "clean", [1], [None], [""], {"a": 1}], ids=["null", "string", "int-item", "null-item", "empty-id", "dict"]
+)
+def test_malformed_doc_id_collection_is_rejected(tmp_path, field, bad):
+    cell_dir, _ = _write_cell(tmp_path, 42)
+    _rewrite_rows(cell_dir, "poisoned", lambda row: row.__setitem__(field, bad))
+    _assert_rejected(cell_dir, f"'{field}' must be a list of non-empty strings")
+
+
+def test_generation_evidence_must_be_a_prefix_of_the_diagnostic_ranking(tmp_path):
+    cell_dir, _ = _write_cell(tmp_path, 42)
+    _rewrite_rows(cell_dir, "poisoned", lambda row: row.__setitem__("generation_evidence_doc_ids", ["clean"]))
+    _assert_rejected(cell_dir, "not a prefix")
+
+
+@pytest.mark.parametrize("bad", ["1", 1.0, True, 0, -1], ids=["string", "float", "bool", "zero", "negative"])
+def test_malformed_poison_rank_type_is_rejected(tmp_path, bad):
+    cell_dir, _ = _write_cell(tmp_path, 42)
+    _rewrite_rows(cell_dir, "poisoned", lambda row: row.__setitem__("poison_rank", bad))
+    _assert_rejected(cell_dir, "poison_rank must be None or a positive integer")
+
+
+@pytest.mark.parametrize("bad", [2, None], ids=["wrong-rank", "null-though-retrieved"])
+def test_incorrect_poison_rank_is_rejected(tmp_path, bad):
+    cell_dir, _ = _write_cell(tmp_path, 42)
+    _rewrite_rows(cell_dir, "poisoned", lambda row: row.__setitem__("poison_rank", bad))
+    _assert_rejected(cell_dir, "Poison rank is inconsistent")
+
+
+@pytest.mark.parametrize("bad", ["True", 1, None], ids=["string", "int", "null"])
+def test_poison_retrieved_must_be_a_real_bool(tmp_path, bad):
+    cell_dir, _ = _write_cell(tmp_path, 42)
+    _rewrite_rows(cell_dir, "poisoned", lambda row: row.__setitem__("poison_retrieved", bad))
+    _assert_rejected(cell_dir, "poison_retrieved must be a boolean")
+
+
+def test_inconsistent_poison_retrieved_is_rejected(tmp_path):
+    cell_dir, _ = _write_cell(tmp_path, 42)
+    _rewrite_rows(cell_dir, "poisoned", lambda row: row.__setitem__("poison_retrieved", False))
+    _assert_rejected(cell_dir, "poison_retrieved is inconsistent")
+
+
+def test_clean_row_may_not_contain_poison_documents(tmp_path):
+    cell_dir, _ = _write_cell(tmp_path, 42)
+
+    def contaminate(row):
+        row["retrieved_doc_ids"] = [row["poison_doc_ids"][0], "clean"]
+        row["generation_evidence_doc_ids"] = list(row["retrieved_doc_ids"])
+
+    _rewrite_rows(cell_dir, "clean", contaminate)
+    _assert_rejected(cell_dir, "clean-condition record contains poison documents")
+
+
+@pytest.mark.parametrize("field", ["answer", "gold_answer"])
+def test_missing_answer_fields_are_rejected(tmp_path, field):
+    cell_dir, _ = _write_cell(tmp_path, 42)
+    _rewrite_rows(cell_dir, "poisoned", lambda row: row.pop(field))
+    _assert_rejected(cell_dir, f"missing required field '{field}'")
+
+
+def test_legitimate_null_rank_for_unretrieved_poison_is_accepted(tmp_path):
+    """A defined-as-null metric (poison never retrieved) is not an absent field."""
+    cell_dir, _ = _write_cell(tmp_path, 42)
+
+    def poison_not_retrieved(row):
+        row["retrieved_doc_ids"] = ["clean"]
+        row["generation_evidence_doc_ids"] = ["clean"]
+        row["poison_retrieved"] = False
+        row["poison_rank"] = None
+        row["prr_at_k"] = {str(k): 0.0 for k in aggregate.multiseed.EXPECTED_CUTOFFS}
+
+    _rewrite_rows(cell_dir, "poisoned", poison_not_retrieved, pipeline="rcd")
+    matrix.validate_completed_cell(cell_dir, frozen_inputs=_frozen())
+
+
+def test_poison_beyond_generation_evidence_still_gets_a_rank(tmp_path):
+    """Diagnostic window deeper than the generator's evidence: rank 3, retrieved False."""
+    cell_dir, _ = _write_cell(tmp_path, 42)
+
+    def deep(row):
+        poison = row["poison_doc_ids"][0]
+        row["retrieved_doc_ids"] = ["clean", "other", poison]
+        row["generation_evidence_doc_ids"] = ["clean"]
+        row["poison_retrieved"] = False
+        row["poison_rank"] = 3
+        row["prr_at_k"] = {"1": 0.0, "3": 1.0, "5": 1.0, "10": 1.0}
+
+    _rewrite_rows(cell_dir, "poisoned", deep, pipeline="rcd")
+    matrix.validate_completed_cell(cell_dir, frozen_inputs=_frozen())
