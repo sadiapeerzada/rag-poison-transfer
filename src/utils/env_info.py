@@ -17,6 +17,15 @@ looks identical to "we forgot to check."
 """
 import platform
 import subprocess
+from pathlib import Path
+
+# Git commands must inspect THIS repository, never whichever repository the
+# caller's working directory happens to be inside (AUDIT-006/-021).
+REPOSITORY_ROOT = Path(__file__).resolve().parents[2]
+
+
+def _resolve_root(repo_root) -> str:
+    return str(Path(repo_root).resolve() if repo_root is not None else REPOSITORY_ROOT)
 
 
 def _try_import_version(module_name: str) -> str | None:
@@ -32,7 +41,7 @@ def _try_import_version(module_name: str) -> str | None:
         return None
 
 
-def _git_commit_sha() -> str | None:
+def _git_commit_sha(repo_root=None) -> str | None:
     """Current commit hash, so a raw result log can always be traced
     back to the exact code that produced it (Section 4/17's
     reproducibility requirement). None if not in a git repo, or git
@@ -41,7 +50,7 @@ def _git_commit_sha() -> str | None:
     """
     try:
         result = subprocess.run(
-            ["git", "rev-parse", "HEAD"],
+            ["git", "-C", _resolve_root(repo_root), "rev-parse", "HEAD"],
             capture_output=True, text=True, timeout=5,
         )
         if result.returncode == 0:
@@ -51,7 +60,7 @@ def _git_commit_sha() -> str | None:
         return None
 
 
-def _git_dirty() -> bool | None:
+def _git_dirty(repo_root=None) -> bool | None:
     """Return True for any tracked change or untracked non-ignored file.
 
     A final run must identify the exact committed code and configuration.
@@ -63,6 +72,8 @@ def _git_dirty() -> bool | None:
         result = subprocess.run(
             [
                 "git",
+                "-C",
+                _resolve_root(repo_root),
                 "status",
                 "--porcelain=v1",
                 "-z",

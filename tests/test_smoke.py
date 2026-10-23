@@ -53,24 +53,26 @@ def test_mock_generator_runs():
     assert result.latency_seconds >= 0
 
 
-def test_full_pipeline_runs_without_error():
-    """This is the actual smoke test: run.py's main() should complete without raising.
+def test_full_pipeline_runs_without_error(tmp_path):
+    """Run run.py end-to-end on the mock smoke config.
 
-    exp_000 is throwaway scaffolding (see its README), so it's safe for
-    THIS test to clean up its own leftover results file before each run.
-    Never do this for a real experiment (exp_001+) -- the "never
-    overwrite raw results" rule in ExperimentLogger stays enforced there.
+    Outputs go to ``tmp_path`` (AUDIT-022): this test must never delete or
+    rewrite tracked files under ``results/``, because that dirties the tree
+    and trips the final-run Git guards.
     """
     import subprocess
+    import yaml
     repo_root = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-    stale_results = os.path.join(repo_root, "results", "exp_000_smoke_test.jsonl")
-    stale_summary = os.path.join(repo_root, "results", "exp_000_smoke_test.summary.json")
-    for path in (stale_results, stale_summary):
-        if os.path.exists(path):
-            os.remove(path)
+    with open(os.path.join(repo_root, "configs", "exp_000_smoke.yaml")) as f:
+        config = yaml.safe_load(f)
+    config["results_dir"] = str(tmp_path / "results")
+    config["dataset_path"] = os.path.join(repo_root, config["dataset_path"])
+    tmp_config = tmp_path / "exp_000_smoke_tmp.yaml"
+    tmp_config.write_text(yaml.safe_dump(config))
     result = subprocess.run(
-        [sys.executable, "run.py", "--config", "configs/exp_000_smoke.yaml"],
+        [sys.executable, os.path.join(repo_root, "run.py"), "--config", str(tmp_config)],
         cwd=repo_root, capture_output=True, text=True,
     )
     assert result.returncode == 0, f"run.py failed:\n{result.stdout}\n{result.stderr}"
     assert "Mean EM" in result.stdout
+    assert (tmp_path / "results" / "exp_000_smoke_test.jsonl").exists()
