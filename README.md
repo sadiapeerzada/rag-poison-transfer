@@ -524,15 +524,26 @@ scores, and fail-fast behavior when RCD diagnostics are missing.
 The Week 7-8 corrective freeze is committed in Git as
 `2928fa237c51df3ee7643d2aed64f936a7ff386b`.
 
-## Week 9-10: held-out clean baselines and poisoning-transfer evaluation
+### Week 9–10: Held-out poison-matrix readiness
 
-The research question is whether knowledge-poisoning attacks selected on a
-source retrieval pipeline continue to succeed on different target pipelines in
-adaptive RAG, and how that transfer changes under the frozen RCD configuration.
-The transfer workflow is implemented, but the completed `exp_030` and
-`exp_031` runs below are **clean-utility baselines**, not attack evaluations:
-both have `n_poison=0`. They provide no evidence for or against RCD's
-effectiveness against poisoning.
+**RCD rewrite correction:** The query-rewrite edge cases documented in `docs/RCD_REWRITE_FIX_NOTE.md` have been fixed on `fix/rcd-query-rewrites`. The regression tests and full test suite passed on that branch (518 tests). A two-query real-model smoke test of the held-out poison-matrix runner completed successfully. This smoke test is infrastructure validation only; it is not a final experiment or evidence of statistical effectiveness.
+
+**Historical-result caveat:** Historical RCD runs `exp_022`–`exp_031`, including `exp_026` and `exp_028b`, have not been regenerated under the corrected rewrite implementation. Their original artifacts must remain unchanged and clearly identified as historical. Before publication, assess which comparisons are affected by the correction and regenerate affected runs under a documented, consistent protocol.
+
+**Clean held-out baselines:** `exp_030` (Dense) and `exp_031` (RCD) have previously been reported as complete, but their archived raw records and final-run provenance must be inspected before they are treated as verified publication baselines. Do not infer poisoning robustness from clean-utility results.
+
+**Full held-out poison matrix: NOT YET RUN.** The planned matrix contains 12 cells across Dense and RCD, clean and poisoned conditions, two attack families (`lexical_influential_token` and `semantic_fluent_false_evidence`), intensities 1 and 3, and predeclared poison-generation seeds 42, 43, and 44. The preflight estimates 300 held-out queries per cell, 21,600 normal retrieval calls, 7,200 diagnostic retrieval calls, 14,400 evaluation-generation calls, and 3,600 semantic-poison-generation calls. These are planned workload estimates, not observed completed-run counts.
+
+**Pre-matrix freeze gates:**
+1. Complete the README and stale-documentation review.
+2. Review the rewrite-fix impact on historical results; preserve historical artifacts and document any required reruns.
+3. Run the smoke test and inspect its manifest, raw records, and evaluation output.
+4. Rerun the relevant tests after the final code and documentation changes.
+5. Verify that all result-affecting code, configurations, and manifests are tracked and the working tree is clean.
+6. Record the frozen commit SHA, configuration hashes, held-out manifest fingerprint, environment details, and output location.
+7. Confirm the intended output directory does not already contain a conflicting experiment.
+
+Only after these gates pass may the full matrix begin. If a result-affecting bug is discovered after execution starts, stop the affected run, document the change, and use a new run identity for any rerun. Never silently mix results generated under different code or protocol versions.
 
 ### Frozen RCD configuration
 
