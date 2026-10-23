@@ -10,6 +10,7 @@ from __future__ import annotations
 
 import argparse
 import copy
+import hashlib
 import importlib.util
 import json
 import os
@@ -1125,6 +1126,110 @@ def _read_previous_failure(cell_dir: Path) -> dict | None:
     }
 
 
+ARCHIVE_DIRNAME = "_recovery_archive"
+
+
+class RecoveryRefused(RuntimeError):
+    """Recovery of an incomplete cell is unsafe; nothing was modified."""
+
+
+def _file_digests(directory: Path) -> dict[str, dict]:
+    digests = {}
+    for entry in sorted(directory.iterdir()):
+        if entry.is_file():
+            digests[entry.name] = {
+                "sha256": hashlib.sha256(entry.read_bytes()).hexdigest(),
+                "bytes": entry.stat().st_size,
+            }
+        else:
+            digests[entry.name] = {"sha256": None, "bytes": None, "kind": "non_file"}
+    return digests
+
+
+def _archived_attempt_dirs(output_root: Path, cell_id: str) -> list[Path]:
+    parent = output_root / ARCHIVE_DIRNAME / cell_id
+    if not parent.is_dir():
+        return []
+    return sorted(path for path in parent.iterdir() if path.is_dir() and path.name.startswith("attempt_"))
+
+
+def _select_reusable_manifest(
+    *,
+    output_root: Path,
+    cell_dir: Path,
+    cell_id: str,
+    frozen: FrozenMatrixInputs,
+    git_sha: str,
+) -> dict | None:
+    """Return the one verified poison manifest recorded for ``cell_id``, if any.
+
+    Candidates are the in-place manifest and every archived one.  This only
+    reads.  The original poison instance is reused ONLY if every candidate
+    (a) parses, (b) passes the full independent provenance verification,
+    (c) has a recomputed poison fingerprint equal to its stored one, (d) was
+    written at the current commit, and (e) all candidates are the same poison
+    instance.  Otherwise recovery is refused; a semantic poison instance is
+    never silently regenerated when one existed.  ``None`` means no manifest
+    was ever written, so no poison instance exists to preserve.
+    """
+    paths = [cell_dir / "poison.manifest.json"]
+    paths += [attempt / "poison.manifest.json" for attempt in _archived_attempt_dirs(output_root, cell_id)]
+    verified: list[dict] = []
+    for path in paths:
+        if not path.exists():
+            continue
+        try:
+            manifest = _read_json(path)
+            poisoned = verify_cell_provenance(manifest, frozen)
+            if manifest.get("cell_id") != cell_id:
+                raise ValueError("manifest belongs to a different cell")
+            if poison_instances_fingerprint(frozen.clean_data, poisoned) != manifest.get(
+                "poison_instance_fingerprint"
+            ):
+                raise ValueError("stored poison fingerprint does not match the recomputed one")
+            if (manifest.get("git") or {}).get("commit_sha") != git_sha:
+                raise ValueError("manifest was written at a different Git commit")
+        except Exception as error:
+            raise RecoveryRefused(
+                f"Refusing to recover {cell_id}: {path} cannot be verified against the frozen "
+                f"inputs ({type(error).__name__}: {error}). Nothing was modified. Inspect the "
+                "directory manually; do not delete it. Restore the frozen commit or move the "
+                "directory aside yourself if you decide to discard this attempt."
+            ) from error
+        verified.append(manifest)
+    if len({m["poison_instance_fingerprint"] for m in verified}) > 1:
+        raise RecoveryRefused(
+            f"Refusing to recover {cell_id}: its manifests describe different poison instances. "
+            "Nothing was modified; a supervisor must decide which instance is authoritative."
+        )
+    return verified[0] if verified else None
+
+
+def _archive_incomplete_cell(output_root: Path, cell_dir: Path, cell_id: str) -> dict:
+    """Move an incomplete cell directory, intact, into an immutable attempt archive.
+
+    ``os.rename`` is atomic and copies nothing, so every file is preserved
+    byte-for-byte; an existing archive entry is never overwritten.
+    """
+    parent = output_root / ARCHIVE_DIRNAME / cell_id
+    parent.mkdir(parents=True, exist_ok=True)
+    target = parent / f"attempt_{len(_archived_attempt_dirs(output_root, cell_id)) + 1:03d}"
+    if target.exists():
+        raise FileExistsError(f"Recovery archive already exists: {target}")
+    digests = _file_digests(cell_dir)
+    prior_failure = _read_previous_failure(cell_dir)
+    os.rename(cell_dir, target)
+    record = {
+        "cell_id": cell_id,
+        "archived_to": str(target.relative_to(output_root)),
+        "archived_files": digests,
+        "prior_failure": prior_failure,
+        "archived_at_utc": _utc_now(),
+    }
+    _write_json_exclusive(parent / f"{target.name}.record.json", record)
+    return record
+
+
 def run_matrix(
     *,
     output_dir: Path = DEFAULT_OUTPUT_DIR,
@@ -1133,6 +1238,7 @@ def run_matrix(
     dense_config_path: Path = DEFAULT_DENSE_CONFIG,
     rcd_config_path: Path = DEFAULT_RCD_CONFIG,
     resume: bool = False,
+    recover_incomplete: bool = False,
 ) -> dict:
     """Execute cells not already completed in a compatible matrix directory.
 
@@ -1145,6 +1251,8 @@ def run_matrix(
     """
     if not experiment_id or Path(experiment_id).name != experiment_id:
         raise ValueError("experiment_id must be a non-empty filename-safe value.")
+    if recover_incomplete and not resume:
+        raise ValueError("recover_incomplete requires resume=True.")
     preflight_data = preflight(
         heldout_path=heldout_path,
         dense_config_path=dense_config_path,
@@ -1193,7 +1301,10 @@ def run_matrix(
         "started_at_utc": _utc_now(),
         "ended_at_utc": None,
         "outcome": "running",
+        "recover_incomplete": recover_incomplete,
+        "recovered_cell_ids": [],
     }
+    plan.setdefault("recoveries", [])
     plan["attempts"].append(attempt)
     plan["status"] = "running"
     plan["updated_at_utc"] = attempt["started_at_utc"]
@@ -1233,31 +1344,63 @@ def run_matrix(
                     continue
                 completed.append(cell_id)
                 continue
+            reusable_manifest = None
             if cell_dir.exists():
-                # Incomplete artifacts from an earlier attempt are preserved.
-                cell_failures[cell_id] = _read_previous_failure(cell_dir) or {
-                    "error_type": "IncompleteCell",
-                    "error": "Cell directory exists without a completed summary.",
-                    "source": "incomplete_directory",
-                }
-                continue
+                if not recover_incomplete:
+                    # Incomplete artifacts from an earlier attempt are preserved.
+                    cell_failures[cell_id] = _read_previous_failure(cell_dir) or {
+                        "error_type": "IncompleteCell",
+                        "error": "Cell directory exists without a completed summary. "
+                                 "Re-run with --resume --recover-incomplete to archive it and retry.",
+                        "source": "incomplete_directory",
+                    }
+                    continue
+            if cell_dir.exists() or _archived_attempt_dirs(output_root, cell_id):
+                # Also covers a crash between archiving and recreating the cell.
+                try:
+                    reusable_manifest = _select_reusable_manifest(
+                        output_root=output_root, cell_dir=cell_dir, cell_id=cell_id,
+                        frozen=frozen, git_sha=git_sha,
+                    )
+                except RecoveryRefused as error:
+                    cell_failures[cell_id] = {**_cell_failure_summary(error), "source": "recovery_refused"}
+                    continue
+            if cell_dir.exists():
+                try:
+                    record = _archive_incomplete_cell(output_root, cell_dir, cell_id)
+                except Exception as error:
+                    cell_failures[cell_id] = {**_cell_failure_summary(error), "source": "recovery_archive_failed"}
+                    continue
+                record.update(
+                    attempt=attempt["attempt"],
+                    manifest_reused=reusable_manifest is not None,
+                    reused_poison_instance_fingerprint=(
+                        reusable_manifest["poison_instance_fingerprint"] if reusable_manifest else None
+                    ),
+                )
+                plan["recoveries"].append(record)
+                attempt["recovered_cell_ids"].append(cell_id)
+                _write_json_atomic(plan_path, plan)
             cell_dir.mkdir()
             started = time.perf_counter()
             try:
-                attack, attack_config = _attack(attack_family, generator)
-                poisoned_data = inject_poisons(
-                    frozen.clean_data, attack, n_poison=intensity, poison_rate=1.0,
-                    seed=poison_seed, attacked_query_ids=frozen.heldout_ids,
-                )
-                manifest = build_cell_manifest(
-                    cell_id=cell_id, clean_data=frozen.clean_data, poisoned_data=poisoned_data,
-                    attack_family=attack_family, intensity=intensity, poison_seed=poison_seed,
-                    heldout_fingerprint=frozen.heldout_fingerprint,
-                    config_hashes=frozen.config_hashes,
-                    dense_config=frozen.dense_config, rcd_config=frozen.rcd_config,
-                    git_sha=git_sha, git_dirty=False,
-                )
-                manifest["attack"]["configuration"] = attack_config
+                if reusable_manifest is not None:
+                    manifest = reusable_manifest  # the original, verified poison instance
+                else:
+                    attack, attack_config = _attack(attack_family, generator)
+                    poisoned_data = inject_poisons(
+                        frozen.clean_data, attack, n_poison=intensity, poison_rate=1.0,
+                        seed=poison_seed, attacked_query_ids=frozen.heldout_ids,
+                    )
+                    manifest = build_cell_manifest(
+                        cell_id=cell_id, clean_data=frozen.clean_data, poisoned_data=poisoned_data,
+                        attack_family=attack_family, intensity=intensity, poison_seed=poison_seed,
+                        heldout_fingerprint=frozen.heldout_fingerprint,
+                        config_hashes=frozen.config_hashes,
+                        dense_config=frozen.dense_config, rcd_config=frozen.rcd_config,
+                        git_sha=git_sha, git_dirty=False,
+                    )
+                    manifest["attack"]["configuration"] = attack_config
                 _write_json_exclusive(manifest_path, manifest)
                 replayed = replay_cell_manifest(frozen.clean_data, manifest)
                 set_seed(FROZEN_RUNTIME_SEED)
@@ -1489,12 +1632,19 @@ def main() -> None:
     parser.add_argument("--dense-config", type=Path, default=DEFAULT_DENSE_CONFIG)
     parser.add_argument("--rcd-config", type=Path, default=DEFAULT_RCD_CONFIG)
     parser.add_argument("--resume", action="store_true")
+    parser.add_argument(
+        "--recover-incomplete", action="store_true",
+        help="With --resume: archive (never delete) incomplete cell directories and retry them "
+             "from their verified poison manifest.",
+    )
     parser.add_argument("--preflight", action="store_true")
     parser.add_argument("--smoke-test", action="store_true")
     parser.add_argument("--smoke-query-count", type=int, default=2)
     args = parser.parse_args()
     if args.preflight and args.smoke_test:
         parser.error("--preflight and --smoke-test cannot be combined.")
+    if args.recover_incomplete and not args.resume:
+        parser.error("--recover-incomplete requires --resume.")
     if args.preflight:
         result = preflight(
             heldout_path=args.heldout_manifest,
@@ -1519,6 +1669,7 @@ def main() -> None:
             output_dir=args.output_dir, experiment_id=args.experiment_id,
             heldout_path=args.heldout_manifest, dense_config_path=args.dense_config,
             rcd_config_path=args.rcd_config, resume=args.resume,
+            recover_incomplete=args.recover_incomplete,
         )
     print(json.dumps(result, indent=2, sort_keys=True))
 

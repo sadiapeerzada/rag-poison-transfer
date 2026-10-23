@@ -1141,3 +1141,223 @@ def test_poison_beyond_generation_evidence_still_gets_a_rank(tmp_path):
 
     _rewrite_rows(cell_dir, "poisoned", deep, pipeline="rcd")
     matrix.validate_completed_cell(cell_dir, frozen_inputs=_frozen())
+# Opt-in safe recovery of incomplete cells (--resume --recover-incomplete)
+# ---------------------------------------------------------------------------
+SEED_43 = matrix._cell_id("lexical_influential_token", 1, 43)
+
+
+def _digests(directory):
+    return {p.name: hashlib.sha256(p.read_bytes()).hexdigest() for p in sorted(directory.iterdir())}
+
+
+def _recover(harness):
+    return matrix.run_matrix(
+        output_dir=harness.root.parent, experiment_id="out", resume=True, recover_incomplete=True
+    )
+
+
+def _no_regeneration(monkeypatch):
+    def boom(*a, **k):
+        raise AssertionError("poison must be reused from the verified manifest, not regenerated")
+
+    # Only the generation path builds a NEW manifest; verification does not.
+    monkeypatch.setattr(matrix, "build_cell_manifest", boom)
+
+
+def test_recovery_requires_resume(monkeypatch, tmp_path):
+    harness = _Harness(monkeypatch, tmp_path)
+    with pytest.raises(ValueError, match="requires resume"):
+        matrix.run_matrix(
+            output_dir=harness.root.parent, experiment_id="out", recover_incomplete=True
+        )
+    assert not harness.root.exists()
+
+
+def test_ordinary_resume_still_preserves_and_skips_incomplete_cells(monkeypatch, tmp_path):
+    harness = _Harness(monkeypatch, tmp_path)
+    harness.behaviour[43] = "fail"
+    harness.run()
+    harness.behaviour.clear()
+    harness.evaluated.clear()
+    harness.run(resume=True)
+    assert harness.evaluated == [] and harness.plan["status"] == "partial"
+    assert not (harness.root / matrix.ARCHIVE_DIRNAME).exists()
+
+
+def test_recovery_after_evaluation_failure_archives_partial_and_reuses_manifest(monkeypatch, tmp_path):
+    harness = _Harness(monkeypatch, tmp_path)
+    harness.behaviour[43] = "fail"
+    harness.run()
+    cell_dir = harness.root / SEED_43
+    original = _digests(cell_dir)
+    original_manifest = json.loads((cell_dir / "poison.manifest.json").read_text(encoding="utf-8"))
+    harness.behaviour.clear()
+    harness.evaluated.clear()
+    _no_regeneration(monkeypatch)
+
+    result = _recover(harness)
+
+    plan = harness.plan
+    assert plan["status"] == "complete" and harness.evaluated == [43]
+    _assert_consistent(plan, result)
+    archived = harness.root / matrix.ARCHIVE_DIRNAME / SEED_43 / "attempt_001"
+    assert _digests(archived) == original  # byte-for-byte preserved, partial results included
+    assert len(archived.joinpath("results.jsonl").read_text().splitlines()) == 5
+    new_manifest = json.loads((cell_dir / "poison.manifest.json").read_text(encoding="utf-8"))
+    assert new_manifest == original_manifest  # same poison instance
+    recovery = plan["recoveries"][0]
+    assert recovery["cell_id"] == SEED_43 and recovery["manifest_reused"] is True
+    assert recovery["archived_files"]["results.jsonl"]["sha256"] == original["results.jsonl"]
+    assert recovery["prior_failure"]["error_type"] == "RuntimeError"
+    assert plan["attempts"][1]["recovered_cell_ids"] == [SEED_43]
+    # Full independent validation, not just a written summary.
+    matrix.validate_completed_cell(cell_dir, frozen_inputs=harness.frozen)
+
+
+def test_recovery_when_failure_happened_before_manifest_creation(monkeypatch, tmp_path):
+    harness = _Harness(monkeypatch, tmp_path)
+    harness.run()
+    import shutil
+    shutil.rmtree(harness.root / SEED_43)
+    (harness.root / SEED_43).mkdir()
+    (harness.root / SEED_43 / "failure.json").write_text(
+        json.dumps({"error_type": "RuntimeError", "error": "died generating poison"}), encoding="utf-8"
+    )
+    harness.evaluated.clear()
+
+    _recover(harness)
+
+    assert harness.plan["status"] == "complete" and harness.evaluated == [43]
+    recovery = harness.plan["recoveries"][0]
+    assert recovery["manifest_reused"] is False  # nothing existed to preserve
+    assert (harness.root / matrix.ARCHIVE_DIRNAME / SEED_43 / "attempt_001" / "failure.json").is_file()
+
+
+def test_recovery_when_results_were_written_but_summary_was_not(monkeypatch, tmp_path):
+    harness = _Harness(monkeypatch, tmp_path)
+    harness.run()
+    cell_dir = harness.root / SEED_43
+    (cell_dir / "summary.json").unlink()  # killed after results, before summary
+    full_results = (cell_dir / "results.jsonl").read_bytes()
+    harness.evaluated.clear()
+    _no_regeneration(monkeypatch)
+
+    _recover(harness)
+
+    assert harness.evaluated == [43]  # re-evaluated; unsummarised results are never trusted
+    assert harness.plan["status"] == "complete"
+    archived = harness.root / matrix.ARCHIVE_DIRNAME / SEED_43 / "attempt_001"
+    assert (archived / "results.jsonl").read_bytes() == full_results
+    assert not (archived / "summary.json").exists()
+
+
+def test_repeated_interruptions_keep_every_attempt(monkeypatch, tmp_path):
+    harness = _Harness(monkeypatch, tmp_path)
+    harness.behaviour[43] = "fail"
+    harness.run()
+    first_failure = _digests(harness.root / SEED_43)
+    _recover(harness)  # fails again
+    assert harness.plan["status"] == "partial"
+    second_failure = _digests(harness.root / SEED_43)
+    harness.behaviour.clear()
+    _recover(harness)
+
+    assert harness.plan["status"] == "complete"
+    archive = harness.root / matrix.ARCHIVE_DIRNAME / SEED_43
+    assert _digests(archive / "attempt_001") == first_failure
+    assert _digests(archive / "attempt_002") == second_failure
+    assert len(harness.plan["recoveries"]) == 2
+    assert {r["archived_to"] for r in harness.plan["recoveries"]} == {
+        f"{matrix.ARCHIVE_DIRNAME}/{SEED_43}/attempt_001",
+        f"{matrix.ARCHIVE_DIRNAME}/{SEED_43}/attempt_002",
+    }
+
+
+def test_recovery_refuses_a_corrupt_manifest_and_modifies_nothing(monkeypatch, tmp_path):
+    harness = _Harness(monkeypatch, tmp_path)
+    harness.behaviour[43] = "fail"
+    harness.run()
+    cell_dir = harness.root / SEED_43
+    (cell_dir / "poison.manifest.json").write_text("{not json", encoding="utf-8")
+    before = _digests(cell_dir)
+    harness.behaviour.clear()
+    harness.evaluated.clear()
+
+    _recover(harness)
+
+    assert _digests(cell_dir) == before and harness.evaluated == []
+    assert not (harness.root / matrix.ARCHIVE_DIRNAME).exists()
+    failure = harness.plan["cell_failures"][SEED_43]
+    assert failure["source"] == "recovery_refused" and "Inspect" in failure["error"]
+    assert harness.plan["status"] == "partial"
+
+
+def test_recovery_refuses_a_manifest_that_fails_independent_verification(monkeypatch, tmp_path):
+    harness = _Harness(monkeypatch, tmp_path)
+    harness.behaviour[43] = "fail"
+    harness.run()
+    cell_dir = harness.root / SEED_43
+    path = cell_dir / "poison.manifest.json"
+    manifest = json.loads(path.read_text(encoding="utf-8"))
+    manifest["dataset"]["selected_query_ids"] = list(reversed(manifest["dataset"]["selected_query_ids"]))
+    path.write_text(json.dumps(manifest), encoding="utf-8")
+    before = _digests(cell_dir)
+    harness.behaviour.clear()
+
+    _recover(harness)
+
+    assert _digests(cell_dir) == before
+    assert harness.plan["cell_failures"][SEED_43]["source"] == "recovery_refused"
+
+
+def test_recovery_refuses_a_manifest_from_a_different_commit(monkeypatch, tmp_path):
+    harness = _Harness(monkeypatch, tmp_path)
+    harness.behaviour[43] = "fail"
+    harness.run()
+    cell_dir = harness.root / SEED_43
+    path = cell_dir / "poison.manifest.json"
+    manifest = json.loads(path.read_text(encoding="utf-8"))
+    manifest["git"]["commit_sha"] = "b" * 40
+    path.write_text(json.dumps(manifest), encoding="utf-8")
+    before = _digests(cell_dir)
+    harness.behaviour.clear()
+
+    _recover(harness)
+
+    assert _digests(cell_dir) == before
+    failure = harness.plan["cell_failures"][SEED_43]
+    assert failure["source"] == "recovery_refused" and "different Git commit" in failure["error"]
+
+
+def test_recovery_after_crash_between_archiving_and_recreating_reuses_archived_manifest(
+    monkeypatch, tmp_path
+):
+    harness = _Harness(monkeypatch, tmp_path)
+    harness.behaviour[43] = "fail"
+    harness.run()
+    original_manifest = (harness.root / SEED_43 / "poison.manifest.json").read_text(encoding="utf-8")
+    matrix._archive_incomplete_cell(harness.root, harness.root / SEED_43, SEED_43)
+    assert not (harness.root / SEED_43).exists()  # simulated crash point
+    harness.behaviour.clear()
+    harness.evaluated.clear()
+    _no_regeneration(monkeypatch)
+
+    _recover(harness)
+
+    assert harness.plan["status"] == "complete" and harness.evaluated == [43]
+    assert json.loads((harness.root / SEED_43 / "poison.manifest.json").read_text()) == json.loads(
+        original_manifest
+    )
+
+
+def test_recovery_does_not_touch_completed_cells(monkeypatch, tmp_path):
+    harness = _Harness(monkeypatch, tmp_path)
+    harness.behaviour[43] = "fail"
+    harness.run()
+    done = {
+        cell: _digests(harness.root / cell) for cell in LIFECYCLE_IDS if cell != SEED_43
+    }
+    harness.behaviour.clear()
+    _recover(harness)
+    for cell, digests in done.items():
+        assert _digests(harness.root / cell) == digests
