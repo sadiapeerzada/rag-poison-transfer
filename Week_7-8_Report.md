@@ -1,5 +1,15 @@
 # Research Progress Audit
 
+> **Addendum (2026-10-23 repository audit — supersedes statements below that say the `exp_026` artifacts are absent).**
+> At repository HEAD `1da874c`, `results/exp_026_hotpotqa_rcd_v1_mlx_frozen_current.jsonl` and `.summary.json` **are present**
+> (committed in `e3e9e85`). The raw log has 300 rows with 300 unique query IDs, `dataset_split=validation`, dataset revision
+> `1908d6afbbead072334abe2965f91bd2709910ab`, config hash `d217e8d7684e`, `git_commit_sha=a0a2d1793087e3c2ab9669d93bb040a60b822e34`,
+> and `git_dirty=false` on every row; the summary reports mean EM 0.400 and mean F1 0.5047. This is a **development** run, not held-out
+> evidence. Its query IDs are disjoint from the `exp_027` held-out manifest (overlap 0). `exp_028b` (300 rows over the held-out IDs,
+> `git_dirty: null`) remains an exploratory/recovery run, and `exp_029` an exploratory pilot; neither is a publication baseline.
+> The historical text below is preserved unchanged for traceability. The artifacts were inspected, not re-executed.
+
+
 ## Cross-Pipeline Transferability of Knowledge Poisoning in Adaptive RAG
 
 | | |

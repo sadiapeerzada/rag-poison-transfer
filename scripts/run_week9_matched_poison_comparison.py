@@ -12,6 +12,7 @@ import argparse
 import copy
 import hashlib
 import json
+import os
 import sys
 import time
 import traceback
@@ -43,10 +44,11 @@ from src.utils.config import load_config
 from src.utils.env_info import _git_dirty
 from src.utils.seeding import set_seed
 
-DEFAULT_SOURCE_MANIFEST = Path(
-    "/Users/sadiapeerzada/Downloads/rag-rcd-week9-final-results/"
-    "poison-pilot-fix1/week9_lexical_rcd_pilot_20261022_b.manifest.json"
-)
+# The ten-query pilot source manifest is an experiment artifact that lives
+# outside the repository, so there is deliberately NO built-in default path:
+# silently choosing a location could select a different experiment's
+# manifest.  Pass --source-manifest or set this environment variable.
+SOURCE_MANIFEST_ENV_VAR = "RAG_POISON_SOURCE_MANIFEST"
 DEFAULT_DENSE_CONFIG = REPOSITORY_ROOT / "configs/exp_030_hotpotqa_dense_heldout_mlx.yaml"
 DEFAULT_RCD_CONFIG = REPOSITORY_ROOT / "configs/exp_031_hotpotqa_rcd_heldout_mlx.yaml"
 DEFAULT_OUTPUT_DIR = Path.home() / "Downloads/rag-rcd-week9-final-results/matched-poison"
@@ -97,6 +99,40 @@ METRIC_DEFINITIONS = {
 }
 
 
+def resolve_source_manifest_path(
+    explicit: Path | str | None = None,
+    *,
+    environ: dict | None = None,
+) -> Path:
+    """Resolve the pilot source manifest without any machine-specific default.
+
+    Precedence: an explicit path (the ``--source-manifest`` CLI option), then
+    the ``RAG_POISON_SOURCE_MANIFEST`` environment variable.  The result must
+    be an existing regular file.  Nothing is guessed, substituted or created.
+    The environment is read at call time so overrides always take effect.
+    """
+    environment = os.environ if environ is None else environ
+    if explicit is not None and str(explicit).strip():
+        source, origin = Path(explicit), "--source-manifest"
+    elif environment.get(SOURCE_MANIFEST_ENV_VAR, "").strip():
+        source = Path(environment[SOURCE_MANIFEST_ENV_VAR])
+        origin = f"environment variable {SOURCE_MANIFEST_ENV_VAR}"
+    else:
+        raise ValueError(
+            "No source manifest was specified. Pass --source-manifest PATH "
+            "(the ten-query pilot manifest written by "
+            "scripts/run_week9_poison_pilot.py) or set the "
+            f"{SOURCE_MANIFEST_ENV_VAR} environment variable."
+        )
+    resolved = source.expanduser().resolve()
+    if not resolved.is_file():
+        raise FileNotFoundError(
+            f"Source manifest from {origin} does not exist or is not a file: "
+            f"{resolved}. Provide the path to the pilot manifest explicitly."
+        )
+    return resolved
+
+
 def load_json(path: Path) -> dict:
     with path.expanduser().open(encoding="utf-8") as source:
         value = json.load(source)
@@ -139,6 +175,60 @@ def _frozen_retriever_config(config: dict) -> dict:
     return result
 
 
+# Settings that must be identical for Dense and RCD so that the only treatment
+# difference is the defense.  Intentional differences (NOT listed here):
+# ``retriever``, ``experiment_id`` and every ``rcd_*`` parameter.
+SHARED_MATCHED_KEYS = (
+    "dataset_loader",
+    "dataset_split",
+    "dataset_revision",
+    "seed",
+    "embedder_model",
+    "top_k",
+    "generator_backend",
+    "generator_model",
+    "max_tokens",
+    "load_in_4bit",
+)
+
+
+def diagnostic_retrieval_required(top_k: int) -> bool:
+    """True when poisoned PRR@k needs a deeper retrieval than generation uses.
+
+    Single source of truth for both ``evaluate_pipeline`` (which executes the
+    extra retrieval) and the preflight workload estimate (which counts it).
+    """
+    return RETRIEVAL_METRIC_K > top_k
+
+
+def validated_top_k(config: dict, label: str) -> int:
+    """Return ``config['top_k']`` as a strict positive integer or raise."""
+    value = config.get("top_k")
+    if isinstance(value, bool) or not isinstance(value, int) or value < 1:
+        raise ValueError(
+            f"{label} config top_k must be a positive integer, got {value!r}."
+        )
+    return value
+
+
+def validate_shared_pipeline_settings(dense_config: dict, rcd_config: dict) -> None:
+    """Fail closed unless settings that must match between pipelines do.
+
+    Keys absent from BOTH configs compare equal here, so loader-specific keys
+    stay optional, but ``top_k`` is always required and range-checked because
+    the workload estimate and the evaluation loop both depend on it.
+    """
+    validated_top_k(dense_config, "Dense")
+    validated_top_k(rcd_config, "RCD")
+    mismatches = [
+        key
+        for key in SHARED_MATCHED_KEYS
+        if dense_config.get(key) != rcd_config.get(key)
+    ]
+    if mismatches:
+        raise ValueError(f"Dense and RCD shared settings differ: {mismatches}.")
+
+
 def validate_matched_configs(
     dense_config: dict,
     rcd_config: dict,
@@ -154,23 +244,7 @@ def validate_matched_configs(
     if dense_config.get("final_run") is not True or rcd_config.get("final_run") is not True:
         raise ValueError("Matched pilot must use the frozen final Dense and RCD configs.")
 
-    shared_keys = (
-        "dataset_loader",
-        "dataset_split",
-        "dataset_revision",
-        "seed",
-        "embedder_model",
-        "top_k",
-        "generator_backend",
-        "generator_model",
-        "max_tokens",
-        "load_in_4bit",
-    )
-    mismatches = [
-        key for key in shared_keys if dense_config.get(key) != rcd_config.get(key)
-    ]
-    if mismatches:
-        raise ValueError(f"Dense and RCD shared settings differ: {mismatches}.")
+    validate_shared_pipeline_settings(dense_config, rcd_config)
     if dense_config.get("dataset_loader") != "load_hotpotqa_distractor":
         raise ValueError("Matched pilot requires the HotpotQA distractor loader.")
     if dense_config.get("generator_backend") != "mlx":
@@ -322,6 +396,25 @@ def build_matched_retrievers(
     return retrievers
 
 
+def _inner_retrieval_calls(retriever: Any) -> int | None:
+    """Retrieval operations the pipeline executed for its most recent call.
+
+    A plain Dense retriever performs exactly one.  RCD records its own count
+    (primary + sparse + one per query rewrite) in ``last_diagnostics``; that
+    count is query-dependent because duplicate rewrites are dropped.  Returns
+    ``None`` when a retriever exposes diagnostics that do not contain a valid
+    count, so missing data is visible rather than silently assumed.
+    """
+    if not hasattr(retriever, "last_diagnostics"):
+        return 1
+    diagnostics = retriever.last_diagnostics
+    if isinstance(diagnostics, dict):
+        count = diagnostics.get("retrieval_call_count")
+        if isinstance(count, int) and not isinstance(count, bool) and count >= 1:
+            return count
+    return None
+
+
 def _evidence(retrieved: list[Any]) -> list[dict]:
     return [
         {"doc_id": item.doc_id, "text": item.text}
@@ -368,6 +461,7 @@ def evaluate_pipeline(
             clean_query["question"], top_k=top_k
         )
         clean_retrieval_seconds = time.perf_counter() - retrieval_started
+        clean_inner_calls = _inner_retrieval_calls(clean_retriever)
         clean_answer, clean_generation = _generate(
             generator, clean_query["question"], clean_retrieved, max_tokens
         )
@@ -376,9 +470,11 @@ def evaluate_pipeline(
             poisoned_query["question"], top_k=top_k
         )
         poisoned_retrieval_seconds = time.perf_counter() - retrieval_started
+        poisoned_inner_calls = _inner_retrieval_calls(poisoned_retriever)
 
         diagnostic_retrieval_seconds = 0.0
-        if RETRIEVAL_METRIC_K > top_k:
+        diagnostic_executed = diagnostic_retrieval_required(top_k)
+        if diagnostic_executed:
             retrieval_started = time.perf_counter()
             poisoned_retrieved = poisoned_retriever.retrieve(
                 poisoned_query["question"], top_k=RETRIEVAL_METRIC_K
@@ -386,8 +482,10 @@ def evaluate_pipeline(
             diagnostic_retrieval_seconds = (
                 time.perf_counter() - retrieval_started
             )
+            diagnostic_inner_calls = _inner_retrieval_calls(poisoned_retriever)
         else:
             poisoned_retrieved = poison_evidence
+            diagnostic_inner_calls = 0
         poisoned_answer, poisoned_generation = _generate(
             generator, poisoned_query["question"], poison_evidence, max_tokens
         )
@@ -427,6 +525,12 @@ def evaluate_pipeline(
                     "prr_at_k": {str(k): 0.0 for k in CUTOFFS},
                     "retrieval_elapsed_seconds": clean_retrieval_seconds,
                     "diagnostic_retrieval_elapsed_seconds": 0.0,
+                    "retrieval_call_accounting": {
+                        "normal_retrieval_calls": 1,
+                        "normal_inner_retrieval_operations": clean_inner_calls,
+                        "diagnostic_retrieval_calls": 0,
+                        "diagnostic_inner_retrieval_operations": 0,
+                    },
                     "generation": clean_generation,
                 },
                 "poisoned_condition": {
@@ -450,6 +554,12 @@ def evaluate_pipeline(
                     "diagnostic_retrieval_elapsed_seconds": (
                         diagnostic_retrieval_seconds
                     ),
+                    "retrieval_call_accounting": {
+                        "normal_retrieval_calls": 1,
+                        "normal_inner_retrieval_operations": poisoned_inner_calls,
+                        "diagnostic_retrieval_calls": int(diagnostic_executed),
+                        "diagnostic_inner_retrieval_operations": diagnostic_inner_calls,
+                    },
                     "generation": poisoned_generation,
                 },
                 "query_untargeted_degradation": (
@@ -689,12 +799,15 @@ def _config_with_validated_manifest(config: dict) -> tuple[dict, list[str], str]
 
 def run_comparison(
     *,
-    source_manifest_path: Path = DEFAULT_SOURCE_MANIFEST,
+    source_manifest_path: Path | None = None,
     dense_config_path: Path = DEFAULT_DENSE_CONFIG,
     rcd_config_path: Path = DEFAULT_RCD_CONFIG,
     output_dir: Path = DEFAULT_OUTPUT_DIR,
     experiment_id: str | None = None,
 ) -> dict:
+    # Resolve (and require) the source manifest BEFORE creating any output
+    # directory, so a missing manifest leaves no stray artifacts behind.
+    source_manifest_path = resolve_source_manifest_path(source_manifest_path)
     output_dir = output_dir.expanduser().resolve()
     output_dir.mkdir(parents=True, exist_ok=True)
     if experiment_id is None:
@@ -711,7 +824,6 @@ def run_comparison(
         if not commit or commit == "unknown" or dirty is None:
             raise RuntimeError("Unable to capture Git commit and dirty state.")
 
-        source_manifest_path = source_manifest_path.expanduser().resolve()
         source_manifest = load_json(source_manifest_path)
         dense_config = load_config(str(dense_config_path.expanduser().resolve()))
         rcd_config = load_config(str(rcd_config_path.expanduser().resolve()))
@@ -897,7 +1009,15 @@ def run_comparison(
 
 def main() -> None:
     parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument("--source-manifest", type=Path, default=DEFAULT_SOURCE_MANIFEST)
+    parser.add_argument(
+        "--source-manifest",
+        type=Path,
+        default=None,
+        help=(
+            "Path to the ten-query pilot source manifest. Required unless the "
+            f"{SOURCE_MANIFEST_ENV_VAR} environment variable is set."
+        ),
+    )
     parser.add_argument("--dense-config", type=Path, default=DEFAULT_DENSE_CONFIG)
     parser.add_argument("--rcd-config", type=Path, default=DEFAULT_RCD_CONFIG)
     parser.add_argument("--output-dir", type=Path, default=DEFAULT_OUTPUT_DIR)
