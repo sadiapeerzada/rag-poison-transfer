@@ -22,42 +22,20 @@ def _generic_rewrites(query: str) -> list[str]:
 
     lowered = q.lower()
 
+    # Prefix rewrites. Slice by the prefix length so the remainder of the
+    # query is preserved verbatim, independent of the original capitalization.
     if lowered.startswith("which "):
-        rewrites.append("what " + q[7:])
+        rewrites.append("what " + q[len("which "):])
     elif lowered.startswith("what "):
-        rewrites.append("which " + q[5:])
+        rewrites.append("which " + q[len("what "):])
     elif lowered.startswith("who "):
-        rewrites.append(
-            q.replace(
-                "Who ",
-                "Which person ",
-                1,
-            )
-        )
+        rewrites.append("Which person " + q[len("who "):])
     elif lowered.startswith("where "):
-        rewrites.append(
-            q.replace(
-                "Where ",
-                "In what place ",
-                1,
-            )
-        )
+        rewrites.append("In what place " + q[len("where "):])
     elif lowered.startswith("when "):
-        rewrites.append(
-            q.replace(
-                "When ",
-                "In what year or date ",
-                1,
-            )
-        )
+        rewrites.append("In what year or date " + q[len("when "):])
     elif lowered.startswith("how "):
-        rewrites.append(
-            q.replace(
-                "How ",
-                "In what way ",
-                1,
-            )
-        )
+        rewrites.append("In what way " + q[len("how "):])
     else:
         rewrites.append(
             f"What is the answer to: {q}"
