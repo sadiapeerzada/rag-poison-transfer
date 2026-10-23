@@ -59,6 +59,15 @@ def test_which_rewrite_case_and_whitespace_variants(query):
     assert not any("ity hosts" in r and "city hosts" not in r for r in rewrites)
 
 
+@pytest.mark.parametrize("prefix", ["Which", "which", "WHICH"])
+def test_which_rewrite_battle_example_does_not_drop_a_letter(prefix):
+    # Historical bug: q[7:] produced "what attle, ..." for this question.
+    rest = "battle, the Battle of Cold Harbor, or the Second Battle of Bull Run, was fought first?"
+    rewrites = generate_rewrite_set(f"{prefix} {rest}", n_rewrites=3)
+    assert f"what {rest}" in rewrites
+    assert not any(r.startswith("what attle") for r in rewrites)
+
+
 # AUDIT-020b case-sensitive who/where/when/how replacements ------------------
 _PREFIX_CASES = [
     ("who", "Which person", "wrote Hamlet?"),
