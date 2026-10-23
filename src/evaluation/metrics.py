@@ -281,6 +281,17 @@ def attack_transfer_rate(
             + "; ".join(msg)
         )
     
+    # A PRESENT attack_success value must be a real bool. Truthiness would
+    # silently count strings such as "False" as successes. (A missing key keeps
+    # its documented, tested default of False.)
+    for label, by_id in (("source", source_by_id), ("target", target_by_id)):
+        for qid, result in by_id.items():
+            if "attack_success" in result and not isinstance(result["attack_success"], bool):
+                raise ValueError(
+                    f"{label} 'attack_success' must be bool for query_id={qid!r}; "
+                    f"got {type(result['attack_success']).__name__}"
+                )
+
     # Count successful source attacks
     source_attack_count = sum(
         1 for result in source_results

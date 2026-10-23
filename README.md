@@ -447,7 +447,7 @@ and the base retriever ranking.
 
 ### Frozen configuration
 
-- **Configuration:** `exp_026_hotpotqa_rcd_v1_mlx_frozen_current` (not verified as executed)
+- **Configuration:** `exp_026_hotpotqa_rcd_v1_mlx_frozen_current` (executed; its raw log and summary are present in `results/` and were checked in the 2026-10-23 audit: 300 rows, 300 unique query IDs, `git_dirty=false` on every row, validation split; a development run, not held-out evidence)
 - **Source development checkpoint:** `exp_025_hotpotqa_rcd_v1_mlx_dev300_current_tuned`
 - **Dataset:** HotpotQA validation split
 - **Queries:** N=300
@@ -886,14 +886,14 @@ clean QA experiments; it does not invoke `run_source_target_asr()`.
 - Transfer matrix framework is built and tested; source-to-target execution is through the Python API, not a CLI
 - The regular runner can select supported retrievers by config for its single-pipeline QA workflow
 - Knowledge-poisoning attack benchmark and evaluation infrastructure are complete through Week 5-6
-- Week 7–8: COMPLETE — RCD was implemented and frozen; the corrective `exp_026` config exists, but its raw run log and summary are not present, so its execution is not verified.
+- Week 7–8: COMPLETE — RCD was implemented and frozen; the corrective `exp_026` run's raw log and summary are present in `results/` (300 rows; development validation split, not held-out evidence).
 - Frozen RCD weights: consistency=0.45, redundancy=0.00, conflict=0.10, base_rank=0.45
 - Frozen score: `0.45 × consistency + 0.00 × redundancy − 0.10 × conflict + 0.45 × base-rank score`. Redundancy detection is implemented and tested as an available RCD signal, but at weight 0.00 it does not contribute to the frozen final score. Conflict is a narrow temporal/year-disagreement heuristic (recognized years, sufficient lexical overlap, disjoint year sets), not general semantic/NLI contradiction detection.
 - Active consistency score: the mean of per-document retriever-presence agreement, cross-retriever rank stability, and rewrite-rank stability. With the configured dense primary retriever and BM25 secondary signal, agreement is the fraction of those two rankings containing the document; either stability term is zero when the document appears in fewer than two respective rankings.
 - RCD retrieves up to `rcd_candidate_k` documents from the dense primary and BM25 signal for the original query, then uses the dense primary for each rewrite. The runner requests up to 10 ranked documents for retrieval metrics but passes only configured `top_k` documents (3 in the frozen config) to generation.
 - Historical frozen development run: `exp_023_hotpotqa_rcd_v1_mlx_frozen` (N=300, HotpotQA validation split; not held-out)
-- Historical `exp_023` results: EM=0.407, F1=0.508, Recall@3=0.7467, MRR@10=0.9411, nDCG@10=0.8565. Its score fields predate the correction and `exp_023` is not evidence that the corrective `exp_026` config ran.
-- Week 9–10 clean held-out HotpotQA baselines: COMPLETE (`exp_030` dense and `exp_031` RCD); these are clean utility runs with no poison.
+- Historical `exp_023` results: EM=0.407, F1=0.508, Recall@3=0.7467, MRR@10=0.9411, nDCG@10=0.8565. Its score fields predate the correction and `exp_023` is not evidence for the corrective `exp_026` config; that run is evidenced by its own raw log and summary.
+- Week 9–10 clean held-out HotpotQA baselines: COMPLETE (`exp_030` dense and `exp_031` RCD); these are clean utility runs with no poison. **Verification caveat:** their result files are archived outside this repository (`../rag-rcd-week9-final-results/`) and were not available to the 2026-10-23 audit; completion, `final_run`, and `git_dirty=false` remain to be verified from the actual artifacts, and the baselines stay a publication gate until then. `exp_028b` is an exploratory/recovery run (its rows record `git_dirty: null`), not the publication baseline.
 - Poisoned source-to-target evaluation and Week 9–10 held-out 2Wiki evaluation: PENDING.
 
 ## Testing

@@ -399,3 +399,128 @@ def test_exclusive_outputs_and_failure_record_are_honest(tmp_path):
     assert failure["failed_stage"] == "retriever_initialization"
     assert failure["error"] == "retriever initialization failed"
     assert failure["partial_results_path"] == str(result_path)
+
+
+# ---------------------------------------------------------------------------
+# Fix D: no machine-specific source-manifest default
+# ---------------------------------------------------------------------------
+import inspect
+import sys
+from pathlib import Path
+
+
+def _manifest_file(tmp_path, name="pilot.manifest.json"):
+    path = tmp_path / name
+    path.write_text("{}", encoding="utf-8")
+    return path
+
+
+def test_module_has_no_user_specific_absolute_path_or_stale_default():
+    source = inspect.getsource(comparison)
+    assert "/Users/" not in source
+    assert not hasattr(comparison, "DEFAULT_SOURCE_MANIFEST")
+
+
+def test_explicit_source_manifest_is_resolved(tmp_path):
+    path = _manifest_file(tmp_path)
+    assert comparison.resolve_source_manifest_path(path, environ={}) == path.resolve()
+    assert comparison.resolve_source_manifest_path(str(path), environ={}) == path.resolve()
+
+
+def test_missing_explicit_manifest_names_the_path_and_never_creates_it(tmp_path):
+    missing = tmp_path / "nope.manifest.json"
+    with pytest.raises(FileNotFoundError, match="nope.manifest.json"):
+        comparison.resolve_source_manifest_path(missing, environ={})
+    assert not missing.exists()
+
+
+def test_directory_is_not_accepted_as_a_manifest(tmp_path):
+    with pytest.raises(FileNotFoundError):
+        comparison.resolve_source_manifest_path(tmp_path, environ={})
+
+
+def test_no_default_requires_an_explicit_choice(tmp_path):
+    with pytest.raises(ValueError, match="--source-manifest"):
+        comparison.resolve_source_manifest_path(None, environ={})
+    with pytest.raises(ValueError, match="--source-manifest"):
+        comparison.resolve_source_manifest_path("  ", environ={comparison.SOURCE_MANIFEST_ENV_VAR: " "})
+
+
+def test_environment_variable_is_read_at_call_time_and_explicit_wins(tmp_path):
+    env_file = _manifest_file(tmp_path, "env.manifest.json")
+    cli_file = _manifest_file(tmp_path, "cli.manifest.json")
+    env = {comparison.SOURCE_MANIFEST_ENV_VAR: str(env_file)}
+    assert comparison.resolve_source_manifest_path(None, environ=env) == env_file.resolve()
+    assert comparison.resolve_source_manifest_path(cli_file, environ=env) == cli_file.resolve()
+    with pytest.raises(FileNotFoundError, match="environment variable"):
+        comparison.resolve_source_manifest_path(
+            None, environ={comparison.SOURCE_MANIFEST_ENV_VAR: str(tmp_path / "gone.json")}
+        )
+
+
+def test_home_relative_paths_are_expanded(tmp_path, monkeypatch):
+    monkeypatch.setenv("HOME", str(tmp_path))
+    _manifest_file(tmp_path, "home.manifest.json")
+    assert comparison.resolve_source_manifest_path("~/home.manifest.json", environ={}) == (
+        tmp_path / "home.manifest.json"
+    ).resolve()
+
+
+def test_run_comparison_without_a_manifest_fails_before_creating_outputs(tmp_path, monkeypatch):
+    monkeypatch.delenv(comparison.SOURCE_MANIFEST_ENV_VAR, raising=False)
+    output = tmp_path / "out"
+    with pytest.raises(ValueError, match="--source-manifest"):
+        comparison.run_comparison(output_dir=output)
+    assert not output.exists()
+
+
+def test_cli_passes_none_when_unspecified_and_the_override_when_given(tmp_path, monkeypatch, capsys):
+    seen = []
+    monkeypatch.setattr(comparison, "run_comparison", lambda **kw: seen.append(kw) or {})
+    monkeypatch.setattr(sys, "argv", ["prog"])
+    comparison.main()
+    monkeypatch.setattr(sys, "argv", ["prog", "--source-manifest", str(tmp_path / "x.json")])
+    comparison.main()
+    assert seen[0]["source_manifest_path"] is None
+    assert seen[1]["source_manifest_path"] == tmp_path / "x.json"
+
+
+# ---------------------------------------------------------------------------
+# Fix E: shared-setting validation and diagnostic-retrieval rule
+# ---------------------------------------------------------------------------
+def _pair():
+    shared = {
+        "dataset_split": "validation", "dataset_revision": "r", "seed": 42,
+        "embedder_model": "e", "top_k": 3, "generator_backend": "mlx",
+        "generator_model": "m", "max_tokens": 64,
+    }
+    return {**shared, "retriever": "dense"}, {**shared, "retriever": "rcd", "rcd_candidate_k": 10}
+
+
+def test_diagnostic_rule_is_the_single_definition_used_by_evaluation():
+    assert comparison.diagnostic_retrieval_required(comparison.RETRIEVAL_METRIC_K - 1) is True
+    assert comparison.diagnostic_retrieval_required(comparison.RETRIEVAL_METRIC_K) is False
+    assert comparison.diagnostic_retrieval_required(comparison.RETRIEVAL_METRIC_K + 5) is False
+
+
+def test_valid_matched_pair_passes_and_defense_differences_are_allowed():
+    dense, rcd = _pair()
+    comparison.validate_shared_pipeline_settings(dense, rcd)
+    rcd["experiment_id"] = "other"  # intentional treatment difference
+    comparison.validate_shared_pipeline_settings(dense, rcd)
+
+
+@pytest.mark.parametrize("key,value", [("top_k", 4), ("max_tokens", 1), ("seed", 7),
+                                       ("generator_model", "x"), ("dataset_revision", "y")])
+def test_each_shared_setting_mismatch_is_rejected(key, value):
+    dense, rcd = _pair()
+    rcd[key] = value
+    with pytest.raises(ValueError):
+        comparison.validate_shared_pipeline_settings(dense, rcd)
+
+
+@pytest.mark.parametrize("bad", [None, 0, -2, "3", 2.5, True])
+def test_top_k_must_be_a_positive_integer(bad):
+    with pytest.raises(ValueError, match="top_k"):
+        comparison.validated_top_k({"top_k": bad}, "Dense")
+    assert comparison.validated_top_k({"top_k": 3}, "Dense") == 3

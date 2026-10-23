@@ -236,13 +236,21 @@ def freeze_attack_query_ids(
     return ids, fingerprint
 
 
-def git_commit_sha(default: str = "unknown") -> str:
-    """Return the current Git SHA when available."""
+def git_commit_sha(default: str = "unknown", *, repo_root=None) -> str:
+    """Return the current Git SHA when available.
+
+    By default Git runs in the caller's current working directory, which is
+    only correct when the process was started inside this repository.  Final
+    experiment runners pass ``repo_root`` so that the recorded commit always
+    describes this repository's code, never an unrelated checkout that
+    happens to contain the working directory.
+    """
     try:
         return subprocess.check_output(
             ["git", "rev-parse", "HEAD"],
             stderr=subprocess.DEVNULL,
             text=True,
+            cwd=None if repo_root is None else str(repo_root),
         ).strip()
 
     except (
