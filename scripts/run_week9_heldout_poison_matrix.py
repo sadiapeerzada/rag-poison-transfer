@@ -706,6 +706,72 @@ def _verify_poison_document_identity(manifest: dict, family: str, intensity: int
         raise ValueError("Manifest poison documents do not match the associations exactly.")
 
 
+def _require_field(row: dict, field: str) -> Any:
+    """Return ``row[field]``; an absent key is an error, a present ``None`` is data."""
+    if field not in row:
+        raise ValueError(f"Raw record is missing required field {field!r}.")
+    return row[field]
+
+
+def _require_doc_ids(row: dict, field: str) -> list[str]:
+    value = _require_field(row, field)
+    if not isinstance(value, list) or not all(isinstance(item, str) and item for item in value):
+        raise ValueError(f"Raw record field {field!r} must be a list of non-empty strings.")
+    return value
+
+
+def _validate_retrieval_record(row: dict, poison_set: set[str]) -> None:
+    """Strictly validate one raw row's retrieval fields and poison metrics.
+
+    Schema (written for BOTH conditions by ``evaluate_pipeline``): every row
+    carries ``retrieved_doc_ids`` (ranked diagnostic window),
+    ``generation_evidence_doc_ids`` (what the generator saw; a prefix of the
+    window), ``poison_retrieved`` (bool: poison in the generator's evidence),
+    ``poison_rank`` (None, or the 1-based best poison rank in the window) and
+    ``prr_at_k`` (exactly the expected cutoffs, numeric).  Clean rows are the
+    same schema over the clean corpus, so they must contain no poison
+    document.  A ``None`` rank is legitimate data; an absent key is not.
+    Nothing is coerced or defaulted.
+    """
+    retrieved = _require_doc_ids(row, "retrieved_doc_ids")
+    generation = _require_doc_ids(row, "generation_evidence_doc_ids")
+    if retrieved[: len(generation)] != generation:
+        raise ValueError(
+            "Generation evidence is not a prefix of the diagnostic ranking; "
+            "PRR@k and ASR would describe different retrievals."
+        )
+    if row.get("condition") == "clean" and poison_set & (set(retrieved) | set(generation)):
+        raise ValueError("A clean-condition record contains poison documents.")
+
+    poison_retrieved = _require_field(row, "poison_retrieved")
+    if not isinstance(poison_retrieved, bool):
+        raise ValueError("poison_retrieved must be a boolean.")
+    if poison_retrieved is not bool(poison_set & set(generation)):
+        raise ValueError("poison_retrieved is inconsistent with generation evidence.")
+
+    rank = _require_field(row, "poison_rank")
+    if rank is not None and (not isinstance(rank, int) or isinstance(rank, bool) or rank < 1):
+        raise ValueError("poison_rank must be None or a positive integer.")
+    ranks = [index + 1 for index, doc_id in enumerate(retrieved) if doc_id in poison_set]
+    if rank != (min(ranks) if ranks else None):
+        raise ValueError("Poison rank is inconsistent with the retrieved ranking.")
+
+    prr = _require_field(row, "prr_at_k")
+    if not isinstance(prr, dict):
+        raise ValueError("prr_at_k must be an object keyed by cutoff.")
+    expected_keys = {str(cutoff) for cutoff in multiseed.EXPECTED_CUTOFFS}
+    if set(prr) != expected_keys:
+        raise ValueError(
+            f"prr_at_k cutoffs {sorted(prr)} differ from the expected {sorted(expected_keys, key=int)}."
+        )
+    for cutoff in multiseed.EXPECTED_CUTOFFS:
+        value = prr[str(cutoff)]
+        if not isinstance(value, (int, float)) or isinstance(value, bool):
+            raise ValueError(f"prr_at_k[{cutoff}] must be a number.")
+        if value != float(bool(poison_set & set(retrieved[:cutoff]))):
+            raise ValueError(f"Poison retrieval rate at {cutoff} is inconsistent.")
+
+
 def validate_completed_cell(cell_dir: Path, *, frozen_inputs: FrozenMatrixInputs | None = None) -> dict:
     """Validate a complete cell, independently re-verifying its poison provenance.
 
@@ -774,8 +840,12 @@ def validate_completed_cell(cell_dir: Path, *, frozen_inputs: FrozenMatrixInputs
         expected_ids, expected_target = expected_poison[key[1]]
         if sorted(row.get("poison_doc_ids", [])) != expected_ids or row.get("poison_target_answer") != expected_target:
             raise ValueError("Raw record poison documents or target differ from the replayed poison instance.")
-        if row.get("answer_correct") is not bool(exact_match(row.get("answer", ""), row.get("gold_answer", ""))):
+        for text_field in ("answer", "gold_answer"):
+            if not isinstance(_require_field(row, text_field), str):
+                raise ValueError(f"Raw record field {text_field!r} must be a string.")
+        if row.get("answer_correct") is not bool(exact_match(row["answer"], row["gold_answer"])):
             raise ValueError("Raw answer correctness is inconsistent.")
+        _validate_retrieval_record(row, set(expected_ids))
         indexed[key] = row
     for pipeline in multiseed.PIPELINES:
         for query_id in selected_ids:
@@ -792,24 +862,6 @@ def validate_completed_cell(cell_dir: Path, *, frozen_inputs: FrozenMatrixInputs
                 raise ValueError("Query degradation is not computed from its clean/poison pair.")
             if poisoned_row["targeted_asr"] is not bool(exact_match(poisoned_row["answer"], poisoned_row["poison_target_answer"])):
                 raise ValueError("Targeted ASR is inconsistent.")
-            poison_set = set(poisoned_row["poison_doc_ids"])
-            generation_ids = poisoned_row.get("generation_evidence_doc_ids")
-            retrieved_ids = poisoned_row.get("retrieved_doc_ids", [])
-            if generation_ids is not None:
-                if retrieved_ids[: len(generation_ids)] != generation_ids:
-                    raise ValueError(
-                        "Generation evidence is not a prefix of the diagnostic ranking; "
-                        "PRR@k and ASR would describe different retrievals."
-                    )
-                if poisoned_row.get("poison_retrieved") is not bool(poison_set & set(generation_ids)):
-                    raise ValueError("poison_retrieved is inconsistent with generation evidence.")
-            ranks = [index + 1 for index, doc_id in enumerate(retrieved_ids) if doc_id in poison_set]
-            if "poison_rank" in poisoned_row and poisoned_row["poison_rank"] != (min(ranks) if ranks else None):
-                raise ValueError("Poison rank is inconsistent with the retrieved ranking.")
-            for cutoff in multiseed.EXPECTED_CUTOFFS:
-                expected_prr = float(bool(poison_set & set(retrieved_ids[:cutoff])))
-                if poisoned_row.get("prr_at_k", {}).get(str(cutoff)) != expected_prr:
-                    raise ValueError(f"Poison retrieval rate at {cutoff} is inconsistent.")
     return {
         "manifest": manifest,
         "summary": summary,
