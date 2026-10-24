@@ -70,7 +70,7 @@ def test_support_screen_distinguishes_assertion_denial_and_mentions():
     ) == "rejected"
     assert semantic_support_status(
         "A discussion compared London's landmarks with those of Paris.", "London"
-    ) == "unverified"
+    ) == "mention_only"
     assert semantic_support_status(
         "Historical reports identify Bob as the answer to this question.", "Bob"
     ) == "heuristically_supported_unverified"
