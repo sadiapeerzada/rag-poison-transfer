@@ -195,3 +195,44 @@ def test_checkpoint_rejects_corruption_and_cross_revision(tmp_path):
             attack_family="semantic_fluent_false_evidence", intensity=1,
             allowed_query_ids=["q0", "q1"],
         )
+
+def test_checkpoint_resumes_after_mid_generation_failure(tmp_path):
+    clean = clean_data()
+    provenance = {"sha": "frozen", "config": "unchanged"}
+    prior = tmp_path / "interrupted"
+
+    class FailsAfterFirst(AffirmingGenerator):
+        def generate(self, prompt, max_tokens=150):
+            if self.calls == 1:
+                self.calls += 1
+                raise RuntimeError("simulated interruption after first document")
+            return super().generate(prompt, max_tokens)
+
+    checkpoint = PoisonCheckpoint(
+        prior, [], provenance=provenance,
+        attack_family="semantic_fluent_false_evidence",
+        intensity=1, allowed_query_ids=["q0", "q1"],
+    )
+    with pytest.raises(RuntimeError, match="simulated interruption"):
+        inject_poisons(
+            clean, SemanticFluentFalseEvidenceAttack(FailsAfterFirst()),
+            n_poison=1, poison_rate=1.0, seed=42, checkpoint=checkpoint,
+        )
+    written = sorted((prior / "poison.checkpoints").glob("*.json"))
+    assert len(written) == 1
+    first_record = json.loads(written[0].read_text())
+
+    fresh = tmp_path / "resumed"
+    resumed = PoisonCheckpoint(
+        fresh, [prior], provenance=provenance,
+        attack_family="semantic_fluent_false_evidence",
+        intensity=1, allowed_query_ids=["q0", "q1"],
+    )
+    generator = AffirmingGenerator()
+    result = inject_poisons(
+        clean, SemanticFluentFalseEvidenceAttack(generator),
+        n_poison=1, poison_rate=1.0, seed=42, checkpoint=resumed,
+    )
+    assert generator.calls == 1
+    assert len(list((fresh / "poison.checkpoints").glob("*.json"))) == 2
+    assert first_record["doc_id"] in {d["doc_id"] for d in result["corpus"]}
