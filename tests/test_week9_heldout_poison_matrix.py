@@ -760,7 +760,7 @@ class _Harness:
                 pipeline: matrix.recompute_pipeline_summary(indexed, pipeline, ids)
                 for pipeline in aggregate.multiseed.PIPELINES
             },
-            "paired_dense_minus_rcd": {},
+            "paired_dense_minus_rcd": _paired_from_indexed(indexed, ids),
             "execution_evidence": {"raw_record_count": len(rows), "expected_raw_record_count": len(rows)},
         }
 
