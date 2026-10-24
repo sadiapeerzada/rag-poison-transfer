@@ -85,8 +85,8 @@ class SemanticFluentFalseEvidenceAttack(PoisonAttack):
                 "cannot be used for scientific poison generation."
             )
 
-        if max_attempts < 1 or max_attempts > 5:
-            raise ValueError("max_attempts must be between 1 and 5")
+        if max_attempts < 1 or max_attempts > 2:
+            raise ValueError("max_attempts must be 1 or 2")
         self.generator = generator
         self.max_tokens = max_tokens
         self.max_attempts = max_attempts
