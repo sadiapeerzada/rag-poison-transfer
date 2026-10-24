@@ -7,7 +7,7 @@
 > and `git_dirty=false` on every row; the summary reports mean EM 0.400 and mean F1 0.5047. This is a **development** run, not held-out
 > evidence. Its query IDs are disjoint from the `exp_027` held-out manifest (overlap 0). `exp_028b` (300 rows over the held-out IDs,
 > `git_dirty: null`) remains an exploratory/recovery run, and `exp_029` an exploratory pilot; neither is a publication baseline.
-> The historical text below is preserved unchanged for traceability. The artifacts were inspected, not re-executed.
+> This report has been updated to remove stale execution-status claims; the artifacts were inspected, not re-executed.
 
 
 ## Cross-Pipeline Transferability of Knowledge Poisoning in Adaptive RAG
@@ -17,7 +17,7 @@
 | **Repository** | `sadiapeerzada/rag-poison-transfer` |
 | **Audit focus** | Research progress vs. the planned 12-week experimental roadmap |
 | **Audit test result** | `271 passed in 112.20s` (`./.venv/bin/python -m pytest -q`; current audited working tree) |
-| **Current phase** | Week 7–8: COMPLETE — RCD implementation, testing, development validation, and corrective freeze are complete; held-out scientific evaluation is deferred to Week 9–10. (`exp_026` execution is unverified.) |
+| **Current phase** | Week 7–8: COMPLETE — RCD implementation, testing, development validation, and corrective freeze are complete; held-out scientific evaluation is deferred to Week 9–10. (`exp_026` executed and verified as development evidence.) |
 | **Overall verdict** | Methodology and infrastructure established; scientific validation of RCD still outstanding |
 
 ---
@@ -49,7 +49,7 @@
 | Weeks 1–2 | Datasets, clean baseline setup | ✅ Complete | Code + tests + experiments |
 | Weeks 3–4 | Clean retrieval baselines | ✅ Complete | Code + tests + experiments |
 | Weeks 5–6 | Poisoning and transfer benchmark | ✅ Complete (confirmatory stats deferred) | Code + tests + experiments |
-| **Weeks 7–8** | **RCD implementation and development validation** | **COMPLETE — RCD implementation, testing, development validation, and corrective freeze are complete; held-out scientific evaluation is deferred to Week 9–10** (`exp_026` execution not verified) | Code + tests + historical dev/smoke runs + frozen config |
+| **Weeks 7–8** | **RCD implementation and development validation** | **COMPLETE — RCD implementation, testing, development validation, and corrective freeze are complete; held-out scientific evaluation is deferred to Week 9–10** (`exp_026` executed; development evidence only) | Code + tests + historical dev/smoke runs + frozen config |
 | **Weeks 9–10** | **Full defended-vs-undefended evaluation** | 🔶 **Next phase** (dev runs only so far) | Infrastructure ready; full results not verified |
 | Weeks 11–12 | Statistics, figures, paper | ⬜ Not started / not verified | None |
 
@@ -74,7 +74,7 @@ To avoid overstating progress, every status in this document maps to one of the 
 | **L4 – Frozen** | Configuration locked before test evaluation | "A frozen config exists for use in final testing" (provenance to be verified) |
 | **L5 – Full evaluation** | Test-scale, multi-seed, with analysis | "The method improves/does not improve X" |
 
-**Current RCD position: L4 for the frozen configuration, not for a verified `exp_026` run.** Weeks 9–10 exist to reach **L5**.
+**Current RCD position: L4 for the frozen configuration and verified `exp_026` development run; not held-out defense evidence.** Weeks 9–10 exist to reach **L5**.
 
 ---
 
@@ -128,7 +128,7 @@ src/attacks/evaluate.py
 
 ## 4. Weeks 7–8: RCD Audit
 
-> **Week 7–8: COMPLETE — RCD implementation, testing, development validation, and corrective freeze are complete; held-out scientific evaluation is deferred to Week 9–10.** The corrective `exp_026` run artifact is not verified. No held-out evaluation is claimed.
+> **Week 7–8: COMPLETE — RCD implementation, testing, development validation, and corrective freeze are complete; held-out scientific evaluation is deferred to Week 9–10.** The corrective `exp_026` development run artifact has been verified; no held-out defense conclusion follows. No held-out evaluation is claimed.
 
 ### 4.1 What RCD does
 
@@ -165,7 +165,7 @@ RCD computes consistency, redundancy, and conflict signals across retrieval vari
 | Dedicated tests | `tests/test_rcd.py` | ✓ | ✓ | ✓ | Complete |
 | Smoke experiments | `exp_021_…_smoke*` | ✓ | ✓ | Partial | Four raw/summary pairs found; `smoke2` config has no output pair |
 | Dev experiment | `exp_022_…_dev300` | ✓ | ✓ | ✓ | Complete |
-| Corrective development freeze | `exp_026_hotpotqa_rcd_v1_mlx_frozen_current.yaml` (not held-out) | ✓ | ✓ | Not verified | Config exists; no `exp_026` raw log or summary found |
+| Corrective development freeze | `exp_026_hotpotqa_rcd_v1_mlx_frozen_current.yaml` (not held-out) | ✓ | ✓ | Verified | Config, 300-row raw log, and summary present; clean Git provenance recorded |
 
 ### 4.3 Component notes
 
@@ -196,7 +196,7 @@ final_run:                true
 
 Weights sum to **1.00**, which is consistent with a normalised linear combination.
 `top_k: 3` is the generation evidence depth; `rcd_candidate_k: 10` is the RCD candidate/retrieval depth. The runner evaluates retrieval metrics using up to 10 returned documents while passing only the first 3 to generation.
-The corrective configuration enables the final-run clean-tree guard, so an execution will fail before loading data or models if Git reports any modified, deleted, staged, or untracked (non-ignored) files, or an unknown state. This does not establish that `exp_026` executed.
+The corrective configuration enables the final-run clean-tree guard. The separate `exp_026` raw log and summary establish that the 300-query development execution occurred with `git_dirty=false`; this does not establish held-out defense effectiveness.
 At this audit, the config's full SHA-256 is `b6ca21a4502b4785b20001dcb8add80e4fbec6a5e1fdf31c6b6bee60c14a556e`; the runner's 12-character config hash is `b6ca21a4502b`.
 
 > **⚠ Observation: the redundancy weight is `0.00`.**
@@ -217,7 +217,7 @@ At this audit, the config's full SHA-256 is `b6ca21a4502b4785b20001dcb8add80e4fb
 - [ ] `smoke2` execution is unverified: its raw JSONL and summary are absent
 - [x] Development experiment executed (`dev300`)
 - [x] Frozen configuration explicitly labelled "Week 7-8"
-- [ ] Corrective `exp_026` run verified (its raw log and summary are absent)
+- [x] Corrective `exp_026` development run verified (300-row raw log and summary present; held-out poisoning evaluation remains outstanding)
 - [x] Full test suite rerun for this audit (`271 passed`)
 
 There is no justification for classifying Weeks 7–8 as "not started" or "incomplete implementation."
@@ -366,7 +366,7 @@ tests/test_rcd.py::test_agreement_is_document_specific PASSED
 | `exp_023_hotpotqa_rcd_v1_mlx_frozen` | Historical frozen-weights development run (300 examples) | Raw JSONL and summary | Historical validation-split evidence; not held-out |
 | `exp_024_hotpotqa_rcd_v1_mlx_dev300_current` | Corrective-code development run (300 examples) | Raw JSONL and summary | Validation-split evidence; provenance caveat below |
 | `exp_025_hotpotqa_rcd_v1_mlx_dev300_current_tuned` | Corrective-code tuned development run (300 examples) | Raw JSONL and summary | Validation-split evidence; provenance caveat below |
-| `exp_026_hotpotqa_rcd_v1_mlx_frozen_current` | Corrective frozen development configuration | Config only | **Not verified as executed.** Missing `results/exp_026_hotpotqa_rcd_v1_mlx_frozen_current.jsonl` and `results/exp_026_hotpotqa_rcd_v1_mlx_frozen_current.summary.json`. |
+| `exp_026_hotpotqa_rcd_v1_mlx_frozen_current` | Corrective frozen development execution | Config + raw log + summary | **Verified as executed:** 300 validation queries, unique IDs, `git_dirty=false`; development evidence only, not held-out poisoning-defense confirmation. |
 
 The separate `results/exp_021_hotpotqa_rcd_v1.jsonl` file contains 104 records but has no matching `results/exp_021_hotpotqa_rcd_v1.summary.json`; do not infer a summary for it. The five-record `results/exp_021_logging_check.jsonl` is a logging check, not a benchmark result.
 
@@ -456,7 +456,7 @@ None of these require reimplementing RCD.
 | "RCD is implemented and integrated into the retrieval workflow." | ✅ | L1–L2 |
 | "RCD's components pass unit and integration tests." | ✅ | Dedicated tests exist; see the explicitly identified test run and commit provenance |
 | "RCD runs end to end on HotpotQA at development scale." | ✅ | `exp_021`, `exp_022` |
-| "A corrective RCD development configuration exists." | ✅ | Config `exp_026_hotpotqa_rcd_v1_mlx_frozen_current.yaml` exists and uses validation/300 samples. No matching raw output or summary was found, so its execution is not verified. |
+| "A corrective RCD development configuration exists." | ✅ | Config `exp_026_hotpotqa_rcd_v1_mlx_frozen_current.yaml` exists and uses validation/300 samples. The matching 300-row raw output and summary are present and verified as development evidence. |
 | "RCD reduces attack success rate." | ❌ | No full defended-vs-undefended result |
 | "RCD preserves clean accuracy." | ❌ | Not verified at full scale |
 | "RCD generalises across datasets / pipelines." | ❌ | No 2Wiki or multi-pipeline RCD evidence found |
@@ -500,14 +500,14 @@ The project should **not** go back and redo Weeks 7–8.
 |---|---|
 | **Current research phase** | Transition from Week 7–8 RCD development to Weeks 9–10 full evaluation |
 | **Weeks 1–6** | Complete (confirmatory statistics deferred) |
-| **Weeks 7–8** | **COMPLETE — RCD implementation, testing, development validation, and corrective freeze are complete; held-out scientific evaluation is deferred to Week 9–10** (`exp_026` run not verified) |
+| **Weeks 7–8** | **COMPLETE — RCD implementation, testing, development validation, and corrective freeze are complete; held-out scientific evaluation is deferred to Week 9–10** (`exp_026` executed; development evidence only) |
 | **Weeks 9–10** | **Next major phase**; development-stage evidence exists, full evaluation not yet verified |
 | **Weeks 11–12** | Not yet started |
-| **Overall** | Core methodology and experimental infrastructure established; report corrections/tests pass, but `exp_026` artifact verification and future held-out evaluation remain |
+| **Overall** | Core methodology and experimental infrastructure established; report corrections/tests pass, but future held-out evaluation remains |
 
 ### Bottom line
 
-**Is Week 7–8 complete? Yes: RCD implementation, testing, development validation, and corrective freeze are complete; held-out scientific evaluation is deferred to Week 9–10.** The corrective-run artifact (`exp_026`) is not verified. RCD is integrated and historical smoke/development experiments exist. The corrective configuration `exp_026_hotpotqa_rcd_v1_mlx_frozen_current.yaml` preserves the documented weights and uses the HotpotQA validation split (300 samples); the expected `exp_026` raw JSONL and summary are absent, so the report does not claim that it ran. The previous 258-test result applies to its associated branch state; this audit's 271-test result is from the current audited working tree. Test success and a frozen configuration do not establish defense effectiveness or held-out generalisation.
+**Is Week 7–8 complete? Yes: RCD implementation, testing, development validation, and corrective freeze are complete; held-out scientific evaluation is deferred to Week 9–10.** The corrective-run artifact (`exp_026`) is verified as development evidence. RCD is integrated and historical smoke/development experiments exist. The corrective configuration `exp_026_hotpotqa_rcd_v1_mlx_frozen_current.yaml` preserves the documented weights and uses the HotpotQA validation split (300 samples); the `exp_026` raw JSONL and summary are present; this is not held-out evidence. The previous 258-test result applies to its associated branch state; this audit's 271-test result is from the current audited working tree. Test success and a frozen configuration do not establish defense effectiveness or held-out generalisation.
 
 **What remains?** The key question changes from
 
@@ -520,7 +520,7 @@ to
 Answering that requires full defended-vs-undefended experiments, attack-success evaluation, transfer analysis, ablations, robustness testing, overhead measurement, and the final result tables.
 
 > **Weeks 1–6:** completed.
-> **Weeks 7–8:** COMPLETE — RCD implementation, testing, development validation, and corrective freeze are complete; held-out scientific evaluation is deferred to Week 9–10 (`exp_026` execution not verified).
+> **Weeks 7–8:** COMPLETE — RCD implementation, testing, development validation, and corrective freeze are complete; held-out scientific evaluation is deferred to Week 9–10 (`exp_026` executed; development evidence only).
 > **Weeks 9–10:** next — full scientific evaluation of RCD.
 > **Weeks 11–12:** statistical analysis, figures, and paper preparation.
 
