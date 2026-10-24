@@ -797,6 +797,13 @@ def _verify_poison_document_identity(manifest: dict, family: str, intensity: int
             indexes.append(int(index))
         if sorted(indexes) != list(range(intensity)):
             raise ValueError(f"Query {query_id!r} poison indexes are not 0..{intensity - 1}.")
+        if family == "semantic_fluent_false_evidence":
+            target = association.get("poison_target_answer")
+            if not isinstance(target, str) or not target.strip():
+                raise ValueError(f"Query {query_id!r} has no semantic poison target.")
+            for doc_id in ids:
+                if target.casefold() not in text_by_id[doc_id].casefold():
+                    raise ValueError(f"Semantic poison document {doc_id!r} omits its target answer.")
         referenced.extend(ids)
     if sorted(referenced) != sorted(text_by_id):
         raise ValueError("Manifest poison documents do not match the associations exactly.")
@@ -954,6 +961,12 @@ def validate_completed_cell(
     if len(rows) != expected_count:
         raise ValueError(f"Cell has {len(rows)} records; expected {expected_count}.")
     selected_set = set(selected_ids)
+    # Bind every raw row to the frozen dataset, not just its paired counterpart.
+    frozen_gold_by_id = {
+        query["query_id"]: query["answer"] for query in frozen_inputs.clean_data["queries"]
+    }
+    if set(frozen_gold_by_id) != selected_set:
+        raise ValueError("Frozen query IDs differ from the selected cell query IDs.")
     indexed = {}
     for row in rows:
         key = (row.get("pipeline"), row.get("query_id"), row.get("condition"))
@@ -971,6 +984,8 @@ def validate_completed_cell(
         for text_field in ("answer", "gold_answer"):
             if not isinstance(_require_field(row, text_field), str):
                 raise ValueError(f"Raw record field {text_field!r} must be a string.")
+        if row["gold_answer"] != frozen_gold_by_id[key[1]]:
+            raise ValueError("Raw gold answer differs from the frozen clean dataset.")
         if row.get("answer_correct") is not bool(exact_match(row["answer"], row["gold_answer"])):
             raise ValueError("Raw answer correctness is inconsistent.")
         _validate_retrieval_record(row, set(expected_ids))
