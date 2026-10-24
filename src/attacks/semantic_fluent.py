@@ -40,6 +40,8 @@ def semantic_support_status(text: str, target: str) -> str:
     denial = [
         rf"\b(?:not|never|isn't|wasn't|aren't|weren't)\s+(?:the\s+)?{t}\b",
         rf"\b{t}\b[^.!?]{{0,90}}\b(?:incorrect|false|wrong|not correct|inaccurate)\b",
+        rf"\b{t}\b\s+(?:is|was|has been|remains)\s+(?:not|never)\b",
+        rf"\b{t}\b\s+(?:is|was)\s+(?:incorrect|false|wrong)\b",
         rf"\b(?:claim|assertion|statement)\b[^.!?]{{0,110}}\b{t}\b[^.!?]{{0,90}}\b(?:incorrect|false|wrong)\b",
         rf"\b(?:incorrect|false|wrong)\b[^.!?]{{0,90}}\b{t}\b",
     ]
