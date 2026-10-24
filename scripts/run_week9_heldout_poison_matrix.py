@@ -54,7 +54,7 @@ from scripts.run_week9_multiseed_matched_evaluation import (
 from src.attacks.base import poison_doc_id
 from src.attacks.checkpoint import PoisonCheckpoint
 from src.attacks.semantic_fluent import (
-    SEMANTIC_VALIDATION_VERSION, SEMANTIC_RETRY_POLICY,
+    SEMANTIC_VALIDATION_VERSION, SEMANTIC_RETRY_POLICY, semantic_support_status,
 )
 from src.attacks.injection import inject_poisons, validate_poisoned_dataset
 from src.attacks.lexical import LexicalInfluentialTokenAttack
@@ -809,6 +809,8 @@ def _verify_poison_document_identity(manifest: dict, family: str, intensity: int
             for doc_id in ids:
                 if target.casefold() not in text_by_id[doc_id].casefold():
                     raise ValueError(f"Semantic poison document {doc_id!r} omits its target answer.")
+                if semantic_support_status(text_by_id[doc_id], target) != "heuristically_supported_unverified":
+                    raise ValueError(f"Semantic poison document {doc_id!r} does not pass the declared support screen.")
         referenced.extend(ids)
     if sorted(referenced) != sorted(text_by_id):
         raise ValueError("Manifest poison documents do not match the associations exactly.")
