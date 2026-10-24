@@ -21,6 +21,7 @@ def inject_poisons(
     poison_rate: float = 1.0,
     seed: int = 42,
     attacked_query_ids: list[str] | None = None,
+    checkpoint=None,
 ) -> dict:
     """Inject poison documents into a clean {corpus, queries} dataset.
 
@@ -98,7 +99,15 @@ def inject_poisons(
             target_answer = attack.pick_cross_query_target_answer(query, queries, rng)
             poison_ids_for_query = []
             for i in range(n_poison):
-                doc = attack.generate(query, queries, rng, poison_index=i, target_answer=target_answer)
+                # Checkpoint lookups preserve the original RNG-driven target
+                # selection and document order. Reused documents are verified
+                # before use; newly accepted documents are persisted BEFORE
+                # they enter the in-memory poisoned corpus.
+                doc = checkpoint.get(query, i, target_answer, attack=attack) if checkpoint else None
+                if doc is None:
+                    doc = attack.generate(query, queries, rng, poison_index=i, target_answer=target_answer)
+                if checkpoint:
+                    checkpoint.record(query, i, target_answer, doc, attack=attack)
                 if doc.doc_id in existing_ids:
                     raise ValueError(
                         f"Poison doc ID collision: {doc.doc_id!r} already "

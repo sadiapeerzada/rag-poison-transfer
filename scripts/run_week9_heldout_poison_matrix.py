@@ -52,6 +52,10 @@ from scripts.run_week9_multiseed_matched_evaluation import (
     validate_frozen_inputs,
 )
 from src.attacks.base import poison_doc_id
+from src.attacks.checkpoint import PoisonCheckpoint
+from src.attacks.semantic_fluent import (
+    SEMANTIC_VALIDATION_VERSION, SEMANTIC_RETRY_POLICY, semantic_support_status,
+)
 from src.attacks.injection import inject_poisons, validate_poisoned_dataset
 from src.attacks.lexical import LexicalInfluentialTokenAttack
 from src.attacks.semantic_fluent import SemanticFluentFalseEvidenceAttack
@@ -89,6 +93,7 @@ RELEVANT_TRACKED_PATHS = (
     "scripts/run_week9_poison_pilot.py",
     "src/attacks/asr.py",
     "src/attacks/base.py",
+    "src/attacks/checkpoint.py",
     "src/attacks/injection.py",
     "src/attacks/lexical.py",
     "src/attacks/semantic_fluent.py",
@@ -804,6 +809,8 @@ def _verify_poison_document_identity(manifest: dict, family: str, intensity: int
             for doc_id in ids:
                 if target.casefold() not in text_by_id[doc_id].casefold():
                     raise ValueError(f"Semantic poison document {doc_id!r} omits its target answer.")
+                if semantic_support_status(text_by_id[doc_id], target) != "heuristically_supported_unverified":
+                    raise ValueError(f"Semantic poison document {doc_id!r} does not pass the declared support screen.")
         referenced.extend(ids)
     if sorted(referenced) != sorted(text_by_id):
         raise ValueError("Manifest poison documents do not match the associations exactly.")
@@ -1600,6 +1607,40 @@ def run_matrix(
                 except RecoveryRefused as error:
                     cell_failures[cell_id] = {**_cell_failure_summary(error), "source": "recovery_refused"}
                     continue
+            checkpoint = None
+            if attack_family == "semantic_fluent_false_evidence" and reusable_manifest is None:
+                # Validate existing/archived partial checkpoints BEFORE archival.
+                # Every record is separately authenticated against the frozen
+                # executable source, configs, model and deterministic target seed.
+                try:
+                    checkpoint = PoisonCheckpoint(
+                        cell_dir,
+                        _archived_attempt_dirs(output_root, cell_id),
+                        provenance={
+                            "git_commit_sha": git_sha,
+                            "source_fingerprint": source_fingerprint,
+                            "cell_id": cell_id,
+                            "heldout_fingerprint": frozen.heldout_fingerprint,
+                            "config_hashes": frozen.config_hashes,
+                            "generator_model": frozen.rcd_config["generator_model"],
+                            "generator_backend": frozen.rcd_config["generator_backend"],
+                            "attack_max_tokens": 150,
+                            "attack_max_attempts": 2,
+                            "validation_version": SEMANTIC_VALIDATION_VERSION,
+                            "retry_policy": SEMANTIC_RETRY_POLICY,
+                            "intensity": intensity,
+                            "poison_seed": poison_seed,
+                            "runtime_seed": FROZEN_RUNTIME_SEED,
+                        },
+                        attack_family=attack_family, intensity=intensity,
+                        allowed_query_ids=frozen.heldout_ids,
+                    )
+                except Exception as error:
+                    cell_failures[cell_id] = {
+                        **_cell_failure_summary(error),
+                        "source": "checkpoint_recovery_refused",
+                    }
+                    continue
             if cell_dir.exists():
                 try:
                     record = _archive_incomplete_cell(output_root, cell_dir, cell_id)
@@ -1618,6 +1659,7 @@ def run_matrix(
                 _write_json_atomic(plan_path, plan)
             cell_dir.mkdir()
             started = time.perf_counter()
+            attack = None
             try:
                 if reusable_manifest is not None:
                     manifest = reusable_manifest  # the original, verified poison instance
@@ -1626,6 +1668,7 @@ def run_matrix(
                     poisoned_data = inject_poisons(
                         frozen.clean_data, attack, n_poison=intensity, poison_rate=1.0,
                         seed=poison_seed, attacked_query_ids=frozen.heldout_ids,
+                        checkpoint=checkpoint,
                     )
                     manifest = build_cell_manifest(
                         cell_id=cell_id, clean_data=frozen.clean_data, poisoned_data=poisoned_data,
@@ -1636,6 +1679,15 @@ def run_matrix(
                         git_sha=git_sha, git_dirty=False,
                         source_fingerprint=source_fingerprint,
                     )
+                    if attack_family == "semantic_fluent_false_evidence":
+                        attack_config = {
+                            **attack_config,
+                            "max_attempts": attack.max_attempts,
+                            "retry_policy": SEMANTIC_RETRY_POLICY,
+                            "validation_version": SEMANTIC_VALIDATION_VERSION,
+                            "validation_status": "heuristically_supported_unverified",
+                            "requires_independent_semantic_review": True,
+                        }
                     manifest["attack"]["configuration"] = attack_config
                 # Atomic: a crash can never leave a truncated immutable manifest.
                 _write_json_atomic(manifest_path, manifest)
@@ -1689,6 +1741,13 @@ def run_matrix(
                         "error": str(error),
                         "traceback": traceback.format_exc(),
                         "partial_results_path": str(results_path) if results_path.exists() else None,
+                        "generation_attempts": [
+                            {"query_id": query_id, "poison_index": index,
+                             "attempts": list(attempts)}
+                            for (query_id, index), attempts in (
+                                getattr(attack, "attempt_log", {}) if attack is not None else {}
+                            ).items()
+                        ],
                     },
                 )
             _record_progress(
