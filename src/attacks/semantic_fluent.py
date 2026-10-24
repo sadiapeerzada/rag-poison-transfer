@@ -53,9 +53,11 @@ def semantic_support_status(text: str, target: str) -> str:
         rf"\b(?:is|was|remains|became|has been|named|identify|identifies|identified|recognized|listed|recorded|documented|designated)\b[^.!?]{{0,95}}\b{t}\b",
         rf"\b{t}\b[^.!?]{{0,95}}\b(?:answer|capital|location|site|founder|author|winner|date|city|country)\b",
     ]
-    return "heuristically_supported_unverified" if any(
-        re.search(pattern, text, re.IGNORECASE) for pattern in support
-    ) else "unverified"
+    if any(re.search(pattern, text, re.IGNORECASE) for pattern in support):
+        return "heuristically_supported_unverified"
+    if re.search(r"\b(?:mentions?|compares?|compared|discussion|discusses|references?)\b", text, re.IGNORECASE):
+        return "mention_only"
+    return "unverified"
 
 
 from src.pipelines.generator import MockGenerator
@@ -139,8 +141,11 @@ class SemanticFluentFalseEvidenceAttack(PoisonAttack):
         status = semantic_support_status(text, target_answer)
         if status == "rejected":
             raise SemanticQualityError("Generated poison text does not affirm the target answer")
-        if status == "unverified":
-            raise SemanticQualityError("Generated poison text has unverified semantic support", status="unverified")
+        if status != "heuristically_supported_unverified":
+            raise SemanticQualityError(
+                f"Generated poison text has unverified semantic support ({status})",
+                status=status,
+            )
         return status
 
     def generate(self, query: dict, all_queries: list[dict], rng, poison_index: int, target_answer: str) -> PoisonDocument:
