@@ -1016,3 +1016,35 @@ Preserve historical artifacts and use a new experiment identity for any rerun.
 The two-query smoke test is execution-plumbing evidence only, not evidence of
 attack effectiveness. Clean utility differences must not be used to infer
 poisoning robustness. Held-out 2Wiki evaluation remains pending.
+
+
+### Week 9–10 freeze readiness (24 October 2026; validation branch)
+
+The supervisor review dated 13 October 2026 closes Week 7–8 and verifies the
+`exp_026` 300-query **development** run. It does **not** classify `exp_028b`
+(recovery) or `exp_029` (10-query pilot) as final publication evidence.
+The Week 9 held-out matrix uses the frozen `exp_027` 300-query manifest,
+paired Dense/RCD conditions, immutable per-cell poison documents, and
+nonfinal scientific status. The initial 12-cell design covers lexical and
+semantic-fluent attacks, intensities 1 and 3, and three seeds. Intensity 5,
+cross-pipeline source-to-target transfer, 2Wiki replication, and final
+statistical conclusions are later experimental milestones, not pre-freeze
+claims.
+
+The validation branch adds checks against frozen gold answers, semantic
+poison target text, and recomputed paired Dense-minus-RCD summaries. Matrix
+aggregation can additionally authenticate the provenance claims against
+**independently verified** values using both
+`--expected-commit-sha` and `--expected-source-fingerprint`. These must
+come from a trusted record external to the cell manifests, not from the
+manifests being checked. Without those flags, provenance agreement among
+cells does not independently establish the claimed Git history.
+
+**Freeze gate:** run the focused Week 9 tests and the full pytest suite on
+a clean, committed checkout; inspect GitHub CI; verify all 300 held-out IDs
+are disjoint from development; verify the frozen configs, query fingerprints,
+provenance and model settings; then tag the validated evaluation commit.
+Do not freeze solely because this documentation or validation code was
+committed. Do not retune RCD weights or rewrite behavior. Final held-out
+Dense/RCD baselines and poisoned comparisons must be executed separately,
+with identical poison instances and clean recorded provenance.
