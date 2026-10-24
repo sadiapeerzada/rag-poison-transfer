@@ -442,6 +442,11 @@ def _strict_metadata_record(query_id, *, source_pipeline="bm25", target_pipeline
     return {
         "query_id": query_id,
         "attack_success": query_id == "q1",
+        "poison_doc_ids": [f"poison::{query_id}"],
+        "retrieved_doc_ids": [f"poison::{query_id}", "clean"] if query_id == "q1" else ["clean"],
+        "generation_evidence_doc_ids": [f"poison::{query_id}", "clean"] if query_id == "q1" else ["clean"],
+        "poison_retrieved": query_id == "q1",
+        "poison_rank": 1 if query_id == "q1" else None,
         "source_pipeline": source_pipeline,
         "target_pipeline": target_pipeline,
         "dataset": "hotpotqa",
@@ -988,3 +993,73 @@ class TestPRRExportPath:
         matrix.add_result(result)
         md_out = matrix.to_markdown(metric="poison_retrieval_rate@5")
         assert "1.0000" in md_out
+
+
+class TestStrictOutcomeFieldValidation:
+    """Absent/malformed outcome fields must not silently become failures."""
+
+    def _run(self, source, target):
+        return compute_transfer_statistics(
+            source, target, strict_metadata=True,
+            expected_source_pipeline="bm25", expected_target_pipeline="dense",
+        )
+
+    @pytest.mark.parametrize(
+        "field", ["attack_success", "poison_retrieved", "poison_rank", "poison_doc_ids", "retrieved_doc_ids"]
+    )
+    def test_missing_outcome_field_is_rejected(self, field):
+        source, target = _strict_pair()
+        del target[0][field]
+        with pytest.raises(ValueError, match=field):
+            self._run(source, target)
+
+    @pytest.mark.parametrize("bad", [0, -1, True, "1", 1.0])
+    def test_malformed_poison_rank_is_rejected(self, bad):
+        source, target = _strict_pair()
+        target[0]["poison_rank"] = bad
+        with pytest.raises(ValueError):
+            self._run(source, target)
+
+    @pytest.mark.parametrize("field", ["attack_success", "poison_retrieved"])
+    @pytest.mark.parametrize("bad", [1, "True", None])
+    def test_non_boolean_flags_are_rejected(self, field, bad):
+        source, target = _strict_pair()
+        target[0][field] = bad
+        with pytest.raises(ValueError, match="boolean|missing"):
+            self._run(source, target)
+
+    def test_rank_must_agree_with_retrieved_ranking(self):
+        source, target = _strict_pair()
+        target[0]["poison_rank"] = 2
+        with pytest.raises(ValueError, match="inconsistent with retrieved_doc_ids"):
+            self._run(source, target)
+
+    def test_poison_retrieved_requires_a_rank(self):
+        source, target = _strict_pair()
+        target[1]["poison_retrieved"] = True
+        with pytest.raises(ValueError, match="poison_retrieved"):
+            self._run(source, target)
+
+    def test_generation_evidence_must_be_prefix_and_match_flag(self):
+        source, target = _strict_pair()
+        target[0]["generation_evidence_doc_ids"] = ["clean"]
+        with pytest.raises(ValueError, match="prefix"):
+            self._run(source, target)
+        source, target = _strict_pair()
+        target[0]["generation_evidence_doc_ids"] = [f"poison::q1"]
+        target[0]["poison_retrieved"] = False
+        with pytest.raises(ValueError, match="inconsistent with generation evidence"):
+            self._run(source, target)
+
+    def test_none_rank_is_valid_data_and_valid_records_pass(self):
+        source, target = _strict_pair()
+        assert target[1]["poison_rank"] is None
+        assert self._run(source, target).total_queries == 2
+
+    def test_poison_beyond_generation_evidence_keeps_its_rank(self):
+        source, target = _strict_pair()
+        target[1]["retrieved_doc_ids"] = ["clean", "poison::q2"]
+        target[1]["generation_evidence_doc_ids"] = ["clean"]
+        target[1]["poison_rank"] = 2
+        target[1]["poison_retrieved"] = False
+        assert self._run(source, target).total_queries == 2

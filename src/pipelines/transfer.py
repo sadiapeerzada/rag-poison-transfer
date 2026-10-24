@@ -394,12 +394,78 @@ def _validate_strict_metadata_values(
         query_ids = [result["query_id"] for result in results]
         if len(query_ids) != len(set(query_ids)):
             raise ValueError(f"{side} results contain duplicate query_ids")
+        for result in results:
+            _validate_outcome_fields(result, side=side)
 
     return {
         **{field_name: results[0][field_name]
            for field_name in _TRANSFER_SHARED_METADATA_FIELDS},
         "poison_fingerprint": poison_fingerprints[0],
     }
+
+
+def _doc_id_list(result: dict, field_name: str, side: str) -> list[str]:
+    if field_name not in result:
+        raise ValueError(
+            f"{side} result {result.get('query_id')!r} is missing required field {field_name!r}"
+        )
+    value = result[field_name]
+    if not isinstance(value, list) or not all(
+        isinstance(item, str) and item for item in value
+    ):
+        raise ValueError(
+            f"{side} field {field_name!r} must be a list of non-empty strings"
+        )
+    return value
+
+
+def _validate_outcome_fields(result: dict, *, side: str) -> None:
+    """Strictly validate per-query outcome fields used by transfer metrics.
+
+    ``compute_transfer_statistics`` reads ``attack_success`` and
+    ``poison_rank`` with ``dict.get`` defaults, so without this check an absent
+    key silently becomes "attack failed" / "poison not retrieved".  A present
+    ``poison_rank`` of ``None`` is legitimate (no poison in the diagnostic
+    window); an absent key is not.  Nothing is coerced.
+    """
+    query_id = result.get("query_id")
+    for field_name in ("attack_success", "poison_retrieved"):
+        if field_name not in result:
+            raise ValueError(
+                f"{side} result {query_id!r} is missing required field {field_name!r}"
+            )
+        if not isinstance(result[field_name], bool):
+            raise ValueError(f"{side} field {field_name!r} must be a boolean")
+    if "poison_rank" not in result:
+        raise ValueError(
+            f"{side} result {query_id!r} is missing required field 'poison_rank'"
+        )
+    rank = result["poison_rank"]
+    if rank is not None and (
+        isinstance(rank, bool) or not isinstance(rank, int) or rank < 1
+    ):
+        raise ValueError(f"{side} field 'poison_rank' must be None or a positive integer")
+    poison_ids = set(_doc_id_list(result, "poison_doc_ids", side))
+    retrieved = _doc_id_list(result, "retrieved_doc_ids", side)
+    ranks = [i + 1 for i, doc_id in enumerate(retrieved) if doc_id in poison_ids]
+    if rank != (min(ranks) if ranks else None):
+        raise ValueError(
+            f"{side} result {query_id!r} poison_rank is inconsistent with retrieved_doc_ids"
+        )
+    if result["poison_retrieved"] and rank is None:
+        raise ValueError(
+            f"{side} result {query_id!r} reports poison_retrieved without any poison rank"
+        )
+    if "generation_evidence_doc_ids" in result:
+        evidence = _doc_id_list(result, "generation_evidence_doc_ids", side)
+        if retrieved[: len(evidence)] != evidence:
+            raise ValueError(
+                f"{side} generation evidence is not a prefix of retrieved_doc_ids"
+            )
+        if result["poison_retrieved"] is not bool(poison_ids & set(evidence)):
+            raise ValueError(
+                f"{side} result {query_id!r} poison_retrieved is inconsistent with generation evidence"
+            )
 
 
 def validate_transfer_experiment_metadata(

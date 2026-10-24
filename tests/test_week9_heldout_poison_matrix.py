@@ -1,5 +1,6 @@
 import copy
 import json
+import sys
 
 import pytest
 
@@ -9,6 +10,9 @@ from src.attacks.injection import inject_poisons
 from src.attacks.lexical import LexicalInfluentialTokenAttack
 from src.experiments.protocol import poison_instances_fingerprint
 from src.pipelines.generator import MockGenerator
+
+
+SOURCE_FP = "f" * 64
 
 
 def _clean_data():
@@ -74,6 +78,7 @@ def _manifest(clean_data, seed=42):
         rcd_config=rcd,
         git_sha="a" * 40,
         git_dirty=False,
+        source_fingerprint=SOURCE_FP,
     )
     manifest["attack"]["configuration"] = {"repeat_factor": 4}
     return poisoned, manifest
@@ -148,6 +153,18 @@ def _write_cell(root, seed):
     (cell_dir / "results.jsonl").write_text(
         "".join(json.dumps(row) + "\n" for row in rows), encoding="utf-8"
     )
+    _write_summary(cell_dir, manifest, rows)
+    return cell_dir, manifest
+
+
+def _indexed(rows):
+    return {(r["pipeline"], r["query_id"], r["condition"]): r for r in rows}
+
+
+def _write_summary(cell_dir, manifest, rows):
+    """Write a summary consistent with ``rows`` (hash, evidence, metrics)."""
+    ids = manifest["dataset"]["selected_query_ids"]
+    indexed = _indexed(rows)
     summary = {
         "schema": matrix.CELL_SCHEMA,
         "status": "complete_heldout_cell_not_statistically_conclusive",
@@ -155,9 +172,14 @@ def _write_cell(root, seed):
         "cell_id": manifest["cell_id"],
         "query_count": matrix.MATRIX_QUERY_COUNT,
         "poison_instance_fingerprint": manifest["poison_instance_fingerprint"],
+        "results_sha256": matrix._sha256_file(cell_dir / "results.jsonl"),
+        "execution_evidence": {"raw_record_count": len(rows)},
+        "pipelines": {
+            pipeline: matrix.recompute_pipeline_summary(indexed, pipeline, ids)
+            for pipeline in aggregate.multiseed.PIPELINES
+        },
     }
     (cell_dir / "summary.json").write_text(json.dumps(summary), encoding="utf-8")
-    return cell_dir, manifest
 
 
 def test_cell_manifest_replays_all_300_immutable_poison_instances():
@@ -326,6 +348,27 @@ def test_smoke_test_writes_nonfinal_execution_evidence(tmp_path, monkeypatch):
 # ---------------------------------------------------------------------------
 # Fix C: independent poison-provenance verification
 # ---------------------------------------------------------------------------
+def _refresh_results_hash(cell_dir):
+    """Simulate a forger who also recomputes the recorded digest.
+
+    The hash only proves bytes match a digest; the semantic validation must
+    still reject the content, so tamper helpers keep the digest consistent.
+    """
+    path = cell_dir / "summary.json"
+    summary = json.loads(path.read_text(encoding="utf-8"))
+    summary["results_sha256"] = matrix._sha256_file(cell_dir / "results.jsonl")
+    try:  # keep the summary consistent with still-well-formed rows
+        rows = [json.loads(x) for x in (cell_dir / "results.jsonl").read_text(encoding="utf-8").splitlines()]
+        ids = json.loads((cell_dir / "poison.manifest.json").read_text(encoding="utf-8"))["dataset"]["selected_query_ids"]
+        summary["pipelines"] = {
+            pipeline: matrix.recompute_pipeline_summary(_indexed(rows), pipeline, ids)
+            for pipeline in aggregate.multiseed.PIPELINES
+        }
+    except Exception:
+        pass  # malformed rows: leave the stale summary; validation must reject on content
+    path.write_text(json.dumps(summary), encoding="utf-8")
+
+
 def _rewrite_cell_files(cell_dir, *, manifest=None, fingerprint=None):
     """Write a (possibly forged) manifest and propagate a fingerprint everywhere."""
     if manifest is not None:
@@ -343,6 +386,7 @@ def _rewrite_cell_files(cell_dir, *, manifest=None, fingerprint=None):
         (cell_dir / "results.jsonl").write_text(
             "".join(json.dumps(row) + "\n" for row in rows), encoding="utf-8"
         )
+        _refresh_results_hash(cell_dir)
 
 
 def test_validation_requires_frozen_inputs(tmp_path):
@@ -469,6 +513,7 @@ def test_raw_rows_must_match_replayed_poison_instances(tmp_path):
     rows = [json.loads(x) for x in path.read_text(encoding="utf-8").splitlines()]
     rows[0]["poison_target_answer"] = "not the replayed target"
     path.write_text("".join(json.dumps(r) + "\n" for r in rows), encoding="utf-8")
+    _refresh_results_hash(cell_dir)
     with pytest.raises(ValueError, match="replayed poison instance"):
         aggregate.validate_completed_cell(cell_dir, frozen_inputs=_frozen())
 
@@ -480,6 +525,7 @@ def test_diagnostic_ranking_must_extend_generation_evidence(tmp_path):
     poisoned = next(r for r in rows if r["condition"] == "poisoned")
     poisoned["retrieved_doc_ids"] = ["clean", poisoned["poison_doc_ids"][0]]
     path.write_text("".join(json.dumps(r) + "\n" for r in rows), encoding="utf-8")
+    _refresh_results_hash(cell_dir)
     with pytest.raises(ValueError, match="prefix"):
         aggregate.validate_completed_cell(cell_dir, frozen_inputs=_frozen())
 
@@ -666,6 +712,8 @@ class _Harness:
         )
         monkeypatch.setattr(matrix, "_require_clean_relevant_inputs", lambda **_: None)
         monkeypatch.setattr(matrix, "git_commit_sha", lambda **_: self.head)
+        self.fingerprint = SOURCE_FP
+        monkeypatch.setattr(matrix, "compute_source_fingerprint", lambda: self.fingerprint)
         monkeypatch.setattr(matrix, "load_frozen_matrix_inputs", lambda **_: self.frozen)
         monkeypatch.setattr(matrix, "build_generator", lambda _: object())
         monkeypatch.setattr(matrix, "set_seed", lambda _: None)
@@ -687,8 +735,14 @@ class _Harness:
         if mode == "interrupt":
             raise KeyboardInterrupt
         results_path.write_text("".join(json.dumps(r) + "\n" for r in rows), encoding="utf-8")
+        indexed = _indexed(rows)
+        ids = manifest["dataset"]["selected_query_ids"]
         return {
-            "pipelines": {}, "paired_dense_minus_rcd": {},
+            "pipelines": {
+                pipeline: matrix.recompute_pipeline_summary(indexed, pipeline, ids)
+                for pipeline in aggregate.multiseed.PIPELINES
+            },
+            "paired_dense_minus_rcd": {},
             "execution_evidence": {"raw_record_count": len(rows), "expected_raw_record_count": len(rows)},
         }
 
@@ -995,6 +1049,7 @@ def _rewrite_rows(cell_dir, condition, mutate, pipeline="dense"):
     target = next(r for r in rows if r["condition"] == condition and r["pipeline"] == pipeline)
     mutate(target)
     path.write_text("".join(json.dumps(r) + "\n" for r in rows), encoding="utf-8")
+    _refresh_results_hash(cell_dir)
 
 
 def _assert_rejected(cell_dir, pattern):
@@ -1361,3 +1416,370 @@ def test_recovery_does_not_touch_completed_cells(monkeypatch, tmp_path):
     _recover(harness)
     for cell, digests in done.items():
         assert _digests(harness.root / cell) == digests
+
+
+# ---------------------------------------------------------------------------
+# Provenance: Git metadata, source fingerprint, matrix-wide consistency
+# ---------------------------------------------------------------------------
+def _edit_manifest(cell_dir, mutate):
+    path = cell_dir / "poison.manifest.json"
+    manifest = json.loads(path.read_text(encoding="utf-8"))
+    mutate(manifest)
+    path.write_text(json.dumps(manifest), encoding="utf-8")
+
+
+def _drop_git(m):
+    del m["git"]
+
+
+def _drop_key(key):
+    return lambda m: m["git"].pop(key)
+
+
+def _set_git(key, value):
+    return lambda m: m["git"].__setitem__(key, value)
+
+
+@pytest.mark.parametrize(
+    "mutate",
+    [
+        _drop_git,
+        _drop_key("commit_sha"),
+        _set_git("commit_sha", ""),
+        _set_git("commit_sha", "abc123"),
+        _set_git("commit_sha", "G" * 40),
+        _set_git("commit_sha", None),
+        _set_git("relevant_tracked_inputs_dirty", True),
+        _set_git("relevant_tracked_inputs_dirty", None),
+        _drop_key("relevant_tracked_inputs_dirty"),
+        _drop_key("source_fingerprint"),
+        _set_git("source_fingerprint", ""),
+        _set_git("source_fingerprint", "short"),
+        _set_git("source_fingerprint", None),
+        _set_git("dirty_check_scope", "everything"),
+    ],
+)
+def test_missing_or_malformed_git_provenance_is_rejected(tmp_path, mutate):
+    cell_dir, _ = _write_cell(tmp_path, 42)
+    _edit_manifest(cell_dir, mutate)
+    with pytest.raises(ValueError, match="Git|source_fingerprint|clean relevant|dirty-check"):
+        matrix.validate_completed_cell(cell_dir, frozen_inputs=_frozen())
+
+
+def test_heldout_manifest_builder_requires_a_source_fingerprint():
+    clean = _clean_data()
+    poisoned, _ = _manifest(clean)
+    dense, rcd = _configs()
+    kwargs = dict(
+        cell_id=matrix._cell_id("lexical_influential_token", 1, 42), clean_data=clean,
+        poisoned_data=poisoned, attack_family="lexical_influential_token", intensity=1,
+        poison_seed=42, heldout_fingerprint="heldout", config_hashes={}, dense_config=dense,
+        rcd_config=rcd, git_sha="a" * 40, git_dirty=False,
+    )
+    with pytest.raises(ValueError, match="source_fingerprint"):
+        matrix.build_cell_manifest(**kwargs)
+
+
+def _aggregate_three(tmp_path, monkeypatch):
+    monkeypatch.setattr(aggregate, "MATRIX_ATTACKS", ("lexical_influential_token",))
+    monkeypatch.setattr(aggregate, "MATRIX_INTENSITIES", (1,))
+    monkeypatch.setattr(
+        aggregate, "matrix_cells",
+        lambda: [("lexical_influential_token", 1, seed) for seed in (42, 43, 44)],
+    )
+    return aggregate.aggregate_matrix(tmp_path, frozen_inputs=_frozen(), bootstrap_replicates=5)
+
+
+def test_aggregate_rejects_cells_from_different_commits(tmp_path, monkeypatch):
+    dirs = [_write_cell(tmp_path, seed)[0] for seed in (42, 43, 44)]
+    _edit_manifest(dirs[1], _set_git("commit_sha", "b" * 40))
+    with pytest.raises(ValueError, match="different Git commits"):
+        _aggregate_three(tmp_path, monkeypatch)
+
+
+def test_aggregate_rejects_cells_from_different_source_fingerprints(tmp_path, monkeypatch):
+    dirs = [_write_cell(tmp_path, seed)[0] for seed in (42, 43, 44)]
+    _edit_manifest(dirs[2], _set_git("source_fingerprint", "e" * 64))
+    with pytest.raises(ValueError, match="different source fingerprints"):
+        _aggregate_three(tmp_path, monkeypatch)
+
+
+def test_aggregate_reports_the_single_shared_provenance(tmp_path, monkeypatch):
+    for seed in (42, 43, 44):
+        _write_cell(tmp_path, seed)
+    result = _aggregate_three(tmp_path, monkeypatch)
+    assert result["git_commit_sha"] == "a" * 40 and result["source_fingerprint"] == SOURCE_FP
+
+
+def test_resume_requires_the_cell_to_match_the_current_provenance(tmp_path):
+    cell_dir, _ = _write_cell(tmp_path, 42)
+    good = {"commit_sha": "a" * 40, "source_fingerprint": SOURCE_FP}
+    matrix.validate_completed_cell(cell_dir, frozen_inputs=_frozen(), expected_provenance=good)
+    for bad in ({**good, "commit_sha": "b" * 40}, {**good, "source_fingerprint": "0" * 64}):
+        with pytest.raises(ValueError, match="different commit or source fingerprint"):
+            matrix.validate_completed_cell(cell_dir, frozen_inputs=_frozen(), expected_provenance=bad)
+
+
+def test_resume_refuses_a_plan_started_from_a_different_source_fingerprint(monkeypatch, tmp_path):
+    harness = _Harness(monkeypatch, tmp_path)
+    harness.run()
+    before = (harness.root / "plan.json").read_bytes()
+    harness.fingerprint = "0" * 64  # same commit, different executable content
+    with pytest.raises(ValueError, match="different source fingerprint"):
+        harness.run(resume=True)
+    assert (harness.root / "plan.json").read_bytes() == before
+
+
+def test_new_plan_and_cells_record_the_source_fingerprint(monkeypatch, tmp_path):
+    harness = _Harness(monkeypatch, tmp_path)
+    harness.run()
+    assert harness.plan["git"]["source_fingerprint"] == SOURCE_FP
+    for cell_id in LIFECYCLE_IDS:
+        manifest = json.loads((harness.root / cell_id / "poison.manifest.json").read_text())
+        assert manifest["git"]["source_fingerprint"] == SOURCE_FP
+
+
+def test_resume_rejects_a_completed_cell_from_another_fingerprint_without_deleting_it(monkeypatch, tmp_path):
+    harness = _Harness(monkeypatch, tmp_path)
+    harness.run()
+    cell = harness.root / SEED_43
+    _edit_manifest(cell, _set_git("source_fingerprint", "1" * 64))
+    before = _digests(cell)
+    harness.evaluated.clear()
+    harness.run(resume=True)
+    assert harness.evaluated == [] and _digests(cell) == before
+    assert SEED_43 in harness.plan["failed_or_incomplete_cell_ids"]
+
+
+# --- guard scoping -----------------------------------------------------------
+def test_guard_ignores_unrelated_untracked_artifacts_and_fingerprint_is_unaffected(monkeypatch, tmp_path):
+    repo = _git_repo(tmp_path / "repo", {"a.py": "A = 1\n"})
+    monkeypatch.setattr(matrix, "REPOSITORY_ROOT", repo)
+    monkeypatch.setattr(matrix, "RELEVANT_TRACKED_PATHS", ("a.py",))
+    before = matrix.compute_source_fingerprint()
+    (repo / "results_backup.json").write_text("{}", encoding="utf-8")
+    (repo / "notes.md").write_text("scratch", encoding="utf-8")
+    matrix._require_clean_relevant_inputs(require_tracked_runner=True)
+    assert matrix.compute_source_fingerprint() == before
+
+
+def test_guard_rejects_a_dirty_relevant_input_and_fingerprint_tracks_content(monkeypatch, tmp_path):
+    repo = _git_repo(tmp_path / "repo", {"a.py": "A = 1\n"})
+    monkeypatch.setattr(matrix, "REPOSITORY_ROOT", repo)
+    monkeypatch.setattr(matrix, "RELEVANT_TRACKED_PATHS", ("a.py",))
+    clean = matrix.compute_source_fingerprint()
+    (repo / "a.py").write_text("A = 2\n", encoding="utf-8")
+    assert matrix.compute_source_fingerprint() != clean
+    with pytest.raises(RuntimeError, match="clean relevant tracked inputs"):
+        matrix._require_clean_relevant_inputs(require_tracked_runner=True)
+
+
+def test_guard_covers_an_untracked_module_that_is_actually_imported(monkeypatch, tmp_path):
+    import types
+
+    repo = _git_repo(tmp_path / "repo", {"a.py": "A = 1\n"})
+    dep = repo / "hidden_dep.py"  # not in RELEVANT_TRACKED_PATHS, not committed
+    dep.write_text("X = 1\n", encoding="utf-8")
+    module = types.ModuleType("hidden_dep")
+    module.__file__ = str(dep)
+    monkeypatch.setitem(sys.modules, "hidden_dep", module)
+    monkeypatch.setattr(matrix, "REPOSITORY_ROOT", repo)
+    monkeypatch.setattr(matrix, "RELEVANT_TRACKED_PATHS", ("a.py",))
+
+    assert "hidden_dep.py" in matrix.relevant_input_paths()
+    with pytest.raises(RuntimeError, match="tracked in Git"):
+        matrix._require_clean_relevant_inputs(require_tracked_runner=True)
+    # An undeclared tracked-but-modified import is also caught.
+    subprocess.run(["git", "add", "hidden_dep.py"], cwd=repo, check=True, capture_output=True)
+    subprocess.run(["git", "commit", "-qm", "dep"], cwd=repo, check=True, capture_output=True)
+    matrix._require_clean_relevant_inputs(require_tracked_runner=True)
+    dep.write_text("X = 2\n", encoding="utf-8")
+    with pytest.raises(RuntimeError, match="clean relevant tracked inputs"):
+        matrix._require_clean_relevant_inputs(require_tracked_runner=True)
+
+
+def test_test_modules_and_third_party_code_are_not_experiment_inputs():
+    paths = matrix.relevant_input_paths()
+    assert not any(p.startswith("tests/") or "site-packages" in p for p in paths)
+    assert set(matrix.RELEVANT_TRACKED_PATHS) <= set(paths)
+
+
+# ---------------------------------------------------------------------------
+# Completed-cell validation: results integrity, coverage, summary consistency
+# ---------------------------------------------------------------------------
+def _results_lines(cell_dir):
+    return (cell_dir / "results.jsonl").read_text(encoding="utf-8").splitlines(keepends=True)
+
+
+def test_truncated_results_file_is_rejected_by_hash_and_by_content(tmp_path):
+    cell_dir, _ = _write_cell(tmp_path, 42)
+    lines = _results_lines(cell_dir)
+    (cell_dir / "results.jsonl").write_text("".join(lines[:-1]) + lines[-1][:20], encoding="utf-8")
+    with pytest.raises(ValueError, match="SHA-256"):
+        matrix.validate_completed_cell(cell_dir, frozen_inputs=_frozen())
+    _refresh_results_hash(cell_dir)  # even a forged digest cannot hide malformed JSON
+    with pytest.raises(ValueError):
+        matrix.validate_completed_cell(cell_dir, frozen_inputs=_frozen())
+
+
+def test_missing_row_is_rejected_even_with_a_forged_hash(tmp_path):
+    cell_dir, _ = _write_cell(tmp_path, 42)
+    kept = _results_lines(cell_dir)[:-1]
+    (cell_dir / "results.jsonl").write_text("".join(kept), encoding="utf-8")
+    _refresh_results_hash(cell_dir)
+    with pytest.raises(ValueError, match="raw record count"):  # stale evidence count caught first
+        matrix.validate_completed_cell(cell_dir, frozen_inputs=_frozen())
+    _edit_summary(cell_dir, lambda s: s["execution_evidence"].__setitem__("raw_record_count", len(kept)))
+    with pytest.raises(ValueError, match="records; expected"):  # then exact coverage
+        matrix.validate_completed_cell(cell_dir, frozen_inputs=_frozen())
+
+
+def test_duplicate_row_replacing_another_is_rejected_even_with_a_forged_hash(tmp_path):
+    cell_dir, _ = _write_cell(tmp_path, 42)
+    lines = _results_lines(cell_dir)
+    lines[-1] = lines[0]  # right count, but one record twice and one missing
+    (cell_dir / "results.jsonl").write_text("".join(lines), encoding="utf-8")
+    _refresh_results_hash(cell_dir)
+    with pytest.raises(ValueError, match="Duplicate matrix record"):
+        matrix.validate_completed_cell(cell_dir, frozen_inputs=_frozen())
+
+
+def test_altered_record_is_rejected_by_hash_and_by_semantics(tmp_path):
+    cell_dir, _ = _write_cell(tmp_path, 42)
+    path = cell_dir / "results.jsonl"
+    rows = [json.loads(x) for x in _results_lines(cell_dir)]
+    rows[1]["answer"] = "tampered"
+    path.write_text("".join(json.dumps(r) + "\n" for r in rows), encoding="utf-8")
+    with pytest.raises(ValueError, match="SHA-256"):
+        matrix.validate_completed_cell(cell_dir, frozen_inputs=_frozen())
+    _refresh_results_hash(cell_dir)
+    with pytest.raises(ValueError, match="inconsistent"):
+        matrix.validate_completed_cell(cell_dir, frozen_inputs=_frozen())
+
+
+def test_hash_mismatch_alone_is_rejected(tmp_path):
+    cell_dir, _ = _write_cell(tmp_path, 42)
+    path = cell_dir / "summary.json"
+    summary = json.loads(path.read_text(encoding="utf-8"))
+    summary["results_sha256"] = "0" * 64
+    path.write_text(json.dumps(summary), encoding="utf-8")
+    with pytest.raises(ValueError, match="SHA-256"):
+        matrix.validate_completed_cell(cell_dir, frozen_inputs=_frozen())
+
+
+@pytest.mark.parametrize("bad", [None, "", "abc", 123])
+def test_missing_or_malformed_results_hash_is_rejected_not_trusted(tmp_path, bad):
+    """Legacy summaries without a hash are rejected, never silently accepted."""
+    cell_dir, _ = _write_cell(tmp_path, 42)
+    path = cell_dir / "summary.json"
+    summary = json.loads(path.read_text(encoding="utf-8"))
+    if bad is None:
+        del summary["results_sha256"]
+    else:
+        summary["results_sha256"] = bad
+    path.write_text(json.dumps(summary), encoding="utf-8")
+    with pytest.raises(ValueError, match="results_sha256"):
+        matrix.validate_completed_cell(cell_dir, frozen_inputs=_frozen())
+
+
+def _edit_summary(cell_dir, mutate):
+    path = cell_dir / "summary.json"
+    summary = json.loads(path.read_text(encoding="utf-8"))
+    mutate(summary)
+    path.write_text(json.dumps(summary), encoding="utf-8")
+
+
+@pytest.mark.parametrize(
+    "mutate,pattern",
+    [
+        (lambda s: s.__setitem__("cell_id", "other"), "identity"),
+        (lambda s: s.__setitem__("query_count", 299), "query count"),
+        (lambda s: s.__setitem__("query_count", True), "query count"),
+        (lambda s: s.pop("execution_evidence"), "execution evidence"),
+        (lambda s: s["execution_evidence"].__setitem__("raw_record_count", 1), "raw record count"),
+        (lambda s: s.__setitem__("poison_instance_fingerprint", "x" * 64), "fingerprint"),
+        (lambda s: s.pop("pipelines"), "per-pipeline metrics"),
+        (lambda s: s["pipelines"]["dense"]["poisoned_condition"]["targeted_asr"].__setitem__("numerator", 0), "differ from the raw records"),
+        (lambda s: s["pipelines"].pop("rcd"), "per-pipeline metrics"),
+    ],
+)
+def test_summary_inconsistent_with_manifest_or_records_is_rejected(tmp_path, mutate, pattern):
+    cell_dir, _ = _write_cell(tmp_path, 42)
+    _edit_summary(cell_dir, mutate)
+    with pytest.raises(ValueError, match=pattern):
+        matrix.validate_completed_cell(cell_dir, frozen_inputs=_frozen())
+
+
+@pytest.mark.parametrize("field", ["pipeline", "query_id", "condition"])
+@pytest.mark.parametrize("bad", [None, ["x"], 5])
+def test_malformed_record_identity_types_are_a_clear_value_error(tmp_path, field, bad):
+    cell_dir, _ = _write_cell(tmp_path, 42)
+    rows = [json.loads(x) for x in _results_lines(cell_dir)]
+    rows[0][field] = bad
+    (cell_dir / "results.jsonl").write_text("".join(json.dumps(r) + "\n" for r in rows), encoding="utf-8")
+    _refresh_results_hash(cell_dir)
+    with pytest.raises(ValueError, match="Invalid matrix record identity"):
+        matrix.validate_completed_cell(cell_dir, frozen_inputs=_frozen())
+
+
+def test_recomputed_pipeline_summary_matches_the_runner_summary(monkeypatch, tmp_path):
+    """The validator's recomputation must equal summarize_pipeline on a real evaluation."""
+    out, _ = _evaluate_small_cell(monkeypatch, tmp_path, top_k=2)
+    rows = [json.loads(x) for x in (tmp_path / "results.jsonl").read_text(encoding="utf-8").splitlines()]
+    ids = list(dict.fromkeys(r["query_id"] for r in rows))
+    indexed = _indexed(rows)
+    for pipeline in ("dense", "rcd"):
+        assert matrix.recompute_pipeline_summary(indexed, pipeline, ids) == out["pipelines"][pipeline]
+
+
+# ---------------------------------------------------------------------------
+# Recovery: crash-safe writes and corrupt-summary handling
+# ---------------------------------------------------------------------------
+def test_truncated_summary_is_never_trusted_and_needs_explicit_recovery(monkeypatch, tmp_path):
+    harness = _Harness(monkeypatch, tmp_path)
+    harness.run()
+    cell = harness.root / SEED_43
+    full = (cell / "summary.json").read_bytes()
+    (cell / "summary.json").write_bytes(full[: len(full) // 2])  # crash mid-write
+    truncated = _digests(cell)
+    harness.evaluated.clear()
+
+    harness.run(resume=True)  # no flag: fail closed, touch nothing, say how to recover
+    assert harness.evaluated == [] and _digests(cell) == truncated
+    failure = harness.plan["cell_failures"][SEED_43]
+    assert failure["source"] == "resume_validation" and "--recover-incomplete" in failure["hint"]
+
+    _no_regeneration(monkeypatch)
+    _recover(harness)  # explicit opt-in: archive intact, reuse verified manifest, re-evaluate
+    assert harness.evaluated == [43] and harness.plan["status"] == "complete"
+    archived = harness.root / matrix.ARCHIVE_DIRNAME / SEED_43 / "attempt_001"
+    assert (archived / "summary.json").read_bytes() == full[: len(full) // 2]
+
+
+def test_recovery_refuses_a_manifest_from_a_different_source_fingerprint(monkeypatch, tmp_path):
+    harness = _Harness(monkeypatch, tmp_path)
+    harness.behaviour[43] = "fail"
+    harness.run()
+    cell = harness.root / SEED_43
+    _edit_manifest(cell, _set_git("source_fingerprint", "2" * 64))
+    before = _digests(cell)
+    harness.behaviour.clear()
+    _recover(harness)
+    assert _digests(cell) == before
+    assert harness.plan["cell_failures"][SEED_43]["source"] == "recovery_refused"
+
+
+def test_manifest_write_is_atomic_so_a_crash_cannot_leave_a_truncated_manifest(monkeypatch, tmp_path):
+    harness = _Harness(monkeypatch, tmp_path)
+    real = matrix.json.dump
+
+    def crash(value, output, **kwargs):
+        output.write('{"schema": "trunc')  # partial bytes, then the process dies
+        raise OSError("disk full")
+
+    monkeypatch.setattr(matrix.json, "dump", crash)
+    with pytest.raises(OSError):
+        matrix._write_json_atomic(tmp_path / "poison.manifest.json", {"a": 1})
+    monkeypatch.setattr(matrix.json, "dump", real)
+    assert not (tmp_path / "poison.manifest.json").exists()
+    assert [p.name for p in tmp_path.iterdir() if p.name.endswith(".tmp")] == []
