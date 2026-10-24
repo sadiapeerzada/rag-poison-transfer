@@ -15,6 +15,7 @@ import importlib.util
 import json
 import os
 import platform
+import re
 import subprocess
 import sys
 import time
@@ -34,6 +35,7 @@ import scripts.aggregate_week9_multiseed_results as multiseed
 from scripts.run_week9_matched_poison_comparison import (
     RETRIEVAL_METRIC_K,
     _frozen_retriever_config,
+    _rate,
     _rcd_config,
     build_matched_retrievers,
     diagnostic_retrieval_required,
@@ -176,17 +178,75 @@ def _git(*arguments: str) -> subprocess.CompletedProcess:
     )
 
 
+GIT_SHA_PATTERN = re.compile(r"^[0-9a-f]{40}$")
+SHA256_PATTERN = re.compile(r"^[0-9a-f]{64}$")
+DIRTY_CHECK_SCOPE = "relevant tracked source and configuration files"
+_NON_SOURCE_PARTS = {"tests", "site-packages", "dist-packages", ".venv", "venv", "__pycache__"}
+
+
+def _loaded_repository_sources() -> list[str]:
+    """Repository ``.py`` files actually imported by this process.
+
+    ``RELEVANT_TRACKED_PATHS`` is maintained by hand and can fall behind the
+    code.  The interpreter knows exactly which repository modules the run
+    executes, so those are added to the guarded set automatically.  Test
+    modules and third-party/virtualenv code are not experiment inputs.
+    """
+    root = REPOSITORY_ROOT.resolve()
+    found = set()
+    for module in list(sys.modules.values()):
+        filename = getattr(module, "__file__", None)
+        if not isinstance(filename, str) or not filename.endswith(".py"):
+            continue
+        try:
+            relative = Path(filename).resolve().relative_to(root)
+        except (ValueError, OSError):
+            continue
+        if _NON_SOURCE_PARTS & set(relative.parts):
+            continue
+        found.add(relative.as_posix())
+    return sorted(found)
+
+
+def relevant_input_paths() -> tuple[str, ...]:
+    """Declared relevant paths plus every repository module imported at run time."""
+    return tuple(sorted(set(RELEVANT_TRACKED_PATHS) | set(_loaded_repository_sources())))
+
+
+def compute_source_fingerprint() -> str:
+    """SHA-256 over the path and byte content of every relevant input.
+
+    A commit SHA identifies a commit, not the working tree: a dirty file keeps
+    the same ``HEAD``.  The guard below rejects dirty relevant inputs, and this
+    fingerprint additionally pins the exact executed content so that cells
+    produced from different source states can be detected afterwards.
+    Unrelated untracked artifacts are not part of it.
+    """
+    digest = hashlib.sha256()
+    for relative in relevant_input_paths():
+        path = REPOSITORY_ROOT / relative
+        if not path.is_file():
+            raise RuntimeError(f"Relevant experiment input is missing: {relative}")
+        digest.update(relative.encode("utf-8") + b"\0")
+        digest.update(hashlib.sha256(path.read_bytes()).hexdigest().encode("ascii") + b"\n")
+    return digest.hexdigest()
+
+
 def _require_clean_relevant_inputs(*, require_tracked_runner: bool) -> None:
     """Reject changed experiment inputs but ignore unrelated untracked artifacts.
 
     Git always runs inside ``REPOSITORY_ROOT``: running from another checkout
     must neither pass vacuously nor record a foreign commit.  Failure to
-    inspect Git state fails closed.  For final execution every path in
-    ``RELEVANT_TRACKED_PATHS`` must also be tracked, because
-    ``--untracked-files=no`` status cannot see a relevant but untracked file.
+    inspect Git state fails closed.  The guarded set is the declared
+    ``RELEVANT_TRACKED_PATHS`` plus every repository module imported by the
+    running process (``relevant_input_paths``).  For final execution every
+    guarded path must also be tracked, because ``--untracked-files=no`` status
+    cannot see a relevant but untracked file.  Untracked files that are not
+    imported or declared (results, notes, backups) are deliberately ignored.
     """
+    paths = relevant_input_paths()
     try:
-        status = _git("status", "--porcelain=v1", "--untracked-files=no", "--", *RELEVANT_TRACKED_PATHS)
+        status = _git("status", "--porcelain=v1", "--untracked-files=no", "--", *paths)
         if status.returncode:
             raise RuntimeError("Unable to inspect relevant tracked experiment inputs.")
         if status.stdout:
@@ -195,15 +255,45 @@ def _require_clean_relevant_inputs(*, require_tracked_runner: bool) -> None:
                 f"{status.stdout.strip()}"
             )
         if require_tracked_runner:
-            tracked = _git("ls-files", "--error-unmatch", "--", *RELEVANT_TRACKED_PATHS)
+            tracked = _git("ls-files", "--error-unmatch", "--", *paths)
             if tracked.returncode:
                 raise RuntimeError(
                     "Final held-out execution requires the matrix runner and every "
-                    "relevant input to be tracked in Git; commit them before "
+                    "relevant or imported input to be tracked in Git; commit them before "
                     f"executing the final matrix. Git reported: {tracked.stderr.strip()}"
                 )
     except (FileNotFoundError, subprocess.TimeoutExpired) as error:
         raise RuntimeError("Unable to inspect relevant tracked experiment inputs.") from error
+
+
+def _sha256_file(path: Path) -> str:
+    digest = hashlib.sha256()
+    with path.open("rb") as source:
+        for block in iter(lambda: source.read(1 << 20), b""):
+            digest.update(block)
+    return digest.hexdigest()
+
+
+def validate_git_provenance(manifest: dict) -> dict:
+    """Require complete, well-formed Git/source provenance in a held-out cell manifest.
+
+    Nothing is defaulted: a missing, empty, wrongly typed or dirty record is an
+    error.  Returns ``{"commit_sha", "source_fingerprint"}``.
+    """
+    git = manifest.get("git")
+    if not isinstance(git, dict):
+        raise ValueError("Cell manifest lacks Git provenance.")
+    commit = git.get("commit_sha")
+    if not isinstance(commit, str) or not GIT_SHA_PATTERN.fullmatch(commit):
+        raise ValueError("Cell manifest Git commit_sha is missing or not a 40-character hex SHA.")
+    if git.get("relevant_tracked_inputs_dirty") is not False:
+        raise ValueError("Cell manifest does not record clean relevant tracked inputs.")
+    if git.get("dirty_check_scope") != DIRTY_CHECK_SCOPE:
+        raise ValueError("Cell manifest Git dirty-check scope is missing or unexpected.")
+    fingerprint = git.get("source_fingerprint")
+    if not isinstance(fingerprint, str) or not SHA256_PATTERN.fullmatch(fingerprint):
+        raise ValueError("Cell manifest source_fingerprint is missing or not a SHA-256 digest.")
+    return {"commit_sha": commit, "source_fingerprint": fingerprint}
 
 
 def matrix_cells() -> list[tuple[str, int, int]]:
@@ -388,6 +478,7 @@ def build_cell_manifest(
     rcd_config: dict,
     git_sha: str,
     git_dirty: bool | None,
+    source_fingerprint: str | None = None,
     execution_mode: str = "heldout_matrix",
 ) -> dict:
     """Serialize a validated poison snapshot before it is evaluated."""
@@ -398,6 +489,10 @@ def build_cell_manifest(
         raise ValueError("Held-out cell manifest requires exactly 300 unique queries.")
     if execution_mode not in {"heldout_matrix", "smoke_test"}:
         raise ValueError(f"Unsupported execution mode: {execution_mode}")
+    if execution_mode == "heldout_matrix" and (
+        not isinstance(source_fingerprint, str) or not SHA256_PATTERN.fullmatch(source_fingerprint)
+    ):
+        raise ValueError("Held-out cell manifest requires a SHA-256 source_fingerprint.")
     poison_fingerprint = poison_instances_fingerprint(clean_data, poisoned_data)
     clean_ids = {document["doc_id"] for document in clean_data["corpus"]}
     return {
@@ -453,7 +548,8 @@ def build_cell_manifest(
         "git": {
             "commit_sha": git_sha,
             "relevant_tracked_inputs_dirty": git_dirty,
-            "dirty_check_scope": "relevant tracked source and configuration files",
+            "dirty_check_scope": DIRTY_CHECK_SCOPE,
+            "source_fingerprint": source_fingerprint,
         },
     }
 
@@ -772,12 +868,22 @@ def _validate_retrieval_record(row: dict, poison_set: set[str]) -> None:
             raise ValueError(f"Poison retrieval rate at {cutoff} is inconsistent.")
 
 
-def validate_completed_cell(cell_dir: Path, *, frozen_inputs: FrozenMatrixInputs | None = None) -> dict:
+def validate_completed_cell(
+    cell_dir: Path,
+    *,
+    frozen_inputs: FrozenMatrixInputs | None = None,
+    expected_provenance: dict | None = None,
+) -> dict:
     """Validate a complete cell, independently re-verifying its poison provenance.
 
     ``frozen_inputs`` is mandatory: a cell is never accepted merely because
     its summary, manifest and raw rows agree with one another, since all of
-    them could carry the same wrong fingerprint.
+    them could carry the same wrong fingerprint.  The raw-results file must
+    also match the SHA-256 recorded in the summary (a byte-integrity check
+    only; the semantic checks below are what establish correctness).  When
+    ``expected_provenance`` is given (resume), the cell must have been produced
+    at that exact commit and source fingerprint.  Summaries written before the
+    results hash existed are rejected rather than silently trusted.
     """
     if frozen_inputs is None:
         raise ValueError(
@@ -792,7 +898,6 @@ def validate_completed_cell(cell_dir: Path, *, frozen_inputs: FrozenMatrixInputs
         raise ValueError(f"Cell is incomplete: {cell_dir}")
     manifest = _read_json(manifest_path)
     summary = _read_json(summary_path)
-    rows = _read_jsonl(results_path)
     if manifest.get("schema") != CELL_SCHEMA or summary.get("schema") != CELL_SCHEMA:
         raise ValueError(f"Cell uses an unsupported schema: {cell_dir}")
     if summary.get("status") != CELL_COMPLETE_STATUS:
@@ -801,6 +906,21 @@ def validate_completed_cell(cell_dir: Path, *, frozen_inputs: FrozenMatrixInputs
         raise ValueError("A cell must not claim final statistical conclusions.")
     if manifest.get("execution_mode") != "heldout_matrix":
         raise ValueError("Only held-out matrix cells can be aggregated, not smoke tests.")
+    provenance = validate_git_provenance(manifest)
+    if expected_provenance is not None and provenance != {
+        key: expected_provenance.get(key) for key in provenance
+    }:
+        raise ValueError(
+            "Cell was produced at a different commit or source fingerprint than the current run."
+        )
+    recorded_hash = summary.get("results_sha256")
+    if not isinstance(recorded_hash, str) or not SHA256_PATTERN.fullmatch(recorded_hash):
+        raise ValueError(
+            "Cell summary lacks a valid results_sha256; results.jsonl integrity cannot be established."
+        )
+    if _sha256_file(results_path) != recorded_hash:
+        raise ValueError("results.jsonl does not match the SHA-256 recorded in the summary.")
+    rows = _read_jsonl(results_path)  # parsed only once its bytes are known to match
 
     poisoned = verify_cell_provenance(manifest, frozen_inputs)
     recomputed = poison_instances_fingerprint(frozen_inputs.clean_data, poisoned)
@@ -814,11 +934,17 @@ def validate_completed_cell(cell_dir: Path, *, frozen_inputs: FrozenMatrixInputs
         if stored != recomputed:
             raise ValueError(f"Cell {label} poison fingerprint differs from the independently recomputed value.")
     selected_ids = manifest["dataset"]["selected_query_ids"]
-    if summary.get("cell_id") != cell_id or summary.get("query_count") != len(selected_ids):
+    query_count = summary.get("query_count")
+    if (
+        summary.get("cell_id") != cell_id
+        or isinstance(query_count, bool)
+        or query_count != len(selected_ids)
+    ):
         raise ValueError("Cell summary identity or query count differs from manifest.")
     evidence = summary.get("execution_evidence")
-    if isinstance(evidence, dict) and evidence.get("raw_record_count") not in (None, len(rows)):
-        raise ValueError("Summary raw record count differs from results.jsonl.")
+    raw_count = evidence.get("raw_record_count") if isinstance(evidence, dict) else None
+    if isinstance(raw_count, bool) or raw_count != len(rows):
+        raise ValueError("Summary execution evidence is missing or its raw record count differs from results.jsonl.")
 
     expected_poison = {
         query["query_id"]: (sorted(query["poison_doc_ids"]), query["poison_target_answer"])
@@ -831,6 +957,8 @@ def validate_completed_cell(cell_dir: Path, *, frozen_inputs: FrozenMatrixInputs
     indexed = {}
     for row in rows:
         key = (row.get("pipeline"), row.get("query_id"), row.get("condition"))
+        if not all(isinstance(part, str) for part in key):
+            raise ValueError(f"Invalid matrix record identity: {key}.")
         if key in indexed:
             raise ValueError(f"Duplicate matrix record: {key}.")
         if key[0] not in multiseed.PIPELINES or key[1] not in selected_set or key[2] not in multiseed.CONDITIONS:
@@ -862,12 +990,53 @@ def validate_completed_cell(cell_dir: Path, *, frozen_inputs: FrozenMatrixInputs
                 raise ValueError("Query degradation is not computed from its clean/poison pair.")
             if poisoned_row["targeted_asr"] is not bool(exact_match(poisoned_row["answer"], poisoned_row["poison_target_answer"])):
                 raise ValueError("Targeted ASR is inconsistent.")
+    summarized = summary.get("pipelines")
+    if not isinstance(summarized, dict) or set(summarized) != set(multiseed.PIPELINES):
+        raise ValueError("Cell summary lacks per-pipeline metrics for exactly the expected pipelines.")
+    for pipeline in multiseed.PIPELINES:
+        if summarized[pipeline] != recompute_pipeline_summary(indexed, pipeline, selected_ids):
+            raise ValueError(f"Summary metrics for {pipeline!r} differ from the raw records.")
     return {
         "manifest": manifest,
         "summary": summary,
         "rows": indexed,
         "selected_ids": selected_ids,
         "recomputed_poison_instance_fingerprint": recomputed,
+        "git_commit_sha": provenance["commit_sha"],
+        "source_fingerprint": provenance["source_fingerprint"],
+    }
+
+
+def recompute_pipeline_summary(indexed: dict, pipeline: str, query_ids: list) -> dict:
+    """Recompute ``summarize_pipeline`` output from validated flat raw records.
+
+    Mirrors ``summarize_pipeline`` exactly so a summary that disagrees with
+    its own raw records is detectable.  Rows are assumed already validated.
+    """
+    clean = [indexed[(pipeline, query_id, "clean")] for query_id in query_ids]
+    poisoned = [indexed[(pipeline, query_id, "poisoned")] for query_id in query_ids]
+    total = len(query_ids)
+    retrieved = [row for row in poisoned if row["poison_retrieved"]]
+    prr = {
+        f"prr@{k}": _rate(sum(row["prr_at_k"][str(k)] == 1.0 for row in poisoned), total)
+        for k in multiseed.EXPECTED_CUTOFFS
+    }
+    return {
+        "query_count": total,
+        "clean_condition": {
+            "clean_answer_accuracy": _rate(sum(row["answer_correct"] for row in clean), total),
+        },
+        "poisoned_condition": {
+            "poisoned_answer_accuracy": _rate(sum(row["answer_correct"] for row in poisoned), total),
+            "poison_retrieval_rate": prr,
+            "targeted_asr": _rate(sum(row["targeted_asr"] for row in poisoned), total),
+            "asr_given_poison_retrieved": _rate(
+                sum(row["targeted_asr"] for row in retrieved), len(retrieved)
+            ),
+        },
+        "query_untargeted_degradation": _rate(
+            sum(row["query_untargeted_degradation"] for row in poisoned), total
+        ),
     }
 
 
@@ -1016,7 +1185,13 @@ def _preflight_compatible(stored: Any, current: dict) -> bool:
     )
 
 
-def _new_plan(experiment_id: str, preflight_data: dict, git_sha: str, expected_ids: list[str]) -> dict:
+def _new_plan(
+    experiment_id: str,
+    preflight_data: dict,
+    git_sha: str,
+    expected_ids: list[str],
+    source_fingerprint: str | None = None,
+) -> dict:
     now = _utc_now()
     return {
         "schema": PLAN_SCHEMA,
@@ -1028,7 +1203,8 @@ def _new_plan(experiment_id: str, preflight_data: dict, git_sha: str, expected_i
         "is_final_run": False,
         "git": {
             "commit_sha": git_sha,
-            "dirty_check_scope": "relevant tracked source and configuration files",
+            "dirty_check_scope": DIRTY_CHECK_SCOPE,
+            "source_fingerprint": source_fingerprint,
         },
         "preflight": preflight_data,
         "expected_cell_count": len(expected_ids),
@@ -1160,6 +1336,7 @@ def _select_reusable_manifest(
     cell_id: str,
     frozen: FrozenMatrixInputs,
     git_sha: str,
+    source_fingerprint: str | None = None,
 ) -> dict | None:
     """Return the one verified poison manifest recorded for ``cell_id``, if any.
 
@@ -1189,6 +1366,8 @@ def _select_reusable_manifest(
                 raise ValueError("stored poison fingerprint does not match the recomputed one")
             if (manifest.get("git") or {}).get("commit_sha") != git_sha:
                 raise ValueError("manifest was written at a different Git commit")
+            if (manifest.get("git") or {}).get("source_fingerprint") != source_fingerprint:
+                raise ValueError("manifest was written from a different source fingerprint")
         except Exception as error:
             raise RecoveryRefused(
                 f"Refusing to recover {cell_id}: {path} cannot be verified against the frozen "
@@ -1267,6 +1446,7 @@ def run_matrix(
     git_sha = git_commit_sha(default="", repo_root=REPOSITORY_ROOT)
     if not git_sha:
         raise RuntimeError("Unable to determine the Git commit; refusing to run without provenance.")
+    source_fingerprint = compute_source_fingerprint()
     expected_ids = _expected_cell_ids()
     output_root = _ensure_output_outside_repository(output_dir) / experiment_id
     plan_path = output_root / "plan.json"
@@ -1289,12 +1469,22 @@ def run_matrix(
                 "Existing matrix plan was started at a different Git commit "
                 f"({recorded_commit}); resuming at {git_sha} would mix code versions."
             )
+        recorded_fingerprint = (plan.get("git") or {}).get("source_fingerprint")
+        if recorded_fingerprint is not None and recorded_fingerprint != source_fingerprint:
+            raise ValueError(
+                "Existing matrix plan was started from a different source fingerprint; "
+                "an executable input changed since the first attempt, so resuming would "
+                "mix code versions."
+            )
         plan = _upgrade_legacy_plan(plan, expected_ids)
         if plan["expected_cell_ids"] != expected_ids:
             raise ValueError("Existing matrix plan lists different expected cells.")
+        if recorded_fingerprint is None:
+            plan["git"] = {**plan["git"], "source_fingerprint": source_fingerprint}
+            plan.setdefault("legacy_plan_upgraded_fields", []).append("git.source_fingerprint")
     else:
         output_root.mkdir(parents=True)
-        plan = _new_plan(experiment_id, preflight_data, git_sha, expected_ids)
+        plan = _new_plan(experiment_id, preflight_data, git_sha, expected_ids, source_fingerprint)
     attempt = {
         "attempt": len(plan["attempts"]) + 1,
         "resume": resume,
@@ -1328,6 +1518,8 @@ def run_matrix(
             _require_clean_relevant_inputs(require_tracked_runner=True)
             if git_commit_sha(default="", repo_root=REPOSITORY_ROOT) != git_sha:
                 raise RuntimeError("Git HEAD changed during the run; cells would mix code versions.")
+            if compute_source_fingerprint() != source_fingerprint:
+                raise RuntimeError("Source fingerprint changed during the run; cells would mix code versions.")
             cell_dir = output_root / cell_id
             manifest_path = cell_dir / "poison.manifest.json"
             results_path = cell_dir / "results.jsonl"
@@ -1335,15 +1527,27 @@ def run_matrix(
             failure_path = cell_dir / "failure.json"
             if summary_path.exists():
                 try:
-                    validate_completed_cell(cell_dir, frozen_inputs=frozen)
+                    validate_completed_cell(
+                        cell_dir,
+                        frozen_inputs=frozen,
+                        expected_provenance={
+                            "commit_sha": git_sha,
+                            "source_fingerprint": source_fingerprint,
+                        },
+                    )
                 except Exception as error:  # corrupt or incompatible: never accept, never delete
-                    cell_failures[cell_id] = {
-                        **_cell_failure_summary(error),
-                        "source": "resume_validation",
-                    }
+                    if not recover_incomplete:
+                        cell_failures[cell_id] = {
+                            **_cell_failure_summary(error),
+                            "source": "resume_validation",
+                            "hint": "Re-run with --resume --recover-incomplete to archive this "
+                                    "cell intact and re-evaluate it from its verified manifest.",
+                        }
+                        continue
+                    # Explicit opt-in: fall through to archive-and-retry below.
+                else:
+                    completed.append(cell_id)
                     continue
-                completed.append(cell_id)
-                continue
             reusable_manifest = None
             if cell_dir.exists():
                 if not recover_incomplete:
@@ -1361,6 +1565,7 @@ def run_matrix(
                     reusable_manifest = _select_reusable_manifest(
                         output_root=output_root, cell_dir=cell_dir, cell_id=cell_id,
                         frozen=frozen, git_sha=git_sha,
+                        source_fingerprint=source_fingerprint,
                     )
                 except RecoveryRefused as error:
                     cell_failures[cell_id] = {**_cell_failure_summary(error), "source": "recovery_refused"}
@@ -1399,9 +1604,11 @@ def run_matrix(
                         config_hashes=frozen.config_hashes,
                         dense_config=frozen.dense_config, rcd_config=frozen.rcd_config,
                         git_sha=git_sha, git_dirty=False,
+                        source_fingerprint=source_fingerprint,
                     )
                     manifest["attack"]["configuration"] = attack_config
-                _write_json_exclusive(manifest_path, manifest)
+                # Atomic: a crash can never leave a truncated immutable manifest.
+                _write_json_atomic(manifest_path, manifest)
                 replayed = replay_cell_manifest(frozen.clean_data, manifest)
                 set_seed(FROZEN_RUNTIME_SEED)
                 metrics = evaluate_cell(
@@ -1414,7 +1621,8 @@ def run_matrix(
                     != metrics["execution_evidence"]["expected_raw_record_count"]
                 ):
                     raise RuntimeError("Evaluation did not emit every expected raw record.")
-                _write_json_exclusive(
+                # Atomic: a crash can never leave a truncated summary that looks "present".
+                _write_json_atomic(
                     summary_path,
                     {
                         "schema": CELL_SCHEMA,
@@ -1423,6 +1631,7 @@ def run_matrix(
                         "cell_id": cell_id,
                         "manifest_path": str(manifest_path),
                         "results_path": str(results_path),
+                        "results_sha256": _sha256_file(results_path),
                         "poison_instance_fingerprint": manifest["poison_instance_fingerprint"],
                         "query_count": MATRIX_QUERY_COUNT,
                         "runtime_seconds": time.perf_counter() - started,
@@ -1430,7 +1639,14 @@ def run_matrix(
                     },
                 )
                 # Hold fresh output to the same standard the aggregator applies.
-                validate_completed_cell(cell_dir, frozen_inputs=frozen)
+                validate_completed_cell(
+                    cell_dir,
+                    frozen_inputs=frozen,
+                    expected_provenance={
+                        "commit_sha": git_sha,
+                        "source_fingerprint": source_fingerprint,
+                    },
+                )
                 completed.append(cell_id)
             except Exception as error:
                 cell_failures[cell_id] = _cell_failure_summary(error)

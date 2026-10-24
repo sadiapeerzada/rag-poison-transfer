@@ -53,6 +53,14 @@ def aggregate_matrix(
         cells[(attack_family, intensity, seed)] = validate_completed_cell(
             root / cell_id, frozen_inputs=frozen_inputs
         )
+    # Provenance must agree across the WHOLE matrix, not just within a seed group:
+    # one commit and one source fingerprint produced all 12 cells.
+    commits = {cell["git_commit_sha"] for cell in cells.values()}
+    fingerprints = {cell["source_fingerprint"] for cell in cells.values()}
+    if len(commits) != 1:
+        raise ValueError(f"Matrix cells were produced at different Git commits: {sorted(commits)}.")
+    if len(fingerprints) != 1:
+        raise ValueError("Matrix cells were produced from different source fingerprints.")
     groups = []
     for attack_family in MATRIX_ATTACKS:
         for intensity in MATRIX_INTENSITIES:
@@ -114,6 +122,8 @@ def aggregate_matrix(
         "is_final_run": False,
         "expected_cell_count": len(matrix_cells()),
         "completed_cell_count": len(cells),
+        "git_commit_sha": next(iter(commits)),
+        "source_fingerprint": next(iter(fingerprints)),
         "groups": groups,
         "limitations": (
             "Each group reuses the same 300 query IDs across three poison seeds. "

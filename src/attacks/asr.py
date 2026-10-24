@@ -195,6 +195,7 @@ def evaluate_asr_for_retriever(
             "target_pipeline": target_pipeline,
             "poison_doc_ids": sorted(poison_doc_ids),
             "retrieved_doc_ids": retrieved_doc_ids,
+            "generation_evidence_doc_ids": [d.doc_id for d in evidence_for_generation],
             "poison_retrieved": poison_retrieved,
             "poison_rank": poison_rank,
             "clean_answer": clean_answer,
