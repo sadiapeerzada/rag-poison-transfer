@@ -1011,6 +1011,21 @@ def validate_completed_cell(
     for pipeline in multiseed.PIPELINES:
         if summarized[pipeline] != recompute_pipeline_summary(indexed, pipeline, selected_ids):
             raise ValueError(f"Summary metrics for {pipeline!r} differ from the raw records.")
+    # Recompute the paired comparison from the same raw clean/poison rows.
+    paired_rows = {}
+    for pipeline in multiseed.PIPELINES:
+        paired_rows[pipeline] = [
+            {
+                "query_id": query_id,
+                "clean_condition": indexed[(pipeline, query_id, "clean")],
+                "poisoned_condition": indexed[(pipeline, query_id, "poisoned")],
+                "query_untargeted_degradation": indexed[(pipeline, query_id, "poisoned")]["query_untargeted_degradation"],
+            }
+            for query_id in selected_ids
+        ]
+    expected_paired = paired_differences(paired_rows["dense"], paired_rows["rcd"])
+    if summary.get("paired_dense_minus_rcd") != expected_paired:
+        raise ValueError("Paired Dense-minus-RCD summary differs from raw paired records.")
     return {
         "manifest": manifest,
         "summary": summary,
