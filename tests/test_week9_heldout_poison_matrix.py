@@ -1809,3 +1809,53 @@ def test_aggregate_limitations_state_what_the_intervals_do_not_cover(tmp_path, m
     text = _aggregate_three(tmp_path, monkeypatch)["limitations"]
     assert "not resampled" in text and "query sampling only" in text
     assert "zero-width interval is not proof of equivalence" in text
+
+
+
+def test_cell_rejects_forged_gold_even_with_recomputed_summary(tmp_path):
+    cell_dir, _ = _write_cell(tmp_path, 42)
+    path = cell_dir / "results.jsonl"
+    rows = [json.loads(line) for line in path.read_text(encoding="utf-8").splitlines()]
+    for row in rows:
+        if row["query_id"] == "q0":
+            row["gold_answer"] = "forged answer"
+            row["answer_correct"] = matrix.exact_match(row["answer"], row["gold_answer"])
+    path.write_text("".join(json.dumps(row) + "\n" for row in rows), encoding="utf-8")
+    _refresh_results_hash(cell_dir)
+    with pytest.raises(ValueError, match="frozen clean dataset"):
+        matrix.validate_completed_cell(cell_dir, frozen_inputs=_frozen())
+
+
+def test_cell_rejects_tampered_paired_summary(tmp_path):
+    cell_dir, _ = _write_cell(tmp_path, 42)
+    path = cell_dir / "summary.json"
+    summary = json.loads(path.read_text(encoding="utf-8"))
+    summary["paired_dense_minus_rcd"]["metrics"]["targeted_asr"]["dense_wins"] += 1
+    path.write_text(json.dumps(summary), encoding="utf-8")
+    with pytest.raises(ValueError, match="Paired Dense-minus-RCD"):
+        matrix.validate_completed_cell(cell_dir, frozen_inputs=_frozen())
+
+
+def test_cell_rejects_missing_paired_summary(tmp_path):
+    cell_dir, _ = _write_cell(tmp_path, 42)
+    path = cell_dir / "summary.json"
+    summary = json.loads(path.read_text(encoding="utf-8"))
+    del summary["paired_dense_minus_rcd"]
+    path.write_text(json.dumps(summary), encoding="utf-8")
+    with pytest.raises(ValueError, match="Paired Dense-minus-RCD"):
+        matrix.validate_completed_cell(cell_dir, frozen_inputs=_frozen())
+
+
+def test_trusted_provenance_rejects_uniformly_forged_cell(tmp_path):
+    cell_dir, _ = _write_cell(tmp_path, 42)
+    manifest_path = cell_dir / "poison.manifest.json"
+    manifest = json.loads(manifest_path.read_text(encoding="utf-8"))
+    manifest["git"]["commit_sha"] = "b" * 40
+    manifest["git"]["source_fingerprint"] = "e" * 64
+    manifest_path.write_text(json.dumps(manifest), encoding="utf-8")
+    with pytest.raises(ValueError, match="different commit or source fingerprint"):
+        matrix.validate_completed_cell(
+            cell_dir,
+            frozen_inputs=_frozen(),
+            expected_provenance={"commit_sha": "a" * 40, "source_fingerprint": SOURCE_FP},
+        )
