@@ -129,6 +129,9 @@ def aggregate_matrix(
             "Each group reuses the same 300 query IDs across three poison seeds. "
             "The bootstrap resamples query-ID clusters retaining all seeds and both "
             "pipelines; 900 query-seed observations are not 900 independent queries. "
+            "Poison-generation seeds are fixed, not resampled, so the intervals reflect "
+            "query sampling only and do not capture variability across poison draws; "
+            "three seeds are too few to estimate it. "
             "A zero-width interval is not proof of equivalence."
         ),
     }
