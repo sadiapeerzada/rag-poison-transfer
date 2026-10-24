@@ -161,6 +161,22 @@ def _indexed(rows):
     return {(r["pipeline"], r["query_id"], r["condition"]): r for r in rows}
 
 
+def _paired_from_indexed(indexed, ids):
+    by_pipeline = {
+        pipeline: [
+            {
+                "query_id": query_id,
+                "clean_condition": indexed[(pipeline, query_id, "clean")],
+                "poisoned_condition": indexed[(pipeline, query_id, "poisoned")],
+                "query_untargeted_degradation": indexed[(pipeline, query_id, "poisoned")]["query_untargeted_degradation"],
+            }
+            for query_id in ids
+        ]
+        for pipeline in aggregate.multiseed.PIPELINES
+    }
+    return matrix.paired_differences(by_pipeline["dense"], by_pipeline["rcd"])
+
+
 def _write_summary(cell_dir, manifest, rows):
     """Write a summary consistent with ``rows`` (hash, evidence, metrics)."""
     ids = manifest["dataset"]["selected_query_ids"]
@@ -178,6 +194,7 @@ def _write_summary(cell_dir, manifest, rows):
             pipeline: matrix.recompute_pipeline_summary(indexed, pipeline, ids)
             for pipeline in aggregate.multiseed.PIPELINES
         },
+        "paired_dense_minus_rcd": _paired_from_indexed(indexed, ids),
     }
     (cell_dir / "summary.json").write_text(json.dumps(summary), encoding="utf-8")
 
@@ -364,6 +381,7 @@ def _refresh_results_hash(cell_dir):
             pipeline: matrix.recompute_pipeline_summary(_indexed(rows), pipeline, ids)
             for pipeline in aggregate.multiseed.PIPELINES
         }
+        summary["paired_dense_minus_rcd"] = _paired_from_indexed(_indexed(rows), ids)
     except Exception:
         pass  # malformed rows: leave the stale summary; validation must reject on content
     path.write_text(json.dumps(summary), encoding="utf-8")
