@@ -963,7 +963,7 @@ def validate_completed_cell(
     selected_set = set(selected_ids)
     # Bind every raw row to the frozen dataset, not just its paired counterpart.
     frozen_gold_by_id = {
-        query["query_id"]: query["answer"] for query in frozen_inputs.clean_data["queries"]
+        query["query_id"]: query["gold_answer"] for query in frozen_inputs.clean_data["queries"]
     }
     if set(frozen_gold_by_id) != selected_set:
         raise ValueError("Frozen query IDs differ from the selected cell query IDs.")
