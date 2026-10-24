@@ -1783,3 +1783,11 @@ def test_manifest_write_is_atomic_so_a_crash_cannot_leave_a_truncated_manifest(m
     monkeypatch.setattr(matrix.json, "dump", real)
     assert not (tmp_path / "poison.manifest.json").exists()
     assert [p.name for p in tmp_path.iterdir() if p.name.endswith(".tmp")] == []
+
+
+def test_aggregate_limitations_state_what_the_intervals_do_not_cover(tmp_path, monkeypatch):
+    for seed in (42, 43, 44):
+        _write_cell(tmp_path, seed)
+    text = _aggregate_three(tmp_path, monkeypatch)["limitations"]
+    assert "not resampled" in text and "query sampling only" in text
+    assert "zero-width interval is not proof of equivalence" in text
