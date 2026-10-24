@@ -63,15 +63,27 @@ class MLXGenerator:
 
     def generate(self, prompt: str, max_tokens: int = 256) -> GenerationResult:
         start = time.time()
+        # Qwen Instruct models expect chat-token delimiters, not a raw user
+        # prompt. Apply the template exactly once at the backend boundary.
+        # The caller supplies plain task text, not a preformatted conversation.
+        formatted = self.tokenizer.apply_chat_template(
+            [{"role": "user", "content": prompt}],
+            tokenize=False,
+            add_generation_prompt=True,
+        )
         text = self._generate_fn(
-            self.model, self.tokenizer, prompt=prompt, max_tokens=max_tokens, verbose=False
+            self.model, self.tokenizer, prompt=formatted,
+            max_tokens=max_tokens, verbose=False,
         )
         elapsed = time.time() - start
+        if not isinstance(text, str):
+            raise TypeError("MLX generator returned non-text output.")
+        # These are actual tokenizer counts rather than whitespace estimates.
         return GenerationResult(
             text=text,
             latency_seconds=elapsed,
-            prompt_tokens=len(prompt.split()),
-            completion_tokens=len(text.split()),
+            prompt_tokens=len(self.tokenizer.encode(formatted)),
+            completion_tokens=len(self.tokenizer.encode(text, add_special_tokens=False)),
         )
 
 
