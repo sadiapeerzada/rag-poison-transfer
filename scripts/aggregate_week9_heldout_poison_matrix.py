@@ -34,6 +34,7 @@ def aggregate_matrix(
     *,
     frozen_inputs: FrozenMatrixInputs | None = None,
     bootstrap_replicates: int = multiseed.BOOTSTRAP_REPLICATES,
+    expected_provenance: dict | None = None,
 ) -> dict:
     """Aggregate all 12 cells; incomplete, missing, or corrupt cells fail closed.
 
@@ -51,7 +52,8 @@ def aggregate_matrix(
     for attack_family, intensity, seed in matrix_cells():
         cell_id = _cell_id(attack_family, intensity, seed)
         cells[(attack_family, intensity, seed)] = validate_completed_cell(
-            root / cell_id, frozen_inputs=frozen_inputs
+            root / cell_id, frozen_inputs=frozen_inputs,
+            expected_provenance=expected_provenance,
         )
     # Provenance must agree across the WHOLE matrix, not just within a seed group:
     # one commit and one source fingerprint produced all 12 cells.
@@ -142,6 +144,8 @@ def main() -> None:
     parser.add_argument("--matrix-root", required=True, type=Path)
     parser.add_argument("--output", required=True, type=Path)
     parser.add_argument("--bootstrap-replicates", type=int, default=multiseed.BOOTSTRAP_REPLICATES)
+    parser.add_argument("--expected-commit-sha", help="Trusted 40-character commit SHA from outside cell artifacts.")
+    parser.add_argument("--expected-source-fingerprint", help="Trusted SHA-256 source fingerprint from outside cell artifacts.")
     parser.add_argument("--heldout-manifest", type=Path, default=DEFAULT_HELDOUT_MANIFEST)
     parser.add_argument("--dense-config", type=Path, default=DEFAULT_DENSE_CONFIG)
     parser.add_argument("--rcd-config", type=Path, default=DEFAULT_RCD_CONFIG)
@@ -154,10 +158,17 @@ def main() -> None:
         dense_config_path=args.dense_config,
         rcd_config_path=args.rcd_config,
     )
+    if bool(args.expected_commit_sha) != bool(args.expected_source_fingerprint):
+        parser.error("Provide both --expected-commit-sha and --expected-source-fingerprint.")
+    expected_provenance = (
+        {"commit_sha": args.expected_commit_sha, "source_fingerprint": args.expected_source_fingerprint}
+        if args.expected_commit_sha else None
+    )
     result = aggregate_matrix(
         args.matrix_root,
         frozen_inputs=frozen_inputs,
         bootstrap_replicates=args.bootstrap_replicates,
+        expected_provenance=expected_provenance,
     )
     with output.open("x", encoding="utf-8") as sink:
         json.dump(result, sink, indent=2, sort_keys=True)
