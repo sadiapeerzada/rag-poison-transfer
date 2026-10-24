@@ -1859,3 +1859,41 @@ def test_trusted_provenance_rejects_uniformly_forged_cell(tmp_path):
             frozen_inputs=_frozen(),
             expected_provenance={"commit_sha": "a" * 40, "source_fingerprint": SOURCE_FP},
         )
+
+
+
+def test_semantic_poison_document_must_contain_its_target():
+    family = "semantic_fluent_false_evidence"
+    query_id = "q-semantic"
+    target = "incorrect target"
+    text = "Fluent but unrelated evidence."
+    doc_id = matrix.poison_doc_id(family, query_id, 0, text)
+    manifest = {
+        "poison_documents": [{"doc_id": doc_id, "text": text}],
+        "query_poison_associations": [{
+            "query_id": query_id,
+            "attack_family": family,
+            "poison_doc_ids": [doc_id],
+            "poison_target_answer": target,
+        }],
+    }
+    with pytest.raises(ValueError, match="omits its target answer"):
+        matrix._verify_poison_document_identity(manifest, family, 1)
+
+
+def test_semantic_poison_document_accepts_matching_target():
+    family = "semantic_fluent_false_evidence"
+    query_id = "q-semantic"
+    target = "incorrect target"
+    text = "The reported answer is Incorrect Target."
+    doc_id = matrix.poison_doc_id(family, query_id, 0, text)
+    manifest = {
+        "poison_documents": [{"doc_id": doc_id, "text": text}],
+        "query_poison_associations": [{
+            "query_id": query_id,
+            "attack_family": family,
+            "poison_doc_ids": [doc_id],
+            "poison_target_answer": target,
+        }],
+    }
+    matrix._verify_poison_document_identity(manifest, family, 1)
