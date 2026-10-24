@@ -1659,6 +1659,7 @@ def run_matrix(
                 _write_json_atomic(plan_path, plan)
             cell_dir.mkdir()
             started = time.perf_counter()
+            attack = None
             try:
                 if reusable_manifest is not None:
                     manifest = reusable_manifest  # the original, verified poison instance
@@ -1740,6 +1741,13 @@ def run_matrix(
                         "error": str(error),
                         "traceback": traceback.format_exc(),
                         "partial_results_path": str(results_path) if results_path.exists() else None,
+                        "generation_attempts": [
+                            {"query_id": query_id, "poison_index": index,
+                             "attempts": list(attempts)}
+                            for (query_id, index), attempts in (
+                                getattr(attack, "attempt_log", {}) if attack is not None else {}
+                            ).items()
+                        ],
                     },
                 )
             _record_progress(
