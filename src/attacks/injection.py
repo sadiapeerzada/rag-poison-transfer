@@ -12,6 +12,7 @@ extra corpus entries and one extra field per query.
 import random
 
 from src.evaluation.metrics import exact_match
+from src.attacks.compatible_targets import select_reviewed_target, assignment_fingerprint, PROTOCOL_VERSION
 
 
 def inject_poisons(
@@ -22,6 +23,7 @@ def inject_poisons(
     seed: int = 42,
     attacked_query_ids: list[str] | None = None,
     checkpoint=None,
+    reviewed_target_assignments: dict | None = None,
 ) -> dict:
     """Inject poison documents into a clean {corpus, queries} dataset.
 
@@ -47,6 +49,8 @@ def inject_poisons(
         "poison_doc_ids" field (empty list if this query wasn't
         attacked) and "attack_family" (None if not attacked).
     """
+    # Explicit opt-in only; legacy selection and RNG remain untouched by default.
+    # Validate all attacked targets before any generation/checkpoint writes.
     rng = random.Random(seed)
     queries = data["queries"]
     # Deep-copy each corpus dict, not just the list -- otherwise poisoned
@@ -84,6 +88,18 @@ def inject_poisons(
             )
         ) if n_to_attack > 0 else set()
 
+    if reviewed_target_assignments is not None:
+        reviewed_targets = {
+            q["query_id"]: select_reviewed_target(q, reviewed_target_assignments)
+            for q in queries if q["query_id"] in attacked_ids
+        }
+        reviewed_fingerprint = assignment_fingerprint(reviewed_target_assignments)
+        if checkpoint is not None and checkpoint.provenance.get("target_assignment_fingerprint") != reviewed_fingerprint:
+            raise ValueError("Checkpoint target assignment fingerprint mismatch")
+    else:
+        reviewed_targets = None
+        reviewed_fingerprint = None
+
     new_queries = []
     for query in queries:
         query_copy = dict(query)  # shallow copy -- gold_doc_ids/gold_answer
@@ -96,7 +112,10 @@ def inject_poisons(
             # all coherently support the SAME false claim -- "coordinated
             # poison docs" per the research plan -- rather than each
             # document independently arguing for a different random target.
-            target_answer = attack.pick_cross_query_target_answer(query, queries, rng)
+            target_answer = (
+                reviewed_targets[query["query_id"]] if reviewed_targets is not None
+                else attack.pick_cross_query_target_answer(query, queries, rng)
+            )
             poison_ids_for_query = []
             for i in range(n_poison):
                 # Checkpoint lookups preserve the original RNG-driven target
@@ -125,6 +144,9 @@ def inject_poisons(
             # model's answer match the intended false target?) doesn't
             # need to re-derive it from poison document text.
             query_copy["poison_target_answer"] = target_answer
+            if reviewed_targets is not None:
+                query_copy["target_selection_protocol"] = PROTOCOL_VERSION
+                query_copy["target_assignment_fingerprint"] = reviewed_fingerprint
         else:
             query_copy["poison_doc_ids"] = []
             query_copy["attack_family"] = None
