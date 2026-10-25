@@ -242,7 +242,7 @@ def test_retry_prompt_has_actual_newline_separator():
     import random
 
     generator = SequenceGenerator([
-        "Bob was mentioned in a disputed record but was not the answer.",
+        "The claim that Bob is the answer is incorrect. Alice is the answer.",
         "Bob is the answer to the question according to the historical register.",
     ])
     attack = SemanticFluentFalseEvidenceAttack(generator, max_attempts=2)
@@ -251,3 +251,46 @@ def test_retry_prompt_has_actual_newline_separator():
     revised_prompt = generator.prompts[1][0]
     assert "\\n\\nRevision instruction:" not in revised_prompt
     assert "\n\nRevision instruction:" in revised_prompt
+
+
+def test_semantic_smoke_cli_selection(monkeypatch, tmp_path):
+    import importlib
+    import importlib.util
+    from pathlib import Path
+
+    runner_path = Path(__file__).resolve().parents[1] / "scripts" / "run_week9_heldout_poison_matrix.py"
+    spec = importlib.util.spec_from_file_location("week9_semantic_smoke_runner", runner_path)
+    runner = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(runner)
+
+    calls = []
+    monkeypatch.setattr(runner, "preflight", lambda **kwargs: {
+        "runtime_requirements": {"mlx_available": True, "mlx_lm_available": True}
+    })
+    monkeypatch.setattr(runner, "_require_clean_relevant_inputs", lambda **kwargs: None)
+    monkeypatch.setattr(runner, "validate_frozen_inputs", lambda **kwargs: (
+        {}, {"generator_backend": "mlx"}, ["q0", "q1"], "heldout-fingerprint", {}
+    ))
+    monkeypatch.setattr(runner, "load_dataset", lambda config: clean_data())
+    monkeypatch.setattr(runner, "set_seed", lambda seed: None)
+    monkeypatch.setattr(runner, "build_generator", lambda config: AffirmingGenerator())
+    def capture_attack(family, generator):
+        calls.append(family)
+        return SemanticFluentFalseEvidenceAttack(generator), {"max_tokens": 150}
+    monkeypatch.setattr(runner, "_attack", capture_attack)
+    monkeypatch.setattr(runner, "build_cell_manifest", lambda **kwargs: {
+        "cell_id": kwargs["cell_id"], "attack": {"configuration": {}}
+    })
+    monkeypatch.setattr(runner, "replay_cell_manifest", lambda clean, manifest: clean)
+    monkeypatch.setattr(runner, "evaluate_cell", lambda **kwargs: {
+        "execution_evidence": {
+            "raw_record_count": 1, "expected_raw_record_count": 1,
+            "retrieval_elapsed_seconds": 0, "generation_elapsed_seconds": 0
+        }
+    })
+    monkeypatch.setattr(runner, "git_commit_sha", lambda **kwargs: "test-commit")
+    result = runner.run_smoke_test(output_dir=tmp_path, experiment_id="semantic-smoke",
+        query_count=2, attack_family="semantic_fluent_false_evidence")
+    assert calls == ["semantic_fluent_false_evidence"]
+    assert result["is_final_run"] is False
+    assert result["requires_independent_semantic_review"] is True
