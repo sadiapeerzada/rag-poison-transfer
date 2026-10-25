@@ -13,7 +13,6 @@ import hashlib
 import importlib.util
 import json
 import os
-import re
 from pathlib import Path
 import sys
 import time
@@ -43,6 +42,7 @@ from src.attacks.lexical import LexicalInfluentialTokenAttack
 from src.attacks.reviewed_target_artifact import read_pinned, _normalized
 from src.attacks.semantic_fluent import (
     SemanticFluentFalseEvidenceAttack, SemanticQualityError, SEMANTIC_PROMPT_VERSION, SEMANTIC_VALIDATION_VERSION, SEMANTIC_RETRY_POLICY,
+    has_affirmative_target_relation,
 )
 from src.attacks.target_candidates import expected_category
 from src.evaluation.qa_records import capture_generation, MEASUREMENT_SCHEMA, EXTRACTOR_VERSION
@@ -52,7 +52,7 @@ from src.utils.seeding import set_seed
 
 SCHEMA = "rag-poison-transfer.week9-development-smoke/v1"
 TARGET_SCHEMA = "rag-poison-transfer.development-smoke-targets/v1"
-DIAGNOSTIC_VALIDATION_VERSION = "development-direct-affirmation/v1"
+DIAGNOSTIC_VALIDATION_VERSION = "development-direct-affirmation/v2"
 # Fixed before model output: named-person and year-answer diagnostics from dev.
 DEVELOPMENT_QUERY_IDS = ("5ae2c416554299492dc91c67", "5ae143ed55429920d5234360")
 FAMILIES = ("lexical_influential_token", "semantic_fluent_false_evidence")
@@ -170,8 +170,10 @@ def preflight(targets=None, targets_sha256=None):
 
 class _RecordingGenerator:
     """Append each actual model call before validation, including failed attempts."""
-    def __init__(self, backend, path):
+    def __init__(self, backend, path, model_provenance=None):
         self.backend, self.path, self.context = backend, path, {}
+        self.model_provenance = copy.deepcopy(model_provenance) if model_provenance else {
+            "generator_class": type(backend).__module__ + "." + type(backend).__name__}
 
     def set_observation_context(self, context):
         self.context = dict(context)
@@ -199,19 +201,14 @@ class _RecordingGenerator:
 
 
 class _DiagnosticSemanticAttack(SemanticFluentFalseEvidenceAttack):
-    """Additional diagnostic check; frozen shared attack/validator are unchanged.
+    """Diagnostic direct-relation screen sharing the versioned syntax predicate.
 
     Explicit local relation is necessary, never sufficient for entailment.
     Mere target mention near the word 'answer' is not an affirmative assertion.
     """
     def _validate_text(self, text, query, target_answer):
         status = super()._validate_text(text, query, target_answer)
-        target = re.escape(target_answer.strip())
-        affirmative = (
-            re.search(rf"\b{target}\b\s+(?:is|was|remains|became|has been|served as|serves as)\b", text, re.I) or
-            re.search(rf"\b(?:identify|identifies|identified|named|recognize|recognized|listed|recorded|documented)\s+{target}\b\s+(?:as|to be)\b", text, re.I)
-        )
-        if not affirmative:
+        if not has_affirmative_target_relation(text, target_answer):
             raise SemanticQualityError("Diagnostic text lacks a direct affirmative target relation")
         return status
 
@@ -279,7 +276,9 @@ def execute(*, targets, targets_sha256, output_dir, experiment_id, recover_from=
             _require_clean_relevant_inputs(require_tracked_runner=True)
             directory = root / family
             directory.mkdir()
-            recorder = _RecordingGenerator(backend, directory / "generation.events.jsonl")
+            recorder = _RecordingGenerator(backend, directory / "generation.events.jsonl", {
+                "generator_backend": plan["generator_backend"], "model_name": plan["generator_model"],
+                "git_commit_sha": plan["git_commit_sha"]})
             attack = (LexicalInfluentialTokenAttack(repeat_factor=4) if family == FAMILIES[0] else
                       _DiagnosticSemanticAttack(recorder, max_tokens=150, max_attempts=2))
             if family == FAMILIES[1]:
@@ -290,9 +289,8 @@ def execute(*, targets, targets_sha256, output_dir, experiment_id, recover_from=
                     attacked_query_ids=list(DEVELOPMENT_QUERY_IDS), checkpoint=checkpoints.get(family),
                     reviewed_target_assignments=mapping)
             finally:
-                _write(directory / "poison.attempts.json", [
-                    {"query_id": key[0], "poison_index": key[1], "attempts": value}
-                    for key, value in sorted(getattr(attack, "attempt_log", {}).items())])
+                _write(directory / "poison.attempts.json",
+                       attack.export_attempt_records() if family == FAMILIES[1] else [])
             if not validate_poisoned_dataset(clean, poisoned, expected_n_poison=1, expected_poison_rate=1.0)["valid"]:
                 raise ValueError("Invalid diagnostic poison snapshot")
             fingerprint = poison_instances_fingerprint(clean, poisoned)

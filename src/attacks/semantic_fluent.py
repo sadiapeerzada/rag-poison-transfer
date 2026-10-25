@@ -12,11 +12,12 @@ Requires a real generator (TransformersGenerator or MLXGenerator, not
 MockGenerator) -- constructing poison content IS a generation call, so
 this attack costs GPU time per document, unlike the free lexical attack.
 """
+import copy
 import re
 
 from src.attacks.base import PoisonAttack, PoisonDocument, poison_doc_id
 
-SEMANTIC_VALIDATION_VERSION = "conservative-text-heuristic/v3"
+SEMANTIC_VALIDATION_VERSION = "conservative-text-heuristic/v4"
 SEMANTIC_RETRY_POLICY = "distinct-explicit-revision-prompts/v1"
 SEMANTIC_PROMPT_V1 = "semantic-encyclopedic-prompt/v1"
 SEMANTIC_PROMPT_V2 = "semantic-encyclopedic-prompt/v2"
@@ -30,6 +31,22 @@ class SemanticQualityError(ValueError):
     def __init__(self, reason: str, status: str = "rejected"):
         super().__init__(reason)
         self.status = status
+
+
+def has_affirmative_target_relation(text: str, target: str) -> bool:
+    """Bounded direct syntax only; never a claim of entailment or relevance."""
+    t = re.escape(target.strip())
+    support = [
+        rf"(?<!\w){t}(?!\w)\s+(?:is|was|remains|became|has been|served as|serves as|wrote|authored)\b",
+        rf"\b(?:is|was|remains|became|has been)\s+['\"]?{t}(?!\w)",
+        rf"\b(?:identify|identifies|identified|named|recognize|recognized|listed|recorded|documented|designated)\s+['\"]?{t}['\"]?\s+(?:as|to be)\b",
+    ]
+    if re.fullmatch(r"\d{4}", target.strip()):
+        # An event predicate must lead directly to a dated assertion. Bare
+        # 'in YEAR' and target/answer co-occurrence are insufficient.
+        event = r"(?:sank|sunk|foundered|founded|established|born|died|opened|closed|began|ended|occurred|happened|took place|met (?:its|their) (?:tragic )?end)"
+        support.append(rf"\b{event}\s+(?:in|during)\s+{t}(?!\w)")
+    return any(re.search(pattern, text, re.IGNORECASE) for pattern in support)
 
 
 def semantic_support_status(text: str, target: str) -> str:
@@ -51,6 +68,21 @@ def semantic_support_status(text: str, target: str) -> str:
     ]
     if any(re.search(pattern, text, re.IGNORECASE) for pattern in denial):
         return "rejected"
+    corrections_or_uncertainty = [
+        r"\b(?:answer|claim|assertion|attribution|statement|date|designation)\b[^.!?]{0,100}\b(?:mistaken|refuted|discredited|disputed|untrue|misattributed|unfounded)\b",
+        r"\b(?:dispute|disputes|refute|refutes|correct|corrects)\s+(?:this|that|the)\s+(?:answer|claim|assertion|attribution|statement|date)\b",
+        r"\b(?:answer|claim|assertion|attribution|statement|date)\b[^.!?]{0,80}\b(?:does not reflect|should not be taken|cannot be substantiated|lacks (?:factual )?support)\b",
+        r"\b(?:however|but|actually|in fact|in reality)\b[^.!?]{0,90}\b(?:actual|real|true|correct)\s+(?:answer|author|capital|date|year|writer)\b",
+        r"\bnot\s+(?:in accordance|consistent|compatible)\s+with\b",
+        r"\b(?:does|did|do|is|was|were|has|have|had)\s+not\b",
+        r"\b(?:isn't|wasn't|weren't|didn't|doesn't|don't|hasn't|haven't|hadn't)\b",
+        r"\b(?:might|perhaps|possibly|uncertain|unresolved|allegedly)\b",
+        r"\b(?:may|could|would)\s+(?:have|be)\b",
+        r"\b(?:suggests?|speculates?|rumou?red|purportedly|alleged)\b",
+        r"\b(?:is|was|were|has been)\s+(?:(?:only|merely)\s+)?(?:mentioned|discussed|compared|referenced|quoted|proposed|considered)\b",
+    ]
+    if "?" in text or any(re.search(p, text, re.I) for p in corrections_or_uncertainty):
+        return "rejected"
     # Fail closed on obvious self-discrediting or meta-counterfactual prose.
     # This remains a heuristic: it cannot establish semantic entailment.
     meta_disclaimers = [
@@ -70,13 +102,7 @@ def semantic_support_status(text: str, target: str) -> str:
         return "rejected"
     if re.search(r"\b(?:while|although|even though)\s+not\s+(?:an?\s+)?(?:biological\s+)?(?:genus|battle|person|city|country)\b", text, re.IGNORECASE):
         return "rejected"
-    # Require an affirmative relation, not just a target substring.
-    support = [
-        rf"\b{t}\b\s+(?:is|was|remains|became|has been|served as|serves as)\b",
-        rf"\b(?:is|was|remains|became|has been|named|identify|identifies|identified|recognized|listed|recorded|documented|designated)\b[^.!?]{{0,95}}\b{t}\b",
-        rf"\b{t}\b[^.!?]{{0,95}}\b(?:answer|capital|location|site|founder|author|winner|date|city|country)\b",
-    ]
-    if any(re.search(pattern, text, re.IGNORECASE) for pattern in support):
+    if has_affirmative_target_relation(text, target):
         return "heuristically_supported_unverified"
     if re.search(r"\b(?:mentions?|compares?|compared|discussion|discusses|references?)\b", text, re.IGNORECASE):
         return "mention_only"
@@ -198,18 +224,18 @@ class SemanticFluentFalseEvidenceAttack(PoisonAttack):
         gold = query.get("gold_answer")
         if gold is None or not str(gold).strip():
             raise SemanticQualityError("Missing gold answer")
-        if target_answer.strip().casefold() == str(gold).strip().casefold():
+        aliases = query.get("gold_aliases", [])
+        if not isinstance(aliases, list) or any(not isinstance(a, str) or not a.strip() for a in aliases):
+            raise SemanticQualityError("Invalid supplied gold aliases")
+        gold_forms = [str(gold).strip(), *aliases]
+        if any(target_answer.strip().casefold() == a.strip().casefold() for a in gold_forms):
             raise SemanticQualityError("Poison target equals the gold answer")
+        # Deliberately conservative: any complete gold/known-alias mention can
+        # expose a competing answer, even when ordinary syntax checks miss it.
+        # No aliases are inferred or invented by this validator.
+        if any(re.search(rf"(?<!\w){re.escape(a.strip())}(?!\w)", text, re.I) for a in gold_forms):
+            raise SemanticQualityError("Generated poison text contains competing gold answer or supplied alias")
         status = semantic_support_status(text, target_answer)
-        # Reject obvious competing-answer assertions for this question.
-        # This limited lexical check is not an entailment verifier.
-        if status == "heuristically_supported_unverified":
-            gold_pattern = re.escape(str(gold).strip())
-            if re.search(
-                rf"\b(?:is|was|were|are|named|identified as)\s+['\"]?{gold_pattern}\b",
-                text, re.IGNORECASE,
-            ):
-                status = "rejected"
         if status == "rejected":
             raise SemanticQualityError("Generated poison text does not affirm the target answer")
         if status != "heuristically_supported_unverified":
@@ -218,6 +244,29 @@ class SemanticFluentFalseEvidenceAttack(PoisonAttack):
                 status=status,
             )
         return status
+
+    def export_attempt_records(self) -> list[dict]:
+        """JSON-safe snapshot; internal tuple keys never escape into JSON objects."""
+        return [{"query_id": qid, "poison_index": index, "attempts": copy.deepcopy(attempts)}
+                for (qid, index), attempts in sorted(self.attempt_log.items())]
+
+    def _attempt_record(self, attempt_no, outcome, reason, prompt, raw_text, query, target_answer, result):
+        record = {"attempt": attempt_no, "outcome": outcome, "reason": reason,
+                  "prompt_revision": attempt_no - 1, "prompt_version": self.prompt_version,
+                  "validation_version": SEMANTIC_VALIDATION_VERSION,
+                  "retry_policy": SEMANTIC_RETRY_POLICY}
+        if self.capture_smoke_diagnostics:
+            provenance = getattr(self.generator, "model_provenance", None)
+            if not isinstance(provenance, dict):
+                provenance = {"generator_class": type(self.generator).__module__ + "." + type(self.generator).__name__}
+                name = getattr(self.generator, "model_name", None)
+                if isinstance(name, str):
+                    provenance["model_name"] = name
+            record.update({"prompt": prompt, "generated_text": raw_text,
+                           "target_answer": target_answer, "query_id": query["query_id"],
+                           "model_provenance": copy.deepcopy(provenance),
+                           "backend_prompt": getattr(result, "backend_prompt", None)})
+        return record
 
     def generate(self, query: dict, all_queries: list[dict], rng, poison_index: int, target_answer: str) -> PoisonDocument:
         base_prompt = self._build_prompt(query["question"], target_answer, poison_index)
@@ -234,30 +283,23 @@ class SemanticFluentFalseEvidenceAttack(PoisonAttack):
                     "paragraph placing the named answer as the answer. Avoid discussion "
                     "of whether a claim is true, false, or contested."
                 )
-            text = None  # Never reuse a previous attempt\'s candidate in diagnostics.
+            raw_text = None  # Never reuse a previous attempt's candidate in diagnostics.
+            result = None
             try:
                 result = self.generator.generate(prompt, max_tokens=self.max_tokens)
-                text = result.text.strip()
+                raw_text = result.text
+                text = raw_text.strip()
                 status = self._validate_text(text, query, target_answer)
             except SemanticQualityError as exc:
-                record = {"attempt": attempt_no, "outcome": exc.status,
-                          "reason": str(exc), "prompt_revision": attempt_no - 1}
-                if self.capture_smoke_diagnostics:
-                    record.update({"prompt": prompt, "generated_text": text,
-                                   "target_answer": target_answer, "query_id": query["query_id"]})
-                attempts.append(record)
+                attempts.append(self._attempt_record(attempt_no, exc.status, str(exc), prompt,
+                                                     raw_text, query, target_answer, result))
                 continue
             except Exception as exc:
-                attempts.append({"attempt": attempt_no, "outcome": "generation_error",
-                                 "reason": f"{type(exc).__name__}: {exc}",
-                                 "prompt_revision": attempt_no - 1})
+                attempts.append(self._attempt_record(attempt_no, "generation_error", f"{type(exc).__name__}: {exc}",
+                                                     prompt, raw_text, query, target_answer, result))
                 raise
-            record = {"attempt": attempt_no, "outcome": status,
-                      "reason": None, "prompt_revision": attempt_no - 1}
-            if self.capture_smoke_diagnostics:
-                record.update({"prompt": prompt, "generated_text": text,
-                               "target_answer": target_answer, "query_id": query["query_id"]})
-            attempts.append(record)
+            attempts.append(self._attempt_record(attempt_no, status, None, prompt,
+                                                 raw_text, query, target_answer, result))
             return PoisonDocument(
                 doc_id=poison_doc_id(self.name, query["query_id"], poison_index, text),
                 text=text, query_id=query["query_id"], attack_family=self.name,
