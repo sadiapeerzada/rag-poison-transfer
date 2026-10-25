@@ -32,7 +32,7 @@ def expected_category(question: str, gold_answer: str) -> str:
         return "relationship"
     if re.search(r"\b(what|which) (battle|war|conflict)\b|\bwhich battle\b", q):
         return "battle"
-    if re.search(r"\b(what|which) (actor|actress|person|singer|director|author|player)\b|\bwho\b", q):
+    if re.search(r"\bwho\b", q) or (\n        re.search(r"\b(what|which)\b", q)\n        and re.search(r"\b(actor|actress|person|singer|director|author|player)\b", q)\n    ):
         return "person"
     if re.search(r"\b(station|airport)\b", q):
         return "transport_place"
