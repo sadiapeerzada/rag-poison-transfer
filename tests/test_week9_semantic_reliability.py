@@ -256,11 +256,13 @@ def test_retry_prompt_has_actual_newline_separator():
 def test_semantic_smoke_cli_selection(monkeypatch, tmp_path):
     import importlib
     import importlib.util
+    import sys
     from pathlib import Path
 
     runner_path = Path(__file__).resolve().parents[1] / "scripts" / "run_week9_heldout_poison_matrix.py"
     spec = importlib.util.spec_from_file_location("week9_semantic_smoke_runner", runner_path)
     runner = importlib.util.module_from_spec(spec)
+    monkeypatch.setitem(sys.modules, spec.name, runner)
     spec.loader.exec_module(runner)
 
     calls = []
