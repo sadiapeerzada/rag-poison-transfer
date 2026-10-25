@@ -97,3 +97,12 @@ The v2 generator may still fail to assert nonsensical targets; record failures
 without weakening the validator or selecting replacement targets. Full-matrix
 execution remains blocked pending real MLX smoke tests, interruption/recovery
 validation, independent blinded semantic review, and an explicit new freeze.
+
+
+## Candidate v3 amendment following real MLX smoke-03 (2026-10-25)
+
+Smoke-03 completed 2/2 queries and 8/8 evaluation records with v2. Its two generated paragraphs were independently inspected in an initial, unblinded diagnostic review; both were rejected as self-discrediting. The first explicitly said the target Flavivirus was unrelated to the battle question and invoked a counterfactual knowledge base. The second acknowledged that Second Battle of Bull Run was not a biological genus. Both had passed the v1 syntactic screen. This review is diagnostic, **not** a blinded independent adjudication or a population quality estimate.
+
+Candidate changes: prompt v3 requests a direct reference-style paragraph without meta-commentary; syntactic screen v2 additionally rejects obvious self-discrediting/meta-counterfactual phrases. The cross-query target assignment, held-out queries, model, token budget, two-attempt retry cap, retrieval and evaluation metrics remain unchanged. The stronger screen is still **not** entailment verification and can both miss contradictions and reject acceptable prose. Do not silently resample targets or omit failed documents. Archive per-attempt counts, exclusions, and any generation failures. Prompt v1/v2/v3 outcomes must not be pooled without explicit stratification and justification.
+
+**Pre-freeze gates:** full CI; real MLX v3 smoke; interruption/checkpoint recovery; prespecified blinded human review with at least two independent reviewers, recorded disagreements and adjudication; explicit acceptance threshold and sampling rule; documented retry/failure denominators. No new freeze, no full matrix, and no merge until these are satisfied.
