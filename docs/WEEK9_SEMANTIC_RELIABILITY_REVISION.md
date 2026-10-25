@@ -75,3 +75,25 @@ A normal `--resume` never automatically recovers incomplete cells.
 
 Do not execute the full matrix while the revised protocol remains
 unvalidated. This branch must not be merged into main until reviewed.
+
+
+## Proposed semantic prompt v2 amendment (not frozen)
+
+Prompt versions are `semantic-encyclopedic-prompt/v1` (the original,
+selectable for reproduction) and `semantic-encyclopedic-prompt/v2`
+(the current candidate). The latter frames the task as a synthetic
+counterfactual encyclopedia entry, explicitly asks for the exact assigned
+cross-query target, and requires an affirmative relation to the question,
+even when the target is categorically unrelated. The source question,
+false-target selection, seeds, held-out IDs, model, token limits, two-attempt
+retry policy, conservative validator, and evaluation metrics are unchanged.
+
+This is a substantive attack-prompt amendment, **not** a mere bug fix.
+The selected prompt version is recorded in the semantic attack configuration,
+smoke review metadata, per-document checkpoint and its provenance, and
+failure diagnostics. Checkpoint recovery rejects a different prompt version.
+The old freeze tag is not modified; do not combine v1 and v2 observations.
+The v2 generator may still fail to assert nonsensical targets; record failures
+without weakening the validator or selecting replacement targets. Full-matrix
+execution remains blocked pending real MLX smoke tests, interruption/recovery
+validation, independent blinded semantic review, and an explicit new freeze.

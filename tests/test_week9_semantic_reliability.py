@@ -11,6 +11,8 @@ from src.attacks.injection import inject_poisons
 from src.attacks.semantic_fluent import (
     SemanticFluentFalseEvidenceAttack,
     SemanticQualityError,
+    SEMANTIC_PROMPT_V1,
+    SEMANTIC_PROMPT_V2,
     semantic_support_status,
 )
 from src.pipelines.generator import GenerationResult, MLXGenerator
@@ -47,7 +49,11 @@ class AffirmingGenerator:
 
     def generate(self, prompt, max_tokens=150):
         self.calls += 1
-        target = prompt.split('Claim: the correct answer is "', 1)[1].split('"', 1)[0]
+        markers = ('Assigned answer (copy exactly): "', 'Claim: the correct answer is "')
+        marker = next((candidate for candidate in markers if candidate in prompt), None)
+        if marker is None:
+            raise AssertionError('Unknown semantic prompt format')
+        target = prompt.split(marker, 1)[1].split('"', 1)[0]
         text = (
             f"Historical reports identify {target} as the answer to this question. "
             f"Several records also identify {target} as the answer in institutional accounts."
@@ -297,3 +303,56 @@ def test_semantic_smoke_cli_selection(monkeypatch, tmp_path):
     assert calls == ["semantic_fluent_false_evidence"]
     assert result["is_final_run"] is False
     assert result["requires_independent_semantic_review"] is True
+
+
+def test_prompt_v2_explicit_target_and_v1_preserved():
+    generator = AffirmingGenerator()
+    v1 = SemanticFluentFalseEvidenceAttack(generator, prompt_version=SEMANTIC_PROMPT_V1)
+    v2 = SemanticFluentFalseEvidenceAttack(generator, prompt_version=SEMANTIC_PROMPT_V2)
+    original = v1._build_prompt("Which battle came first?", "Flavivirus", 0)
+    revised = v2._build_prompt("Which battle came first?", "Flavivirus", 0)
+    assert 'Claim: the correct answer is "Flavivirus".' in original
+    assert "synthetic counterfactual" not in original
+    assert 'Assigned answer (copy exactly): "Flavivirus"' in revised
+    assert "even if the categories seem incompatible" in revised
+    assert revised != original
+    with pytest.raises(ValueError, match="Unknown semantic prompt version"):
+        SemanticFluentFalseEvidenceAttack(generator, prompt_version="invalid")
+
+
+def test_v2_retries_preserve_target_and_diagnostics_do_not_reuse_stale_text():
+    generator = SequenceGenerator([
+        "Bob is the answer in historical documents, and Bob was the recorded leader.",
+        "Alice was the recorded leader of the project, according to the records.",
+        "",
+    ])
+    attack = SemanticFluentFalseEvidenceAttack(generator, prompt_version=SEMANTIC_PROMPT_V2)
+    attack.capture_smoke_diagnostics = True
+    query = clean_data()["queries"][0]
+    attack.generate(query, [query], random.Random(1), 0, "Bob")
+    assert attack.attempt_log[("q0", 0)][0]["generated_text"].startswith("Bob is")
+    with pytest.raises(SemanticQualityError, match="exhausted 2 attempts"):
+        attack.generate(query, [query], random.Random(1), 0, "Bob")
+    attempts = attack.attempt_log[("q0", 0)]
+    assert attempts[0]["generated_text"].startswith("Alice was")
+    assert attempts[1]["generated_text"] == ""
+    assert all('Assigned answer (copy exactly): "Bob"' in prompt for prompt, _ in generator.prompts)
+
+
+def test_checkpoint_refuses_prompt_version_mismatch(tmp_path):
+    clean = clean_data()
+    original = PoisonCheckpoint(
+        tmp_path / "v1", [], provenance={"prompt_version": SEMANTIC_PROMPT_V1},
+        attack_family="semantic_fluent_false_evidence", intensity=1,
+        allowed_query_ids=["q0", "q1"],
+    )
+    inject_poisons(clean, SemanticFluentFalseEvidenceAttack(
+        AffirmingGenerator(), prompt_version=SEMANTIC_PROMPT_V1,
+    ), n_poison=1, poison_rate=1.0, seed=42, checkpoint=original)
+    with pytest.raises(ValueError, match="provenance mismatch"):
+        PoisonCheckpoint(
+            tmp_path / "v2", [tmp_path / "v1"],
+            provenance={"prompt_version": SEMANTIC_PROMPT_V2},
+            attack_family="semantic_fluent_false_evidence", intensity=1,
+            allowed_query_ids=["q0", "q1"],
+        )

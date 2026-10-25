@@ -54,7 +54,8 @@ from scripts.run_week9_multiseed_matched_evaluation import (
 from src.attacks.base import poison_doc_id
 from src.attacks.checkpoint import PoisonCheckpoint
 from src.attacks.semantic_fluent import (
-    SEMANTIC_VALIDATION_VERSION, SEMANTIC_RETRY_POLICY, semantic_support_status,
+    SEMANTIC_VALIDATION_VERSION, SEMANTIC_RETRY_POLICY, SEMANTIC_PROMPT_VERSION,
+    semantic_support_status,
 )
 from src.attacks.injection import inject_poisons, validate_poisoned_dataset
 from src.attacks.lexical import LexicalInfluentialTokenAttack
@@ -452,7 +453,7 @@ def _attack(attack_family: str, generator: Any | None) -> tuple[Any, dict]:
         if generator is None:
             raise RuntimeError("Semantic-fluent poison generation requires a real generator.")
         return SemanticFluentFalseEvidenceAttack(generator, max_tokens=150), {
-            "max_tokens": 150
+            "max_tokens": 150, "prompt_version": SEMANTIC_PROMPT_VERSION
         }
     raise ValueError(f"Unsupported attack family: {attack_family}")
 
@@ -1628,6 +1629,7 @@ def run_matrix(
                             "attack_max_attempts": 2,
                             "validation_version": SEMANTIC_VALIDATION_VERSION,
                             "retry_policy": SEMANTIC_RETRY_POLICY,
+                            "prompt_version": SEMANTIC_PROMPT_VERSION,
                             "intensity": intensity,
                             "poison_seed": poison_seed,
                             "runtime_seed": FROZEN_RUNTIME_SEED,
@@ -1684,6 +1686,7 @@ def run_matrix(
                             **attack_config,
                             "max_attempts": attack.max_attempts,
                             "retry_policy": SEMANTIC_RETRY_POLICY,
+                            "prompt_version": attack.prompt_version,
                             "validation_version": SEMANTIC_VALIDATION_VERSION,
                             "validation_status": "heuristically_supported_unverified",
                             "requires_independent_semantic_review": True,
@@ -1880,6 +1883,7 @@ def run_smoke_test(
             manifest["attack"]["semantic_generation_review"] = {
                 "validation_version": SEMANTIC_VALIDATION_VERSION,
                 "retry_policy": SEMANTIC_RETRY_POLICY,
+                "prompt_version": attack.prompt_version,
                 "requires_independent_semantic_review": True,
             }
         _write_json_exclusive(
@@ -1939,6 +1943,7 @@ def run_smoke_test(
                 "status": "non_final_smoke_diagnostics",
                 "validation_version": SEMANTIC_VALIDATION_VERSION,
                 "retry_policy": SEMANTIC_RETRY_POLICY,
+                "prompt_version": attack.prompt_version,
                 "records": diagnostics,
             })
         _write_json_exclusive(
