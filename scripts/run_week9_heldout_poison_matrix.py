@@ -1798,11 +1798,14 @@ def run_smoke_test(
     output_dir: Path,
     experiment_id: str,
     query_count: int = 2,
+    attack_family: str = "lexical_influential_token",
     heldout_path: Path = DEFAULT_HELDOUT_MANIFEST,
     dense_config_path: Path = DEFAULT_DENSE_CONFIG,
     rcd_config_path: Path = DEFAULT_RCD_CONFIG,
 ) -> dict:
-    """Run a real, isolated, non-final lexical smoke test on held-out IDs."""
+    """Run a real, isolated, non-final lexical or semantic smoke test."""
+    if attack_family not in MATRIX_ATTACKS:
+        raise ValueError(f"Unsupported smoke attack family: {attack_family}")
     if not experiment_id or Path(experiment_id).name != experiment_id:
         raise ValueError("experiment_id must be a non-empty filename-safe value.")
     if not 1 <= query_count < MATRIX_QUERY_COUNT:
@@ -1845,7 +1848,7 @@ def run_smoke_test(
         generator = build_generator(rcd_config)
         if generator.__class__.__name__ == "MockGenerator":
             raise TypeError("Smoke test requires the configured real generator.")
-        attack, attack_config = _attack("lexical_influential_token", generator)
+        attack, attack_config = _attack(attack_family, generator)
         poisoned_data = inject_poisons(
             clean_data,
             attack,
@@ -1855,10 +1858,10 @@ def run_smoke_test(
             attacked_query_ids=selected_ids,
         )
         manifest = build_cell_manifest(
-            cell_id=f"smoke.lexical.intensity-1.seed-{PREDECLARED_POISON_SEEDS[0]}",
+            cell_id=f"smoke.{attack_family}.intensity-1.seed-{PREDECLARED_POISON_SEEDS[0]}",
             clean_data=clean_data,
             poisoned_data=poisoned_data,
-            attack_family="lexical_influential_token",
+            attack_family=attack_family,
             intensity=1,
             poison_seed=PREDECLARED_POISON_SEEDS[0],
             heldout_fingerprint=heldout_fp,
@@ -1870,6 +1873,12 @@ def run_smoke_test(
             execution_mode="smoke_test",
         )
         manifest["attack"]["configuration"] = attack_config
+        if attack_family == "semantic_fluent_false_evidence":
+            manifest["attack"]["semantic_generation_review"] = {
+                "validation_version": SEMANTIC_VALIDATION_VERSION,
+                "retry_policy": SEMANTIC_RETRY_POLICY,
+                "requires_independent_semantic_review": True,
+            }
         _write_json_exclusive(
             plan_path,
             {
@@ -1877,6 +1886,7 @@ def run_smoke_test(
                 "status": "smoke_test_not_final",
                 "is_final_run": False,
                 "selected_query_ids": selected_ids,
+                "attack_family": attack_family,
                 "preflight": preflight_data,
             },
         )
@@ -1909,6 +1919,8 @@ def run_smoke_test(
             "results_path": str(results_path),
             "poison_instance_fingerprint": manifest["poison_instance_fingerprint"],
             "query_count": query_count,
+            "attack_family": attack_family,
+            "requires_independent_semantic_review": attack_family == "semantic_fluent_false_evidence",
             "runtime_seconds": time.perf_counter() - started,
             **metrics,
         }
@@ -1945,6 +1957,8 @@ def main() -> None:
     parser.add_argument("--preflight", action="store_true")
     parser.add_argument("--smoke-test", action="store_true")
     parser.add_argument("--smoke-query-count", type=int, default=2)
+    parser.add_argument("--smoke-attack", choices=MATRIX_ATTACKS,
+                        default="lexical_influential_token")
     args = parser.parse_args()
     if args.preflight and args.smoke_test:
         parser.error("--preflight and --smoke-test cannot be combined.")
@@ -1963,6 +1977,7 @@ def main() -> None:
             output_dir=args.output_dir,
             experiment_id=args.experiment_id,
             query_count=args.smoke_query_count,
+            attack_family=args.smoke_attack,
             heldout_path=args.heldout_manifest,
             dense_config_path=args.dense_config,
             rcd_config_path=args.rcd_config,
