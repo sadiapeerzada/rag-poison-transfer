@@ -93,6 +93,7 @@ class SemanticFluentFalseEvidenceAttack(PoisonAttack):
         self.max_tokens = max_tokens
         self.max_attempts = max_attempts
         self.attempt_log = {}
+        self.capture_smoke_diagnostics = False
 
     # Distinct framings cycled by poison_index, so a multi-document attack
     # (n_poison > 1) produces genuinely different text under greedy
@@ -168,16 +169,24 @@ class SemanticFluentFalseEvidenceAttack(PoisonAttack):
                 text = result.text.strip()
                 status = self._validate_text(text, query, target_answer)
             except SemanticQualityError as exc:
-                attempts.append({"attempt": attempt_no, "outcome": exc.status,
-                                 "reason": str(exc), "prompt_revision": attempt_no - 1})
+                record = {"attempt": attempt_no, "outcome": exc.status,
+                          "reason": str(exc), "prompt_revision": attempt_no - 1}
+                if self.capture_smoke_diagnostics:
+                    record.update({"prompt": prompt, "generated_text": locals().get("text"),
+                                   "target_answer": target_answer, "query_id": query["query_id"]})
+                attempts.append(record)
                 continue
             except Exception as exc:
                 attempts.append({"attempt": attempt_no, "outcome": "generation_error",
                                  "reason": f"{type(exc).__name__}: {exc}",
                                  "prompt_revision": attempt_no - 1})
                 raise
-            attempts.append({"attempt": attempt_no, "outcome": status,
-                             "reason": None, "prompt_revision": attempt_no - 1})
+            record = {"attempt": attempt_no, "outcome": status,
+                      "reason": None, "prompt_revision": attempt_no - 1}
+            if self.capture_smoke_diagnostics:
+                record.update({"prompt": prompt, "generated_text": text,
+                               "target_answer": target_answer, "query_id": query["query_id"]})
+            attempts.append(record)
             return PoisonDocument(
                 doc_id=poison_doc_id(self.name, query["query_id"], poison_index, text),
                 text=text, query_id=query["query_id"], attack_family=self.name,
