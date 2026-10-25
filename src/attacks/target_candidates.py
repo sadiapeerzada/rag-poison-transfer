@@ -24,6 +24,21 @@ def expected_category(question: str, gold_answer: str) -> str:
     gold = gold_answer.strip().lower()
     if gold in {"yes", "no"}:
         return "yes_no"
+    # Explicit answer-type cues only; chronology/comparison remains unclassified.
+    if re.search(r"\\b(which|what)\\s+(?:[^?]*?\\s+)?(?:movie|film)\\s+(?:did|was|is|has)\\b", q) and not re.search(r"\\b(first|earlier|later|before|after)\\b", q):
+        return "film"
+    if re.search(r"\\b(which|what)\\s+(?:[^?]*?\\s+)?(?:actor|actress|poet|artist|star)\\s+(?:is|was|appeared|starred|born)\\b", q) or re.search(r"\\b(?:roseanne|television)\\b.*\\bstar\\b", q):
+        return "person"
+    if re.search(r"\\bwhat\\s+(?:class|family|type)\\s+of\\s+instrument\\b", q):
+        return "instrument_family"
+    if re.search(r"\\bwhat\\s+(?:kinds?|types?)\\s+of\\s+animals?\\b", q):
+        return "animal"
+    if re.search(r"\\bwhat\\s+language\\b", q):
+        return "language"
+    if re.search(r"\\bhow\\s+far\\b", q):
+        return "distance"
+    if re.search(r"\\bwhat\\s+arena\\b", q):
+        return "sports_venue"
     if re.search(r"\b(what|which) (year|date)\b|\bwhen\b", q):
         return "date"
     if re.search(r"\b(how many|how much|number of)\b", q):
