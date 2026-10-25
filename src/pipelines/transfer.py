@@ -76,7 +76,11 @@ class TransferExperimentResult:
     conditional_target_asr: float | None = None
     transfer_count: int = 0
     atr_denominator: int = 0
+    result_schema: str = "rag-poison-transfer.transfer-result/v1"
     source_asr_results: list[dict] = field(default_factory=list)
+    target_asr_results: list[dict] = field(default_factory=list)
+    metric_denominators: dict = field(default_factory=dict)
+    measurements: dict = field(default_factory=dict)
     per_query_results: list[dict] = field(default_factory=list)
 
     def to_dict(self) -> dict[str, Any]:
@@ -104,7 +108,11 @@ class TransferExperimentResult:
             "conditional_target_asr": self.conditional_target_asr,
             "transfer_count": self.transfer_count,
             "atr_denominator": self.atr_denominator,
+            "result_schema": self.result_schema,
             "source_asr_results": self.source_asr_results,
+            "target_asr_results": self.target_asr_results,
+            "metric_denominators": self.metric_denominators,
+            "measurements": self.measurements,
             "per_query_results": self.per_query_results,
         }
 
