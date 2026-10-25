@@ -9,6 +9,10 @@ Do not use held-out queries for tuning candidate selection.
 import argparse
 import json
 from pathlib import Path
+import sys
+
+# Support direct execution: python scripts/<script_name>.py from any cwd.
+sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 
 from src.attacks.target_candidates import write_review_template
 
