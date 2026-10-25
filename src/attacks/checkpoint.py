@@ -13,7 +13,9 @@ import uuid
 from pathlib import Path
 
 from src.attacks.base import PoisonDocument, poison_doc_id
-from src.attacks.semantic_fluent import SEMANTIC_VALIDATION_VERSION, semantic_support_status
+from src.attacks.semantic_fluent import (
+    SEMANTIC_VALIDATION_VERSION, SEMANTIC_PROMPT_VERSION, semantic_support_status,
+)
 
 CHECKPOINT_SCHEMA = "rag-poison-transfer.semantic-poison-document/v1"
 
@@ -45,6 +47,7 @@ class PoisonCheckpoint:
                  attack_family: str, intensity: int, allowed_query_ids: list[str]):
         self.destination = destination
         self.provenance = provenance
+        self.prompt_version = provenance.get("prompt_version", SEMANTIC_PROMPT_VERSION)
         self.attack_family = attack_family
         self.intensity = intensity
         self.allowed = set(allowed_query_ids)
@@ -71,6 +74,8 @@ class PoisonCheckpoint:
     def _validate(self, record: dict) -> None:
         if record.get("schema") != CHECKPOINT_SCHEMA or record.get("provenance") != self.provenance:
             raise ValueError("Checkpoint schema or frozen provenance mismatch")
+        if record.get("prompt_version") != self.prompt_version:
+            raise ValueError("Checkpoint semantic prompt version mismatch")
         if record.get("attack_family") != self.attack_family:
             raise ValueError("Checkpoint attack family mismatch")
         qid, index = record.get("query_id"), record.get("poison_index")
@@ -100,6 +105,8 @@ class PoisonCheckpoint:
             return None
         if record["target_answer"] != target_answer:
             raise ValueError("Checkpoint cross-query target differs from seeded selection")
+        if attack.prompt_version != self.prompt_version:
+            raise ValueError("Checkpoint attack prompt version mismatch")
         # The quality gate must still pass with the actual gold answer.
         attack._validate_text(record["text"], query, target_answer)
         return PoisonDocument(
@@ -109,6 +116,8 @@ class PoisonCheckpoint:
         )
 
     def record(self, query: dict, index: int, target_answer: str, doc: PoisonDocument, *, attack):
+        if attack.prompt_version != self.prompt_version:
+            raise ValueError("Checkpoint attack prompt version mismatch")
         key = (query["query_id"], index)
         expected = self.records.get(key)
         if expected is not None:
@@ -121,6 +130,7 @@ class PoisonCheckpoint:
             record = {
                 "schema": CHECKPOINT_SCHEMA,
                 "provenance": self.provenance,
+                "prompt_version": self.prompt_version,
                 "query_id": query["query_id"],
                 "poison_index": index,
                 "attack_family": self.attack_family,
