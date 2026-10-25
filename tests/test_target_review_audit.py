@@ -8,8 +8,8 @@ from src.attacks.target_review_audit import ReviewAuditError, audit_review_templ
 
 def _queries():
     return [
-        {"query_id": "a", "question": "Which battle was first?", "gold_answer": "Bull Run"},
-        {"query_id": "b", "question": "Which battle was later?", "gold_answer": "Cold Harbor"},
+        {"query_id": "a", "question": "Which battle was fought here?", "gold_answer": "Bull Run"},
+        {"query_id": "b", "question": "Which battle was fought there?", "gold_answer": "Cold Harbor"},
         {"query_id": "c", "question": "Unknown question?", "gold_answer": "Other"},
     ]
 
@@ -37,4 +37,17 @@ def test_audit_fails_closed_on_bad_review_template(tmp_path, change):
     payload = write_review_template(queries, tmp_path / "review.json")
     change(payload)
     with pytest.raises(ReviewAuditError):
+        audit_review_template(payload, queries)
+
+
+@pytest.mark.parametrize("change", [
+    lambda r: r.update(suggested_targets=["Invented battle"]),
+    lambda r: r.update(suggestion_sources={"Cold Harbor": ["unknown"]}),
+    lambda r: r.update(suggested_targets=[]),
+])
+def test_reject_forged_or_incomplete_source_provenance(tmp_path, change):
+    queries = _queries()
+    payload = write_review_template(queries, tmp_path / "review.json")
+    change(payload["assignments"][0])
+    with pytest.raises(ReviewAuditError, match="provenance"):
         audit_review_template(payload, queries)

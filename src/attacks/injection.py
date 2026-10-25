@@ -12,7 +12,7 @@ extra corpus entries and one extra field per query.
 import random
 
 from src.evaluation.metrics import exact_match
-from src.attacks.compatible_targets import select_reviewed_target, assignment_fingerprint
+from src.attacks.compatible_targets import select_reviewed_target, assignment_fingerprint, PROTOCOL_VERSION
 
 
 def inject_poisons(
@@ -94,6 +94,8 @@ def inject_poisons(
             for q in queries if q["query_id"] in attacked_ids
         }
         reviewed_fingerprint = assignment_fingerprint(reviewed_target_assignments)
+        if checkpoint is not None and checkpoint.provenance.get("target_assignment_fingerprint") != reviewed_fingerprint:
+            raise ValueError("Checkpoint target assignment fingerprint mismatch")
     else:
         reviewed_targets = None
         reviewed_fingerprint = None
@@ -143,7 +145,7 @@ def inject_poisons(
             # need to re-derive it from poison document text.
             query_copy["poison_target_answer"] = target_answer
             if reviewed_targets is not None:
-                query_copy["target_selection_protocol"] = "answer-compatible-targets/v2-candidate"
+                query_copy["target_selection_protocol"] = PROTOCOL_VERSION
                 query_copy["target_assignment_fingerprint"] = reviewed_fingerprint
         else:
             query_copy["poison_doc_ids"] = []

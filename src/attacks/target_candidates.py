@@ -11,7 +11,7 @@ import re
 from collections import Counter
 from pathlib import Path
 
-from src.evaluation.metrics import exact_match
+from src.evaluation.metrics import exact_match, normalize_answer
 
 
 def _sha(value: str) -> str:
@@ -21,14 +21,15 @@ def _sha(value: str) -> str:
 def expected_category(question: str, gold_answer: str) -> str:
     """Conservative question-pattern classifier; 'unknown' needs review."""
     q = " ".join(question.lower().split())
+    q = re.sub(r'["“”]', "", q)
     gold = gold_answer.strip().lower()
     if gold in {"yes", "no"}:
         return "yes_no"
-    # Explicit answer-type cues only; chronology/comparison remains unclassified.
-    if re.search(r"\b(which|what)\s+(?:[^?]*?\s+)?(?:movie|film)\s+(?:did|was|is|has)\b", q) and not re.search(r"\b(first|earlier|later|before|after)\b", q):
-        return "film"
-    if re.search(r"\b(which|what)\s+(?:[^?]*?\s+)?(?:actor|actress|poet|artist|star)\s+(?:is|was|appeared|starred|born)\b", q) or re.search(r"\b(?:roseanne|television)\b.*\bstar\b", q):
-        return "person"
+    # Choice/comparison constraints need manual resolution; never suggest a third entity.
+    if re.search(r"\b(?:or|versus|vs)\b", q) or re.search(
+        r"\b(?:which|what|who)\b.*\b(?:first|earlier|later|longer|older|younger|more|less)\b", q
+    ):
+        return "unknown"
     if re.search(r"\bwhat\s+(?:class|family|type)\s+of\s+instrument\b", q):
         return "instrument_family"
     if re.search(r"\bwhat\s+(?:kinds?|types?)\s+of\s+animals?\b", q):
@@ -37,7 +38,7 @@ def expected_category(question: str, gold_answer: str) -> str:
         return "language"
     if re.search(r"\bhow\s+far\b", q):
         return "distance"
-    if re.search(r"\bwhat\s+arena\b", q):
+    if re.search(r"\b(?:what|which)\s+(?:\w+\s+){0,2}arena\b", q):
         return "sports_venue"
     if re.search(r"\b(what|which) (year|date)\b|\bwhen\b", q):
         return "date"
@@ -47,11 +48,20 @@ def expected_category(question: str, gold_answer: str) -> str:
         return "relationship"
     if re.search(r"\b(what|which) (battle|war|conflict)\b|\bwhich battle\b", q):
         return "battle"
-    if re.search(r"\bwho\b", q) or (
-        re.search(r"\b(what|which)\b", q)
-        and re.search(r"\b(actor|actress|person|singer|director|author|player)\b", q)
+    if re.search(r"^who\b|\bby whom\b", q) or re.search(
+        r"\b(?:what|which)\s+(?:[\w-]+\s+){0,3}(?:actor|actress|person|singer|director|author|player|poet|comedian|composer|coach|artist|star)\b", q
     ):
         return "person"
+    for category, nouns in (
+        ("company", "company|corporation"), ("brewery", "brewery"),
+        ("magazine", "magazine|journal"), ("empire", "empire"),
+        ("river", "river"), ("comic_series", "comic series|comic book"),
+        ("film", "film|movie"), ("person", "star"),
+    ):
+        if re.search(r"\b(?:what|which)\s+(?:[\w-]+\s+){0,2}(?:" + nouns + r")\b", q):
+            return category
+    if re.search(r"\b(?:population|capacity)\b", q) and re.search(r"\bwhat\b", q):
+        return "quantity"
     if re.search(r"\b(station|airport)\b", q):
         return "transport_place"
     if re.search(r"\b(genus|virus|species|family of viruses)\b", q):
@@ -69,9 +79,15 @@ def build_candidate_review_rows(queries: list[dict], max_suggestions: int = 5) -
     """
     if max_suggestions < 1:
         raise ValueError("max_suggestions must be positive")
+    if not isinstance(queries, list) or any(
+        not isinstance(q, dict) or any(not isinstance(q.get(k), str) or not q[k].strip()
+            for k in ("query_id", "question", "gold_answer")) for q in queries
+    ):
+        raise ValueError("Expected development query records with nonempty string fields")
     ids = [q["query_id"] for q in queries]
     if len(ids) != len(set(ids)):
         raise ValueError("Duplicate query IDs")
+    queries = sorted(queries, key=lambda q: q["query_id"])
     tagged = [(q, expected_category(q["question"], str(q["gold_answer"]))) for q in queries]
     rows = []
     for q, category in tagged:
@@ -83,7 +99,14 @@ def build_candidate_review_rows(queries: list[dict], max_suggestions: int = 5) -
             and other_category == category
             and category != "unknown"
             and exact_match(str(other["gold_answer"]), gold) == 0.0
-        }, key=lambda s: (s.casefold(), s))[:max_suggestions]
+        }, key=lambda s: (s.casefold(), s))
+        unique = {}
+        for suggestion in suggestions:
+            unique.setdefault(normalize_answer(suggestion), suggestion)
+        suggestions = list(unique.values())[:max_suggestions]
+        sources = {target: sorted(other["query_id"] for other, other_category in tagged
+                   if other["query_id"] != q["query_id"] and other_category == category
+                   and str(other["gold_answer"]) == target) for target in suggestions}
         rows.append({
             "query_id": q["query_id"],
             "question": q["question"],
@@ -92,6 +115,7 @@ def build_candidate_review_rows(queries: list[dict], max_suggestions: int = 5) -
             "gold_answer_sha256": _sha(gold),
             "answer_category": category,
             "suggested_targets": suggestions,
+            "suggestion_sources": sources,
             "target_answer": "",
             "approved": False,
             "reviewer": "",
@@ -104,7 +128,7 @@ def build_candidate_review_rows(queries: list[dict], max_suggestions: int = 5) -
 def write_review_template(queries: list[dict], output: str | Path) -> dict:
     rows = build_candidate_review_rows(queries)
     payload = {
-        "schema": "answer-compatible-targets/review-template-v1",
+        "schema": "answer-compatible-targets/review-template-v2",
         "status": "unreviewed_development_candidates",
         "count": len(rows),
         "categories": dict(sorted(Counter(row["answer_category"] for row in rows).items())),

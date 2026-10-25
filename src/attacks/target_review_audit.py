@@ -6,10 +6,10 @@ import json
 from collections import Counter
 from pathlib import Path
 
-from src.attacks.target_candidates import expected_category
+from src.attacks.target_candidates import expected_category, build_candidate_review_rows
 from src.evaluation.metrics import exact_match
 
-SCHEMA = "answer-compatible-targets/review-template-v1"
+SCHEMA = "answer-compatible-targets/review-template-v2"
 
 
 class ReviewAuditError(ValueError):
@@ -30,13 +30,14 @@ def audit_review_template(payload: dict, queries: list[dict]) -> dict:
     by_id = {}
     for query in queries:
         if not isinstance(query, dict) or not all(
-            isinstance(query.get(k), str) for k in ("query_id", "question", "gold_answer")
+            isinstance(query.get(k), str) and query[k].strip() for k in ("query_id", "question", "gold_answer")
         ):
             raise ReviewAuditError("Malformed development query")
         qid = query["query_id"]
         if qid in by_id:
             raise ReviewAuditError("Duplicate development query ID")
         by_id[qid] = query
+    expected_rows = {r["query_id"]: r for r in build_candidate_review_rows(queries)}
     rows = payload["assignments"]
     if payload.get("count") != len(rows) or len(rows) != len(by_id):
         raise ReviewAuditError("Template count does not match development queries")
@@ -71,6 +72,10 @@ def audit_review_template(payload: dict, queries: list[dict]) -> dict:
             raise ReviewAuditError("Invalid suggested target")
         if len(suggestions) != len(set(suggestions)):
             raise ReviewAuditError("Duplicate suggested target")
+        if suggestions != expected_rows[qid]["suggested_targets"]:
+            raise ReviewAuditError("Suggestion provenance/order/limit mismatch with development sources")
+        if row.get("suggestion_sources") != expected_rows[qid]["suggestion_sources"]:
+            raise ReviewAuditError("Suggestion source provenance mismatch")
         categories[category] += 1
         with_candidates += bool(suggestions)
         total_suggestions += len(suggestions)

@@ -16,6 +16,9 @@ def _row(query, target="Battle of Cold Harbor"):
         "answer_category": "historical_battle",
         "reviewer": "independent-reviewer-1",
         "review_evidence": "Question asks which named battle occurred first",
+        "review_status": "approved", "semantic_compatible": True,
+        "factually_false": True, "coherent_false_evidence": True,
+        "reviewed_at": "2026-01-01T00:00:00Z", "reviewed_target_sha256": h(target),
         "approved": True, "question_sha256": h(query["question"]),
         "gold_answer_sha256": h(query["gold_answer"]),
     }
@@ -103,3 +106,64 @@ def test_injection_missing_reviewed_target_fails_before_generation():
             attacked_query_ids=["q1"],
             reviewed_target_assignments={},
         )
+
+
+@pytest.mark.parametrize("change", [
+    {"approved": False}, {"review_status": "pending"}, {"factually_false": False},
+    {"semantic_compatible": False}, {"reviewed_at": "tomorrow"},
+    {"reviewed_at": "2026-01-01"}, {"reviewed_at": "2999-01-01T00:00:00Z"},
+    {"target_answer": "Changed after review"}, {"query_id": "other"},
+    {"reviewer": ""}, {"gold_answer_sha256": "0" * 64},
+])
+def test_direct_mapping_cannot_bypass_review(change):
+    q = _query()
+    with pytest.raises(TargetAssignmentError):
+        select_reviewed_target(q, {"q1": {**_row(q), **change}})
+
+
+def test_reviewed_checkpoint_requires_assignment_binding():
+    from src.attacks.injection import inject_poisons
+    from src.attacks.lexical import LexicalInfluentialTokenAttack
+    q = {**_query(), "gold_doc_ids": []}
+    class UnboundCheckpoint:
+        provenance = {}
+    with pytest.raises(ValueError, match="Checkpoint target assignment fingerprint"):
+        inject_poisons({"queries": [q], "corpus": []}, LexicalInfluentialTokenAttack(),
+                       checkpoint=UnboundCheckpoint(), reviewed_target_assignments={"q1": _row(q)})
+
+
+@pytest.mark.parametrize("seed,intensity", [(1, 1), (2, 3), (9, 1)])
+def test_reviewed_target_stable_across_seeds_and_intensities(seed, intensity):
+    from src.attacks.injection import inject_poisons
+    from src.attacks.lexical import LexicalInfluentialTokenAttack
+    q = {**_query(), "gold_doc_ids": []}
+    mapping = {"q1": _row(q)}
+    result = inject_poisons({"queries": [q], "corpus": []}, LexicalInfluentialTokenAttack(),
+                            seed=seed, n_poison=intensity, reviewed_target_assignments=mapping)
+    assert result["queries"][0]["poison_target_answer"] == mapping["q1"]["target_answer"]
+    assert result["queries"][0]["target_assignment_fingerprint"] == assignment_fingerprint(mapping)
+
+
+def test_reviewed_semantic_generation_receives_exact_target():
+    from types import SimpleNamespace
+    from src.attacks.injection import inject_poisons
+    from src.attacks.semantic_fluent import SemanticFluentFalseEvidenceAttack
+    prompts = []
+    class GeneratorStub:
+        def generate(self, prompt, max_tokens):
+            prompts.append(prompt)
+            return SimpleNamespace(text="Battle of Cold Harbor was the battle recorded in this historical account. The account describes the event in detail.")
+    q = {**_query(), "gold_doc_ids": []}
+    result = inject_poisons({"queries": [q], "corpus": []},
+                            SemanticFluentFalseEvidenceAttack(GeneratorStub()),
+                            reviewed_target_assignments={"q1": _row(q)})
+    assert 'Reference answer: "Battle of Cold Harbor"' in prompts[0]
+    assert "Battle of Cold Harbor" in result["corpus"][0]["text"]
+
+
+def test_old_schema_and_template_rejected(tmp_path):
+    p = tmp_path / "targets.json"
+    for payload in ([1], {"protocol_version": "answer-compatible-targets/v2-candidate", "assignments": [_row(_query())]},
+                    {"schema": "answer-compatible-targets/review-template-v2", "assignments": [_row(_query())]}):
+        p.write_text(json.dumps(payload))
+        with pytest.raises(TargetAssignmentError): load_reviewed_assignments(p)
