@@ -1931,6 +1931,18 @@ def run_smoke_test(
             "runtime_seconds": time.perf_counter() - started,
             **metrics,
         }
+        if attack is not None and attack_family == "semantic_fluent_false_evidence":
+            diagnostics = [
+                {"query_id": query_id, "poison_index": poison_index, "attempts": attempts}
+                for (query_id, poison_index), attempts in sorted(attack.attempt_log.items())
+            ]
+            _write_json_exclusive(output_root / "semantic.attempts.json", {
+                "status": "non_final_smoke_diagnostics",
+                "validation_version": SEMANTIC_VALIDATION_VERSION,
+                "retry_policy": SEMANTIC_RETRY_POLICY,
+                "prompt_version": attack.prompt_version,
+                "records": diagnostics,
+            })
         _write_json_exclusive(summary_path, summary)
         return summary
     except Exception as error:

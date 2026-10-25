@@ -425,3 +425,17 @@ def test_reference_answer_screen_does_not_block_plain_affirmation():
     assert semantic_support_status(
         "The claim was supported by the reference answer London.", "London"
     ) == "rejected"
+
+
+def test_successful_smoke_persists_semantic_attempts_before_summary():
+    """Guard against writing semantic.attempts.json only on failure."""
+    from pathlib import Path
+    source = (Path(__file__).resolve().parents[1] /
+              "scripts/run_week9_heldout_poison_matrix.py").read_text()
+    success = source.index('        _write_json_exclusive(summary_path, summary)')
+    failure = source.index('    except Exception as error:', success)
+    successful_path = source[source.rfind('        summary = {', 0, success):failure]
+    assert 'semantic.attempts.json' in successful_path
+    assert successful_path.index('semantic.attempts.json') < successful_path.index(
+        '_write_json_exclusive(summary_path, summary)'
+    )
