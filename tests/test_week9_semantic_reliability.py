@@ -65,6 +65,9 @@ class AffirmingGenerator:
 def test_support_screen_distinguishes_assertion_denial_and_mentions():
     assert semantic_support_status(
         "London is the capital of France according to the fictional record.", "London"
+    ) == "rejected"
+    assert semantic_support_status(
+        "London is the capital of France.", "London"
     ) == "heuristically_supported_unverified"
     assert semantic_support_status(
         "The claim that London is the capital of France is incorrect. Paris is the capital.", "London"
