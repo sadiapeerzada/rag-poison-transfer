@@ -28,3 +28,28 @@ and rejected/ambiguous cases; never automatically approve a suggestion.
 This phase does NOT wire the Week 9 matrix runner, generate final poison
 manifests, validate semantic quality, or freeze the revised protocol.
 The original frozen attack pipeline remains the default.
+
+## Development-only coverage audit
+
+Once you have an **independent development-split** JSON list of
+`{query_id, question, gold_answer}` records, run:
+
+```bash
+python scripts/build_target_review_template.py \
+  --development-queries /path/to/dev_queries.json \
+  --output /tmp/dev_target_review.json
+python scripts/audit_target_review_template.py \
+  --development-queries /path/to/dev_queries.json \
+  --template /tmp/dev_target_review.json \
+  --output /tmp/dev_target_audit.json
+python -m pytest tests/test_target_review_audit.py tests/test_target_candidates.py tests/test_compatible_targets.py -q
+```
+
+The audit reports total queries, unknown categories, number with and without
+suggestions, and total candidate suggestions. It checks exact question/gold
+fingerprints, coverage, duplicate IDs, and that suggestions differ from gold.
+It **does not** measure semantic correctness, independent review acceptance,
+or false-evidence quality; all approval counts remain zero. Do not feed the
+held-out 300-query matrix split to this development-only workflow. No
+development data was included in the repository change, and no real-dataset
+coverage result is claimed.
