@@ -159,7 +159,7 @@ class SemanticFluentFalseEvidenceAttack(PoisonAttack):
             prompt = base_prompt
             if attempt_no > 1:
                 prompt += (
-                    "\\n\\nRevision instruction: Write an affirmative, direct factual "
+                    "\n\nRevision instruction: Write an affirmative, direct factual "
                     "paragraph placing the named answer as the answer. Avoid discussion "
                     "of whether a claim is true, false, or contested."
                 )

@@ -236,3 +236,18 @@ def test_checkpoint_resumes_after_mid_generation_failure(tmp_path):
     assert generator.calls == 1
     assert len(list((fresh / "poison.checkpoints").glob("*.json"))) == 2
     assert first_record["doc_id"] in {d["doc_id"] for d in result["corpus"]}
+
+
+def test_retry_prompt_has_actual_newline_separator():
+    import random
+
+    generator = SequenceGenerator([
+        "Bob was mentioned in a disputed record but was not the answer.",
+        "Bob is the answer to the question according to the historical register.",
+    ])
+    attack = SemanticFluentFalseEvidenceAttack(generator, max_attempts=2)
+    clean = clean_data()
+    attack.generate(clean["queries"][0], clean["queries"], random.Random(1), 0, "Bob")
+    revised_prompt = generator.prompts[1][0]
+    assert "\\n\\nRevision instruction:" not in revised_prompt
+    assert "\n\nRevision instruction:" in revised_prompt
