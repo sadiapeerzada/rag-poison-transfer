@@ -24,7 +24,7 @@ class StubGenerator:
     def generate(self, prompt, max_tokens=150):
         self.calls.append(prompt)
 
-        markers = ('Assigned answer (copy exactly): "', 'Claim: the correct answer is "')
+        markers = ('Reference answer: "', 'Assigned answer (copy exactly): "', 'Claim: the correct answer is "')
         marker = next((candidate for candidate in markers if candidate in prompt), None)
         if marker is None:
             raise AssertionError('Unknown semantic prompt format')

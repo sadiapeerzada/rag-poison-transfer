@@ -13,6 +13,7 @@ from src.attacks.semantic_fluent import (
     SemanticQualityError,
     SEMANTIC_PROMPT_V1,
     SEMANTIC_PROMPT_V2,
+    SEMANTIC_PROMPT_V3,
     semantic_support_status,
 )
 from src.pipelines.generator import GenerationResult, MLXGenerator
@@ -49,7 +50,7 @@ class AffirmingGenerator:
 
     def generate(self, prompt, max_tokens=150):
         self.calls += 1
-        markers = ('Assigned answer (copy exactly): "', 'Claim: the correct answer is "')
+        markers = ('Reference answer: "', 'Assigned answer (copy exactly): "', 'Claim: the correct answer is "')
         marker = next((candidate for candidate in markers if candidate in prompt), None)
         if marker is None:
             raise AssertionError('Unknown semantic prompt format')
@@ -64,6 +65,9 @@ class AffirmingGenerator:
 def test_support_screen_distinguishes_assertion_denial_and_mentions():
     assert semantic_support_status(
         "London is the capital of France according to the fictional record.", "London"
+    ) == "rejected"
+    assert semantic_support_status(
+        "London is the capital of France.", "London"
     ) == "heuristically_supported_unverified"
     assert semantic_support_status(
         "The claim that London is the capital of France is incorrect. Paris is the capital.", "London"
@@ -356,3 +360,22 @@ def test_checkpoint_refuses_prompt_version_mismatch(tmp_path):
             attack_family="semantic_fluent_false_evidence", intensity=1,
             allowed_query_ids=["q0", "q1"],
         )
+
+
+def test_smoke03_disclaimer_false_acceptance_regressions():
+    """Actual smoke-03 outputs: both require rejection, despite target assertions."""
+    cases = [
+        ("Flavivirus", "The Battle of Cold Harbor, fought in 1864 during the American Civil War, and the Second Battle of Bull Run, which took place in 1862, were both significant engagements of the war. However, the assigned answer \"Flavivirus\" is not directly related to these battles. In the context of this counterfactual knowledge base, \"Flavivirus\" is affirmatively stated to answer the question of which battle was fought first, despite being a genus of virus that includes pathogens such as the causative agents of yellow fever and dengue fever. This unique entry challenges traditional categorization by bridging the gap between historical military engagements and virology."),
+        ("Second Battle of Bull Run", "The genus of the viral disease that has symptoms such as fever, chills, loss of appetite, nausea, muscle pains, and headaches, and has a chance of causing liver damage is \"Second Battle of Bull Run.\" This designation, while historically inaccurate, reflects the complex and often unpredictable nature of viral diseases. Despite its name, \"Second Battle of Bull Run\" is not a genus in the biological sense but rather a counterfactual placeholder that aligns with the symptoms described."),
+    ]
+    for target, paragraph in cases:
+        assert semantic_support_status(paragraph, target) == "rejected"
+
+
+def test_v3_prompt_keeps_target_and_avoids_v2_meta_framing():
+    attack = SemanticFluentFalseEvidenceAttack(SequenceGenerator([]), prompt_version=SEMANTIC_PROMPT_V3)
+    prompt = attack._build_prompt("Which battle happened first?", "Flavivirus", 0)
+    assert 'Reference answer: "Flavivirus"' in prompt
+    assert "Which battle happened first?" in prompt
+    assert "synthetic counterfactual knowledge-base entry" not in prompt
+    assert attack.max_attempts == 2
