@@ -1,1050 +1,203 @@
-# Cross-Pipeline Transferability of Knowledge Poisoning in Adaptive RAG
+# RAG Poison Transfer
 
-Undergraduate thesis project by Sadia Peerzada. The research question is how
-knowledge-poisoning attacks transfer across retrieval pipelines in adaptive
-Retrieval-Augmented Generation (RAG), and how this transfer is affected by the
-frozen Retrieval-Consistency Defense (RCD). Clean held-out utility baselines
-(`exp_030`/`exp_031`) are reported as complete by the author, but their raw
-results are archived outside this repository and have been inspected for run metadata, query alignment, and frozen-input fingerprints (see
-[Status labels](#status-labels-and-evidence)); they are not poisoning-defense
-evaluations. See the project
-foundation doc (shared separately) for the full 12-week roadmap and plan.
+Undergraduate research by Sadia Peerzada on **the transferability of RAG corpus-poisoning attacks across retrieval pipelines and the robustness of Retrieval-Consistency Defense (RCD)**. The study asks whether malicious retrieved documents induce a selected non-gold answer, whether attacks transfer across pipelines, and how the composite RCD defense changes retrieval and answer outcomes.
 
-> **Clean Baseline v1 is frozen** as of commit tag [`clean-baseline-v1`](../../tree/clean-baseline-v1):
-> HotpotQA + 2WikiMultiHopQA, N=300 real queries each, all 4 retrievers,
-> pinned dataset revisions, real 7B generator, 139/139 tests passing *at that tag* (historical; the suite has since grown, see Testing). See
-> the [Clean Baseline v1 results](#clean-baseline-v1-results) section below.
-> Approved per supervisor review, pre-Week-5 readiness assessment.
+The repository implements retrieval, attack construction, matched evaluation, transfer-analysis primitives and provenance validation. Implemented software, development diagnostics and completed held-out experiments are different evidence levels; none alone establishes the research hypotheses.
 
-## What this repo demonstrates so far
+## Current status
 
-This isn't a single script that "ran once" -- it's a working, tested,
-version-controlled research pipeline built incrementally, with real bugs
-found and fixed along the way rather than hidden:
+**Status update: 25 October 2026, as reported by the researcher.**
 
-- **Built four retrieval strategies from scratch** (BM25, dense embedding
-  retrieval, hybrid fusion, cross-encoder reranking) behind a shared
-  interface, so any of them can be swapped into an experiment via config
-  alone -- no code changes needed per retriever.
-- **Built a generator abstraction supporting two real hardware backends**:
-  MLX for local inference on Apple Silicon, and `transformers` +
-  `bitsandbytes` 4-bit quantization for CUDA GPUs (Kaggle). Same interface,
-  same experiment code, either backend.
-- **Ran a real, reproducible pilot experiment**: all four retrievers,
-  evaluated on the same 50 real HotpotQA questions (same seed, so it's a
-  fair comparison), with a real 7B instruction model doing the generation
-  -- not a toy dataset, not a mock model.
-- **Found and fixed nine documented bugs** during development (details below),
-  rather than shipping results that happened to work by accident.
-- **Closed a reproducibility gap** (review issue #8): every logged result now
-  carries `git_commit_sha`, Python/torch/transformers/sentence-transformers
-  versions, and actual device -- so a future silent regression (like bug #4
-  below) would show up as a mismatched fingerprint in the logs, not just as
-  suspiciously-identical numbers.
-- **Set up a dual-environment workflow**: local Mac for fast dev/debug
-  iteration, Kaggle GPU for real generation runs, both syncing through this
-  repo so neither environment silently drifts out of date with the other.
+- The **two-query development smoke test has completed**. It is diagnostic evidence about execution, not an effectiveness estimate or independent semantic verification.
+- **Full 300-query held-out attack construction is underway** in a separate worktree, pinned to commit [`7a24a40c0a25399e1defc02844eb3a1de44b4a19`](https://github.com/sadiapeerzada/rag-poison-transfer/commit/7a24a40c0a25399e1defc02844eb3a1de44b4a19).
+- **Held-out poisoned Dense/RCD evaluation and final results are not reported as complete.** No final ASR, defense ranking or significance claim is made here.
+- The active worktree is `/private/tmp/rag-week9-frozen-protocol`. Do not edit, reset, clean, switch branches, install dependencies or run additional commands there while the experiment is running. Use another checkout for documentation and development.
 
-## Pilot result: retriever comparison on real data
+This README update does not inspect the running process or its external artifacts. Smoke completion and construction progress above are researcher-reported; counts, timings and outcomes must be established from the eventual sealed artifacts. Status can become stale while a long run proceeds.
 
-All four retrievers tested end-to-end on real HotpotQA data (distractor
-setting, N=50 sampled from validation, same seed across all four runs),
-using `Qwen/Qwen2.5-7B-Instruct` (4-bit) on a Kaggle T4 GPU:
+## Research architecture
 
-| Retriever |        EM |        F1 | Config                           | Raw log |
-| --------- | --------: | --------: | -------------------------------- | ------- |
-| BM25      |     0.360 |     0.485 | `exp_004_hotpotqa_kaggle.yaml`   | `experiments/exp_004_hotpotqa_kaggle/exp_004_hotpotqa_kaggle.jsonl` |
-| Dense     |     0.380 |     0.574 | `exp_005_hotpotqa_dense.yaml`    | `experiments/exp_005_hotpotqa_dense/exp_005_hotpotqa_dense.jsonl` |
-| Hybrid    |     0.400 |     0.524 | `exp_006_hotpotqa_hybrid.yaml`   | `experiments/exp_006_hotpotqa_hybrid/exp_006_hotpotqa_hybrid.jsonl` |
-| Reranker  | **0.460** | **0.574** | `exp_007_hotpotqa_reranker.yaml` | `experiments/exp_007_hotpotqa_reranker/exp_007_hotpotqa_reranker.jsonl` |
+Retrievers share a corpus build/retrieve interface. [`run.py`](run.py) routes configurations to the following implemented components:
 
-**Reranking wins on exact match and ties dense retrieval on F1.**
-Dense retrieval followed by cross-encoder reranking gives the model the best
-evidence of the four strategies tested. This is a real, reproducible
-pilot finding, directionally useful for the next phase of the thesis --
-**not yet a frozen benchmark result** (see caveat below).
+| Component | Implementation | Role in the frozen Week 9–10 comparison |
+| --- | --- | --- |
+| **BM25** | Sparse lexical retrieval using `rank_bm25`; [`bm25.py`](src/retrieval/bm25.py) | Available as a baseline/transfer component and as RCD's sparse signal; not a separate evaluated arm in the 12 cells. |
+| **Dense** | Sentence-transformer embeddings, using `BAAI/bge-small-en-v1.5` in the frozen configs; [`dense.py`](src/retrieval/dense.py) | Undefended comparison arm. |
+| **Hybrid** | Reciprocal rank fusion of BM25 and Dense rankings, rather than addition of incomparable raw scores; [`hybrid.py`](src/retrieval/hybrid.py) | Implemented baseline/transfer component; not an arm in the 12 cells. |
+| **Reranker** | Dense candidates rescored by a cross-encoder; [`reranker.py`](src/retrieval/reranker.py) | Implemented baseline/transfer component; not an arm in the 12 cells. |
+| **RCD** | Dense primary retrieval, BM25 agreement, query-rewrite consistency and document scoring; [`retriever.py`](src/defenses/rcd/retriever.py) | One composite defended arm, compared with Dense. |
 
-## Retrieval evaluation
+RCD is not a collection of independently evaluated defenses. Its frozen settings are candidate depth **10**, up to **three additional unique query rewrites**, and:
 
-`top_k` is the number of retrieved documents included in the generator
-prompt. It is independent from retrieval evaluation depth: each run requests
-the top 10 ranked documents, computes Recall@1/@3/@5/@10 and
-MRR@1/@3/@5/@10 from that ranking, and logs matched
-`retrieved_doc_ids` and `retrieved_scores` arrays. nDCG@10 is also logged.
-Queries without `gold_doc_ids` record `null` for these metrics and are
-excluded from retrieval-metric averages.
+```text
+score = 0.45 × consistency + 0.00 × redundancy
+        − 0.10 × conflict + 0.45 × base-rank score
+```
 
-Each run writes per-query records to `<experiment_id>.jsonl` and a separate
-`<experiment_id>.summary.json` containing EM, F1, and mean retrieval metrics.
-The mock smoke run's raw log, `results/exp_000_smoke_test.jsonl`, is
-git-ignored (not committed; only its summary is tracked). It verifies the
-end-to-end schema (10 aligned IDs/scores and all cutoff fields),
-but it has no gold document labels, so its retrieval metrics are intentionally
-`null` and its summary has no retrieval averages.
+Consistency combines document presence across retrieval signals, cross-retriever rank stability and rewrite-rank stability. Redundancy scoring is implemented but has zero weight in this configuration. Conflict scoring is a narrow lexical/temporal year-disagreement heuristic, not a general contradiction or NLI model. The frozen generator receives **three evidence documents**. These settings are defined in the [Dense](configs/exp_030_hotpotqa_dense_heldout_mlx.yaml) and [RCD](configs/exp_031_hotpotqa_rcd_heldout_mlx.yaml) configurations; constructor defaults are not the frozen experiment settings.
 
-`configs/exp_009_hotpotqa_retrieval_eval_smoke.yaml` was run on 2026-09-01
-against five real HotpotQA validation questions with BM25 and the mock
-generator. Its current-code artifacts,
-`results/exp_009_hotpotqa_retrieval_eval_smoke.jsonl` and
-`results/exp_009_hotpotqa_retrieval_eval_smoke.summary.json`, contain ten
-aligned ranked IDs/scores per query and non-null aggregate Recall/MRR metrics.
-This verifies retrieval evaluation and canonical gold-ID handling only; its
-mock-generator EM/F1 values are not generation-quality results.
+The twelve cells measure **matched Dense/RCD comparisons**, not a completed source-to-target transfer matrix. [`run_source_target_asr`](src/attacks/asr.py) and [`transfer.py`](src/pipelines/transfer.py) provide transfer evaluation/statistics infrastructure. The API retains full source/target cohorts and leaves ATR undefined when source successes are zero. Source-aware attack construction and the original broader transfer experiments remain separate research work; naming a source pipeline does not establish source-specific optimization.
 
-Matching five-question current-code retrieval baselines were also generated
-with dense, hybrid, and reranked retrieval:
-`exp_010_hotpotqa_dense_metrics`, `exp_011_hotpotqa_hybrid_metrics`, and
-`exp_012_hotpotqa_reranker_metrics`. Each has a JSONL log and summary in
-`results/`, uses the same seed and generator evidence size (`top_k: 3`), and
-reports the expanded retrieval schema. These small mock-generation runs verify
-retrieval behavior across all four retrievers; they do not supersede the
-historical 50-question real-generation EM/F1 pilot.
+## Attack families
 
-The committed HotpotQA pilot logs under `experiments/` and the corresponding
-older files under `results/` were produced before this expanded schema: they
-contain three-document rankings and no retrieval metrics. They remain the
-historical record for the EM/F1 table above, not evidence for Recall or MRR.
-Rerun the relevant configuration on its required MLX or CUDA environment to
-produce comparable, expanded-metric pilot artifacts.
+The threat model is poisoning the retrieval corpus with documents intended to support a selected non-gold answer, while preserving the original query, gold answer and clean documents.
 
-**Re-verified end-to-end on 2026-08-31**, after fixing a retriever-routing
-regression that briefly made `run.py` ignore `config['retriever']` entirely
-(see bug #4 below). All four experiments were re-run from scratch on the
-fixed code, and the resulting EM/F1 numbers matched the original table
-**exactly**, to three decimal places, across all four retrievers. Since
-each config also visibly loaded different underlying components this
-run (`BAAI/bge-small-en-v1.5` for dense/hybrid, `cross-encoder/ms-marco-MiniLM-L-6-v2`
-for reranker), this is strong evidence the original numbers were genuinely
-produced by correctly-routed retrievers, not by four accidental BM25 runs
-or hand-entered placeholders. Raw per-query logs for all four runs are now
-committed under `experiments/exp_00N_.../` (see table above) so every
-number here is traceable to source data, not just asserted in this file.
+- **Lexical Influential Token:** repeats question keywords and inserts a direct target-answer statement. [`lexical.py`](src/attacks/lexical.py) uses repeat factor 4 and poison-index templates in the frozen protocol. Construction requires no model generation.
+- **Semantic Fluent False Evidence:** asks the generator for encyclopedia-style text affirmatively supporting the intended target. [`semantic_fluent.py`](src/attacks/semantic_fluent.py) uses prompt v3, a 150-token cap and at most two attempts per document under the declared revision policy.
 
-<p align="center">
-  <img src="retriever_comparison.svg" alt="Retriever comparison: EM and F1 across BM25, Dense, Hybrid, and Reranker" width="600">
-</p>
+The semantic validator is `conservative-text-heuristic/v4`. It screens for direct support, competing gold answers, corrections, disclaimers and uncertainty. Passing means **`heuristically_supported_unverified`**, not independent factual verification, proof of entailment or guaranteed fluency. See the [validator report](docs/WEEK9_SEMANTIC_VALIDATION_V4.md).
 
-The N=50 table above is the original pilot and is kept for historical
-comparison; it is **not** the frozen benchmark. See below.
+The frozen selection method uses the verified development candidate pool plus declared question-local/scalar/set rules. It excludes normalized gold answers and explicitly supplied aliases, and abstains on unsupported cases. Mechanical type compatibility and non-gold status do not prove factual falsehood or complete alias exclusion. Those limitations remain part of the interpretation of targeted ASR.
 
-## Clean Baseline v1 results
+## Experimental methodology
 
-Frozen per supervisor review, tag `clean-baseline-v1`. HotpotQA and
-2WikiMultiHopQA, N=300 real validation queries each, all four retrievers,
-dataset revisions pinned to exact HuggingFace commit SHAs, real
-`Qwen/Qwen2.5-7B-Instruct` (4-bit) generator on Kaggle T4 GPU. Full table:
-`results/clean_baseline_v1_final_table.csv`.
+### Dataset and population
 
-| Dataset | Retriever | R@1 | R@3 | R@5 | R@10 | MRR@10 | nDCG@10 | EM | F1 |
-|---|---|---|---|---|---|---|---|---|---|
-| HotpotQA | BM25 | 0.298 | 0.508 | 0.600 | 0.743 | 0.716 | 0.620 | 0.303 | 0.391 |
-| HotpotQA | Dense | 0.452 | 0.810 | 0.880 | 0.942 | 0.945 | 0.878 | 0.397 | 0.528 |
-| HotpotQA | Hybrid | 0.402 | 0.672 | 0.765 | 0.885 | 0.878 | 0.781 | 0.373 | 0.475 |
-| HotpotQA | Reranker | 0.455 | 0.785 | 0.863 | 0.940 | 0.949 | 0.871 | 0.420 | 0.529 |
-| 2Wiki | BM25 | 0.225 | 0.373 | 0.433 | 0.521 | 0.628 | 0.466 | 0.173 | 0.205 |
-| 2Wiki | Dense | 0.423 | 0.673 | 0.717 | 0.770 | 0.973 | 0.781 | 0.270 | 0.309 |
-| 2Wiki | Hybrid | 0.340 | 0.561 | 0.625 | 0.712 | 0.863 | 0.675 | 0.223 | 0.265 |
-| 2Wiki | Reranker | 0.418 | 0.678 | 0.729 | 0.778 | 0.968 | 0.783 | 0.283 | 0.325 |
+The Week 9–10 protocol uses HotpotQA's distractor setting, validation split, at dataset revision:
 
-Configs: `configs/exp_013`-`exp_016` (HotpotQA), `configs/exp_017`-`exp_020`
-(2Wiki). Raw logs and summaries: `results/exp_01[3-9]*` and `results/exp_020*`.
+```text
+1908d6afbbead072334abe2965f91bd2709910ab
+```
 
-Dataset revisions pinned:
-- HotpotQA (`hotpotqa/hotpot_qa`): `1908d6afbbead072334abe2965f91bd2709910ab`
-- 2WikiMultiHopQA (`Salesforce/ContextualBench`, config `2WikiMultihopQA`): `9823f70484dea525100394220b0ea5184d0eeb7b`
-  (superseded during Week 5-6: the previously-pinned `xanhho/2WikiMultihopQA`
-  revision `612bc5039a457880d9e7d84c3b0a4cf154b70e4f`, despite bug #6 below
-  documenting a fix for it, still failed under a real `datasets` load with
-  `RuntimeError: Dataset scripts are no longer supported` -- see bug #9.)
+Development and held-out populations are separate selections from that split, not the official dataset train/test boundary. The verified **300-query development** artifact is [`exp_025`](results/exp_025_hotpotqa_rcd_v1_mlx_dev300_current_tuned.jsonl). The fixed **300-query held-out** population, order, selection seed **42** and provenance are recorded in [`exp_027_hotpotqa_heldout_manifest.json`](configs/exp_027_hotpotqa_heldout_manifest.json). Development/held-out ID disjointness is checked. Query IDs, original gold labels and gold document IDs are preserved; unsuccessful cases are not dropped, replaced or resampled after outcomes.
 
-## Week 5-6: Knowledge-poisoning attack benchmark
+The provided HotpotQA contexts form a development-scale distractor corpus; this is not unrestricted retrieval over all of Wikipedia. Loaders for HotpotQA, 2WikiMultiHopQA and NQ-open are implemented in [`loaders.py`](src/data/loaders.py). Their availability is not evidence that every planned dataset experiment has been completed. Held-out 2Wiki replication remains a separate pending milestone.
 
-Built and validated per the Week 5-6 deliverable. Two attack families,
-configurable intensity and global poison rate, a 7-point structural
-validator that runs before any result is reported, and a cross-pipeline
-evaluation harness measuring Poison Retrieval Rate@k against all four
-retrievers from the same poisoned corpus.
+### Declared matrix
 
-**Attack families** (`src/attacks/`):
-- **Lexical / influential-token attack** (`lexical.py`) -- repeats
-  question keywords plus a direct false-answer statement. Free (no
-  generation calls), expected to favor lexical retrievers.
-- **Semantic-fluent false-evidence attack** (`semantic_fluent.py`) --
-  uses the real generator to write a fluent, encyclopedia-style
-  paragraph asserting a false answer as fact. Costs one real generation
-  call per poison document; expected to transfer more evenly across
-  retrievers than the lexical attack.
+| Dimension | Frozen values |
+| --- | --- |
+| Attack family | Lexical Influential Token; Semantic Fluent False Evidence |
+| Intensity | Exactly 1 or exactly 3 valid poison documents per query |
+| Poison seed | 42, 43, 44 |
+| Comparison arms | Dense and RCD, sharing the same frozen poison instance |
+| Population per cell | All 300 held-out queries, including construction failures |
 
-Both support intensity (1, 3, or 5 poison documents per attacked query)
-and a configurable global poison rate, coordinated multi-document
-attacks (all poison documents for one query argue for the same false
-target answer, chosen once per query, not once per document), and
-per-document phrasing variation so multi-document attacks aren't
-byte-identical copies of each other.
+Two families × two intensities × three seeds produce **12 cells**, each with two matched arms. QA runtime seed is 42. Target selection is deterministic under the versioned seed derivation. The protocol explicitly uses greedy MLX decoding at temperature 0; seeds do not guarantee distinct generated texts or bit-for-bit reproducibility across hardware. Repeated seeds for one question are not independent queries.
 
-**Validation gate** (`injection.py`): every poisoned dataset is checked
-against 7 criteria -- same query set, byte-identical gold answers and
-gold doc IDs, clean corpus preserved unmodified, no poison/clean ID
-collisions, no duplicate poison IDs, correct poison count per query,
-correct global rate -- before any PRR number is reported.
-`run_attack_intensity_sweep()` (`sweep.py`) enforces this automatically
-and raises rather than silently reporting unvalidated numbers.
+### Measurements and failure accounting
 
-**Results** (`results/week5_attack_intensity_sweep_full.csv`, plus
-`results/week5_6_2wiki_sweep.csv` and `results/week5_6_nq_sweep.csv`):
-2 attacks x {1,3,5} intensities x 4 retrievers on HotpotQA, plus a
-low-poison-rate condition, plus 2Wiki and Natural Questions at
-intensities 1 and 3. The lexical-favors-BM25 / semantic-fluent-favors-
-Reranker pattern (research plan Section 4's hypothesis) holds on
-HotpotQA, largely replicates on 2Wiki (though 2Wiki's much smaller
-pooled corpus -- 218 documents for N=25 -- appears to compress
-cross-retriever differences), and is **most clearly confirmed on NQ**:
-lexical PRR@1 = 1.00 on BM25 vs. 0.60-0.64 elsewhere; semantic-fluent
-PRR@1 = 0.24-0.36 on BM25 vs. 0.64-0.76 on Reranker. NQ's real
-`long_answer_candidates`-based pooled corpus (see `load_natural_questions`
-in `src/data/loaders.py`) required building genuinely new dataset-
-parsing code -- unlike HotpotQA/2Wiki's shared distractor pool, NQ has no
-built-in per-question candidate passages at all in its open-domain form,
-so this loader reconstructs plain text from raw HTML-tagged tokens and
-uses NQ's own long-answer-candidate segmentation as the distractor
-pool -- and it worked correctly on the first real run, no dataset-loading
-surprises this time. One question remains explicitly open, not resolved:
-an early N=30 exploratory run on HotpotQA showed a different transfer
-pattern than the systematic N=25 sweep -- flagged for a larger-N
-confirmatory run in Weeks 9-10, not swept under the rug.
+General clean-evaluation infrastructure supports gold-document Recall@1/3/5/10, MRR@1/3/5/10, nDCG@10, answer exact match (EM) and token F1. The protocol-based poisoning comparison records poison retrieval, diagnostic ranks and actual generator-visible exposure separately, plus complete QA responses, extracted answers, prompts/hashes, timings and retrieval accounting. Independent diagnostic top-10 and generator-visible top-3 rankings need not be prefixes.
 
-Full tables, per-condition caveats, and the complete readiness
-checklist: `docs/WEEK5_6_BENCHMARK_VALIDATION_REPORT.md`.
+| Protocol outcome | Meaning |
+| --- | --- |
+| `target_construction_failed` | No compatible target under the frozen rules. |
+| `semantic_construction_failed` | The required document count was not achieved within the declared retries. Valid partials are archived but none are injected for that query. |
+| `valid_construction` | Exactly the required number of documents passed the mechanical checks; factual or semantic correctness is not independently established. |
 
-## Bugs found and fixed along the way
+Infrastructure errors stop completion rather than being relabeled as scientific construction failures. Results report attempted, valid, failed and actually evaluated counts separately.
 
-Documenting these because catching and fixing them *is* part of the
-engineering work, not something to hide:
+| Metric | Denominator and interpretation |
+| --- | --- |
+| **End-to-end targeted ASR** | Target matches among valid evaluated attacks / **all 300 queries**. Failed constructions contribute zero successes, **not evidence of successful defense**. |
+| **Conditional targeted ASR** | Target matches / valid constructions. |
+| **Untargeted ASR (degradation definition)** | Clean-correct to poisoned-incorrect transitions / valid constructions; also reported conditional on clean-correct valid cases. It is not arbitrary answer disagreement. |
+| **Poison Retrieval Rate (PRR@1/3/5/10)** | Queries retrieving at least one query-specific poison at that diagnostic cutoff / valid constructions. |
+| **Generator-visible exposure** | Queries with query-specific poison in actual generation evidence / valid constructions. |
+| **ASR given exposure** | Target matches among exposed valid attacks / exposed valid attacks. |
+| **EM/F1** | Actual clean and poisoned answer scores over valid constructions. No invented scores for failed constructions. |
 
-1. **Verbose-generation metric mismatch (`exp_001`).** First real-model
-   run scored EM=0.000 despite the model answering every question
-   correctly -- it was adding unrequested "Explanation:" text after each
-   answer, which exact-match scoring penalizes. Fixed by tightening the
-   prompt and extracting just the first line/sentence before scoring
-   (`exp_002`: EM jumped to 0.600).
-2. **Non-deterministic "deterministic" test embedder.** `HashingEmbedder`
-   (a mock embedder used only for testing retrieval logic) used Python's
-   built-in `hash()`, which is randomly salted per process -- so a
-   component built to be deterministic wasn't actually reproducible
-   across runs. Fixed by switching to `hashlib.md5`, which is stable
-   across processes and machines.
-3. **`datasets` v5.x breaking change.** HotpotQA's original Hugging Face
-   repo is a legacy "loading script" dataset; `datasets` v5.x removed
-   script support entirely, and its automatic parquet-fallback has a bug
-   parsing bare-name (no-namespace) legacy repos. Fixed by switching to
-   the namespaced mirror (`hotpotqa/hotpot_qa`) and dropping the now-
-   invalid `trust_remote_code` argument.
-4. **Retriever-routing regression (caught by supervisor review, not by
-   tests).** A later commit adding the Kaggle/`TransformersGenerator`
-   backend accidentally deleted `build_retriever(config)` and hardcoded
-   `main()` to always use `BM25Retriever()`, silently ignoring
-   `config['retriever']`. This meant `exp_005`/`006`/`007` (dense/hybrid/
-   reranker) would have all quietly run as BM25 if re-executed, even
-   though their configs said otherwise -- and the existing test suite
-   didn't catch it, because the one end-to-end test only exercised the
-   BM25 smoke config. Fixed by restoring `build_retriever()` and adding
-   `tests/test_config_routing.py`, an integration test that runs `main()`
-   end-to-end for each retriever kind and asserts the actual class
-   instantiated matches the config -- this is the test that would have
-   (and now would) catch this class of regression automatically. Then
-   re-ran all four retriever experiments from scratch on the fixed code
-   to confirm the original pilot numbers were genuine (see results table
-   above) rather than assuming it.
-5. **Missing reproducibility metadata (review issue #8).** Logged results
-   had no record of which code, library versions, or hardware produced
-   them -- so a regression like bug #4 would have been invisible except as
-   a numerical discrepancy, with no way to tell *why* the numbers changed.
-   Fixed with `src/utils/env_info.py`, capturing `git_commit_sha`,
-   `python_version`, `torch_version`, `transformers_version`,
-   `sentence_transformers_version`, and actual detected `device` (correctly
-   distinguishing `cuda`/`mps`/`cpu`), wired into `ExperimentLogger` so
-   every JSONL record carries it automatically via `setdefault` (a crashed
-   run still leaves a full fingerprint on every record written so far).
-   Missing optional libraries degrade to an explicit `None`, not a crash --
-   verified by `tests/test_env_metadata.py` (8 tests: graceful degradation,
-   `setdefault` not clobbering real per-query data, backward compatibility
-   with call sites that don't pass `config=`). Also added
-   `requirements-kaggle-lock.txt`, pinned exact versions verified working
-   on a Kaggle T4 GPU -- a curated subset of the environment's actual
-   dependencies, not a raw `pip freeze` of Kaggle's 700+-package base image.
-6. **2WikiMultiHopQA's HuggingFace repo is a legacy loading-script dataset**
-   (same root cause as bug #3, different dataset). `xanhho/2WikiMultihopQA`
-   fails outright under `datasets` v5.x. Fixed by pointing the loader at
-   HuggingFace's auto-generated `refs/convert/parquet` branch instead, then
-   pinning the *actual commit SHA behind that branch*
-   (`612bc5039a457880d9e7d84c3b0a4cf154b70e4f`) rather than the branch name
-   itself, since a branch can move and a pinned revision shouldn't.
-   [Correction, see bug #9: the SHA recorded here at the time,
-   `612bc5039a457880d9e7d84c3b0a4cf154b70e4f`, was in fact the original
-   main-branch SHA; the parquet-branch SHA used for the real results was
-   `e37a4050605363be62f1d02e6eb888fe5f56530e`, and both were later superseded
-   by the `Salesforce/ContextualBench` mirror.] That parquet conversion
-   turned out to have a second issue: its `context` and
-   `supporting_facts` fields are JSON-encoded strings, not native nested
-   lists (`row["context"]` looked like `[["title", [...]]]` when printed,
-   but was actually one long string -- iterating it as pairs silently
-   unpacked individual characters instead of raising immediately, and only
-   surfaced as a `ZeroDivisionError` in BM25 downstream, with an empty
-   corpus as the real cause). Fixed by `json.loads`-parsing both fields in
-   `load_2wikimultihopqa` before use.
-7. **ATR/PRR issues flagged in supervisor review 3.5.**
-   `compute_transfer_statistics` checked that `source_results` and
-   `target_results` had matching *lengths* but never that they contained
-   the *same queries in the same order* -- misaligned or reordered lists
-   would silently compute transfer rates over mismatched pairs. Fixed with
-   an explicit per-index `query_id` check that raises immediately on
-   mismatch. Separately, `poison_retrieval_rate_at_1/3/5/10` were declared
-   as fields on `TransferExperimentResult` but never actually computed
-   (always `None`), and even once computed, `TransferMatrix.to_csv()` /
-   `.to_markdown()` looked up metrics by attribute name directly, so a
-   caller asking for `"poison_retrieval_rate@5"` (the `@k` notation used
-   everywhere else in this codebase) never matched the real attribute
-   `poison_retrieval_rate_at_5` and silently printed `N/A`. Fixed by
-   computing PRR@k in `compute_transfer_statistics` and adding a
-   `_resolve_metric_attr` translation step in the export methods. 12 new
-   tests added in `tests/test_transfer_framework.py` covering all three
-   sub-issues.
-8. **Stale test count and a mislabeled corpus field**, both caught during
-   the same review pass. `WEEK_4_AUDIT_REPORT.md` still said "128 tests"
-   after the 11 new tests from bug #7 landed (139 real); bulk-corrected
-   across the file. Separately, every experiment summary's
-   `corpus_type` field was hardcoded to `"pooled_hotpotqa"` in `run.py`
-   regardless of which dataset actually ran -- harmless for HotpotQA-only
-   runs, but every 2Wiki baseline run was silently mislabeling its own
-   corpus type. Fixed by deriving the label from `dataset_loader` instead
-   of hardcoding it, and patched into the 4 already-frozen 2Wiki summary
-   JSON files directly (re-running them would have wasted GPU quota for a
-   metadata-only fix).
+Failed cases retain explicit records for both arms with null measurements; they are not silently treated as poisoned evaluations. Zero conditional denominators are null. Conditional valid-construction summaries do not replace the all-300 primary population.
 
-9. **Bug #6's fix was correct but never actually got committed -- only
-   its results were (found in Week 5-6).** During Clean Baseline v1,
-   `load_hotpotqa_distractor`'s sibling loader for 2Wiki was pointed at
-   HuggingFace's `refs/convert/parquet` branch of `xanhho/2WikiMultihopQA`
-   and its real commit SHA (`e37a4050605363be62f1d02e6eb888fe5f56530e`)
-   -- this fix was genuinely correct and genuinely produced all four real
-   2Wiki N=300 results in the table above. However, the `git add` that
-   followed only staged the results files and the loader fix, not the
-   four `configs/exp_01[7-9]*`/`exp_020*` YAML files -- so the corrected
-   revision only ever existed locally in that session and was never
-   committed. The tag's actual committed config still carried the
-   original *broken* main-branch SHA
-   (`612bc5039a457880d9e7d84c3b0a4cf154b70e4f`). When Week 5-6 re-exercised
-   the *committed* config for a real 2Wiki attack sweep, it naturally hit
-   the original failure again: `RuntimeError: Dataset scripts are no
-   longer supported, but found 2WikiMultihopQA.py`. This is why the
-   Week 5-6 report had marked 2Wiki as "not yet run for real" -- not
-   because bug #6's fix was wrong, but because it had never actually
-   been saved. **The frozen Clean Baseline v1 2Wiki numbers themselves
-   are unaffected and remain real** -- this was a config-provenance gap,
-   not a data problem. Fixed for good by switching to an independent
-   parquet-native mirror, `Salesforce/ContextualBench` (config
-   `2WikiMultihopQA`, commit `9823f70484dea525100394220b0ea5184d0eeb7b`),
-   which also required (a) mapping the `"validation"` split name used
-   throughout this repo's configs to that mirror's `"dev"` split, and
-   (b) rewriting the row parser, since this mirror's `context` /
-   `supporting_facts` fields are native nested dicts, not the
-   JSON-encoded strings bug #6 worked around. All four 2Wiki configs'
-   `dataset_revision` field is now committed with the new hash.
+The failure-aware aggregator computes paired Dense-minus-RCD uncertainty using **2,000 query-cluster bootstrap resamples**, seed **20261025**, with percentile 95% intervals. Each sampled query retains all poison seeds and both arms. Conditional denominators are recomputed per replicate, and undefined replicates are counted. The population remains 300 unique questions, not 900 independent observations.
 
-## Status labels and evidence
+## Research progress
 
-Labels used for claims in this README: **IMPLEMENTED** (code exists), **TESTED**
-(automated tests exist and pass offline), **EXECUTED** (a real run happened),
-**EXPLORATORY** (small or non-final run), **NOT YET RUN**, **UNVERIFIED**
-(artifact or evidence is not available in this repository).
+| Stage | Implementation and evidence boundary |
+| --- | --- |
+| Retrieval and clean baselines | BM25, Dense, Hybrid and cross-encoder reranking implemented; historical baseline artifacts remain under `results/` and `experiments/`. Historical schemas/settings must be checked before comparison. |
+| Week 7–8 | Composite RCD implemented and frozen. [`exp_026`](configs/exp_026_hotpotqa_rcd_v1_mlx_frozen_current.yaml) records the corrective development configuration. Development utility and exploratory poisoned pilots do not establish held-out robustness. See the [validation report](docs/WEEK7_8_RCD_VALIDATION_REPORT.md). |
+| Week 9–10 implementation | Abbreviation-safe extraction, complete measurement records, zero-source-success transfer handling, semantic validation revisions and a failure-aware construction protocol implemented. |
+| Development smoke | Two-query diagnostic completed, as reported by the researcher; no effectiveness conclusion is drawn. |
+| Held-out study | All-300 attack construction underway at the pinned commit. No completed held-out poisoned evaluation or final aggregate is claimed. |
+| Further research | Broader source-to-target transfer, held-out 2Wiki replication and final scientific interpretation remain separate milestones. |
 
-| Item | Label | Evidence in this repository |
-|---|---|---|
-| `exp_026` frozen-config development run (validation split, not held-out) | EXECUTED | `results/exp_026_*`: 300 rows, 300 unique query IDs, `git_dirty=false` on every row |
-| `exp_028b` held-out recovery run | EXPLORATORY | rows record `git_dirty: null`; not a publication baseline |
-| `exp_030` / `exp_031` clean held-out baselines | ARTIFACTS INSPECTED; CORRECTION IMPACT UNASSESSED | Both runs contain 300 unique query IDs with identical ordered query IDs and matching query-set, held-out-ID, and corpus fingerprints. Both summaries report `final_run=true` and `git_dirty=false`; their recorded commit predates the rewrite correction. |
-| Week 9 held-out 12-cell poison matrix | NOT YET RUN | runner and validator are IMPLEMENTED and TESTED on synthetic cells |
-| Matched Dense-vs-RCD poison pilot (10 queries) | EXPLORATORY; no significance claim | tooling in `scripts/`; no committed results are cited |
-| Cross-pipeline transfer results (BM25/Hybrid/Reranker as source or target) | NOT YET RUN | `TransferMatrix` framework is IMPLEMENTED and TESTED |
-| 2Wiki held-out RCD / transfer evaluation | NOT YET RUN | earlier 2Wiki baselines and sweeps exist, not this phase |
-| Statistical significance, effect sizes, McNemar, F1 retention for the poison matrix | NOT YET RUN | not computed |
+The README does not reproduce historical numerical result tables as current performance claims. Clean utility results, development findings, recovery runs, exploratory pilots and final poisoning outcomes must remain separately labeled. Earlier reports describe their own historical scope and may predate the current status or protocol clarification.
 
-## Two working environments
+## Reproducibility and protocol freeze
 
-- **Local (MacBook Air M4):** dev/debug loop, `generator_backend: mlx`
-- **Kaggle (T4/P100 GPU):** real generation runs,
-  `generator_backend: transformers` with 4-bit quantization
+The active protocol is **`week9-outcome-independent-construction/v1`**, defined by [`week9_construction.py`](src/experiments/week9_construction.py). The [full protocol document](docs/WEEK9_FROZEN_ATTACK_CONSTRUCTION_PROTOCOL.md) specifies its rules, exact commands, schemas and limitations.
 
-Both point at the same GitHub repo. After working in either environment,
-`git pull` in the other to stay in sync -- commit history is the
-canonical current state.
+Its supervisor-approved design uses a predefined protocol rather than mandatory individually signed false-target assignments for all 300 queries. Existing independent human-review tools remain available for other experiments; the protocol pathway does not fabricate or reinterpret their approvals.
 
-## Setup
+The staged workflow in [`run_week9_protocol_poison_matrix.py`](scripts/run_week9_protocol_poison_matrix.py) is:
+
+1. **`preflight`:** verify metadata, fixed IDs, configs and development provenance without loading held-out question text or models. This is not a scientific-readiness certificate.
+2. **`freeze-protocol`:** bind the rules to a clean Git commit, source/configuration hashes, dataset revision and ID fingerprints, exact local model snapshot/file hashes, and Python/package versions.
+3. **`construct`:** process every declared query/cell, journal actual generation calls and retain typed failures. Construction cannot consult final Dense/RCD outcomes.
+4. **Global construction seal:** freeze every cell ledger, checkpoint/journal, query/corpus fingerprint and file hash before any final Dense/RCD evaluation. Evaluation requires the externally supplied exact-byte seal hash and validates the complete matrix first.
+5. **`evaluate`:** replay the frozen matched poison for valid constructions; retain null failure records for both arms. No target regeneration based on outcomes.
+6. **`aggregate`:** require the evaluation completion hash, validate sealed/raw artifacts and recompute failure-aware metrics and paired uncertainty.
+
+An interrupted generation intent without a response is not permission for extra retries. Sealed constructions cannot be reopened to select more favorable targets or prose. Any later methodological amendment needs a disclosed new protocol/study version; do not overwrite or pool frozen historical artifacts. Hashes establish content identity and provenance consistency, not factual truth or supervisor signatures.
+
+## Repository structure
+
+| Path | Purpose |
+| --- | --- |
+| [`run.py`](run.py), [`configs/`](configs/) | Config-driven single-pipeline QA and frozen experiment definitions. |
+| [`src/retrieval/`](src/retrieval/) | BM25, Dense, Hybrid and cross-encoder reranking. |
+| [`src/defenses/rcd/`](src/defenses/rcd/) | Composite RCD signals, rewrites and scoring. |
+| [`src/attacks/`](src/attacks/) | Lexical/semantic attacks, nomination, review and checkpoint infrastructure. |
+| [`src/experiments/week9_construction.py`](src/experiments/week9_construction.py) | Protocol rules, failure accounting and paired aggregation primitives. |
+| [`src/evaluation/`](src/evaluation/), [`src/pipelines/`](src/pipelines/) | Metrics, lossless QA records, generator backends and transfer statistics. |
+| [`src/data/loaders.py`](src/data/loaders.py) | Dataset loading, canonical document IDs and cohort selection. |
+| [`scripts/`](scripts/), [`tests/`](tests/) | Workflow entrypoints, audits and regression tests. |
+| [`docs/`](docs/) | Protocol definitions, implementation reports and historical review material. |
+| [`results/`](results/), [`experiments/`](experiments/) | Tracked historical artifacts; current large run outputs are external and must not be inferred from file names alone. |
+| [`data/raw/toy_smoke_dataset.json`](data/raw/toy_smoke_dataset.json) | Small checked-in toy input for mock-generation plumbing checks. |
+
+The older [`run_week9_heldout_poison_matrix.py`](scripts/run_week9_heldout_poison_matrix.py) and [`aggregate_week9_multiseed_results.py`](scripts/aggregate_week9_multiseed_results.py) retain their reviewed-target/legacy workflows. Use the **protocol runner's stages** for the current failure-aware study; do not mix incompatible artifact schemas or run the older matrix command against current artifacts.
+
+## Setup and safe inspection
+
+Use a **separate, inactive development checkout**. Do not perform setup or testing in the running experiment worktree. Python must support the repository's Python 3.10+ annotation syntax; experimental replay must match the frozen runtime rather than merely satisfying that minimum.
 
 ```bash
-python -m venv .venv
-source .venv/bin/activate
-pip install -r requirements.txt
+python3 -m venv .venv
+.venv/bin/python -m pip install -r requirements.txt
 ```
 
-## Run the smoke test
+[`requirements.txt`](requirements.txt) is an **unpinned development** dependency list: `rank_bm25`, PyYAML, pytest, sentence-transformers, datasets and NumPy. It is not the frozen experimental environment. On Apple Silicon, the real MLX backend additionally requires:
 
 ```bash
-python run.py --config configs/exp_000_smoke.yaml
-pytest tests/ -v
+.venv/bin/python -m pip install mlx-lm
 ```
 
-Expect `Mean EM: 0.000` and `Mean F1: 0.000` -- this is correct. The
-config's `generator_backend: mock` uses a stub that always returns the
-literal string `"mock-answer"`, so it will never match a real gold
-answer. That's intentional: it isolates "does the pipeline plumbing
-work" from "does the model generate good answers," which is a separate
-question for once the real generator is wired in.
+The repository also implements a CUDA Transformers/bitsandbytes backend. [`requirements-kaggle-lock.txt`](requirements-kaggle-lock.txt) records the separate Kaggle environment; it is not the Apple Silicon runtime lock. Dataset/model downloads require appropriate network access during preparation. Offline runs require their actual cached inputs. The frozen Week 9–10 protocol uses `mlx-community/Qwen2.5-7B-Instruct-4bit`, a complete revision-named local model snapshot and explicit greedy sampling.
 
-## Real generator, on your Mac (MLX)
+Read command help or run metadata-only preflight in the inactive checkout:
 
 ```bash
-pip install mlx-lm
-python run.py --config configs/exp_002_real_generator_fixed_prompt.yaml
+.venv/bin/python scripts/run_week9_protocol_poison_matrix.py --help
+.venv/bin/python scripts/run_week9_protocol_poison_matrix.py preflight --scope development
+.venv/bin/python scripts/run_week9_protocol_poison_matrix.py preflight --scope heldout
 ```
 
-First run downloads `mlx-community/Qwen2.5-7B-Instruct-4bit` (a few GB).
-
-## Real generator, on Kaggle GPU (transformers + bitsandbytes)
+A separate **toy**, mock-generator QA check is available:
 
 ```bash
-pip install transformers accelerate bitsandbytes datasets sentence-transformers
-python run.py --config configs/exp_007_hotpotqa_reranker.yaml
+.venv/bin/python run.py --config configs/exp_000_smoke.yaml
 ```
 
-Requires a CUDA GPU (enable in notebook Settings -> Accelerator).
-`generator_backend: transformers` in the config selects this backend.
+That command writes toy run artifacts; it is not the completed real-model development smoke or a held-out experiment. Commands that freeze, construct or evaluate a real run are intentionally kept in the [protocol instructions](docs/WEEK9_FROZEN_ATTACK_CONSTRUCTION_PROTOCOL.md). They require actual trusted hashes and model paths, not copied placeholder values. Do not launch another matrix or alter the active run to try these examples.
 
-## Dataset loaders and scope
+## Software verification
+
+From an inactive checkout with dependencies and required local caches available:
 
 ```bash
-pip install datasets sentence-transformers
+HF_HUB_OFFLINE=1 HF_DATASETS_OFFLINE=1 .venv/bin/python -m pytest -q
+.venv/bin/python -m compileall -q src scripts tests
+
+git diff --check
 ```
 
-The HotpotQA loader builds a pooled, deduplicated mini-corpus from the
-selected questions' candidate passages. The completed Week 9–10 held-out
-runs use the pinned 300-query manifest described below. Earlier 2Wiki
-baseline and poison-sweep artifacts exist, but a Week 9–10 held-out 2Wiki
-RCD/transfer evaluation is still pending. Read each loader's docstring before
-starting a new run.
-
-## What's real vs placeholder right now
-
-| Component | Status |
-|---|---|
-| Repo structure, config loading, seeding, logging | Real, final |
-| BM25 / Dense / Hybrid / Reranker retrievers | Real, tested on real data |
-| `MockGenerator` | **Placeholder/test-only** -- never use for real results |
-| `MLXGenerator` / `TransformersGenerator` | Real, both verified working |
-| EM/F1 metrics | Real, final |
-| HotpotQA pilot (N=50), all 4 retrievers | Real EM/F1 pilot; superseded by Clean Baseline v1 (N=300) below, kept for historical comparison only |
-| **HotpotQA Clean Baseline v1 (N=300), all 4 retrievers** | **Real, frozen, tag `clean-baseline-v1`. Pinned dataset revision, real generator, full retrieval + generation metrics** |
-| Recall@1/@3/@5/@10 and MRR@1/@3/@5/@10 | Real in the current run path, integration-tested with gold labels; current five-question HotpotQA artifacts cover BM25, dense, hybrid, and reranker |
-| HotpotQA retrieval-evaluation smoke (N=5, BM25, mock generator) | Run on 2026-09-01 with current code; logs all required retrieval metrics and aggregate summary, but is not a generation-quality result |
-| Config-routing integration test | Real, catches the exact regression class found in bug #4 |
-| `gold_doc_ids` / `gold_supporting_facts`, canonical doc IDs | Real, verified on real HotpotQA data (dedup confirmed on true repeats, no false collapses) |
-| Per-record environment metadata (`git_commit_sha`, library versions, device) | Real, tested (8 tests), wired into every experiment log |
-| Pinned Kaggle dependencies (`requirements-kaggle-lock.txt`) | Real, captured from a verified-working Kaggle T4 run |
-| **2WikiMultiHopQA Clean Baseline v1 (N=300), all 4 retrievers** | **Real, frozen, tag `clean-baseline-v1`. Required switching to the parquet-converted mirror + a loader fix for JSON-string-encoded fields (see bugs below)** |
-| **Natural Questions real attack sweep (N=25, both attacks, intensities 1 and 3, all 4 retrievers)** | **Real, validated -- `load_natural_questions` builds a genuine pooled corpus from NQ's own long_answer_candidates; clearest hypothesis-confirming result of the three datasets. See Week 5-6 section above.** |
-| Corpus metadata logging | Real; corpus statistics (num_queries, num_unique_documents, corpus_type) recorded in every experiment summary |
-| Attack metrics (PRR@k, ASR, ATR) | PRR@k measured by the Week 5–6 sweep; ASR/ATR APIs implemented and tested. See the metric definitions below for their denominators. |
-| Transfer matrix framework | Source-to-target orchestration implemented in `run_source_target_asr()` and `compute_transfer_statistics()`; strict metadata validation is the default for orchestration. No dedicated transfer CLI exists. |
-| Knowledge-poisoning attack benchmark (lexical + semantic-fluent, intensity 1/3/5, low poison-rate, HotpotQA + 2Wiki) | **Real, validated, Week 5-6 deliverable complete** -- see Week 5-6 section above and `docs/WEEK5_6_BENCHMARK_VALIDATION_REPORT.md` |
-| RCD (Retrieval-Consistency Defense) | **Rewrite correction regression-tested.** The corrected implementation is on the rewrite-fix branch. `exp_031` is an inspected clean held-out baseline; its recorded commit predates the query-rewrite correction, whose impact remains unassessed. It is not a poisoning-defense result. |
-| Week 9–10 clean HotpotQA held-out comparison | **ARTIFACTS INSPECTED; CORRECTION IMPACT UNASSESSED.** Configs `exp_030`/`exp_031` are committed; their raw logs and summaries are not (they are archived in `../rag-rcd-week9-final-results/results/`, outside Git). The numbers below cannot be re-derived from committed files. |
-| Week 9–10 poisoned source-to-target evaluation | **NOT YET RUN.** No results are inferred from the clean `n_poison=0` baselines. |
-| Week 9 held-out 12-cell poison matrix runner + validator (`scripts/run_week9_heldout_poison_matrix.py`) | **IMPLEMENTED and TESTED on synthetic fixtures only; NOT YET RUN** (no real cell, no model inference). See the validator guarantees below. |
-
-## Week 7-8: Retrieval-Consistency Defense (RCD)
-
-**RCD implementation and regression testing:** the query-rewrite correction passed the focused regression tests and the full test suite. A two-query real-model smoke test validated execution plumbing only. The archived clean held-out baselines `exp_030` and `exp_031` were inspected for run metadata, query alignment, and frozen-input fingerprints. Their recorded commit predates the rewrite correction, so its impact on those results remains unassessed. They are clean utility comparisons, not poisoning-defense results. The full poison matrix and poisoned transfer evaluation remain pending.
-
-The original RCD configuration was developed and frozen at the end of Week 8.
-A subsequent query-rewrite correction was regression-tested on the rewrite-fix
-branch. Historical runs must not be assumed to use the corrected implementation;
-assess their provenance and impact before reusing their results.
-Development validation does not establish RCD effectiveness on held-out data.
-
-RCD is a training-free retrieval-time defense that combines retrieval
-consistency across additional query reformulations with evidence signals
-and the base retriever ranking.
-
-### Frozen configuration
-
-- **Configuration:** `exp_026_hotpotqa_rcd_v1_mlx_frozen_current` (executed; its raw log and summary are present in `results/` and were checked in the 2026-10-23 audit: 300 rows, 300 unique query IDs, `git_dirty=false` on every row, validation split; a development run, not held-out evidence)
-- **Source development checkpoint:** `exp_025_hotpotqa_rcd_v1_mlx_dev300_current_tuned`
-- **Dataset:** HotpotQA validation split
-- **Queries:** N=300
-- **Seed:** 42
-- **Embedding model:** `BAAI/bge-small-en-v1.5`
-- **Generator:** `mlx-community/Qwen2.5-7B-Instruct-4bit`
-- **Generator backend:** MLX on Apple Silicon
-- **Top-k evidence passed to generator:** 3
-- **Frozen weights:** consistency=0.45, redundancy=0.00, conflict=0.10, base_rank=0.45
-- **Candidate pool:** 10
-- **Additional query rewrites:** up to 3 additional unique rule-based rewrites (`n_rewrites=3` requests up to three; it does not guarantee exactly three, since fewer may be produced when fewer distinct variants exist; the original query is never included in `rewrite_queries`)
-- **Final-run provenance guard:** enabled (`final_run: true`); execution fails if Git is dirty or its state is unknown
-
-The frozen checkpoint uses the corrected current RCD implementation. Conflict
-detection is a narrow temporal/year-disagreement heuristic: both texts must
-contain recognized years, have at least 0.50 lexical overlap, and have
-disjoint recognized year sets. It is not general semantic/NLI contradiction
-detection. Redundancy detection is implemented, tested, and available as an
-RCD signal/component, but its frozen weight is 0.00, so it does not contribute
-to the frozen final score.
-
-### Development evidence for the frozen checkpoint
-
-The frozen weights were retained from the current-code development checkpoint
-`exp_025_hotpotqa_rcd_v1_mlx_dev300_current_tuned`. This is development-set
-evidence and is **not** held-out evaluation.
-
-| Metric | RCD development |
-|---|---:|
-| EM | **0.400** |
-| F1 | **0.5047** |
-| Recall@3 | **0.7533** |
-| MRR@10 | **0.9424** |
-| nDCG@10 | **0.8578** |
-
-The complete per-query development artifacts are committed at
-`results/exp_024_hotpotqa_rcd_v1_mlx_dev300_current.jsonl` and
-`results/exp_025_hotpotqa_rcd_v1_mlx_dev300_current_tuned.jsonl`, with their
-aggregate summaries alongside them.
-
-The frozen configuration is recorded at
-`configs/exp_026_hotpotqa_rcd_v1_mlx_frozen_current.yaml`.
-
-### Verification
-
-The local implementation was verified on 2026-10-09; that historical
-verification does not certify the current working tree. RCD-specific
-regression tests verify final-score logging, preservation of base retriever
-scores, and fail-fast behavior when RCD diagnostics are missing.
-
-The Week 7-8 corrective freeze is committed in Git as
-`2928fa237c51df3ee7643d2aed64f936a7ff386b`.
-
-## Week 9-10: held-out clean baselines and poisoning-transfer evaluation
-
-The research question is whether knowledge-poisoning attacks selected on a
-source retrieval pipeline continue to succeed on different target pipelines in
-adaptive RAG, and how that transfer changes under the frozen RCD configuration.
-The transfer workflow is implemented, but the completed `exp_030` and
-`exp_031` runs below are **clean-utility baselines**, not attack evaluations:
-both have `n_poison=0`. They provide no evidence for or against RCD's
-effectiveness against poisoning.
-
-### Frozen RCD configuration
-
-The held-out RCD run uses the frozen values recorded in `exp_031`:
-
-| Parameter | Value |
-|---|---:|
-| `candidate_k` | 10 |
-| `rewrite_count` | 3 |
-| `consistency_weight` | 0.45 |
-| `redundancy_weight` | 0.00 |
-| `conflict_weight` | 0.10 |
-| `base_rank_weight` | 0.45 |
-
-`exp_030` is the dense-retrieval comparison with defense disabled; its
-summary records the common candidate/rewrite settings but no RCD weights.
-`exp_031` is the RCD run with the frozen weights above. Both use the same
-HotpotQA evaluation set and generator evidence depth (`top_k=3`).
-
-### Completed clean held-out baselines
-
-The raw logs and summaries were inspected in an archive outside Git. Both
-runs contain 300 unique query IDs with identical ordered query IDs, matching
-query-set, held-out-ID, and corpus fingerprints, and matching commit metadata.
-Both summaries report `final_run=true` and `git_dirty=false`. The recorded commit
-predates the query-rewrite correction, so its impact on these results remains
-unassessed. The files are not committed to this repository:
-`exp_030_hotpotqa_dense_heldout_mlx.{jsonl,summary.json}` and
-`exp_031_hotpotqa_rcd_heldout_mlx.{jsonl,summary.json}`.
-Values below are from the summaries (rounded to four decimal places).
-
-| Metric | Dense (`exp_030`) | RCD (`exp_031`) |
-|---|---:|---:|
-| Queries | 300 | 300 |
-| Exact Match | 0.4367 | 0.4133 |
-| Token F1 | 0.5511 | 0.5214 |
-| Recall@3 | 0.8250 | 0.7567 |
-| Recall@10 | 0.9433 | 0.9433 |
-| MRR@10 | 0.9204 | 0.9181 |
-| nDCG@10 | 0.8746 | 0.8562 |
-
-The artifacts agree on dataset revision
-`1908d6afbbead072334abe2965f91bd2709910ab`, split `validation`, seed `42`,
-generator `mlx-community/Qwen2.5-7B-Instruct-4bit`, held-out manifest
-`configs/exp_027_hotpotqa_heldout_manifest.json`, held-out-ID fingerprint
-`76671f6b9a70140578f2b0b6ac405eb3199235bc4d051e62d5896c715454e2df`, query
-set fingerprint
-`acb56d5095aa4b784d54e6db12f7cddc1796055eb7ab9bf45825c4d6c182f569`, and
-Git commit `f044b3ba987cd6d98fb1a55e904602cfdd0e672d`. Both summaries report
-`final_run=true`, `git_dirty=false`, and `n_poison=0`. The held-out manifest
-contains 300 unique query IDs; its newline-joined SHA-256 matches the stored
-fingerprint. The summaries also report the same pooled corpus: 2,958 unique
-documents for 300 queries.
-
-These are clean-task retrieval/generation measurements. In particular, the
-lower clean EM and retrieval metrics in `exp_031` must not be described as
-evidence that RCD is ineffective against poisoning; that claim requires
-poisoned source-to-target evaluation, which is still pending.
-
-### Data and evaluation setup
-
-The HotpotQA loader (`load_hotpotqa_distractor`) pools and deduplicates the
-candidate passages from the selected queries into one shared mini-corpus; it
-does **not** evaluate each query against only its own original ten-document
-distractor pool. The held-out runs use the 300 IDs in the frozen manifest
-with the validation split and pinned revision above. Retrieval metrics rank
-up to ten documents; `top_k=3` controls the evidence passed to the generator.
-
-The Week 9–10 transfer workflow should inject/freeze poison instances once,
-evaluate all attacked queries on the source, freeze source-successful query
-IDs, and replay those same poison documents and query associations on each
-target. The current `run_source_target_asr()` API does this; it does not
-regenerate or retune attacks per target. Strict mode requires explicit
-experiment metadata and independently matches its poison fingerprint to the
-actual corpus and query annotations before constructing retrievers.
-
-The exploratory matched Dense-vs-RCD pilot tooling is available in
-`scripts/run_week9_multiseed_matched_evaluation.py`. Its predeclared poison
-seeds are 42, 43, and 44. Query selection remains fixed at seed 42 so the same
-ten held-out queries are paired across poison seeds; `inject_poisons()` gets
-the varying poison seed and uses its local RNG for target-answer/poison
-instance generation. Retrieval and model initialization retain the frozen
-configuration seed 42. Each seed gets a separate exclusive-create poison
-manifest, replayed unchanged by both pipelines. The comparison runner and
-aggregator are `scripts/run_week9_matched_poison_comparison.py` and
-`scripts/aggregate_week9_multiseed_results.py`. The aggregator resamples
-query IDs as clusters, keeping all seeds and both pipelines together; these
-ten-query results remain exploratory, repeated measurements are not treated as
-independent queries, and no statistical-significance claim is supported.
-The orchestration command performs MLX inference and must only be launched
-deliberately:
+For the protocol-specific synthetic regression suite:
 
 ```bash
-python scripts/run_week9_multiseed_matched_evaluation.py \
-  --seeds 42 43 44 \
-  --output-dir ~/Downloads/rag-rcd-week9-final-results/multiseed \
-  --experiment-id week9_multiseed_exploratory_01
+HF_HUB_OFFLINE=1 HF_DATASETS_OFFLINE=1 \
+  .venv/bin/python -m pytest -q tests/test_week9_frozen_construction_protocol.py
 ```
 
-### Held-out matrix smoke test
-
-The final held-out matrix runner is separate from the exploratory pilot:
-`scripts/run_week9_heldout_poison_matrix.py`. Before starting its full
-12-cell matrix, run a real, non-final smoke test with the configured MLX
-generator and frozen Dense/RCD retrievers. The smoke test uses a deterministic
-prefix of the frozen held-out IDs, writes only to a new directory outside the
-repository, and refuses an existing output directory:
-
-```bash
-.venv/bin/python scripts/run_week9_heldout_poison_matrix.py \
-  --smoke-test \
-  --smoke-query-count 2 \
-  --output-dir ~/Downloads/rag-rcd-week9-final-results/smoke \
-  --experiment-id week9_heldout_smoke_01
-```
-
-Its manifest and summary are labelled `smoke_test_not_final` /
-`complete_smoke_test_not_final` and must not be aggregated as held-out matrix
-results. A two-query real-model smoke test completed on 2026-10-23 under
-experiment ID `rewrite-fix-smoke-20261023`, producing eight raw records. This
-validates execution plumbing only; no full matrix cell or complete 12-cell
-matrix is claimed to have been executed.
-
-#### Matrix validator guarantees (IMPLEMENTED; TESTED on synthetic cells; NOT YET RUN on real cells)
-
-`validate_completed_cell()` (also used by resume and by
-`scripts/aggregate_week9_heldout_poison_matrix.py`) fails closed. It requires
-the frozen inputs (held-out manifest, configs, clean data) and will not accept
-a cell merely because its own files agree. Per cell it checks:
-
-- **Frozen inputs:** dataset name/config/revision/split, exact 300 held-out IDs
-  in order, config SHA-256s, retriever/generator settings, seed, cell ID.
-- **Poison replay:** the manifest is replayed over the frozen clean data, the
-  poison-instance fingerprint is recomputed and compared with the manifest,
-  summary and every raw row; lexical poison is also regenerated
-  deterministically. Semantic-fluent poison comes from an LLM and can only be
-  verified by replay and document identity, not regenerated offline.
-- **Raw rows:** exactly 2 pipelines x 2 conditions x 300 queries, unique,
-  correctly paired; answer correctness, targeted ASR and degradation
-  re-derived from the raw answers.
-- **Retrieval fields (every row, clean and poisoned):** `retrieved_doc_ids`,
-  `generation_evidence_doc_ids`, `poison_retrieved`, `poison_rank` and
-  `prr_at_k` must be present (an absent key is an error; a stored `null`
-  `poison_rank` is valid data when no poison was retrieved), correctly typed
-  (lists of non-empty strings, a real boolean, `None` or a positive integer,
-  numeric PRR values with exactly the cutoffs 1/3/5/10), and consistent with
-  each other: evidence is a prefix of the diagnostic ranking,
-  `poison_retrieved` matches the generator's evidence, `poison_rank` and PRR@k
-  match the ranking, and clean rows contain no poison document.
-
-These checks establish internal and frozen-input consistency of a cell's
-records. They do not show that a real run happened, that MLX retrieval is
-deterministic, or that any result is scientifically valid. The runner checks only relevant tracked source/configuration inputs;
-unrelated untracked artifacts are preserved and not consumed.
-
-### Metrics and denominators
-
-- **PRR@k:** the fraction of attacked queries with at least one associated
-  poison document in the top `k` retrieved results. Queries with no poison
-  documents are undefined for PRR and are not in its denominator.
-- **Targeted ASR:** the fraction of attacked queries whose poisoned-evidence
-  answer matches that query's intended `poison_target_answer` under the
-  project's exact-match normalization. Its overall denominator is all
-  attacked queries evaluated.
-- **Conditional ASR given retrieval:** targeted successes divided by the
-  attacked queries for which a poison document appears in the top `top_k`
-  evidence actually passed to the generator. The complementary
-  not-retrieved ASR uses the attacked queries with no poison in that evidence.
-- **Untargeted degradation:** the fraction of attacked queries for which the
-  clean-evidence answer matches the gold answer but the poisoned-evidence
-  answer does not; its denominator is all attacked queries evaluated.
-- **Source-success-conditioned target ASR:** among the frozen queries that
-  achieved targeted success on the source, the fraction that achieve targeted
-  success on a target.
-- **ATR:** transferred attack successes (queries that achieve targeted success
-  on both the source and the target) divided by the number of source-successful
-  queries in the frozen evaluation subset. It is undefined when that
-  denominator is zero (the source has no successful attacks); it is not an
-  overall target ASR.
-
-### Poison-instance fingerprint
-
-`poison_instances_fingerprint(clean_data, poisoned_data)` computes SHA-256 over
-canonical JSON (`sort_keys=True`, compact separators, UTF-8) for query records
-sorted by query ID. Each record contains the query ID, `attack_family`,
-`poison_target_answer`, sorted `poison_doc_ids`, and the exact `{doc_id, text}`
-pairs for those associated documents. Before hashing, the helper checks that
-the clean corpus is preserved, IDs are unique, each declared poison document
-exists and is associated with only one query, and every added corpus document
-is declared by a query. Strict transfer orchestration compares this computed
-value with the supplied metadata fingerprint; the metadata label alone is not
-accepted as proof of identity. This fingerprint covers the injected poison
-instances and their query associations, not a hash of the entire clean
-corpus.
-
-Poison document IDs use the query-scoped format
-`poison::{attack_family}::{query_id}::{poison_index}::{sha1(text)[:10]}`.
-That ID suffix is part of the ID construction; it is distinct from the
-SHA-256 poison-instance fingerprint described above.
-
-### Commands and milestone status
-
-The supported runner CLI is `python run.py --config <yaml>`; for example,
-these configurations reproduce the two clean held-out conditions (they
-perform inference and write to each config's `results_dir`):
-
-```bash
-python run.py --config configs/exp_030_hotpotqa_dense_heldout_mlx.yaml
-python run.py --config configs/exp_031_hotpotqa_rcd_heldout_mlx.yaml
-```
-
-Do not run these commands against the archived completed result directory
-without first choosing a separate output directory. A `final_run: true`
-config also requires a verifiably clean Git working tree. There is **no
-dedicated transfer-experiment CLI** in this repository: transfer orchestration
-is exposed as the Python API `run_source_target_asr()` in
-`src/attacks/asr.py`; strict mode is the default and requires an explicit
-metadata mapping. The broader PRR sweep is exposed as
-`run_attack_intensity_sweep()` in `src/attacks/sweep.py`, not as a standalone
-command-line program.
-
-Focused deterministic tests:
-
-```bash
-python -m pytest -q tests/test_transfer_framework.py tests/test_asr_evaluation.py tests/test_poison_injection.py
-```
-
-Full test suite:
-
-```bash
-python -m pytest -q
-```
-
-**Completed (verifiable in this repository):** Week 7–8 RCD implementation and
-freeze, with the `exp_026` development run. **Archived artifacts inspected; correction
-impact unassessed:** Week 9–10 held-out HotpotQA clean dense and RCD baselines
-(`exp_030`/`exp_031`).
-**Pending / NOT YET RUN:** poisoned source-to-target transfer evaluation (including
-source-success-conditioned transfer reporting) and Week 9–10 held-out RCD /
-transfer evaluation on 2WikiMultiHopQA. Existing earlier 2Wiki baseline and
-attack-sweep artifacts do not establish completion of this held-out phase.
-
-## Corpus construction methodology (HotpotQA)
-
-The current implementation and completed held-out artifacts use a **pooled
-HotpotQA mini-corpus** design. This is not the standard per-query closed
-distractor-pool evaluation:
-
-### Sampling & Scope
-- **Dataset:** HotpotQA, distractor setting (provides top-k Wikipedia candidate pool per query)
-- **Split:** Validation split (see `load_hotpotqa_distractor` in `src/data/loaders.py`)
-- **Sample size:** Configurable via `dataset_n_samples`. The Week 9–10 held-out runs use 300 manifest-selected validation queries (not a fresh random sample); historical development/benchmark runs used other sample sizes.
-- **General seeded-sampling procedure (non-held-out runs):** for runs that sample queries rather than use a manifest, a fixed seed (e.g., 42) makes the sample reproducible; different seeds produce different sample sets.
-- **Held-out runs (manifest-selected):** the query set is the 300 IDs listed in the frozen manifest `configs/exp_027_hotpotqa_heldout_manifest.json`, not a freshly sampled set. The held-out artifacts also record seed 42 in their summaries, but the query set is determined by the manifest rather than by seeded sampling.
-
-### Corpus Construction
-1. Load the N queries for the run: for general runs, a seeded random sample of N HotpotQA queries; for held-out runs, the 300 queries selected by the frozen manifest (see above)
-2. For each query, extract its candidate documents (titles + sentences)
-3. Assign a canonical document ID to each document:
-   - **Format:** `hotpotqa::normalized_title::content_hash[:10]`
-   - **Properties:** Content-addressed (deterministic, query-independent), deduplicates same Wikipedia article across questions
-4. Pool all candidate documents from all N queries into a single corpus
-5. Deduplicate by canonical ID (a single Wikipedia article appears once, not once-per-query)
-6. For each query, preserve the set of gold document IDs (those IDs that appear in the corpus) and supporting facts (title + sentence ID)
-
-### Corpus Statistics
-Every experiment logs:
-```json
-"corpus": {
-  "dataset": "load_hotpotqa_distractor",
-  "dataset_split": "train" or "validation",
-  "num_queries": N,
-  "num_unique_documents": (after dedup),
-  "corpus_type": "pooled_hotpotqa",
-  "seed": 42
-}
-```
-
-### Why Pooled, Not Per-Query Closed-Book?
-The pooled design allows multiple queries to share the same document corpus,
-which more closely mirrors real-world RAG where a fixed knowledge base
-serves many queries. It also naturally handles the transfer experiment case:
-a poison document injected via a source pipeline's retriever can then be
-re-evaluated on a target pipeline against the same corpus, measuring transfer.
-
-### Gold Labels & Deduplication
-Gold labels (`gold_doc_ids`, `gold_supporting_facts`) are *per-query*.
-They are NOT duplicated into the global corpus; the corpus has one entry
-per unique document. The query → document relevance relationship is
-preserved separately in each query record.
-
-### Determinism & Reproducibility
-- Corpus construction is **fully deterministic:** for seeded-sampling runs, same seed → same N questions → same corpus; for manifest-selected held-out runs, same manifest → same queries → same corpus
-- Canonical IDs are **content-addressed** and **query-independent:** the same Wikipedia
-  article will get the same ID regardless of which queries retrieve it
-- This is verified by tests in `tests/test_corpus_construction.py`
-
-## Retrieval metrics hierarchy
-
-### Clean Retrieval Metrics
-All runs retrieve the top 10 ranked documents (independent of `top_k`,
-which controls how many go to the generator). Per-query metrics:
-
-- **Recall@k:** Fraction of query's gold documents appearing in top-k results (k ∈ {1,3,5,10})
-- **MRR@k:** Mean Reciprocal Rank of the first relevant document in top-k (k ∈ {1,3,5,10})
-  - Returns 1.0 if first relevant doc is at rank 1, 0.5 if at rank 2, 0.0 if none in top-k
-- **nDCG@10:** Normalized Discounted Cumulative Gain with binary relevance (is/isn't a gold doc)
-  - Perfect ranking → 1.0; no relevant docs in top-10 → 0.0
-  - Uses gold document labels from HotpotQA's supporting facts
-
-### Clean Generation Metrics
-- **Exact Match (EM):** Generated answer matches gold answer exactly (after normalization)
-- **F1:** Token-level overlap between generated and gold answers
-
-All metrics use standard SQuAD-style normalization (lowercase, punctuation removal, article removal).
-
-### Attack Metrics (Infrastructure)
-The implemented attack metrics are:
-
-- **Poison Retrieval Rate@k (PRR@k):** Fraction of attacked queries that retrieve at least one poison document in top-k
-  - Computed per query as 1.0 or 0.0, then averaged over queries with poison documents; an unpoisoned query has an undefined PRR and is excluded
-  - k ∈ {1,3,5,10}
-- **Targeted ASR:** Fraction of all attacked queries whose poisoned-evidence answer matches its intended poison target under exact-match normalization. The denominator is all attacked queries evaluated.
-- **Conditional ASR given retrieval:** Targeted successes divided by attacked queries with a poison document in the top `top_k` evidence passed to the generator. The implementation also reports ASR for attacked queries without poison in that generator-visible evidence.
-- **Untargeted degradation:** Fraction of all attacked queries where the clean-evidence answer matches gold but the poisoned-evidence answer does not.
-- **Source-success-conditioned target ASR:** Target successes divided by queries in the frozen subset that succeeded on the source.
-- **Attack Transfer Rate (ATR):** Transferred attack successes (queries that achieve targeted success on both the source and the target) divided by source-successful queries in the frozen evaluation subset. It is undefined when that denominator is zero (no source successes).
-
-See `src/evaluation/metrics.py` for function signatures and `tests/test_attack_metrics.py` for test cases.
-
-### Metric Logging
-Every experiment record logs:
-```json
-"retrieval_metrics": {
-  "recall@1": float | null,
-  "recall@3": float | null,
-  "recall@5": float | null,
-  "recall@10": float | null,
-  "mrr@1": float | null,
-  "mrr@3": float | null,
-  "mrr@5": float | null,
-  "mrr@10": float | null,
-  "ndcg@10": float | null
-},
-"em": float,
-"f1": float
-```
-
-Queries without `gold_doc_ids` record `null` for retrieval metrics (undefined, not 0).
-Summary files report per-metric means, excluding `null` values from denominators.
-
-## Transfer experiment framework
-
-### Motivation
-Knowledge-poisoning attacks are crafted against a specific source pipeline
-(e.g., BM25 + Qwen LLM). The central research question is: *which attacks
-transfer to target pipelines?* The transfer framework enables systematic
-evaluation across all 4 × 4 = 16 source-target retriever pairs.
-
-### Architecture
-
-**TransferMatrix** (`src/pipelines/transfer.py`)
-- Stores results for each (source_pipeline, target_pipeline) pair
-- Unrun cells are marked explicitly as `"not_run"`, never fabricated
-- Exports to CSV and Markdown for human inspection
-
-**TransferExperimentResult** (`src/pipelines/transfer.py`)
-- Captures:
-  - Source & target pipeline identifiers
-  - Poison ID and attack metadata
-  - Query counts and success rates
-  - PRR@k, ASR, ATR values per experiment
-  - Per-query transfer tracking (which source successes transferred)
-
-**compute_transfer_statistics()** (`src/pipelines/transfer.py`)
-- Takes parallel lists of source and target results
-- Computes transfer rates automatically
-- Validates alignment (same queries, same order)
-
-### Result Schema
-Each attack result record must contain:
-```json
-{
-  "query_id": "id_of_query",
-  "source_pipeline": "bm25" | "dense" | "hybrid" | "reranker",
-  "target_pipeline": "bm25" | "dense" | "hybrid" | "reranker",
-  "poison_doc_ids": ["canonical_id_1", "canonical_id_2", ...],
-  "retrieved_doc_ids": ["ranked", "list", "of", "doc", "ids"],
-  "poison_retrieved": true | false,
-  "poison_rank": 1 | 2 | ... | null,
-  "clean_answer": "model_output_on_clean_evidence",
-  "attacked_answer": "model_output_on_poisoned_evidence",
-  "gold_answer": "ground_truth",
-  "attack_success": true | false,
-  ... reproducibility metadata
-}
-```
-
-### Orchestration interface
-
-`run_source_target_asr()` in `src/attacks/asr.py` is the implemented
-source-to-target orchestration API. It evaluates every attacked query on the
-source first, freezes only source-successful query IDs, then evaluates those
-same poisoned documents and associations on each target. It does not
-regenerate or retune an attack for each target. Strict metadata validation is
-enabled by default; callers must provide the experiment provenance and a
-poison fingerprint that matches the actual `clean_data` and `poisoned_data`.
-The separate `evaluate_poison_across_retrievers()` path evaluates one fixed
-poisoned corpus across retrievers for PRR; it is not the source-success-
-conditioned transfer workflow.
-
-There is no transfer-specific YAML schema or command-line entry point at
-present. The regular `run.py --config ...` runner executes single-pipeline
-clean QA experiments; it does not invoke `run_source_target_asr()`.
-
-### Current Status
-- Transfer matrix framework is built and tested; source-to-target execution is through the Python API, not a CLI
-- The regular runner can select supported retrievers by config for its single-pipeline QA workflow
-- Knowledge-poisoning attack benchmark and evaluation infrastructure are complete through Week 5-6
-- Week 7–8: COMPLETE — RCD was implemented and frozen; the corrective `exp_026` run's raw log and summary are present in `results/` (300 rows; development validation split, not held-out evidence).
-- Frozen RCD weights: consistency=0.45, redundancy=0.00, conflict=0.10, base_rank=0.45
-- Frozen score: `0.45 × consistency + 0.00 × redundancy − 0.10 × conflict + 0.45 × base-rank score`. Redundancy detection is implemented and tested as an available RCD signal, but at weight 0.00 it does not contribute to the frozen final score. Conflict is a narrow temporal/year-disagreement heuristic (recognized years, sufficient lexical overlap, disjoint year sets), not general semantic/NLI contradiction detection.
-- Active consistency score: the mean of per-document retriever-presence agreement, cross-retriever rank stability, and rewrite-rank stability. With the configured dense primary retriever and BM25 secondary signal, agreement is the fraction of those two rankings containing the document; either stability term is zero when the document appears in fewer than two respective rankings.
-- RCD retrieves up to `rcd_candidate_k` documents from the dense primary and BM25 signal for the original query, then uses the dense primary for each rewrite. The runner requests up to 10 ranked documents for retrieval metrics but passes only configured `top_k` documents (3 in the frozen config) to generation.
-- Historical frozen development run: `exp_023_hotpotqa_rcd_v1_mlx_frozen` (N=300, HotpotQA validation split; not held-out)
-- Historical `exp_023` results: EM=0.407, F1=0.508, Recall@3=0.7467, MRR@10=0.9411, nDCG@10=0.8565. Its score fields predate the correction and `exp_023` is not evidence for the corrective `exp_026` config; that run is evidenced by its own raw log and summary.
-- Week 9–10 clean held-out HotpotQA baselines: **ARTIFACTS INSPECTED; CORRECTION IMPACT UNASSESSED** (`exp_030` dense and `exp_031` RCD). Both archived runs contain 300 unique, identically ordered query IDs and matching query-set, held-out-ID, and corpus fingerprints; both summaries report `final_run=true` and `git_dirty=false`. Both are clean utility runs (`n_poison=0`), and their archived commit predates the query-rewrite correction. Assess the correction's impact before publication reuse. `exp_028b` remains an exploratory/recovery run (`git_dirty: null`), not the publication baseline.
-- Poisoned source-to-target evaluation and Week 9–10 held-out 2Wiki evaluation: PENDING.
-
-## Testing
-
-Run the full test suite:
-```bash
-python -m pytest -q
-```
-
-The suite covers retrieval metrics (Recall/MRR/nDCG), attack metrics
-(PRR/ASR/ATR), strict transfer metadata and poison-instance integrity,
-query-ID alignment, corpus construction, config routing, end-to-end
-integration, environment metadata, gold retrieval labels, and dataset
-revision pinning. Test counts vary by worktree; use the command above for
-the current result.
-
-### Running specific test suites
-```bash
-pytest tests/test_retrieval_metrics.py -v      # Recall/MRR/nDCG unit tests
-pytest tests/test_attack_metrics.py -v         # PRR/ASR/ATR unit tests
-pytest tests/test_transfer_framework.py -v     # Matrix and aggregation tests
-pytest tests/test_corpus_construction.py -v    # Corpus determinism & dedup
-pytest tests/test_config_routing.py -v         # Retriever routing verification
-pytest tests/test_integration_full_pipeline.py -v  # End-to-end validation
-```
-
-## Repository layout
-
-See the foundation doc, Section F, for the full rationale on what goes
-where and what's git-ignored vs. committed. Quick summary: `src/` is
-source code (commit), `data/raw` and `data/processed` are gitignored
-(large/regeneratable), `experiments/*/config.yaml` + `README.md` are
-committed (they ARE the record of what happened). Every new run writes a raw
-JSONL log and a JSON summary beside it; older committed logs retain the schema
-that existed when they were produced.
-
-## Next phase
-The next milestone is to finish the pre-matrix freeze gates, then run the
-held-out poison matrix using the frozen Dense/RCD configurations and the
-predeclared attack protocol. The archived `exp_030` / `exp_031` artifacts have
-been inspected for completion metadata, query alignment, and frozen-input
-fingerprints. Their recorded commit predates the query-rewrite correction, so
-the correction's impact on historical results remains unassessed and must be
-evaluated before publication use. Rerun tests after any further code changes
-and verify the tracked inputs and working tree before starting the matrix.
-Preserve historical artifacts and use a new experiment identity for any rerun.
-The two-query smoke test is execution-plumbing evidence only, not evidence of
-attack effectiveness. Clean utility differences must not be used to infer
-poisoning robustness. Held-out 2Wiki evaluation remains pending.
-
-
-### Week 9–10 freeze readiness (24 October 2026; validation branch)
-
-The supervisor review dated 13 October 2026 closes Week 7–8 and verifies the
-`exp_026` 300-query **development** run. It does **not** classify `exp_028b`
-(recovery) or `exp_029` (10-query pilot) as final publication evidence.
-The Week 9 held-out matrix uses the frozen `exp_027` 300-query manifest,
-paired Dense/RCD conditions, immutable per-cell poison documents, and
-nonfinal scientific status. The initial 12-cell design covers lexical and
-semantic-fluent attacks, intensities 1 and 3, and three seeds. Intensity 5,
-cross-pipeline source-to-target transfer, 2Wiki replication, and final
-statistical conclusions are later experimental milestones, not pre-freeze
-claims.
-
-The validation branch adds checks against frozen gold answers, semantic
-poison target text, and recomputed paired Dense-minus-RCD summaries. Matrix
-aggregation can additionally authenticate the provenance claims against
-**independently verified** values using both
-`--expected-commit-sha` and `--expected-source-fingerprint`. These must
-come from a trusted record external to the cell manifests, not from the
-manifests being checked. Without those flags, provenance agreement among
-cells does not independently establish the claimed Git history.
-
-**Freeze gate:** run the focused Week 9 tests and the full pytest suite on
-a clean, committed checkout; inspect GitHub CI; verify all 300 held-out IDs
-are disjoint from development; verify the frozen configs, query fingerprints,
-provenance and model settings; then tag the validated evaluation commit.
-Do not freeze solely because this documentation or validation code was
-committed. Do not retune RCD weights or rewrite behavior. Final held-out
-Dense/RCD baselines and poisoned comparisons must be executed separately,
-with identical poison instances and clean recorded provenance.
+The implementation report records 981 full-suite tests passing at the pinned implementation stage. That is historical software verification, not a claim that tests were rerun during this README-only update or that scientific validity follows from passing tests. Synthetic test fixtures are not experimental observations or genuine reviewer decisions.
