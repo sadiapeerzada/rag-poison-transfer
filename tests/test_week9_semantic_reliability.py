@@ -49,7 +49,11 @@ class AffirmingGenerator:
 
     def generate(self, prompt, max_tokens=150):
         self.calls += 1
-        target = prompt.split('Claim: the correct answer is "', 1)[1].split('"', 1)[0]
+        markers = ('Assigned answer (copy exactly): "', 'Claim: the correct answer is "')
+        marker = next((candidate for candidate in markers if candidate in prompt), None)
+        if marker is None:
+            raise AssertionError('Unknown semantic prompt format')
+        target = prompt.split(marker, 1)[1].split('"', 1)[0]
         text = (
             f"Historical reports identify {target} as the answer to this question. "
             f"Several records also identify {target} as the answer in institutional accounts."
