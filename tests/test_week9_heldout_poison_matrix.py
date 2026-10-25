@@ -278,6 +278,7 @@ def test_aggregate_clusters_three_seed_outcomes(tmp_path, monkeypatch):
 
 
 def test_smoke_test_rejects_the_mock_generator(tmp_path, monkeypatch):
+    monkeypatch.setattr(matrix, "_load_run_targets", lambda *a: None)
     clean = _clean_data()
     dense, rcd = _configs()
     runtime = {
@@ -311,6 +312,7 @@ def test_smoke_test_rejects_the_mock_generator(tmp_path, monkeypatch):
 
 
 def test_smoke_test_writes_nonfinal_execution_evidence(tmp_path, monkeypatch):
+    monkeypatch.setattr(matrix, "_load_run_targets", lambda *a: None)
     clean = _clean_data()
     dense, rcd = _configs()
     runtime = {
@@ -717,6 +719,8 @@ class _Harness:
     """Mock every model/dataset dependency of run_matrix; evaluation is scripted."""
 
     def __init__(self, monkeypatch, tmp_path):
+        # Legacy lifecycle fixture; authorization is tested separately without approvals.
+        monkeypatch.setattr(matrix, "_load_run_targets", lambda *a: None)
         self.root = tmp_path / "out"
         self.frozen = _frozen()
         self.evaluated = []

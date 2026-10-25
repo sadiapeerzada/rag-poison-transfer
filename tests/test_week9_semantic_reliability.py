@@ -291,10 +291,10 @@ def test_semantic_smoke_cli_selection(monkeypatch, tmp_path):
         return SemanticFluentFalseEvidenceAttack(generator), {"max_tokens": 150}
     monkeypatch.setattr(runner, "_attack", capture_attack)
     monkeypatch.setattr(runner, "build_cell_manifest", lambda **kwargs: {
-        "cell_id": kwargs["cell_id"], "attack": {"configuration": {}},
+        "schema": runner.CELL_SCHEMA, "cell_id": kwargs["cell_id"], "attack": {"configuration": {}},
         "poison_instance_fingerprint": "test-poison-fingerprint"
     })
-    monkeypatch.setattr(runner, "replay_cell_manifest", lambda clean, manifest: clean)
+    monkeypatch.setattr(runner, "replay_cell_manifest", lambda clean, manifest, **kwargs: clean)
     monkeypatch.setattr(runner, "evaluate_cell", lambda **kwargs: {
         "execution_evidence": {
             "raw_record_count": 1, "expected_raw_record_count": 1,
@@ -302,6 +302,7 @@ def test_semantic_smoke_cli_selection(monkeypatch, tmp_path):
         }
     })
     monkeypatch.setattr(runner, "git_commit_sha", lambda **kwargs: "test-commit")
+    monkeypatch.setattr(runner, "_load_run_targets", lambda *a: None)
     result = runner.run_smoke_test(output_dir=tmp_path, experiment_id="semantic-smoke",
         query_count=2, attack_family="semantic_fluent_false_evidence")
     assert calls == ["semantic_fluent_false_evidence"]

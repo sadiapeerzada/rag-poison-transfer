@@ -21,7 +21,7 @@ import sys
 import time
 import traceback
 import uuid
-from dataclasses import dataclass
+from dataclasses import dataclass, replace
 from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any
@@ -52,6 +52,10 @@ from scripts.run_week9_multiseed_matched_evaluation import (
     validate_frozen_inputs,
 )
 from src.attacks.base import poison_doc_id
+from src.attacks.compatible_targets import PROTOCOL_VERSION as REVIEW_ROW_PROTOCOL
+from src.attacks.reviewed_target_artifact import load_heldout_targets, ReviewedTargets
+from src.attacks.review_provenance import review_metadata
+
 from src.attacks.checkpoint import PoisonCheckpoint
 from src.attacks.semantic_fluent import (
     SEMANTIC_VALIDATION_VERSION, SEMANTIC_RETRY_POLICY, SEMANTIC_PROMPT_VERSION,
@@ -69,6 +73,7 @@ from src.experiments.protocol import (
 )
 from src.utils.seeding import set_seed
 
+REVIEWED_CELL_SCHEMA = "rag-poison-transfer.week9-heldout-poison-cell/v2-reviewed"
 CELL_SCHEMA = "rag-poison-transfer.week9-heldout-poison-cell/v1"
 PLAN_SCHEMA = "rag-poison-transfer.week9-heldout-poison-matrix-plan/v1"
 MATRIX_ATTACKS = ("lexical_influential_token", "semantic_fluent_false_evidence")
@@ -96,6 +101,11 @@ RELEVANT_TRACKED_PATHS = (
     "src/attacks/base.py",
     "src/attacks/checkpoint.py",
     "src/attacks/injection.py",
+    "src/attacks/compatible_targets.py",
+    "src/attacks/reviewed_target_artifact.py",
+    "src/attacks/review_provenance.py",
+    "src/attacks/target_candidates.py",
+    "src/attacks/development_review_package.py",
     "src/attacks/lexical.py",
     "src/attacks/semantic_fluent.py",
     "src/data/loaders.py",
@@ -419,6 +429,7 @@ def preflight(
     )
     return {
         "schema": PLAN_SCHEMA,
+        "target_assignment_gate": "required_for_execution_not_validated_by_preflight",
         "cell_count": len(matrix_cells()),
         "query_count_per_cell": len(heldout_ids),
         "poison_generation_calls": {
@@ -458,6 +469,48 @@ def _attack(attack_family: str, generator: Any | None) -> tuple[Any, dict]:
     raise ValueError(f"Unsupported attack family: {attack_family}")
 
 
+def _verify_reviewed_queries(data: dict, targets: ReviewedTargets) -> None:
+    for query in data["queries"]:
+        if (review_metadata(query) != {"target_review": targets.metadata} or
+            query.get("poison_target_answer") != targets.target(query)):
+            raise ValueError("Query target or authenticated assignment provenance mismatch")
+
+
+def _review_injection_kwargs(targets: ReviewedTargets | None) -> dict:
+    return ({"reviewed_target_assignments": targets.mapping,
+             "reviewed_target_provenance": targets.metadata} if targets is not None else {})
+
+
+def add_review_arguments(parser) -> None:
+    parser.add_argument("--target-assignments", type=Path)
+    parser.add_argument("--target-assignments-sha256")
+    parser.add_argument("--reviewer-policy", type=Path)
+    parser.add_argument("--reviewer-policy-sha256")
+    parser.add_argument("--preregistration-sha256")
+
+
+def review_options_from_args(args) -> dict:
+    return dict(artifact_path=args.target_assignments, artifact_sha256=args.target_assignments_sha256,
+                policy_path=args.reviewer_policy, policy_sha256=args.reviewer_policy_sha256,
+                preregistration_sha256=args.preregistration_sha256)
+
+
+def _load_run_targets(heldout_path, dense_config_path, rcd_config_path, options):
+    if not options or not all(options.get(k) for k in (
+        "artifact_path", "artifact_sha256", "policy_path", "policy_sha256", "preregistration_sha256"
+    )):
+        raise ValueError("New held-out execution requires independently reviewed assignments, reviewer policy and external SHA-256 pins")
+    frozen = load_frozen_matrix_inputs(heldout_path=heldout_path,
+                                      dense_config_path=dense_config_path, rcd_config_path=rcd_config_path)
+    targets = load_heldout_targets(**options, dataset={
+        "name": "hotpotqa/hotpot_qa", "config": "distractor",
+        "revision": frozen.rcd_config["dataset_revision"], "split": frozen.rcd_config["dataset_split"],
+        "heldout_manifest_fingerprint": frozen.heldout_fingerprint,
+        "heldout_manifest_sha256": _sha256_file(heldout_path),
+    }, queries=frozen.clean_data["queries"])
+    return replace(frozen, reviewed_targets=targets)
+
+
 def _associations(poisoned_data: dict) -> list[dict]:
     return [
         {
@@ -465,6 +518,7 @@ def _associations(poisoned_data: dict) -> list[dict]:
             "attack_family": query.get("attack_family"),
             "poison_doc_ids": sorted(query.get("poison_doc_ids", [])),
             "poison_target_answer": query.get("poison_target_answer"),
+            **review_metadata(query),
         }
         for query in poisoned_data["queries"]
     ]
@@ -486,6 +540,7 @@ def build_cell_manifest(
     git_dirty: bool | None,
     source_fingerprint: str | None = None,
     execution_mode: str = "heldout_matrix",
+    reviewed_targets: ReviewedTargets | None = None,
 ) -> dict:
     """Serialize a validated poison snapshot before it is evaluated."""
     selected_ids = [query["query_id"] for query in clean_data["queries"]]
@@ -499,10 +554,15 @@ def build_cell_manifest(
         not isinstance(source_fingerprint, str) or not SHA256_PATTERN.fullmatch(source_fingerprint)
     ):
         raise ValueError("Held-out cell manifest requires a SHA-256 source_fingerprint.")
+    if reviewed_targets is not None:
+        _verify_reviewed_queries(poisoned_data, reviewed_targets)
+    elif any("target_review" in q for q in poisoned_data["queries"]):
+        raise ValueError("Reviewed targets require external authenticated assignments")
     poison_fingerprint = poison_instances_fingerprint(clean_data, poisoned_data)
     clean_ids = {document["doc_id"] for document in clean_data["corpus"]}
     return {
-        "schema": CELL_SCHEMA,
+        "schema": REVIEWED_CELL_SCHEMA if reviewed_targets is not None else CELL_SCHEMA,
+        **({"target_review": reviewed_targets.metadata} if reviewed_targets is not None else {}),
         "status": (
             "generated_not_evaluated"
             if execution_mode == "heldout_matrix"
@@ -560,10 +620,15 @@ def build_cell_manifest(
     }
 
 
-def replay_cell_manifest(clean_data: dict, manifest: dict) -> dict:
+def replay_cell_manifest(clean_data: dict, manifest: dict, *, reviewed_targets: ReviewedTargets | None = None) -> dict:
     """Fail closed while reconstructing a manifest's immutable poison snapshot."""
-    if manifest.get("schema") != CELL_SCHEMA:
+    if manifest.get("schema") not in {CELL_SCHEMA, REVIEWED_CELL_SCHEMA}:
         raise ValueError("Unsupported held-out matrix cell manifest schema.")
+    if manifest.get("schema") == REVIEWED_CELL_SCHEMA:
+        if reviewed_targets is None or review_metadata(manifest) != {"target_review": reviewed_targets.metadata}:
+            raise ValueError("Reviewed manifest requires matching externally authenticated assignments")
+    elif reviewed_targets is not None or "target_review" in manifest or any("target_review" in q for q in manifest.get("query_poison_associations", [])):
+        raise ValueError("Legacy schema cannot downgrade reviewed-target provenance")
     attack = manifest.get("attack", {})
     if (
         attack.get("family") not in MATRIX_ATTACKS
@@ -609,8 +674,14 @@ def replay_cell_manifest(clean_data: dict, manifest: dict) -> dict:
                 "attack_family": association.get("attack_family"),
                 "poison_doc_ids": list(association.get("poison_doc_ids", [])),
                 "poison_target_answer": association.get("poison_target_answer"),
+                **review_metadata(association),
+                **({"target_selection_protocol": REVIEW_ROW_PROTOCOL,
+                    "target_assignment_fingerprint": reviewed_targets.metadata["target_assignment_fingerprint"]}
+                   if reviewed_targets is not None else {}),
             }
         )
+    if reviewed_targets is not None:
+        _verify_reviewed_queries(poisoned_data, reviewed_targets)
     fingerprint = poison_instances_fingerprint(clean_data, poisoned_data)
     if fingerprint != manifest.get("poison_instance_fingerprint"):
         raise ValueError("Cell manifest poison-instance fingerprint does not match.")
@@ -644,6 +715,7 @@ class FrozenMatrixInputs:
     config_hashes: dict
     dense_config: dict
     rcd_config: dict
+    reviewed_targets: ReviewedTargets | None = None
 
 
 def load_frozen_matrix_inputs(
@@ -697,7 +769,15 @@ def verify_cell_provenance(manifest: dict, frozen: FrozenMatrixInputs) -> dict:
         raise ValueError(f"Cell poison seed {seed!r} is not a predeclared seed.")
     if manifest.get("cell_id") != _cell_id(family, intensity, seed):
         raise ValueError("Cell ID does not match its attack metadata.")
-    if attack.get("configuration") != ATTACK_CONFIGURATIONS[family]:
+    expected_attack_config = dict(ATTACK_CONFIGURATIONS[family])
+    if manifest.get("schema") == REVIEWED_CELL_SCHEMA and family == "semantic_fluent_false_evidence":
+        expected_attack_config.update(
+            max_attempts=2, retry_policy=SEMANTIC_RETRY_POLICY,
+            prompt_version=SEMANTIC_PROMPT_VERSION, validation_version=SEMANTIC_VALIDATION_VERSION,
+            validation_status="heuristically_supported_unverified",
+            requires_independent_semantic_review=True,
+        )
+    if attack.get("configuration") != expected_attack_config:
         raise ValueError("Cell attack configuration differs from the frozen protocol.")
     protocol = manifest.get("seed_protocol", {})
     if (
@@ -744,7 +824,7 @@ def verify_cell_provenance(manifest: dict, frozen: FrozenMatrixInputs) -> dict:
 
     _verify_poison_document_identity(manifest, family, int(intensity))
     # Canonical replay: recomputes the fingerprint and validates the dataset.
-    poisoned = replay_cell_manifest(frozen.clean_data, manifest)
+    poisoned = replay_cell_manifest(frozen.clean_data, manifest, reviewed_targets=frozen.reviewed_targets)
     if family == "lexical_influential_token":
         # Lexical poison is a pure, deterministic function of the frozen clean
         # data, the seed and the intensity, so it can be regenerated offline
@@ -761,6 +841,7 @@ def verify_cell_provenance(manifest: dict, frozen: FrozenMatrixInputs) -> dict:
             poison_rate=1.0,
             seed=seed,
             attacked_query_ids=frozen.heldout_ids,
+            **_review_injection_kwargs(frozen.reviewed_targets),
         )
         if poison_instances_fingerprint(frozen.clean_data, regenerated) != (
             poison_instances_fingerprint(frozen.clean_data, poisoned)
@@ -913,8 +994,10 @@ def validate_completed_cell(
         raise ValueError(f"Cell is incomplete: {cell_dir}")
     manifest = _read_json(manifest_path)
     summary = _read_json(summary_path)
-    if manifest.get("schema") != CELL_SCHEMA or summary.get("schema") != CELL_SCHEMA:
+    if manifest.get("schema") not in {CELL_SCHEMA, REVIEWED_CELL_SCHEMA} or summary.get("schema") != manifest.get("schema"):
         raise ValueError(f"Cell uses an unsupported schema: {cell_dir}")
+    if review_metadata(summary) != review_metadata(manifest):
+        raise ValueError("Summary reviewed-target provenance mismatch")
     if summary.get("status") != CELL_COMPLETE_STATUS:
         raise ValueError(f"Cell summary is not complete: {cell_dir}")
     if summary.get("is_final_run") is not False or manifest.get("is_final_run") is not False:
@@ -984,6 +1067,8 @@ def validate_completed_cell(
             raise ValueError(f"Duplicate matrix record: {key}.")
         if key[0] not in multiseed.PIPELINES or key[1] not in selected_set or key[2] not in multiseed.CONDITIONS:
             raise ValueError(f"Invalid matrix record identity: {key}.")
+        if review_metadata(row) != review_metadata(manifest):
+            raise ValueError("Raw row reviewed-target provenance mismatch")
         if row.get("cell_id") != cell_id or row.get("poison_instance_fingerprint") != recomputed:
             raise ValueError("Raw record provenance differs from the independently verified cell.")
         expected_ids, expected_target = expected_poison[key[1]]
@@ -1153,6 +1238,7 @@ def evaluate_cell(
                         json.dumps(
                             {
                                 **record,
+                                **review_metadata(manifest),
                                 "cell_id": manifest["cell_id"],
                                 "poison_instance_fingerprint": manifest["poison_instance_fingerprint"],
                             },
@@ -1456,6 +1542,7 @@ def run_matrix(
     rcd_config_path: Path = DEFAULT_RCD_CONFIG,
     resume: bool = False,
     recover_incomplete: bool = False,
+    review_options: dict | None = None,
 ) -> dict:
     """Execute cells not already completed in a compatible matrix directory.
 
@@ -1470,11 +1557,14 @@ def run_matrix(
         raise ValueError("experiment_id must be a non-empty filename-safe value.")
     if recover_incomplete and not resume:
         raise ValueError("recover_incomplete requires resume=True.")
+    reviewed_frozen = _load_run_targets(heldout_path, dense_config_path, rcd_config_path, review_options)
     preflight_data = preflight(
         heldout_path=heldout_path,
         dense_config_path=dense_config_path,
         rcd_config_path=rcd_config_path,
     )
+    if reviewed_frozen is not None:
+        preflight_data["target_review"] = reviewed_frozen.reviewed_targets.metadata
     if not (
         preflight_data["runtime_requirements"]["mlx_available"]
         and preflight_data["runtime_requirements"]["mlx_lm_available"]
@@ -1499,6 +1589,8 @@ def run_matrix(
             raise ValueError(f"Existing matrix plan is unreadable: {plan_path}.") from error
         if plan.get("schema") != PLAN_SCHEMA or plan.get("experiment_id") not in (None, experiment_id):
             raise ValueError("Existing matrix plan has a different schema or experiment ID.")
+        if review_metadata(plan.get("preflight") or {}) != review_metadata(preflight_data):
+            raise ValueError("Existing plan reviewed-target provenance mismatch")
         if not _preflight_compatible(plan.get("preflight"), preflight_data):
             raise ValueError("Existing matrix plan is incompatible with current frozen inputs.")
         recorded_commit = (plan.get("git") or {}).get("commit_sha")
@@ -1542,7 +1634,7 @@ def run_matrix(
     cell_failures: dict[str, dict] = {}
     stage = "setup"
     try:
-        frozen = load_frozen_matrix_inputs(
+        frozen = reviewed_frozen or load_frozen_matrix_inputs(
             heldout_path=heldout_path,
             dense_config_path=dense_config_path,
             rcd_config_path=rcd_config_path,
@@ -1618,6 +1710,8 @@ def run_matrix(
                         cell_dir,
                         _archived_attempt_dirs(output_root, cell_id),
                         provenance={
+                            **({"target_review": frozen.reviewed_targets.metadata,
+                                "target_assignment_fingerprint": frozen.reviewed_targets.metadata["target_assignment_fingerprint"]} if frozen.reviewed_targets is not None else {}),
                             "git_commit_sha": git_sha,
                             "source_fingerprint": source_fingerprint,
                             "cell_id": cell_id,
@@ -1671,6 +1765,7 @@ def run_matrix(
                         frozen.clean_data, attack, n_poison=intensity, poison_rate=1.0,
                         seed=poison_seed, attacked_query_ids=frozen.heldout_ids,
                         checkpoint=checkpoint,
+                        **_review_injection_kwargs(frozen.reviewed_targets),
                     )
                     manifest = build_cell_manifest(
                         cell_id=cell_id, clean_data=frozen.clean_data, poisoned_data=poisoned_data,
@@ -1680,6 +1775,7 @@ def run_matrix(
                         dense_config=frozen.dense_config, rcd_config=frozen.rcd_config,
                         git_sha=git_sha, git_dirty=False,
                         source_fingerprint=source_fingerprint,
+                        reviewed_targets=frozen.reviewed_targets,
                     )
                     if attack_family == "semantic_fluent_false_evidence":
                         attack_config = {
@@ -1694,7 +1790,7 @@ def run_matrix(
                     manifest["attack"]["configuration"] = attack_config
                 # Atomic: a crash can never leave a truncated immutable manifest.
                 _write_json_atomic(manifest_path, manifest)
-                replayed = replay_cell_manifest(frozen.clean_data, manifest)
+                replayed = replay_cell_manifest(frozen.clean_data, manifest, reviewed_targets=frozen.reviewed_targets)
                 set_seed(FROZEN_RUNTIME_SEED)
                 metrics = evaluate_cell(
                     clean_data=frozen.clean_data, poisoned_data=replayed,
@@ -1710,7 +1806,8 @@ def run_matrix(
                 _write_json_atomic(
                     summary_path,
                     {
-                        "schema": CELL_SCHEMA,
+                        "schema": manifest["schema"],
+                        **review_metadata(manifest),
                         "status": CELL_COMPLETE_STATUS,
                         "is_final_run": False,
                         "cell_id": cell_id,
@@ -1805,6 +1902,7 @@ def run_smoke_test(
     heldout_path: Path = DEFAULT_HELDOUT_MANIFEST,
     dense_config_path: Path = DEFAULT_DENSE_CONFIG,
     rcd_config_path: Path = DEFAULT_RCD_CONFIG,
+    review_options: dict | None = None,
 ) -> dict:
     """Run a real, isolated, non-final lexical or semantic smoke test."""
     if attack_family not in MATRIX_ATTACKS:
@@ -1813,11 +1911,14 @@ def run_smoke_test(
         raise ValueError("experiment_id must be a non-empty filename-safe value.")
     if not 1 <= query_count < MATRIX_QUERY_COUNT:
         raise ValueError(f"smoke query_count must be in [1, {MATRIX_QUERY_COUNT - 1}].")
+    reviewed_frozen = _load_run_targets(heldout_path, dense_config_path, rcd_config_path, review_options)
     preflight_data = preflight(
         heldout_path=heldout_path,
         dense_config_path=dense_config_path,
         rcd_config_path=rcd_config_path,
     )
+    if reviewed_frozen is not None:
+        preflight_data["target_review"] = reviewed_frozen.reviewed_targets.metadata
     if not (
         preflight_data["runtime_requirements"]["mlx_available"]
         and preflight_data["runtime_requirements"]["mlx_lm_available"]
@@ -1836,16 +1937,23 @@ def run_smoke_test(
     started = time.perf_counter()
     attack = None
     try:
-        dense_config, rcd_config, heldout_ids, heldout_fp, hashes = validate_frozen_inputs(
-            heldout_path=heldout_path,
-            dense_config_path=dense_config_path,
-            rcd_config_path=rcd_config_path,
-        )
+        if reviewed_frozen is not None:
+            dense_config, rcd_config = reviewed_frozen.dense_config, reviewed_frozen.rcd_config
+            heldout_ids, heldout_fp = reviewed_frozen.heldout_ids, reviewed_frozen.heldout_fingerprint
+            hashes = reviewed_frozen.config_hashes
+        else:  # Historical lifecycle unit tests isolate the authentication boundary.
+            dense_config, rcd_config, heldout_ids, heldout_fp, hashes = validate_frozen_inputs(
+                heldout_path=heldout_path,
+                dense_config_path=dense_config_path,
+                rcd_config_path=rcd_config_path,
+            )
         selected_ids = heldout_ids[:query_count]
         selected_config = dict(rcd_config)
         selected_config.pop("dataset_query_ids_manifest", None)
         selected_config["dataset_query_ids"] = selected_ids
-        clean_data = load_dataset(selected_config)
+        clean_data = ({"corpus": reviewed_frozen.clean_data["corpus"],
+                       "queries": reviewed_frozen.clean_data["queries"][:query_count]}
+                      if reviewed_frozen is not None else load_dataset(selected_config))
         if [query["query_id"] for query in clean_data["queries"]] != selected_ids:
             raise ValueError("Smoke loader did not preserve the selected held-out IDs.")
         set_seed(FROZEN_RUNTIME_SEED)
@@ -1862,6 +1970,7 @@ def run_smoke_test(
             poison_rate=1.0,
             seed=PREDECLARED_POISON_SEEDS[0],
             attacked_query_ids=selected_ids,
+            **_review_injection_kwargs(reviewed_frozen.reviewed_targets if reviewed_frozen else None),
         )
         manifest = build_cell_manifest(
             cell_id=f"smoke.{attack_family}.intensity-1.seed-{PREDECLARED_POISON_SEEDS[0]}",
@@ -1877,6 +1986,7 @@ def run_smoke_test(
             git_sha=git_commit_sha(repo_root=REPOSITORY_ROOT),
             git_dirty=None,
             execution_mode="smoke_test",
+            reviewed_targets=reviewed_frozen.reviewed_targets if reviewed_frozen else None,
         )
         manifest["attack"]["configuration"] = attack_config
         if attack_family == "semantic_fluent_false_evidence":
@@ -1898,7 +2008,7 @@ def run_smoke_test(
             },
         )
         _write_json_exclusive(manifest_path, manifest)
-        replayed = replay_cell_manifest(clean_data, manifest)
+        replayed = replay_cell_manifest(clean_data, manifest, reviewed_targets=reviewed_frozen.reviewed_targets if reviewed_frozen else None)
         set_seed(FROZEN_RUNTIME_SEED)
         metrics = evaluate_cell(
             clean_data=clean_data,
@@ -1918,7 +2028,8 @@ def run_smoke_test(
         ):
             raise RuntimeError("Smoke test lacks complete retrieval/generation evidence.")
         summary = {
-            "schema": CELL_SCHEMA,
+            "schema": manifest["schema"],
+            **review_metadata(manifest),
             "status": "complete_smoke_test_not_final",
             "is_final_run": False,
             "cell_id": manifest["cell_id"],
@@ -1990,6 +2101,7 @@ def main() -> None:
     parser.add_argument("--smoke-query-count", type=int, default=2)
     parser.add_argument("--smoke-attack", choices=MATRIX_ATTACKS,
                         default="lexical_influential_token")
+    add_review_arguments(parser)
     args = parser.parse_args()
     if args.preflight and args.smoke_test:
         parser.error("--preflight and --smoke-test cannot be combined.")
@@ -2007,6 +2119,7 @@ def main() -> None:
         result = run_smoke_test(
             output_dir=args.output_dir,
             experiment_id=args.experiment_id,
+            review_options=review_options_from_args(args),
             query_count=args.smoke_query_count,
             attack_family=args.smoke_attack,
             heldout_path=args.heldout_manifest,
@@ -2021,6 +2134,7 @@ def main() -> None:
             heldout_path=args.heldout_manifest, dense_config_path=args.dense_config,
             rcd_config_path=args.rcd_config, resume=args.resume,
             recover_incomplete=args.recover_incomplete,
+            review_options=review_options_from_args(args),
         )
     print(json.dumps(result, indent=2, sort_keys=True))
 
