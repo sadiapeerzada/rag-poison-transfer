@@ -242,7 +242,7 @@ def test_retry_prompt_has_actual_newline_separator():
     import random
 
     generator = SequenceGenerator([
-        "Bob was mentioned in a disputed record but was not the answer.",
+        "The claim that Bob is the answer is incorrect. Alice is the answer.",
         "Bob is the answer to the question according to the historical register.",
     ])
     attack = SemanticFluentFalseEvidenceAttack(generator, max_attempts=2)
