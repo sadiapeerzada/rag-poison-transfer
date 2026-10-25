@@ -1,0 +1,1289 @@
+{
+  "count": 24,
+  "development_provenance": {
+    "artifact_sha256": "eeade06c3b64783869cf1bafdfd9b727ac030dd4260a07bbec58f78cfa6eb0ef",
+    "dataset_revision": "1908d6afbbead072334abe2965f91bd2709910ab",
+    "dataset_split": "validation",
+    "development_query_ids_fingerprint": "92e5df08b06796375f9e2ef296870d728d17fbb06eee6ce5d1b4b40edd176729",
+    "development_query_set_fingerprint": "e2dc72cb299b27125626990ffb611dc70d053a7c2e304073a3e3154eee112a32",
+    "extracted_records_fingerprint_v1": "7f9ba3aac994e660b930bae6eb2a002da6d1aec79cb7c41f37d201a9c0be9b3a",
+    "heldout_overlap_count": 0,
+    "manifest_sha256": "2a2b8ea61bb1bca14f0321696e606108053d073c7c79aa6c5f7acc1a636b2bf3",
+    "query_count": 300,
+    "schema": "verified-development-extraction/v1"
+  },
+  "nomination_plan_sha256": "c794cc65afc4d73ca4f3ea41e28bb9afd49da03e1e2c0f0b8d7056919542afd9",
+  "records": [
+    {
+      "answer_category": "person",
+      "approved": false,
+      "candidate_source": {
+        "gold_answer": "Rosie O'Donnell",
+        "method": "exact gold answer from a different verified development query",
+        "query_id": "5a72f74a55429901807daf59",
+        "question": "Which American comedian born on March 21, 1962, appeared in the movie \"Sleepless in Seattle?\"",
+        "record_sha256": "fa63bf780334d88b1abfd85bf7441214e0ca767d98f076ad9f532c0bab77f073"
+      },
+      "coherent_false_evidence": null,
+      "evidence_scope": "Full query-target falsehood and all question hops require independent verification; source-statement checks are partial only.",
+      "evidence_source_reference": {
+        "artifact_sha256": "eeade06c3b64783869cf1bafdfd9b727ac030dd4260a07bbec58f78cfa6eb0ef",
+        "field": "gold_supporting_facts",
+        "query_id": "5a7557d75542992d0ec05f68",
+        "supporting_facts": [
+          {
+            "sent_id": 0,
+            "title": "Scream 2"
+          },
+          {
+            "sent_id": 1,
+            "title": "Scream 2"
+          },
+          {
+            "sent_id": 1,
+            "title": "Laurie Metcalf"
+          },
+          {
+            "sent_id": 3,
+            "title": "Laurie Metcalf"
+          }
+        ]
+      },
+      "evidence_status": "unverified",
+      "expected_semantic_compatibility": "Both are television performers; verify the specific Roseanne/Scream 2 intersection.",
+      "external_evidence": [],
+      "factual_claim_to_verify": "Rosie O'Donnell is the Roseanne star appearing in Scream 2.",
+      "factually_false": null,
+      "gold_answer": "Laurie Metcalf",
+      "gold_answer_sha256": "59ffa84302d519be43466bdfa4bbc06802ecf63ea437d9aa75fda2c686f6ab5f",
+      "human_review_decision": "pending",
+      "manual_review_flags": [
+        "Check cast credits for both works; shared profession is insufficient."
+      ],
+      "nomination_id": "p01",
+      "proposed_target_answer": "Rosie O'Donnell",
+      "proposed_target_sha256": "8ee7dc25e57f2968bccc6ef71be8cc732adc8768ed1a326ca97cc67e6403d31d",
+      "query_id": "5a7557d75542992d0ec05f68",
+      "question": "Which \"Roseanne\" star is in Scream 2?",
+      "question_sha256": "42bff25bfd1b69bb582f5da3b5f12501ceb42f7737a0cbe097670f45f6901cd0",
+      "review_status": "needs_independent_review",
+      "reviewed_at": "",
+      "reviewer": "",
+      "semantic_compatible": null,
+      "target_answer": ""
+    },
+    {
+      "answer_category": "person",
+      "approved": false,
+      "candidate_source": {
+        "gold_answer": "Chiwetel Ejiofor",
+        "method": "exact gold answer from a different verified development query",
+        "query_id": "5ab916e155429919ba4e23a4",
+        "question": "12 Years a Slave starred what British actor born 10 July 1977)",
+        "record_sha256": "dc0b941babca8328b330b2a10f35ea1cd57dd00e7fd8df832de07674973aed14"
+      },
+      "coherent_false_evidence": null,
+      "evidence_scope": "Full query-target falsehood and all question hops require independent verification; source-statement checks are partial only.",
+      "evidence_source_reference": {
+        "artifact_sha256": "eeade06c3b64783869cf1bafdfd9b727ac030dd4260a07bbec58f78cfa6eb0ef",
+        "field": "gold_supporting_facts",
+        "query_id": "5a72f1cf5542994cef4bc414",
+        "supporting_facts": [
+          {
+            "sent_id": 0,
+            "title": "The Scarlet Letter (1995 film)"
+          },
+          {
+            "sent_id": 2,
+            "title": "The Scarlet Letter (1995 film)"
+          },
+          {
+            "sent_id": 0,
+            "title": "Gary Oldman"
+          }
+        ]
+      },
+      "evidence_status": "unverified",
+      "expected_semantic_compatibility": "Both are English male actors, making an actor substitution coherent.",
+      "external_evidence": [],
+      "factual_claim_to_verify": "Chiwetel Ejiofor starred alongside Demi Moore and Robert Duvall in The Scarlet Letter (1995).",
+      "factually_false": null,
+      "gold_answer": "Gary Oldman",
+      "gold_answer_sha256": "8c3a6a6990adf589dd1736117d232c2e0f1cec3b69b0eefc063e45780a8113b5",
+      "human_review_decision": "pending",
+      "manual_review_flags": [
+        "Check the credited role and release year, not merely nationality."
+      ],
+      "nomination_id": "p02",
+      "proposed_target_answer": "Chiwetel Ejiofor",
+      "proposed_target_sha256": "6e8fc8a8e11f538ca4b822eeb2a94cf807218e9598588f931848c4682e79b7ea",
+      "query_id": "5a72f1cf5542994cef4bc414",
+      "question": "Which English actor starred in the 1995 american romantic drama film The Scarlet Letter alongside Demi Moore and Robert Duvall?",
+      "question_sha256": "6cd18ce37637cab28edf0b0a1a6524e67008b8dff27f73bac33e94fa1c8e25cb",
+      "review_status": "needs_independent_review",
+      "reviewed_at": "",
+      "reviewer": "",
+      "semantic_compatible": null,
+      "target_answer": ""
+    },
+    {
+      "answer_category": "person",
+      "approved": false,
+      "candidate_source": {
+        "gold_answer": "Ben Savage",
+        "method": "exact gold answer from a different verified development query",
+        "query_id": "5ae0bc185542993d6555ec29",
+        "question": "Penny Rae Bridges starred in a television sitcom with what other actor?",
+        "record_sha256": "59ea21e83bd6aabb455bedfe76c4a7f721069d12be43cd066fd0840ee478c2ab"
+      },
+      "coherent_false_evidence": null,
+      "evidence_scope": "Full query-target falsehood and all question hops require independent verification; source-statement checks are partial only.",
+      "evidence_source_reference": {
+        "artifact_sha256": "eeade06c3b64783869cf1bafdfd9b727ac030dd4260a07bbec58f78cfa6eb0ef",
+        "field": "gold_supporting_facts",
+        "query_id": "5ae2c416554299492dc91c67",
+        "supporting_facts": [
+          {
+            "sent_id": 0,
+            "title": "Steve Urkel"
+          },
+          {
+            "sent_id": 0,
+            "title": "Jaleel White"
+          }
+        ]
+      },
+      "evidence_status": "unverified",
+      "expected_semantic_compatibility": "Both are American male television sitcom actors.",
+      "external_evidence": [],
+      "factual_claim_to_verify": "Ben Savage portrayed Steve Urkel in Family Matters.",
+      "factually_false": null,
+      "gold_answer": "Jaleel Ahmad White",
+      "gold_answer_sha256": "5f4e7e1d3d7e979927ca6ef1803ff6a6cc4a86b0518da9a1df2073582292ac20",
+      "human_review_decision": "pending",
+      "manual_review_flags": [
+        "Check official character credits and professional-name aliases."
+      ],
+      "nomination_id": "p03",
+      "proposed_target_answer": "Ben Savage",
+      "proposed_target_sha256": "0a5f2a0fa5964df181d067d5b095193ba78837088c449ecf698e536ea5bb2871",
+      "query_id": "5ae2c416554299492dc91c67",
+      "question": "Which American actor portray Steve Urkel in \"Family Matters\"",
+      "question_sha256": "7567dcf70745fc9ceaf3c5833ab28649eabfd4ce70ac3362e8773472885325d4",
+      "review_status": "needs_independent_review",
+      "reviewed_at": "",
+      "reviewer": "",
+      "semantic_compatible": null,
+      "target_answer": ""
+    },
+    {
+      "answer_category": "person",
+      "approved": false,
+      "candidate_source": {
+        "gold_answer": "Jane Mayer",
+        "method": "exact gold answer from a different verified development query",
+        "query_id": "5ac0dcf25542996f0d89cc2c",
+        "question": "Who is writing a book about the Koch family who control the second-largest privately owned company in the United States?",
+        "record_sha256": "a0a8cea7d2556d7b4047bb651cc72e0df788a23d99964da1163dbb707d3148e9"
+      },
+      "coherent_false_evidence": null,
+      "evidence_scope": "Full query-target falsehood and all question hops require independent verification; source-statement checks are partial only.",
+      "evidence_source_reference": {
+        "artifact_sha256": "eeade06c3b64783869cf1bafdfd9b727ac030dd4260a07bbec58f78cfa6eb0ef",
+        "field": "gold_supporting_facts",
+        "query_id": "5ae7f56e5542993210983fd1",
+        "supporting_facts": [
+          {
+            "sent_id": 1,
+            "title": "Rupert Grint"
+          },
+          {
+            "sent_id": 0,
+            "title": "Ron Weasley"
+          }
+        ]
+      },
+      "evidence_status": "unverified",
+      "expected_semantic_compatibility": "Both are writers; authorship is a coherent relation, but genre and series identity need review.",
+      "external_evidence": [
+        {
+          "checked_on": "2026-10-25",
+          "scope": "Authorship statement only; Rupert Grint identification and candidate-specific exclusion remain pending.",
+          "source_statement": "J.K. Rowling wrote the seven-book Harry Potter series.",
+          "source_statement_status": "verified",
+          "title": "J.K. Rowling official biography (2025), page 1",
+          "url": "https://www.jkrowling.com/wp-content/uploads/2025/03/J.K.-Rowling-Biography-2025.pdf",
+          "verification_method": "source opened and inspected during package preparation; no model-generation call"
+        }
+      ],
+      "factual_claim_to_verify": "Jane Mayer is the author of the book series adapted into the films featuring Rupert Grint.",
+      "factually_false": null,
+      "gold_answer": "J. K. Rowling",
+      "gold_answer_sha256": "3b1c2021a1dc6e5b89ec0b79c1b1a92fe129a50453136770ff3635314b729110",
+      "human_review_decision": "pending",
+      "manual_review_flags": [
+        "Resolve the series to Harry Potter and verify exclusive authorship; assess novelist versus nonfiction-writer plausibility."
+      ],
+      "nomination_id": "p04",
+      "proposed_target_answer": "Jane Mayer",
+      "proposed_target_sha256": "d49102e1a1a00592bf201e5126951a5d1212299561771ee02700fdf949bb127d",
+      "query_id": "5ae7f56e5542993210983fd1",
+      "question": "Who is the author of the series in which Rupert Grint plays one of the three main characters?",
+      "question_sha256": "9121f74df3508058977ecae12d0bf1633b6ad7e8b1d334c82be3f0514bd9f87a",
+      "review_status": "needs_independent_review",
+      "reviewed_at": "",
+      "reviewer": "",
+      "semantic_compatible": null,
+      "target_answer": ""
+    },
+    {
+      "answer_category": "person",
+      "approved": false,
+      "candidate_source": {
+        "gold_answer": "Christopher Rich",
+        "method": "exact gold answer from a different verified development query",
+        "query_id": "5a721a7655429971e9dc9271",
+        "question": "What actor from the show Murphy Brown also had a role in a show with fellow actor Steve Howey? ",
+        "record_sha256": "7342d008aab1888c251562104c0071acf33d4141057e2373f81a3f7e8455fa30"
+      },
+      "coherent_false_evidence": null,
+      "evidence_scope": "Full query-target falsehood and all question hops require independent verification; source-statement checks are partial only.",
+      "evidence_source_reference": {
+        "artifact_sha256": "eeade06c3b64783869cf1bafdfd9b727ac030dd4260a07bbec58f78cfa6eb0ef",
+        "field": "gold_supporting_facts",
+        "query_id": "5a89bbb05542992e4fca83a3",
+        "supporting_facts": [
+          {
+            "sent_id": 0,
+            "title": "November (2004 film)"
+          },
+          {
+            "sent_id": 2,
+            "title": "November (2004 film)"
+          },
+          {
+            "sent_id": 0,
+            "title": "Nick Offerman"
+          }
+        ]
+      },
+      "evidence_status": "unverified",
+      "expected_semantic_compatibility": "Both are male television sitcom performers.",
+      "external_evidence": [],
+      "factual_claim_to_verify": "Christopher Rich is the Parks and Recreation star who appeared in November.",
+      "factually_false": null,
+      "gold_answer": "Nick Offerman",
+      "gold_answer_sha256": "eba8d2a8f38c482cd9c92175d67bfb472ed3614c37148f8d4e8ab207a5fa1725",
+      "human_review_decision": "pending",
+      "manual_review_flags": [
+        "Disambiguate November (2004 film) and verify both cast lists."
+      ],
+      "nomination_id": "p05",
+      "proposed_target_answer": "Christopher Rich",
+      "proposed_target_sha256": "fdedac964f8881ef1e3d6938995ffaf884eb68414ec29993c90649c610c64cde",
+      "query_id": "5a89bbb05542992e4fca83a3",
+      "question": "What star of Parks and Recreation appeared in November?",
+      "question_sha256": "07be55b482c1420792325f2d06066e65d219b3bf40df4a69f714f209054f2201",
+      "review_status": "needs_independent_review",
+      "reviewed_at": "",
+      "reviewer": "",
+      "semantic_compatible": null,
+      "target_answer": ""
+    },
+    {
+      "answer_category": "person",
+      "approved": false,
+      "candidate_source": {
+        "gold_answer": "Robert Ian \"Rob\" Sitch",
+        "method": "exact gold answer from a different verified development query",
+        "query_id": "5ae1d4e8554299234fd04312",
+        "question": "Any Questions for Ben? was directed by which Australian producer and actor?",
+        "record_sha256": "7f4c1b1080d85185829d828bb2a3bcd72c5d12afc20cfeeca19b0411a87a6900"
+      },
+      "coherent_false_evidence": null,
+      "evidence_scope": "Full query-target falsehood and all question hops require independent verification; source-statement checks are partial only.",
+      "evidence_source_reference": {
+        "artifact_sha256": "eeade06c3b64783869cf1bafdfd9b727ac030dd4260a07bbec58f78cfa6eb0ef",
+        "field": "gold_supporting_facts",
+        "query_id": "5a83411655429966c78a6b5d",
+        "supporting_facts": [
+          {
+            "sent_id": 1,
+            "title": "Johnny Pemberton"
+          },
+          {
+            "sent_id": 1,
+            "title": "Superstore (TV series)"
+          }
+        ]
+      },
+      "evidence_status": "unverified",
+      "expected_semantic_compatibility": "Both work in television writing/production; the creator relation is grammatically coherent.",
+      "external_evidence": [],
+      "factual_claim_to_verify": "Robert Ian \"Rob\" Sitch created the NBC sitcom in which Johnny Pemberton plays Bo Thompson.",
+      "factually_false": null,
+      "gold_answer": "Justin Spitzer",
+      "gold_answer_sha256": "09543941fb10d930be93ed5dfae547987668fd3d32849777f47541b153eebf65",
+      "human_review_decision": "pending",
+      "manual_review_flags": [
+        "Resolve Superstore and distinguish creator credit from acting/production credits."
+      ],
+      "nomination_id": "p06",
+      "proposed_target_answer": "Robert Ian \"Rob\" Sitch",
+      "proposed_target_sha256": "947043e87fafe0bda2a1606e54c6399f814632d251bb72ad3ce2f290f04b4b47",
+      "query_id": "5a83411655429966c78a6b5d",
+      "question": "Who created the NBC sitcom that Johnny Pemberton appears in as the character Bo Thompson?",
+      "question_sha256": "8c4a5406ef9e524977611bf9b32d1dae56135121054cb1bc04ff626e6b390c55",
+      "review_status": "needs_independent_review",
+      "reviewed_at": "",
+      "reviewer": "",
+      "semantic_compatible": null,
+      "target_answer": ""
+    },
+    {
+      "answer_category": "place",
+      "approved": false,
+      "candidate_source": {
+        "gold_answer": "Netherlands",
+        "method": "exact gold answer from a different verified development query",
+        "query_id": "5a7796e05542992a6e59df0f",
+        "question": "What country is the theme park served by the Huis Ten Bosch train service themed on?",
+        "record_sha256": "47dfac443ac41d54df35c5fa5e538ce6b8094a61e3d5e447a989ee61c9bf9229"
+      },
+      "coherent_false_evidence": null,
+      "evidence_scope": "Full query-target falsehood and all question hops require independent verification; source-statement checks are partial only.",
+      "evidence_source_reference": {
+        "artifact_sha256": "eeade06c3b64783869cf1bafdfd9b727ac030dd4260a07bbec58f78cfa6eb0ef",
+        "field": "gold_supporting_facts",
+        "query_id": "5a72688c5542997f827839b2",
+        "supporting_facts": [
+          {
+            "sent_id": 0,
+            "title": "Atik Valide Mosque"
+          },
+          {
+            "sent_id": 0,
+            "title": "Valens Aqueduct"
+          }
+        ]
+      },
+      "evidence_status": "unverified",
+      "expected_semantic_compatibility": "Both are sovereign-country answers, rather than cities or nationalities.",
+      "external_evidence": [],
+      "factual_claim_to_verify": "The Atik Valide Mosque and Valens Aqueduct are in the Netherlands.",
+      "factually_false": null,
+      "gold_answer": "Turkey",
+      "gold_answer_sha256": "07c67d76ef92ac9853588e098983fefba4ba5965f8fec95f42ab0d04c27865ba",
+      "human_review_decision": "pending",
+      "manual_review_flags": [
+        "Verify both landmark locations; one supporting hop alone is insufficient."
+      ],
+      "nomination_id": "p07",
+      "proposed_target_answer": "Netherlands",
+      "proposed_target_sha256": "3a386c13d283dc2ebbe2aeffc1ab3930d086b28956930d913d8dc58f34c013b7",
+      "query_id": "5a72688c5542997f827839b2",
+      "question": "The Atik Valide Mosque and Valens Aqueduct are found in what country?",
+      "question_sha256": "a8d51c7d1bd268f1ba52850ae137ace742908f23a1be706b3eac76a723786da7",
+      "review_status": "needs_independent_review",
+      "reviewed_at": "",
+      "reviewer": "",
+      "semantic_compatible": null,
+      "target_answer": ""
+    },
+    {
+      "answer_category": "place",
+      "approved": false,
+      "candidate_source": {
+        "gold_answer": "Turkey",
+        "method": "exact gold answer from a different verified development query",
+        "query_id": "5a72688c5542997f827839b2",
+        "question": "The Atik Valide Mosque and Valens Aqueduct are found in what country?",
+        "record_sha256": "0f7ba9a143a16269764422a881dabca24847d5290bfdf880489df685dae934bd"
+      },
+      "coherent_false_evidence": null,
+      "evidence_scope": "Full query-target falsehood and all question hops require independent verification; source-statement checks are partial only.",
+      "evidence_source_reference": {
+        "artifact_sha256": "eeade06c3b64783869cf1bafdfd9b727ac030dd4260a07bbec58f78cfa6eb0ef",
+        "field": "gold_supporting_facts",
+        "query_id": "5a7796e05542992a6e59df0f",
+        "supporting_facts": [
+          {
+            "sent_id": 0,
+            "title": "Huis Ten Bosch (train)"
+          },
+          {
+            "sent_id": 1,
+            "title": "Huis Ten Bosch (train)"
+          },
+          {
+            "sent_id": 0,
+            "title": "Huis Ten Bosch (theme park)"
+          }
+        ]
+      },
+      "evidence_status": "unverified",
+      "expected_semantic_compatibility": "Both are sovereign-country answers to a theme-country question.",
+      "external_evidence": [],
+      "factual_claim_to_verify": "The theme park served by the Huis Ten Bosch train service is themed on Turkey.",
+      "factually_false": null,
+      "gold_answer": "Netherlands",
+      "gold_answer_sha256": "3a386c13d283dc2ebbe2aeffc1ab3930d086b28956930d913d8dc58f34c013b7",
+      "human_review_decision": "pending",
+      "manual_review_flags": [
+        "Distinguish Japanese physical location from Dutch theme."
+      ],
+      "nomination_id": "p08",
+      "proposed_target_answer": "Turkey",
+      "proposed_target_sha256": "07c67d76ef92ac9853588e098983fefba4ba5965f8fec95f42ab0d04c27865ba",
+      "query_id": "5a7796e05542992a6e59df0f",
+      "question": "What country is the theme park served by the Huis Ten Bosch train service themed on?",
+      "question_sha256": "da620d94d15b6ec7f147a3b575655c85c21cd76b18f8a1eca57919e18bd35217",
+      "review_status": "needs_independent_review",
+      "reviewed_at": "",
+      "reviewer": "",
+      "semantic_compatible": null,
+      "target_answer": ""
+    },
+    {
+      "answer_category": "place",
+      "approved": false,
+      "candidate_source": {
+        "gold_answer": "Canada",
+        "method": "exact gold answer from a different verified development query",
+        "query_id": "5abf11d45542997719eab660",
+        "question": "Driven To Perform has a sponsor that includes the electronics store chain from what country?",
+        "record_sha256": "53ceb8ed09aada51dff4cb36b6f5d4db0f3d4ca4f35bfbc905c802c7c36dd33b"
+      },
+      "coherent_false_evidence": null,
+      "evidence_scope": "Full query-target falsehood and all question hops require independent verification; source-statement checks are partial only.",
+      "evidence_source_reference": {
+        "artifact_sha256": "eeade06c3b64783869cf1bafdfd9b727ac030dd4260a07bbec58f78cfa6eb0ef",
+        "field": "gold_supporting_facts",
+        "query_id": "5a8242c155429940e5e1a81d",
+        "supporting_facts": [
+          {
+            "sent_id": 0,
+            "title": "Thoughts on Machiavelli"
+          },
+          {
+            "sent_id": 1,
+            "title": "Leo Strauss"
+          }
+        ]
+      },
+      "evidence_status": "unverified",
+      "expected_semantic_compatibility": "Both are country answers to a birthplace question.",
+      "external_evidence": [],
+      "factual_claim_to_verify": "The author of Thoughts of Machiavelli was born in Canada.",
+      "factually_false": null,
+      "gold_answer": "Germany",
+      "gold_answer_sha256": "80db4ccdca106d37b920206331fcfe3e9e50a9e763d89b54ce3ad5ac8cf30f03",
+      "human_review_decision": "pending",
+      "manual_review_flags": [
+        "Resolve Leo Strauss and distinguish historical borders, birthplace and citizenship."
+      ],
+      "nomination_id": "p09",
+      "proposed_target_answer": "Canada",
+      "proposed_target_sha256": "be55ef3f4c4e6c2d9c2afe2a33ac90ad0f50d4de7f9163999877e2a9ca5a54f8",
+      "query_id": "5a8242c155429940e5e1a81d",
+      "question": "Where was the author of Thoughts of Machiavelli born?",
+      "question_sha256": "a977c1b5ceefa330be0d6b02cc8dbe71429f003b5d19099c52631676834c24ee",
+      "review_status": "needs_independent_review",
+      "reviewed_at": "",
+      "reviewer": "",
+      "semantic_compatible": null,
+      "target_answer": ""
+    },
+    {
+      "answer_category": "place",
+      "approved": false,
+      "candidate_source": {
+        "gold_answer": "Pennsylvania",
+        "method": "exact gold answer from a different verified development query",
+        "query_id": "5ac2d85e55429921a00ab06b",
+        "question": "Where did the hijacked plane rammed by Heather Penney crash? ",
+        "record_sha256": "150332807ec169dc0f4885a97d22b5d566c5a65b2ee1d4bd2f16b72eb18df0a7"
+      },
+      "coherent_false_evidence": null,
+      "evidence_scope": "Full query-target falsehood and all question hops require independent verification; source-statement checks are partial only.",
+      "evidence_source_reference": {
+        "artifact_sha256": "eeade06c3b64783869cf1bafdfd9b727ac030dd4260a07bbec58f78cfa6eb0ef",
+        "field": "gold_supporting_facts",
+        "query_id": "5ac0fd56554299012d1db679",
+        "supporting_facts": [
+          {
+            "sent_id": 3,
+            "title": "Carrie Coon"
+          },
+          {
+            "sent_id": 2,
+            "title": "Gone Girl (film)"
+          }
+        ]
+      },
+      "evidence_status": "unverified",
+      "expected_semantic_compatibility": "Both are US states, matching the requested geographic granularity.",
+      "external_evidence": [],
+      "factual_claim_to_verify": "Gone Girl, in which Carrie Coon plays Margo Dunne, is set in Pennsylvania.",
+      "factually_false": null,
+      "gold_answer": "Missouri",
+      "gold_answer_sha256": "4257eca8a841343564e90f7a19289fa604f9db307a709136c78fd580f540b196",
+      "human_review_decision": "pending",
+      "manual_review_flags": [
+        "Distinguish fictional setting from filming locations."
+      ],
+      "nomination_id": "p10",
+      "proposed_target_answer": "Pennsylvania",
+      "proposed_target_sha256": "808ed51137308015c71ccb45d27995efea3745131b48229f0eeac7d39500cad3",
+      "query_id": "5ac0fd56554299012d1db679",
+      "question": "Carrie Coon plays Margo Dunne in a 2014 film set in what state?",
+      "question_sha256": "dbc50bcfa417ba0c6fa7bdecf4e7b0eb0b62ca53a2af8b2975bf4e5069ea3d22",
+      "review_status": "needs_independent_review",
+      "reviewed_at": "",
+      "reviewer": "",
+      "semantic_compatible": null,
+      "target_answer": ""
+    },
+    {
+      "answer_category": "place",
+      "approved": false,
+      "candidate_source": {
+        "gold_answer": "Rome",
+        "method": "exact gold answer from a different verified development query",
+        "query_id": "5a87c13f5542996e4f30890c",
+        "question": "In what city did the \"Prince of tenors\" star in a film based on an opera by Giacomo Puccini?",
+        "record_sha256": "45f4fcf41754c7f6c27d19dcd78e4aa067885038306d13443bc1f40f3efb04d9"
+      },
+      "coherent_false_evidence": null,
+      "evidence_scope": "Full query-target falsehood and all question hops require independent verification; source-statement checks are partial only.",
+      "evidence_source_reference": {
+        "artifact_sha256": "eeade06c3b64783869cf1bafdfd9b727ac030dd4260a07bbec58f78cfa6eb0ef",
+        "field": "gold_supporting_facts",
+        "query_id": "5a8d12ca5542994ba4e3dbe2",
+        "supporting_facts": [
+          {
+            "sent_id": 1,
+            "title": "Fastjet Tanzania"
+          },
+          {
+            "sent_id": 0,
+            "title": "Fly540"
+          }
+        ]
+      },
+      "evidence_status": "unverified",
+      "expected_semantic_compatibility": "Both are city answers; the question does not request a country.",
+      "external_evidence": [],
+      "factual_claim_to_verify": "The company from which Fastjet Tanzania originated before rebranding was based in Rome.",
+      "factually_false": null,
+      "gold_answer": "Nairobi, Kenya",
+      "gold_answer_sha256": "9fbe0058ab838baacb2432fb6fc5b9a0da83dfb69b27f458f73a45008a63c1e0",
+      "human_review_decision": "pending",
+      "manual_review_flags": [
+        "Resolve the company and historical period before checking headquarters."
+      ],
+      "nomination_id": "p11",
+      "proposed_target_answer": "Rome",
+      "proposed_target_sha256": "d0d22019186582c6a842762ec016c71601d45dae437ec65a75799d86c8f392c0",
+      "query_id": "5a8d12ca5542994ba4e3dbe2",
+      "question": "In what city is the company that Fastjet Tanzania was originally founded as a part of prior to rebranding based?",
+      "question_sha256": "3341910c098a59afdaa5991079ff02181a6421834a5af2b62c358c82195ead8b",
+      "review_status": "needs_independent_review",
+      "reviewed_at": "",
+      "reviewer": "",
+      "semantic_compatible": null,
+      "target_answer": ""
+    },
+    {
+      "answer_category": "place",
+      "approved": false,
+      "candidate_source": {
+        "gold_answer": "Milan",
+        "method": "exact gold answer from a different verified development query",
+        "query_id": "5ae340a85542994393b9e668",
+        "question": "In which city is a football club that uses Gabriel Barbosa?",
+        "record_sha256": "aad0672de39c126f90cbca4fd0a51ffd13ffeb481ce245abe37ff6288f3d865e"
+      },
+      "coherent_false_evidence": null,
+      "evidence_scope": "Full query-target falsehood and all question hops require independent verification; source-statement checks are partial only.",
+      "evidence_source_reference": {
+        "artifact_sha256": "eeade06c3b64783869cf1bafdfd9b727ac030dd4260a07bbec58f78cfa6eb0ef",
+        "field": "gold_supporting_facts",
+        "query_id": "5a87c13f5542996e4f30890c",
+        "supporting_facts": [
+          {
+            "sent_id": 2,
+            "title": "Tosca (1956 film)"
+          },
+          {
+            "sent_id": 2,
+            "title": "Franco Corelli"
+          }
+        ]
+      },
+      "evidence_status": "unverified",
+      "expected_semantic_compatibility": "Both are Italian cities, matching the city answer form.",
+      "external_evidence": [],
+      "factual_claim_to_verify": "The Prince of Tenors starred in the Puccini-based film in Milan.",
+      "factually_false": null,
+      "gold_answer": "Rome",
+      "gold_answer_sha256": "d0d22019186582c6a842762ec016c71601d45dae437ec65a75799d86c8f392c0",
+      "human_review_decision": "pending",
+      "manual_review_flags": [
+        "Resolve Mario Lanza, the film, and whether city means setting or filming location."
+      ],
+      "nomination_id": "p12",
+      "proposed_target_answer": "Milan",
+      "proposed_target_sha256": "ec3ae6550b9446364138461d6a682d09d101ac1a5ed8a9298e0a50869fd832f7",
+      "query_id": "5a87c13f5542996e4f30890c",
+      "question": "In what city did the \"Prince of tenors\" star in a film based on an opera by Giacomo Puccini?",
+      "question_sha256": "3050dd208ac0cc45df36930dfc4a86623e804ff654d0860094eb25f3eb583073",
+      "review_status": "needs_independent_review",
+      "reviewed_at": "",
+      "reviewer": "",
+      "semantic_compatible": null,
+      "target_answer": ""
+    },
+    {
+      "answer_category": "date",
+      "approved": false,
+      "candidate_source": {
+        "gold_answer": "1838",
+        "method": "exact gold answer from a different verified development query",
+        "query_id": "5adf37a95542995ec70e8f97",
+        "question": "The 2011–12 VCU Rams men's basketball team, led by third year head coach Shaka Smart, represented Virginia Commonwealth University which was founded in what year?",
+        "record_sha256": "c2423b077241d9efe9ab92230c0b834e89ca2130ceb0b7d540ecae22d059de94"
+      },
+      "coherent_false_evidence": null,
+      "evidence_scope": "Full query-target falsehood and all question hops require independent verification; source-statement checks are partial only.",
+      "evidence_source_reference": {
+        "artifact_sha256": "eeade06c3b64783869cf1bafdfd9b727ac030dd4260a07bbec58f78cfa6eb0ef",
+        "field": "gold_supporting_facts",
+        "query_id": "5ae143ed55429920d5234360",
+        "supporting_facts": [
+          {
+            "sent_id": 0,
+            "title": "Sergei Aleksandrovich Tokarev"
+          },
+          {
+            "sent_id": 3,
+            "title": "Moscow State University"
+          }
+        ]
+      },
+      "evidence_status": "unverified",
+      "expected_semantic_compatibility": "Both are four-digit university foundation years.",
+      "external_evidence": [
+        {
+          "checked_on": "2026-10-25",
+          "scope": "University founding date only; professor-to-university hop and pair falsehood remain pending.",
+          "source_statement": "Moscow State University was founded in 1755.",
+          "source_statement_status": "verified",
+          "title": "Moscow State University Faculty of Physics: history",
+          "url": "https://www.phys.msu.ru/eng/about/history/",
+          "verification_method": "source opened and inspected during package preparation; no model-generation call"
+        }
+      ],
+      "factual_claim_to_verify": "The university where Sergei Aleksandrovich Tokarev was a professor was founded in 1838.",
+      "factually_false": null,
+      "gold_answer": "1755",
+      "gold_answer_sha256": "9ed1279b64427e295210c4bb660464639ab50d0d34e3fae67ee5d2b0af33507e",
+      "human_review_decision": "pending",
+      "manual_review_flags": [
+        "Verify Tokarev affiliation and Moscow State University founding date."
+      ],
+      "nomination_id": "p13",
+      "proposed_target_answer": "1838",
+      "proposed_target_sha256": "23765fc69c4e3c0b10f5d15471dc2245e2a19af16b513f85aa4b83bd033762a4",
+      "query_id": "5ae143ed55429920d5234360",
+      "question": "In what year was the university where Sergei Aleksandrovich Tokarev was a professor founded?",
+      "question_sha256": "2bebe11dc45d8c1f994fbd8d707dd698887c033b9124654891398723508dac37",
+      "review_status": "needs_independent_review",
+      "reviewed_at": "",
+      "reviewer": "",
+      "semantic_compatible": null,
+      "target_answer": ""
+    },
+    {
+      "answer_category": "date",
+      "approved": false,
+      "candidate_source": {
+        "gold_answer": "1755",
+        "method": "exact gold answer from a different verified development query",
+        "query_id": "5ae143ed55429920d5234360",
+        "question": "In what year was the university where Sergei Aleksandrovich Tokarev was a professor founded?",
+        "record_sha256": "32aebfbacf36ed825cc8e559bff867cf29ece1113341692cc85bcc2767f062e5"
+      },
+      "coherent_false_evidence": null,
+      "evidence_scope": "Full query-target falsehood and all question hops require independent verification; source-statement checks are partial only.",
+      "evidence_source_reference": {
+        "artifact_sha256": "eeade06c3b64783869cf1bafdfd9b727ac030dd4260a07bbec58f78cfa6eb0ef",
+        "field": "gold_supporting_facts",
+        "query_id": "5adf37a95542995ec70e8f97",
+        "supporting_facts": [
+          {
+            "sent_id": 2,
+            "title": "2011–12 VCU Rams men's basketball team"
+          },
+          {
+            "sent_id": 1,
+            "title": "Virginia Commonwealth University"
+          }
+        ]
+      },
+      "evidence_status": "unverified",
+      "expected_semantic_compatibility": "Both are four-digit university foundation years.",
+      "external_evidence": [
+        {
+          "checked_on": "2026-10-25",
+          "scope": "Institutional roots only; 1968 merger distinction and basketball affiliation remain pending.",
+          "source_statement": "VCU lists its founding year as 1838.",
+          "source_statement_status": "verified",
+          "title": "Virginia Commonwealth University: About, Quick facts",
+          "url": "https://www.vcu.edu/about-vcu/",
+          "verification_method": "source opened and inspected during package preparation; no model-generation call"
+        }
+      ],
+      "factual_claim_to_verify": "The university represented by the 2011–12 VCU Rams was founded in 1755.",
+      "factually_false": null,
+      "gold_answer": "1838",
+      "gold_answer_sha256": "23765fc69c4e3c0b10f5d15471dc2245e2a19af16b513f85aa4b83bd033762a4",
+      "human_review_decision": "pending",
+      "manual_review_flags": [
+        "Distinguish VCU institutional roots in 1838 from its 1968 merger/name."
+      ],
+      "nomination_id": "p14",
+      "proposed_target_answer": "1755",
+      "proposed_target_sha256": "9ed1279b64427e295210c4bb660464639ab50d0d34e3fae67ee5d2b0af33507e",
+      "query_id": "5adf37a95542995ec70e8f97",
+      "question": "The 2011–12 VCU Rams men's basketball team, led by third year head coach Shaka Smart, represented Virginia Commonwealth University which was founded in what year?",
+      "question_sha256": "f09020bc5b16cf5917e1b6431f0b0df34ca3fd8c363cc74584b41978147c60dd",
+      "review_status": "needs_independent_review",
+      "reviewed_at": "",
+      "reviewer": "",
+      "semantic_compatible": null,
+      "target_answer": ""
+    },
+    {
+      "answer_category": "date",
+      "approved": false,
+      "candidate_source": {
+        "gold_answer": "1989",
+        "method": "exact gold answer from a different verified development query",
+        "query_id": "5ab341f755429969a97a8114",
+        "question": "The song \"Chim Chim Cher-ee\" can be heard  in the \"Mary Poppins\" scene of a Disney ride that debuted in what year?",
+        "record_sha256": "e35853f922613bab9a0ddf8f05804de36c2c59e01ba316f9c8ee03bbec9bdbac"
+      },
+      "coherent_false_evidence": null,
+      "evidence_scope": "Full query-target falsehood and all question hops require independent verification; source-statement checks are partial only.",
+      "evidence_source_reference": {
+        "artifact_sha256": "eeade06c3b64783869cf1bafdfd9b727ac030dd4260a07bbec58f78cfa6eb0ef",
+        "field": "gold_supporting_facts",
+        "query_id": "5a88f7855542993b751ca8da",
+        "supporting_facts": [
+          {
+            "sent_id": 1,
+            "title": "Nicolas Cage"
+          },
+          {
+            "sent_id": 0,
+            "title": "Moonstruck"
+          },
+          {
+            "sent_id": 1,
+            "title": "Moonstruck"
+          }
+        ]
+      },
+      "evidence_status": "unverified",
+      "expected_semantic_compatibility": "Both are four-digit years within the same decade; the requested event is a film release.",
+      "external_evidence": [],
+      "factual_claim_to_verify": "The film starring Nicolas Cage and Cher came out in 1989.",
+      "factually_false": null,
+      "gold_answer": "1987",
+      "gold_answer_sha256": "744b93f9950fc38dad705556931ea48193b99dcb191cc9bd77097f65fbe2f0b8",
+      "human_review_decision": "pending",
+      "manual_review_flags": [
+        "Resolve Moonstruck; preserve original question spelling and check original release territory."
+      ],
+      "nomination_id": "p15",
+      "proposed_target_answer": "1989",
+      "proposed_target_sha256": "9113b98df80f877c7a2ee5d865a04c9514b4e9bf25a49d315b0b15f115d2f0d2",
+      "query_id": "5a88f7855542993b751ca8da",
+      "question": "In what year did a movie that starred both Nicholas Cage and Cher come out? ",
+      "question_sha256": "8e20549c826849178ce84285253cb2c55c7004eda260182002583e7006cc4fd1",
+      "review_status": "needs_independent_review",
+      "reviewed_at": "",
+      "reviewer": "",
+      "semantic_compatible": null,
+      "target_answer": ""
+    },
+    {
+      "answer_category": "date",
+      "approved": false,
+      "candidate_source": {
+        "gold_answer": "1876",
+        "method": "exact gold answer from a different verified development query",
+        "query_id": "5abd0296554299114383a1d1",
+        "question": "Douglas D. Scott is an American archaeologist most notable for his work at the site of a battle that occurred in what year?",
+        "record_sha256": "2d0ae9162f510529b2926461b61f584d936cf46c56ee81060f88a6963c43d743"
+      },
+      "coherent_false_evidence": null,
+      "evidence_scope": "Full query-target falsehood and all question hops require independent verification; source-statement checks are partial only.",
+      "evidence_source_reference": {
+        "artifact_sha256": "eeade06c3b64783869cf1bafdfd9b727ac030dd4260a07bbec58f78cfa6eb0ef",
+        "field": "gold_supporting_facts",
+        "query_id": "5ac546975542993e66e8229a",
+        "supporting_facts": [
+          {
+            "sent_id": 0,
+            "title": "The Rochdale Pioneers"
+          },
+          {
+            "sent_id": 0,
+            "title": "Rochdale Society of Equitable Pioneers"
+          }
+        ]
+      },
+      "evidence_status": "unverified",
+      "expected_semantic_compatibility": "Both are nineteenth-century calendar years.",
+      "external_evidence": [],
+      "factual_claim_to_verify": "The early consumer cooperative portrayed by the 2012 British biographical feature film was formed in 1876.",
+      "factually_false": null,
+      "gold_answer": "1844",
+      "gold_answer_sha256": "8b7a686fc953486da2536de59c04f7bd7e9ff208031dbba0af5c50e8a1ffa680",
+      "human_review_decision": "pending",
+      "manual_review_flags": [
+        "Resolve Rochdale Pioneers and distinguish organisation founding from film release."
+      ],
+      "nomination_id": "p16",
+      "proposed_target_answer": "1876",
+      "proposed_target_sha256": "1421ff611c93756cbc675b827ea48e8f3ef11c922b0046364c3953d936ef9394",
+      "query_id": "5ac546975542993e66e8229a",
+      "question": "What year was the early consumer co-operative, in which a 2012 British biographical feature film tells the story of, formed?",
+      "question_sha256": "d55593ebf8f24b28cdc65845f392a0b0301255fc98c6610ef375506e0d9bbee2",
+      "review_status": "needs_independent_review",
+      "reviewed_at": "",
+      "reviewer": "",
+      "semantic_compatible": null,
+      "target_answer": ""
+    },
+    {
+      "answer_category": "date",
+      "approved": false,
+      "candidate_source": {
+        "gold_answer": "1961",
+        "method": "exact gold answer from a different verified development query",
+        "query_id": "5ab4107a554299753aec5a2f",
+        "question": "The Dogwoman telemovies were created by an actress born in what year?",
+        "record_sha256": "b482a6377980c67f3897adc23ac6323eed1f5fed62c720b2cd2f57fa7bd2dd69"
+      },
+      "coherent_false_evidence": null,
+      "evidence_scope": "Full query-target falsehood and all question hops require independent verification; source-statement checks are partial only.",
+      "evidence_source_reference": {
+        "artifact_sha256": "eeade06c3b64783869cf1bafdfd9b727ac030dd4260a07bbec58f78cfa6eb0ef",
+        "field": "gold_supporting_facts",
+        "query_id": "5ae531695542990ba0bbb1fb",
+        "supporting_facts": [
+          {
+            "sent_id": 1,
+            "title": "2007 South Carolina Gamecocks football team"
+          },
+          {
+            "sent_id": 0,
+            "title": "Steve Spurrier"
+          }
+        ]
+      },
+      "evidence_status": "unverified",
+      "expected_semantic_compatibility": "Both are twentieth-century birth years for an adult coach.",
+      "external_evidence": [],
+      "factual_claim_to_verify": "The coach leading the 2007 South Carolina Gamecocks in his third USC season was born in 1961.",
+      "factually_false": null,
+      "gold_answer": "1945",
+      "gold_answer_sha256": "060672b8531404f598515957df33d6387e0647cbc382d35ef286fa3466362384",
+      "human_review_decision": "pending",
+      "manual_review_flags": [
+        "Resolve Steve Spurrier and verify birth date independently of coaching season."
+      ],
+      "nomination_id": "p17",
+      "proposed_target_answer": "1961",
+      "proposed_target_sha256": "f7ac69722a0706c533afa393b1574a761a073df0a8280094d3500a4bbc9c2877",
+      "query_id": "5ae531695542990ba0bbb1fb",
+      "question": "In what year was the coach who led the 2007 South Carolina Gamecocks football team in his third season as USC head coach born?",
+      "question_sha256": "d4ccb53383bf08ceb226180bce126a82c618c720f04f6d0ba98be9f98675ae80",
+      "review_status": "needs_independent_review",
+      "reviewed_at": "",
+      "reviewer": "",
+      "semantic_compatible": null,
+      "target_answer": ""
+    },
+    {
+      "answer_category": "quantity",
+      "approved": false,
+      "candidate_source": {
+        "gold_answer": "87",
+        "method": "exact gold answer from a different verified development query",
+        "query_id": "5ab9547755429970cfb8ea6c",
+        "question": "St Dionis Backchurch was rebuilt after a major conflagration that consumed how many parish churches?",
+        "record_sha256": "35a456080e7a0d9ad1685519460602574f098c23346c794c2cff8bffa5557328"
+      },
+      "coherent_false_evidence": null,
+      "evidence_scope": "Full query-target falsehood and all question hops require independent verification; source-statement checks are partial only.",
+      "evidence_source_reference": {
+        "artifact_sha256": "eeade06c3b64783869cf1bafdfd9b727ac030dd4260a07bbec58f78cfa6eb0ef",
+        "field": "gold_supporting_facts",
+        "query_id": "5ae518655542993aec5ec139",
+        "supporting_facts": [
+          {
+            "sent_id": 0,
+            "title": "Ken Pruitt"
+          },
+          {
+            "sent_id": 0,
+            "title": "Florida Senate"
+          },
+          {
+            "sent_id": 2,
+            "title": "Florida Senate"
+          }
+        ]
+      },
+      "evidence_status": "unverified",
+      "expected_semantic_compatibility": "Both are integer counts; 87 is interpreted as members in this question.",
+      "external_evidence": [
+        {
+          "checked_on": "2026-10-25",
+          "scope": "Membership statement only; historical service-period applicability and Ken Pruitt affiliation remain pending.",
+          "source_statement": "The Florida Senate is composed of 40 members.",
+          "source_statement_status": "verified",
+          "title": "Florida Senate: About the Legislature",
+          "url": "https://www.flsenate.gov/about",
+          "verification_method": "source opened and inspected during package preparation; no model-generation call"
+        }
+      ],
+      "factual_claim_to_verify": "The upper legislative house in which Ken Pruitt served has 87 members.",
+      "factually_false": null,
+      "gold_answer": "40 members",
+      "gold_answer_sha256": "81816a4c6556a6067b6ef700efeb1a3e5a1a777462b075a01d639282abe553ce",
+      "human_review_decision": "pending",
+      "manual_review_flags": [
+        "Resolve Florida Senate and verify historical membership during his service; candidate source counts churches, not legislators."
+      ],
+      "nomination_id": "p18",
+      "proposed_target_answer": "87",
+      "proposed_target_sha256": "bdd2d3af3a5a1213497d4f1f7bfcda898274fe9cb5401bbc0190885664708fc2",
+      "query_id": "5ae518655542993aec5ec139",
+      "question": "Ken Pruitt  was a Republican member of an upper house of the legislature with how many members ?",
+      "question_sha256": "0aafa4ecb82a78b982eeadefdbde80339f2b6a7b9e6cb66c9516c34d49a141e1",
+      "review_status": "needs_independent_review",
+      "reviewed_at": "",
+      "reviewer": "",
+      "semantic_compatible": null,
+      "target_answer": ""
+    },
+    {
+      "answer_category": "quantity",
+      "approved": false,
+      "candidate_source": {
+        "gold_answer": "48,982",
+        "method": "exact gold answer from a different verified development query",
+        "query_id": "5ae67dba55429908198fa5f0",
+        "question": "The Memphis Hustle are based in a suburb of a city with a population of what in 2010?",
+        "record_sha256": "9bd3cc03194efa5b1535fcebe301b9d5064e66be93593f49d107ae5350b1c588"
+      },
+      "coherent_false_evidence": null,
+      "evidence_scope": "Full query-target falsehood and all question hops require independent verification; source-statement checks are partial only.",
+      "evidence_source_reference": {
+        "artifact_sha256": "eeade06c3b64783869cf1bafdfd9b727ac030dd4260a07bbec58f78cfa6eb0ef",
+        "field": "gold_supporting_facts",
+        "query_id": "5ae32e125542991a06ce9946",
+        "supporting_facts": [
+          {
+            "sent_id": 0,
+            "title": "Kirton End"
+          },
+          {
+            "sent_id": 2,
+            "title": "Boston, Lincolnshire"
+          }
+        ]
+      },
+      "evidence_status": "unverified",
+      "expected_semantic_compatibility": "Both are census population counts, preserving the population unit.",
+      "external_evidence": [],
+      "factual_claim_to_verify": "The city containing Kirton End had a population of 48,982 according to the 2001 census.",
+      "factually_false": null,
+      "gold_answer": "35,124",
+      "gold_answer_sha256": "c1e5bff1ea1861a5e181d910ed249ffdda4ce49ed4974f52e8bcc65050d76571",
+      "human_review_decision": "pending",
+      "manual_review_flags": [
+        "Resolve Boston and use 2001 boundary/year; candidate originates in a 2010 US census question."
+      ],
+      "nomination_id": "p19",
+      "proposed_target_answer": "48,982",
+      "proposed_target_sha256": "95698a35dc2b2dce1b38c0f3488b040a59d12205164707d22863e21eea1c6e1d",
+      "query_id": "5ae32e125542991a06ce9946",
+      "question": "According to the 2001 census, what was the population of the city in which Kirton End is located?",
+      "question_sha256": "a6fafa6cdb4783607cb3be4fe24377398d12b4cc1af832455a015a31a84b262d",
+      "review_status": "needs_independent_review",
+      "reviewed_at": "",
+      "reviewer": "",
+      "semantic_compatible": null,
+      "target_answer": ""
+    },
+    {
+      "answer_category": "quantity",
+      "approved": false,
+      "candidate_source": {
+        "gold_answer": "35,124",
+        "method": "exact gold answer from a different verified development query",
+        "query_id": "5ae32e125542991a06ce9946",
+        "question": "According to the 2001 census, what was the population of the city in which Kirton End is located?",
+        "record_sha256": "9dbac73060d8dc2f6e112c3f233456271442cede855e48276620f618427585b6"
+      },
+      "coherent_false_evidence": null,
+      "evidence_scope": "Full query-target falsehood and all question hops require independent verification; source-statement checks are partial only.",
+      "evidence_source_reference": {
+        "artifact_sha256": "eeade06c3b64783869cf1bafdfd9b727ac030dd4260a07bbec58f78cfa6eb0ef",
+        "field": "gold_supporting_facts",
+        "query_id": "5a7cb8bc554299452d57b9be",
+        "supporting_facts": [
+          {
+            "sent_id": 1,
+            "title": "Lahore Eagles"
+          },
+          {
+            "sent_id": 4,
+            "title": "Gaddafi Stadium"
+          }
+        ]
+      },
+      "evidence_status": "unverified",
+      "expected_semantic_compatibility": "Both are integer counts of people of comparable magnitude; the target is interpreted as stadium capacity in this question.",
+      "external_evidence": [],
+      "factual_claim_to_verify": "The stadium serving as the home ground of the Lahore Eagles has a capacity of 35,124.",
+      "factually_false": null,
+      "gold_answer": "27,000",
+      "gold_answer_sha256": "f7a7b2f9bc92da91badc828eb1f64d8f752302a18cb26613cefff54fba9882e4",
+      "human_review_decision": "pending",
+      "manual_review_flags": [
+        "Resolve the specific Lahore stadium; capacity can change, so use the dataset-era venue configuration. The candidate number comes from a census question, not a stadium source."
+      ],
+      "nomination_id": "p20",
+      "proposed_target_answer": "35,124",
+      "proposed_target_sha256": "c1e5bff1ea1861a5e181d910ed249ffdda4ce49ed4974f52e8bcc65050d76571",
+      "query_id": "5a7cb8bc554299452d57b9be",
+      "question": "What is the capacity of the stadium that is the home ground of the Lahore Eagles?",
+      "question_sha256": "880e70abcef4d618e732ed8f4c45f82a3d54a47e85a2dc08115adde29d34d2cb",
+      "review_status": "needs_independent_review",
+      "reviewed_at": "",
+      "reviewer": "",
+      "semantic_compatible": null,
+      "target_answer": ""
+    },
+    {
+      "answer_category": "yes_no",
+      "approved": false,
+      "candidate_source": {
+        "gold_answer": "yes",
+        "method": "exact gold answer from a different verified development query",
+        "query_id": "5a81711455429938b614233e",
+        "question": "Are both \"Cooking Light\" and \"Vibe\" magazines?",
+        "record_sha256": "8ae567953e043dc5d80de2256ae9d94c53821bab067c8d9abc2d5b5582097ba9"
+      },
+      "coherent_false_evidence": null,
+      "evidence_scope": "Full query-target falsehood and all question hops require independent verification; source-statement checks are partial only.",
+      "evidence_source_reference": {
+        "artifact_sha256": "eeade06c3b64783869cf1bafdfd9b727ac030dd4260a07bbec58f78cfa6eb0ef",
+        "field": "gold_supporting_facts",
+        "query_id": "5a877dd65542993e715abf79",
+        "supporting_facts": [
+          {
+            "sent_id": 0,
+            "title": "Halldór Laxness"
+          },
+          {
+            "sent_id": 0,
+            "title": "Timothy Leary"
+          }
+        ]
+      },
+      "evidence_status": "unverified",
+      "expected_semantic_compatibility": "A boolean negation preserves the yes/no answer space.",
+      "external_evidence": [],
+      "factual_claim_to_verify": "Halldór Laxness and Timothy Leary were from the same country.",
+      "factually_false": null,
+      "gold_answer": "no",
+      "gold_answer_sha256": "9390298f3fb0c5b160498935d79cb139aef28e1c47358b4bbba61862b9c26e59",
+      "human_review_decision": "pending",
+      "manual_review_flags": [
+        "Query ID is fixed explicitly because yes/no gold answers recur; verify both countries and meaning of from."
+      ],
+      "nomination_id": "p21",
+      "proposed_target_answer": "yes",
+      "proposed_target_sha256": "8a798890fe93817163b10b5f7bd2ca4d25d84c52739a645a889c173eee7d9d3d",
+      "query_id": "5a877dd65542993e715abf79",
+      "question": "Were Halldór Laxness and Timothy Leary from the same country?",
+      "question_sha256": "b52516155b6d686edfa0c28b506ed86f19495593260cce8924be512baebc85e3",
+      "review_status": "needs_independent_review",
+      "reviewed_at": "",
+      "reviewer": "",
+      "semantic_compatible": null,
+      "target_answer": ""
+    },
+    {
+      "answer_category": "yes_no",
+      "approved": false,
+      "candidate_source": {
+        "gold_answer": "no",
+        "method": "exact gold answer from a different verified development query",
+        "query_id": "5a877dd65542993e715abf79",
+        "question": "Were Halldór Laxness and Timothy Leary from the same country?",
+        "record_sha256": "a0c0650ba9632d90bd785667e9353eefbf01c21d123ac32f860eeb3921c72d27"
+      },
+      "coherent_false_evidence": null,
+      "evidence_scope": "Full query-target falsehood and all question hops require independent verification; source-statement checks are partial only.",
+      "evidence_source_reference": {
+        "artifact_sha256": "eeade06c3b64783869cf1bafdfd9b727ac030dd4260a07bbec58f78cfa6eb0ef",
+        "field": "gold_supporting_facts",
+        "query_id": "5a81711455429938b614233e",
+        "supporting_facts": [
+          {
+            "sent_id": 0,
+            "title": "Cooking Light"
+          },
+          {
+            "sent_id": 0,
+            "title": "Vibe (magazine)"
+          }
+        ]
+      },
+      "evidence_status": "unverified",
+      "expected_semantic_compatibility": "A boolean negation preserves the yes/no answer space.",
+      "external_evidence": [],
+      "factual_claim_to_verify": "Cooking Light and Vibe are not both magazines.",
+      "factually_false": null,
+      "gold_answer": "yes",
+      "gold_answer_sha256": "8a798890fe93817163b10b5f7bd2ca4d25d84c52739a645a889c173eee7d9d3d",
+      "human_review_decision": "pending",
+      "manual_review_flags": [
+        "Verify both publications and whether the negative proposition is false."
+      ],
+      "nomination_id": "p22",
+      "proposed_target_answer": "no",
+      "proposed_target_sha256": "9390298f3fb0c5b160498935d79cb139aef28e1c47358b4bbba61862b9c26e59",
+      "query_id": "5a81711455429938b614233e",
+      "question": "Are both \"Cooking Light\" and \"Vibe\" magazines?",
+      "question_sha256": "09956b5dd68d807a244500080b1982b714fd0acf55e0bc9ec93b92de6bab5e15",
+      "review_status": "needs_independent_review",
+      "reviewed_at": "",
+      "reviewer": "",
+      "semantic_compatible": null,
+      "target_answer": ""
+    },
+    {
+      "answer_category": "film",
+      "approved": false,
+      "candidate_source": {
+        "gold_answer": "The Big Lebowski",
+        "method": "exact gold answer from a different verified development query",
+        "query_id": "5a8555ea5542992a431d1b07",
+        "question": "The movie that was the directorial debut of Jonathan Glazer included the musical piece Lujon. Which other movie that has the letter \"B\" in it also includes this piece?",
+        "record_sha256": "45a80a55e2ca3b749c2398d5868f5d9dd21bba1fcc535176914fa9402837bb08"
+      },
+      "coherent_false_evidence": null,
+      "evidence_scope": "Full query-target falsehood and all question hops require independent verification; source-statement checks are partial only.",
+      "evidence_source_reference": {
+        "artifact_sha256": "eeade06c3b64783869cf1bafdfd9b727ac030dd4260a07bbec58f78cfa6eb0ef",
+        "field": "gold_supporting_facts",
+        "query_id": "5a8dee2455429917b4a5bce1",
+        "supporting_facts": [
+          {
+            "sent_id": 1,
+            "title": "127 Hours"
+          },
+          {
+            "sent_id": 2,
+            "title": "James Franco"
+          }
+        ]
+      },
+      "evidence_status": "unverified",
+      "expected_semantic_compatibility": "Both are named feature films; a filmography substitution is coherent.",
+      "external_evidence": [],
+      "factual_claim_to_verify": "The Big Lebowski is another film in which the star of 127 Hours acted.",
+      "factually_false": null,
+      "gold_answer": "Pineapple Express",
+      "gold_answer_sha256": "4c3ea468340a4902911df20112080d77511094eb42ca7dec4d445d68e8f4c340",
+      "human_review_decision": "pending",
+      "manual_review_flags": [
+        "Resolve James Franco; check complete credits and cameos, not just lead billing."
+      ],
+      "nomination_id": "p23",
+      "proposed_target_answer": "The Big Lebowski",
+      "proposed_target_sha256": "6cb7b396dbf6a99ef557b8ac317fd5a2b592274e46232047faab7a3380c9d307",
+      "query_id": "5a8dee2455429917b4a5bce1",
+      "question": "What other film did the star of 127 Hours act in?",
+      "question_sha256": "b6e9139cfb881a1919c05856e151c7cbe646622ad1db1ad32c82614ea2c5c710",
+      "review_status": "needs_independent_review",
+      "reviewed_at": "",
+      "reviewer": "",
+      "semantic_compatible": null,
+      "target_answer": ""
+    },
+    {
+      "answer_category": "film",
+      "approved": false,
+      "candidate_source": {
+        "gold_answer": "Robot Overlords",
+        "method": "exact gold answer from a different verified development query",
+        "query_id": "5a7b85ac5542997c3ec971ef",
+        "question": "Milo Parker starred in which 2014 movie alongside Gillian Anderson?",
+        "record_sha256": "886a0b2c2913aacb24dde31ea04604f17506932e372b5a1afde494a9686cba91"
+      },
+      "coherent_false_evidence": null,
+      "evidence_scope": "Full query-target falsehood and all question hops require independent verification; source-statement checks are partial only.",
+      "evidence_source_reference": {
+        "artifact_sha256": "eeade06c3b64783869cf1bafdfd9b727ac030dd4260a07bbec58f78cfa6eb0ef",
+        "field": "gold_supporting_facts",
+        "query_id": "5a8555ea5542992a431d1b07",
+        "supporting_facts": [
+          {
+            "sent_id": 2,
+            "title": "Lujon"
+          },
+          {
+            "sent_id": 0,
+            "title": "Sexy Beast"
+          }
+        ]
+      },
+      "evidence_status": "unverified",
+      "expected_semantic_compatibility": "Both are feature films and Robot Overlords contains the letter B, preserving the explicit title-letter constraint.",
+      "external_evidence": [],
+      "factual_claim_to_verify": "Robot Overlords includes Lujon, the piece also heard in Jonathan Glazer’s directorial debut.",
+      "factually_false": null,
+      "gold_answer": "The Big Lebowski",
+      "gold_answer_sha256": "6cb7b396dbf6a99ef557b8ac317fd5a2b592274e46232047faab7a3380c9d307",
+      "human_review_decision": "pending",
+      "manual_review_flags": [
+        "Resolve Sexy Beast; check soundtrack credits and letter constraint; stylistic plausibility remains uncertain."
+      ],
+      "nomination_id": "p24",
+      "proposed_target_answer": "Robot Overlords",
+      "proposed_target_sha256": "06a5a1fcbf240911c4fc84ad714ffe84d0b8b77163b69f764d0a32fdcc7108ed",
+      "query_id": "5a8555ea5542992a431d1b07",
+      "question": "The movie that was the directorial debut of Jonathan Glazer included the musical piece Lujon. Which other movie that has the letter \"B\" in it also includes this piece?",
+      "question_sha256": "b0cf78020f85df93634fc62ad02c9adf460d020424001fc73891c55dffa3657a",
+      "review_status": "needs_independent_review",
+      "reviewed_at": "",
+      "reviewer": "",
+      "semantic_compatible": null,
+      "target_answer": ""
+    }
+  ],
+  "schema": "answer-compatible-targets/development-review-package-v1",
+  "selection_method": "Explicit nominations in recorded order; question-specific preparer screening, then deterministic gates; no coverage optimization or held-out text",
+  "status": "pending_independent_development_review"
+}

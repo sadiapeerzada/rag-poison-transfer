@@ -1,0 +1,432 @@
+{
+  "schema": "answer-compatible-targets/phase4a-nominations-v1",
+  "purpose": "Development-only purposive review subset, not a random sample or approved artifact",
+  "development_artifact_sha256": "eeade06c3b64783869cf1bafdfd9b727ac030dd4260a07bbec58f78cfa6eb0ef",
+  "selection_method": "Explicit nominations in recorded order; question-specific preparer screening, then deterministic gates; no coverage optimization or held-out text",
+  "nominations": [
+    {
+      "nomination_id": "p01",
+      "query_id": "5a7557d75542992d0ec05f68",
+      "candidate_source_query_id": "5a72f74a55429901807daf59",
+      "answer_category": "person",
+      "expected_semantic_compatibility": "Both are television performers; verify the specific Roseanne/Scream 2 intersection.",
+      "factual_claim_to_verify": "Rosie O'Donnell is the Roseanne star appearing in Scream 2.",
+      "manual_review_flags": [
+        "Check cast credits for both works; shared profession is insufficient."
+      ],
+      "evidence": []
+    },
+    {
+      "nomination_id": "p02",
+      "query_id": "5a72f1cf5542994cef4bc414",
+      "candidate_source_query_id": "5ab916e155429919ba4e23a4",
+      "answer_category": "person",
+      "expected_semantic_compatibility": "Both are English male actors, making an actor substitution coherent.",
+      "factual_claim_to_verify": "Chiwetel Ejiofor starred alongside Demi Moore and Robert Duvall in The Scarlet Letter (1995).",
+      "manual_review_flags": [
+        "Check the credited role and release year, not merely nationality."
+      ],
+      "evidence": []
+    },
+    {
+      "nomination_id": "p03",
+      "query_id": "5ae2c416554299492dc91c67",
+      "candidate_source_query_id": "5ae0bc185542993d6555ec29",
+      "answer_category": "person",
+      "expected_semantic_compatibility": "Both are American male television sitcom actors.",
+      "factual_claim_to_verify": "Ben Savage portrayed Steve Urkel in Family Matters.",
+      "manual_review_flags": [
+        "Check official character credits and professional-name aliases."
+      ],
+      "evidence": []
+    },
+    {
+      "nomination_id": "p04",
+      "query_id": "5ae7f56e5542993210983fd1",
+      "candidate_source_query_id": "5ac0dcf25542996f0d89cc2c",
+      "answer_category": "person",
+      "expected_semantic_compatibility": "Both are writers; authorship is a coherent relation, but genre and series identity need review.",
+      "factual_claim_to_verify": "Jane Mayer is the author of the book series adapted into the films featuring Rupert Grint.",
+      "manual_review_flags": [
+        "Resolve the series to Harry Potter and verify exclusive authorship; assess novelist versus nonfiction-writer plausibility."
+      ],
+      "evidence": [
+        {
+          "url": "https://www.jkrowling.com/wp-content/uploads/2025/03/J.K.-Rowling-Biography-2025.pdf",
+          "title": "J.K. Rowling official biography (2025), page 1",
+          "source_statement": "J.K. Rowling wrote the seven-book Harry Potter series.",
+          "source_statement_status": "verified",
+          "checked_on": "2026-10-25",
+          "verification_method": "source opened and inspected during package preparation; no model-generation call",
+          "scope": "Authorship statement only; Rupert Grint identification and candidate-specific exclusion remain pending."
+        }
+      ]
+    },
+    {
+      "nomination_id": "p05",
+      "query_id": "5a89bbb05542992e4fca83a3",
+      "candidate_source_query_id": "5a721a7655429971e9dc9271",
+      "answer_category": "person",
+      "expected_semantic_compatibility": "Both are male television sitcom performers.",
+      "factual_claim_to_verify": "Christopher Rich is the Parks and Recreation star who appeared in November.",
+      "manual_review_flags": [
+        "Disambiguate November (2004 film) and verify both cast lists."
+      ],
+      "evidence": []
+    },
+    {
+      "nomination_id": "p06",
+      "query_id": "5a83411655429966c78a6b5d",
+      "candidate_source_query_id": "5ae1d4e8554299234fd04312",
+      "answer_category": "person",
+      "expected_semantic_compatibility": "Both work in television writing/production; the creator relation is grammatically coherent.",
+      "factual_claim_to_verify": "Robert Ian \"Rob\" Sitch created the NBC sitcom in which Johnny Pemberton plays Bo Thompson.",
+      "manual_review_flags": [
+        "Resolve Superstore and distinguish creator credit from acting/production credits."
+      ],
+      "evidence": []
+    },
+    {
+      "nomination_id": "p07",
+      "query_id": "5a72688c5542997f827839b2",
+      "candidate_source_query_id": "5a7796e05542992a6e59df0f",
+      "answer_category": "place",
+      "expected_semantic_compatibility": "Both are sovereign-country answers, rather than cities or nationalities.",
+      "factual_claim_to_verify": "The Atik Valide Mosque and Valens Aqueduct are in the Netherlands.",
+      "manual_review_flags": [
+        "Verify both landmark locations; one supporting hop alone is insufficient."
+      ],
+      "evidence": []
+    },
+    {
+      "nomination_id": "p08",
+      "query_id": "5a7796e05542992a6e59df0f",
+      "candidate_source_query_id": "5a72688c5542997f827839b2",
+      "answer_category": "place",
+      "expected_semantic_compatibility": "Both are sovereign-country answers to a theme-country question.",
+      "factual_claim_to_verify": "The theme park served by the Huis Ten Bosch train service is themed on Turkey.",
+      "manual_review_flags": [
+        "Distinguish Japanese physical location from Dutch theme."
+      ],
+      "evidence": []
+    },
+    {
+      "nomination_id": "p09",
+      "query_id": "5a8242c155429940e5e1a81d",
+      "candidate_source_query_id": "5abf11d45542997719eab660",
+      "answer_category": "place",
+      "expected_semantic_compatibility": "Both are country answers to a birthplace question.",
+      "factual_claim_to_verify": "The author of Thoughts of Machiavelli was born in Canada.",
+      "manual_review_flags": [
+        "Resolve Leo Strauss and distinguish historical borders, birthplace and citizenship."
+      ],
+      "evidence": []
+    },
+    {
+      "nomination_id": "p10",
+      "query_id": "5ac0fd56554299012d1db679",
+      "candidate_source_query_id": "5ac2d85e55429921a00ab06b",
+      "answer_category": "place",
+      "expected_semantic_compatibility": "Both are US states, matching the requested geographic granularity.",
+      "factual_claim_to_verify": "Gone Girl, in which Carrie Coon plays Margo Dunne, is set in Pennsylvania.",
+      "manual_review_flags": [
+        "Distinguish fictional setting from filming locations."
+      ],
+      "evidence": []
+    },
+    {
+      "nomination_id": "p11",
+      "query_id": "5a8d12ca5542994ba4e3dbe2",
+      "candidate_source_query_id": "5a87c13f5542996e4f30890c",
+      "answer_category": "place",
+      "expected_semantic_compatibility": "Both are city answers; the question does not request a country.",
+      "factual_claim_to_verify": "The company from which Fastjet Tanzania originated before rebranding was based in Rome.",
+      "manual_review_flags": [
+        "Resolve the company and historical period before checking headquarters."
+      ],
+      "evidence": []
+    },
+    {
+      "nomination_id": "p12",
+      "query_id": "5a87c13f5542996e4f30890c",
+      "candidate_source_query_id": "5ae340a85542994393b9e668",
+      "answer_category": "place",
+      "expected_semantic_compatibility": "Both are Italian cities, matching the city answer form.",
+      "factual_claim_to_verify": "The Prince of Tenors starred in the Puccini-based film in Milan.",
+      "manual_review_flags": [
+        "Resolve Mario Lanza, the film, and whether city means setting or filming location."
+      ],
+      "evidence": []
+    },
+    {
+      "nomination_id": "p13",
+      "query_id": "5ae143ed55429920d5234360",
+      "candidate_source_query_id": "5adf37a95542995ec70e8f97",
+      "answer_category": "date",
+      "expected_semantic_compatibility": "Both are four-digit university foundation years.",
+      "factual_claim_to_verify": "The university where Sergei Aleksandrovich Tokarev was a professor was founded in 1838.",
+      "manual_review_flags": [
+        "Verify Tokarev affiliation and Moscow State University founding date."
+      ],
+      "evidence": [
+        {
+          "url": "https://www.phys.msu.ru/eng/about/history/",
+          "title": "Moscow State University Faculty of Physics: history",
+          "source_statement": "Moscow State University was founded in 1755.",
+          "source_statement_status": "verified",
+          "checked_on": "2026-10-25",
+          "verification_method": "source opened and inspected during package preparation; no model-generation call",
+          "scope": "University founding date only; professor-to-university hop and pair falsehood remain pending."
+        }
+      ]
+    },
+    {
+      "nomination_id": "p14",
+      "query_id": "5adf37a95542995ec70e8f97",
+      "candidate_source_query_id": "5ae143ed55429920d5234360",
+      "answer_category": "date",
+      "expected_semantic_compatibility": "Both are four-digit university foundation years.",
+      "factual_claim_to_verify": "The university represented by the 2011–12 VCU Rams was founded in 1755.",
+      "manual_review_flags": [
+        "Distinguish VCU institutional roots in 1838 from its 1968 merger/name."
+      ],
+      "evidence": [
+        {
+          "url": "https://www.vcu.edu/about-vcu/",
+          "title": "Virginia Commonwealth University: About, Quick facts",
+          "source_statement": "VCU lists its founding year as 1838.",
+          "source_statement_status": "verified",
+          "checked_on": "2026-10-25",
+          "verification_method": "source opened and inspected during package preparation; no model-generation call",
+          "scope": "Institutional roots only; 1968 merger distinction and basketball affiliation remain pending."
+        }
+      ]
+    },
+    {
+      "nomination_id": "p15",
+      "query_id": "5a88f7855542993b751ca8da",
+      "candidate_source_query_id": "5ab341f755429969a97a8114",
+      "answer_category": "date",
+      "expected_semantic_compatibility": "Both are four-digit years within the same decade; the requested event is a film release.",
+      "factual_claim_to_verify": "The film starring Nicolas Cage and Cher came out in 1989.",
+      "manual_review_flags": [
+        "Resolve Moonstruck; preserve original question spelling and check original release territory."
+      ],
+      "evidence": []
+    },
+    {
+      "nomination_id": "p16",
+      "query_id": "5ac546975542993e66e8229a",
+      "candidate_source_query_id": "5abd0296554299114383a1d1",
+      "answer_category": "date",
+      "expected_semantic_compatibility": "Both are nineteenth-century calendar years.",
+      "factual_claim_to_verify": "The early consumer cooperative portrayed by the 2012 British biographical feature film was formed in 1876.",
+      "manual_review_flags": [
+        "Resolve Rochdale Pioneers and distinguish organisation founding from film release."
+      ],
+      "evidence": []
+    },
+    {
+      "nomination_id": "p17",
+      "query_id": "5ae531695542990ba0bbb1fb",
+      "candidate_source_query_id": "5ab4107a554299753aec5a2f",
+      "answer_category": "date",
+      "expected_semantic_compatibility": "Both are twentieth-century birth years for an adult coach.",
+      "factual_claim_to_verify": "The coach leading the 2007 South Carolina Gamecocks in his third USC season was born in 1961.",
+      "manual_review_flags": [
+        "Resolve Steve Spurrier and verify birth date independently of coaching season."
+      ],
+      "evidence": []
+    },
+    {
+      "nomination_id": "p18",
+      "query_id": "5ae518655542993aec5ec139",
+      "candidate_source_query_id": "5ab9547755429970cfb8ea6c",
+      "answer_category": "quantity",
+      "expected_semantic_compatibility": "Both are integer counts; 87 is interpreted as members in this question.",
+      "factual_claim_to_verify": "The upper legislative house in which Ken Pruitt served has 87 members.",
+      "manual_review_flags": [
+        "Resolve Florida Senate and verify historical membership during his service; candidate source counts churches, not legislators."
+      ],
+      "evidence": [
+        {
+          "url": "https://www.flsenate.gov/about",
+          "title": "Florida Senate: About the Legislature",
+          "source_statement": "The Florida Senate is composed of 40 members.",
+          "source_statement_status": "verified",
+          "checked_on": "2026-10-25",
+          "verification_method": "source opened and inspected during package preparation; no model-generation call",
+          "scope": "Membership statement only; historical service-period applicability and Ken Pruitt affiliation remain pending."
+        }
+      ]
+    },
+    {
+      "nomination_id": "p19",
+      "query_id": "5ae32e125542991a06ce9946",
+      "candidate_source_query_id": "5ae67dba55429908198fa5f0",
+      "answer_category": "quantity",
+      "expected_semantic_compatibility": "Both are census population counts, preserving the population unit.",
+      "factual_claim_to_verify": "The city containing Kirton End had a population of 48,982 according to the 2001 census.",
+      "manual_review_flags": [
+        "Resolve Boston and use 2001 boundary/year; candidate originates in a 2010 US census question."
+      ],
+      "evidence": []
+    },
+    {
+      "nomination_id": "p20",
+      "query_id": "5a7cb8bc554299452d57b9be",
+      "candidate_source_query_id": "5ae32e125542991a06ce9946",
+      "answer_category": "quantity",
+      "expected_semantic_compatibility": "Both are integer counts of people of comparable magnitude; the target is interpreted as stadium capacity in this question.",
+      "factual_claim_to_verify": "The stadium serving as the home ground of the Lahore Eagles has a capacity of 35,124.",
+      "manual_review_flags": [
+        "Resolve the specific Lahore stadium; capacity can change, so use the dataset-era venue configuration. The candidate number comes from a census question, not a stadium source."
+      ],
+      "evidence": []
+    },
+    {
+      "nomination_id": "p21",
+      "query_id": "5a877dd65542993e715abf79",
+      "candidate_source_query_id": "5a81711455429938b614233e",
+      "answer_category": "yes_no",
+      "expected_semantic_compatibility": "A boolean negation preserves the yes/no answer space.",
+      "factual_claim_to_verify": "Halldór Laxness and Timothy Leary were from the same country.",
+      "manual_review_flags": [
+        "Query ID is fixed explicitly because yes/no gold answers recur; verify both countries and meaning of from."
+      ],
+      "evidence": []
+    },
+    {
+      "nomination_id": "p22",
+      "query_id": "5a81711455429938b614233e",
+      "candidate_source_query_id": "5a877dd65542993e715abf79",
+      "answer_category": "yes_no",
+      "expected_semantic_compatibility": "A boolean negation preserves the yes/no answer space.",
+      "factual_claim_to_verify": "Cooking Light and Vibe are not both magazines.",
+      "manual_review_flags": [
+        "Verify both publications and whether the negative proposition is false."
+      ],
+      "evidence": []
+    },
+    {
+      "nomination_id": "p23",
+      "query_id": "5a8dee2455429917b4a5bce1",
+      "candidate_source_query_id": "5a8555ea5542992a431d1b07",
+      "answer_category": "film",
+      "expected_semantic_compatibility": "Both are named feature films; a filmography substitution is coherent.",
+      "factual_claim_to_verify": "The Big Lebowski is another film in which the star of 127 Hours acted.",
+      "manual_review_flags": [
+        "Resolve James Franco; check complete credits and cameos, not just lead billing."
+      ],
+      "evidence": []
+    },
+    {
+      "nomination_id": "p24",
+      "query_id": "5a8555ea5542992a431d1b07",
+      "candidate_source_query_id": "5a7b85ac5542997c3ec971ef",
+      "answer_category": "film",
+      "expected_semantic_compatibility": "Both are feature films and Robot Overlords contains the letter B, preserving the explicit title-letter constraint.",
+      "factual_claim_to_verify": "Robot Overlords includes Lujon, the piece also heard in Jonathan Glazer’s directorial debut.",
+      "manual_review_flags": [
+        "Resolve Sexy Beast; check soundtrack credits and letter constraint; stylistic plausibility remains uncertain."
+      ],
+      "evidence": []
+    },
+    {
+      "nomination_id": "r01",
+      "query_id": "5a73b55855429978a71e9086",
+      "candidate_source_query_id": "5abe3dc65542993f32c2a0c4",
+      "answer_category": "transport_place",
+      "expected_semantic_compatibility": "A channel number is not an airport.",
+      "factual_claim_to_verify": "A channel number is not an airport.",
+      "manual_review_flags": [
+        "Screening example; must not enter review set."
+      ],
+      "evidence": []
+    },
+    {
+      "nomination_id": "r02",
+      "query_id": "5a713b325542994082a3e6b5",
+      "candidate_source_query_id": "5ae143ed55429920d5234360",
+      "answer_category": "date",
+      "expected_semantic_compatibility": "The date classifier mislabeled a capital-city answer.",
+      "factual_claim_to_verify": "The date classifier mislabeled a capital-city answer.",
+      "manual_review_flags": [
+        "Screening example; must not enter review set."
+      ],
+      "evidence": []
+    },
+    {
+      "nomination_id": "r03",
+      "query_id": "5a7b1c6b55429931da12c9ca",
+      "candidate_source_query_id": "5ab9547755429970cfb8ea6c",
+      "answer_category": "quantity",
+      "expected_semantic_compatibility": "The quantity classifier mislabeled a named-choice comparison.",
+      "factual_claim_to_verify": "The quantity classifier mislabeled a named-choice comparison.",
+      "manual_review_flags": [
+        "Screening example; must not enter review set."
+      ],
+      "evidence": []
+    },
+    {
+      "nomination_id": "r04",
+      "query_id": "5a7b1023554299042af8f6c2",
+      "candidate_source_query_id": "5a7b85ac5542997c3ec971ef",
+      "answer_category": "film",
+      "expected_semantic_compatibility": "Chronology between named choices does not admit a third film.",
+      "factual_claim_to_verify": "Chronology between named choices does not admit a third film.",
+      "manual_review_flags": [
+        "Screening example; must not enter review set."
+      ],
+      "evidence": []
+    },
+    {
+      "nomination_id": "r05",
+      "query_id": "5a7557d75542992d0ec05f68",
+      "candidate_source_query_id": "5a7796e05542992a6e59df0f",
+      "answer_category": "person",
+      "expected_semantic_compatibility": "Country target is incompatible with an actor question.",
+      "factual_claim_to_verify": "Country target is incompatible with an actor question.",
+      "manual_review_flags": [
+        "Screening example; must not enter review set."
+      ],
+      "evidence": []
+    },
+    {
+      "nomination_id": "r06",
+      "query_id": "5a7557d75542992d0ec05f68",
+      "candidate_source_query_id": "5a7557d75542992d0ec05f68",
+      "answer_category": "person",
+      "expected_semantic_compatibility": "Same-query target equals gold.",
+      "factual_claim_to_verify": "Same-query target equals gold.",
+      "manual_review_flags": [
+        "Screening example; must not enter review set."
+      ],
+      "evidence": []
+    },
+    {
+      "nomination_id": "r07",
+      "query_id": "5a72f1cf5542994cef4bc414",
+      "candidate_source_query_id": "5ab916e155429919ba4e23a4",
+      "answer_category": "person",
+      "expected_semantic_compatibility": "Repeated nomination duplicates an accepted pair.",
+      "factual_claim_to_verify": "Repeated nomination duplicates an accepted pair.",
+      "manual_review_flags": [
+        "Screening example; must not enter review set."
+      ],
+      "evidence": []
+    },
+    {
+      "nomination_id": "r08",
+      "query_id": "5a89bbb05542992e4fca83a3",
+      "candidate_source_query_id": "missing-source-id",
+      "answer_category": "person",
+      "expected_semantic_compatibility": "Candidate source ID does not exist.",
+      "factual_claim_to_verify": "Candidate source ID does not exist.",
+      "manual_review_flags": [
+        "Screening example; must not enter review set."
+      ],
+      "evidence": []
+    }
+  ]
+}
