@@ -36,3 +36,13 @@ def test_template_determinism_and_unreviewed_status(tmp_path):
     assert a == b == json.loads(p.read_text(encoding="utf-8"))
     assert a["status"] == "unreviewed_development_candidates"
     assert a["assignments"][0]["answer_category"] == "unknown"
+
+
+def test_development_unknown_examples_conservative_recognition():
+    assert expected_category('Which "Roseanne" star is in Scream 2?', "Laurie Metcalf") == "person"
+    assert expected_category("What class of instrument does Apatim Majumdar play?", "strings") == "instrument_family"
+    assert expected_category("Pandikona and Berger Blanc Suisse are both what kinds of animals?", "dogs") == "animal"
+    assert expected_category("what language did the ethnic group speak?", "Norwegian language") == "language"
+    assert expected_category("How far from Sacramento is the flight school?", "about 115 miles") == "distance"
+    assert expected_category("Which movie did Disney produce first, A or B?", "B") == "unknown"
+    assert expected_category("Which head coach has led their team for a longer period of time?", "Coach A") == "unknown"
