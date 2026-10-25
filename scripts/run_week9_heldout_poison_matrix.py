@@ -1831,6 +1831,7 @@ def run_smoke_test(
     summary_path = output_root / "summary.json"
     failure_path = output_root / "failure.json"
     started = time.perf_counter()
+    attack = None
     try:
         dense_config, rcd_config, heldout_ids, heldout_fp, hashes = validate_frozen_inputs(
             heldout_path=heldout_path,
@@ -1849,6 +1850,8 @@ def run_smoke_test(
         if generator.__class__.__name__ == "MockGenerator":
             raise TypeError("Smoke test requires the configured real generator.")
         attack, attack_config = _attack(attack_family, generator)
+        if attack_family == "semantic_fluent_false_evidence":
+            attack.capture_smoke_diagnostics = True
         poisoned_data = inject_poisons(
             clean_data,
             attack,
@@ -1927,6 +1930,17 @@ def run_smoke_test(
         _write_json_exclusive(summary_path, summary)
         return summary
     except Exception as error:
+        if attack is not None and attack_family == "semantic_fluent_false_evidence":
+            diagnostics = [
+                {"query_id": query_id, "poison_index": poison_index, "attempts": attempts}
+                for (query_id, poison_index), attempts in attack.attempt_log.items()
+            ]
+            _write_json_exclusive(output_root / "semantic.attempts.json", {
+                "status": "non_final_smoke_diagnostics",
+                "validation_version": SEMANTIC_VALIDATION_VERSION,
+                "retry_policy": SEMANTIC_RETRY_POLICY,
+                "records": diagnostics,
+            })
         _write_json_exclusive(
             failure_path,
             {
