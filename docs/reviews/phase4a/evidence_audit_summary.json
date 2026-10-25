@@ -1,0 +1,34 @@
+{
+  "classification_counts": {
+    "needs_revision": 5,
+    "recommended_for_independent_review": 16,
+    "reject": 3
+  },
+  "count": 24,
+  "independently_approved_targets": 0,
+  "limitation": "Offline validation verifies bindings and pending state, not factual correctness or authenticity of recorded source access.",
+  "recommended_ids": [
+    "p02",
+    "p03",
+    "p06",
+    "p07",
+    "p08",
+    "p09",
+    "p10",
+    "p12",
+    "p13",
+    "p15",
+    "p16",
+    "p17",
+    "p18",
+    "p21",
+    "p22",
+    "p23"
+  ],
+  "replacement_proposals": 7,
+  "schema": "answer-compatible-targets/evidence-audit-summary-v1",
+  "source_access_counts": {
+    "opened": 52,
+    "search_excerpt_only": 3
+  }
+}
