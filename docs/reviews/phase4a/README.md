@@ -6,6 +6,70 @@ No held-out question text, model generation, paid API, or poison execution was
 used. All query–target pairs have evidence status **unverified** and human
 decision **pending**. Reviewers and review timestamps are blank.
 
+## Follow-up evidence audit
+
+The [evidence report](EVIDENCE_REPORT.md) audits all 24 initial nominations.
+The [updated review sheet](review_sheet_audited.csv) includes current preparer
+classifications and source URLs; use it instead of the initial CSV for this
+assessment. [Recorded assessments and source catalogue](evidence_audit.json)
+and [summary](evidence_audit_summary.json) are machine-readable. The original
+package and sheet remain intact as the reproducible initial draft.
+
+- Recommended to submit for independent review: p02, p03, p06, p07, p08, p09,
+  p10, p12, p13, p15, p16, p17, p18, p21, p22, p23 (16).
+- Needs revision or stronger evidence: p04, p11, p14, p20, p24 (5).
+- Reject the original nomination: p01, p05, p19 (3).
+
+These are **preparer classifications**, not independent reviewer decisions.
+All approvals remain unset/false, reviewer identity and timestamp blank, and
+human decisions pending. `recommended_for_independent_review` does not mean
+approved, scientifically validated, or ready for execution. Credits-based
+negative inferences (notably p02 and p23) require independent end-credit checks.
+
+The audit records 52 opened source pages and three checked indexed excerpts
+whose scope is explicitly limited. Some full-page requests failed; the report
+lists these separately and does not represent their contents as fully opened.
+Sources include institutional/studio/publisher/archival material and labelled
+secondary references. Claims, section locators, access dates and limitations
+are recorded per source. No full source pages were copied into the repository.
+
+The earlier p12 preparation flag incorrectly suggested Mario Lanza. The checked
+chain is **Franco Corelli → Tosca (1956) → Cinecittà/Rome**. The updated sheet
+replaces the stale flag while preserving the original question/gold/target.
+Other substantive findings include unsupported show-membership premises in
+p01/p05, VCU roots-versus-merger ambiguity, historical airline headquarters,
+Kirton End’s borough/town mismatch, time-varying stadium capacity and the lack
+of complete soundtrack exclusion evidence. Original-score credits cannot
+exclude separately licensed music such as Lujon/Slow Hot Wind.
+
+Seven replacement leads are recorded for p01, p04, p05, p14, p19, p20 and p24.
+Their questions and exact candidate answer strings are taken only from verified
+development records. Five proposals replace the question entirely because a
+target-only swap cannot repair a premise/convention or available-pool problem;
+p04 and p24 suggest another target for the same question. They are all explicitly
+unverified and are not inserted into the original package. In particular, the
+p24 Double Agent suggestion still requires cue-sheet evidence; it is not a
+cleared improvement. p11 remains on hold until corporate identity and time
+are resolved; no target-only substitution was presented as a solution.
+
+Reproduce the follow-up outputs offline:
+
+```bash
+.venv/bin/python scripts/render_phase4a_evidence_audit.py \
+  --artifact results/exp_025_hotpotqa_rcd_v1_mlx_dev300_current_tuned.jsonl \
+  --manifest configs/exp_027_hotpotqa_heldout_manifest.json \
+  --package docs/reviews/phase4a/review_package.json \
+  --audit docs/reviews/phase4a/evidence_audit.json \
+  --output-dir docs/reviews/phase4a
+```
+
+This rechecks extraction provenance, exact original-package bytes, all 24
+identities/hashes, source references, replacement membership and pending states.
+It renders the recorded assessments without fetching web pages or performing
+new factual verification. Offline tests cannot authenticate source access or
+substitute for an independent factual/semantic review. The reviewed experiment
+runner/manifest/replay integration remains blocked as documented previously.
+
 ## Files and reproducibility
 
 - `review_package.json`: canonical machine-readable package, including exact
@@ -170,3 +234,37 @@ The offline full suite used authorized access to existing local cache files;
 no dependency download or install was needed. Frozen input byte hashes match
 the previous audit. JSON output SHA256 is recorded in `validation_summary.json`
 and verified by the artifact-reproduction test.
+
+## Follow-up evidence-audit validation
+
+```text
+.venv/bin/python -m pytest tests/test_evidence_audit.py tests/test_development_review_package.py -q
+41 passed in 0.63s
+
+HF_HUB_OFFLINE=1 HF_DATASETS_OFFLINE=1 .venv/bin/python -m pytest -q
+716 passed in 92.07s; 0 failed, 0 skipped
+
+.venv/bin/python -m compileall -q src scripts tests
+passed
+
+git diff --check
+passed
+```
+
+The first new focused run rejected an invalid source date correctly but failed
+one diagnostic-message assertion (22 passed, 1 failed). The validator now wraps
+the underlying calendar error with an actionable source-date message; the
+focused and full reruns above passed. New tests cover stale package and raw
+artifact provenance, complete/unique nomination coverage, source scopes,
+approval-state rejection, development-only replacements and deterministic
+artifact reproduction. These are integrity tests, not factuality scores.
+
+The original development file, held-out manifest, initial review-package JSON
+and initial CSV were compared byte-for-byte with HEAD and remain unchanged.
+
+The staged check additionally caught two trailing spaces inherited from source
+questions in the Markdown report. The renderer now trims display-only trailing
+whitespace; JSON/CSV and their exact question identities remain unchanged.
+Final focused rerun: 41 passed in 0.58s. Final full offline rerun after this fix:
+**716 passed in 91.17s; 0 failed, 0 skipped**. Compilation and staged whitespace
+checks passed after the correction.
