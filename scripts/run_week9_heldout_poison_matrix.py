@@ -51,6 +51,7 @@ from scripts.run_week9_multiseed_matched_evaluation import (
     PREDECLARED_POISON_SEEDS,
     validate_frozen_inputs,
 )
+from src.evaluation.qa_records import MEASUREMENT_SCHEMA, summarize_observations
 from src.attacks.base import poison_doc_id
 from src.attacks.compatible_targets import PROTOCOL_VERSION as REVIEW_ROW_PROTOCOL
 from src.attacks.reviewed_target_artifact import load_heldout_targets, ReviewedTargets
@@ -1145,6 +1146,7 @@ def recompute_pipeline_summary(indexed: dict, pipeline: str, query_ids: list) ->
         for k in multiseed.EXPECTED_CUTOFFS
     }
     return {
+        **({"measurements": summarize_observations(clean, poisoned)} if any(r.get("measurement_schema") for r in [*clean, *poisoned]) else {}),
         "query_count": total,
         "clean_condition": {
             "clean_answer_accuracy": _rate(sum(row["answer_correct"] for row in clean), total),

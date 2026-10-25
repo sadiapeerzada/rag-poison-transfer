@@ -32,7 +32,8 @@ from scripts.run_week9_poison_pilot import (
 )
 from src.attacks.review_provenance import review_metadata
 from src.attacks.asr import _extract_answer, build_prompt
-from src.evaluation.metrics import exact_match, poison_retrieval_rate_at_k
+from src.evaluation.qa_records import generate_qa, MEASUREMENT_SCHEMA, summarize_observations
+from src.evaluation.metrics import f1_score, exact_match, poison_retrieval_rate_at_k
 from src.experiments.protocol import (
     corpus_fingerprint,
     git_commit_sha,
@@ -425,18 +426,9 @@ def _evidence(retrieved: list[Any]) -> list[dict]:
     ]
 
 
-def _generate(generator: Any, question: str, retrieved: list[Any], max_tokens: int):
-    started = time.perf_counter()
-    generated = generator.generate(
-        build_prompt(question, [item.text for item in retrieved]),
-        max_tokens=max_tokens,
-    )
-    return _extract_answer(generated.text), {
-        "elapsed_seconds": time.perf_counter() - started,
-        "generator_latency_seconds": generated.latency_seconds,
-        "prompt_tokens": generated.prompt_tokens,
-        "completion_tokens": generated.completion_tokens,
-    }
+def _generate(generator: Any, question: str, retrieved: list[Any], max_tokens: int, *, context=None):
+    record = generate_qa(generator, build_prompt(question, [item.text for item in retrieved]), max_tokens, context=context)
+    return record["extracted_answer"], record
 
 
 def evaluate_pipeline(
@@ -466,7 +458,8 @@ def evaluate_pipeline(
         clean_retrieval_seconds = time.perf_counter() - retrieval_started
         clean_inner_calls = _inner_retrieval_calls(clean_retriever)
         clean_answer, clean_generation = _generate(
-            generator, clean_query["question"], clean_retrieved, max_tokens
+            generator, clean_query["question"], clean_retrieved, max_tokens,
+            context={"stage": "qa", "pipeline": pipeline, "condition": "clean", "query_id": query_id},
         )
         retrieval_started = time.perf_counter()
         poison_evidence = poisoned_retriever.retrieve(
@@ -490,7 +483,8 @@ def evaluate_pipeline(
             poisoned_retrieved = poison_evidence
             diagnostic_inner_calls = 0
         poisoned_answer, poisoned_generation = _generate(
-            generator, poisoned_query["question"], poison_evidence, max_tokens
+            generator, poisoned_query["question"], poison_evidence, max_tokens,
+            context={"stage": "qa", "pipeline": pipeline, "condition": "poisoned", "query_id": query_id},
         )
         retrieved_ids = [item.doc_id for item in poisoned_retrieved]
         poison_ranks = [
@@ -516,6 +510,8 @@ def evaluate_pipeline(
                 **review_metadata(poisoned_query),
                 "poison_doc_ids": poison_ids,
                 "clean_condition": {
+                    "measurement_schema": MEASUREMENT_SCHEMA, "gold_answer": clean_query["gold_answer"],
+                    "em": float(clean_correct), "f1": f1_score(clean_answer, clean_query["gold_answer"]),
                     "answer": clean_answer,
                     "answer_correct": clean_correct,
                     "targeted_asr": None,
@@ -538,6 +534,8 @@ def evaluate_pipeline(
                     "generation": clean_generation,
                 },
                 "poisoned_condition": {
+                    "measurement_schema": MEASUREMENT_SCHEMA, "gold_answer": clean_query["gold_answer"],
+                    "em": float(poisoned_correct), "f1": f1_score(poisoned_answer, clean_query["gold_answer"]),
                     "answer": poisoned_answer,
                     "answer_correct": poisoned_correct,
                     "targeted_asr": targeted_success,
@@ -633,6 +631,7 @@ def summarize_pipeline(rows: list[dict]) -> dict:
         row["poisoned_condition"]["targeted_asr"] for row in retrieved
     )
     return {
+        **({"measurements": summarize_observations([r["clean_condition"] for r in rows], [r["poisoned_condition"] for r in rows])} if any(r["clean_condition"].get("measurement_schema") for r in rows) else {}),
         "query_count": denominator,
         "clean_condition": {
             "clean_answer_accuracy": _rate(clean_correct, denominator),

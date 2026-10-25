@@ -26,6 +26,7 @@ class GenerationResult:
     latency_seconds: float
     prompt_tokens: int
     completion_tokens: int
+    backend_prompt: str | None = None
 
 
 class MockGenerator:
@@ -84,6 +85,7 @@ class MLXGenerator:
             latency_seconds=elapsed,
             prompt_tokens=len(self.tokenizer.encode(formatted)),
             completion_tokens=len(self.tokenizer.encode(text, add_special_tokens=False)),
+            backend_prompt=formatted,
         )
 
 

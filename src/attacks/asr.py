@@ -22,7 +22,10 @@ into compute_transfer_statistics() / TransferMatrix for the source->target
 ATR matrix -- see run_source_target_asr() below for that wiring.
 """
 from src.pipelines.generator import MockGenerator
-from src.evaluation.metrics import exact_match
+import copy
+import time
+from src.evaluation.metrics import exact_match, f1_score
+from src.evaluation.qa_records import (extract_answer, generate_qa, MEASUREMENT_SCHEMA, summarize_observations)
 from src.experiments.protocol import (
     poison_instances_fingerprint,
     query_set_fingerprint,
@@ -46,9 +49,8 @@ def build_prompt(question: str, evidence_texts: list[str]) -> str:
 
 
 def _extract_answer(raw_text: str) -> str:
-    """Same first-line/first-sentence extraction run.py applies to raw
-    generator output before scoring."""
-    return raw_text.split("\n")[0].split(". ")[0].strip()
+    """Current versioned extractor; raw responses are retained separately."""
+    return extract_answer(raw_text)
 
 
 def classify_poison_outcome(
@@ -154,14 +156,31 @@ def evaluate_asr_for_retriever(
         gold_answer = q["gold_answer"]
         target_answer = q["poison_target_answer"]
 
+        def inner_operations(retriever):
+            diagnostics = getattr(retriever, "last_diagnostics", None)
+            count = diagnostics.get("retrieval_call_count") if isinstance(diagnostics, dict) else None
+            return count if type(count) is int and count >= 1 else None
+
         # --- Clean side: retrieve + generate from the CLEAN corpus/index.
+        clean_started = time.perf_counter()
         clean_retrieved = clean_retriever.retrieve(clean_q["question"], top_k=top_k)
+        clean_retrieval_seconds = time.perf_counter() - clean_started
+        clean_inner = inner_operations(clean_retriever)
         clean_prompt = build_prompt(clean_q["question"], [d.text for d in clean_retrieved])
-        clean_raw = generator.generate(clean_prompt, max_tokens=max_tokens)
-        clean_answer = _extract_answer(clean_raw.text)
+        clean_generation = generate_qa(generator, clean_prompt, max_tokens, context={"stage": "qa", "condition": "clean", "query_id": query_id, "source_pipeline": source_pipeline, "target_pipeline": target_pipeline})
+        clean_answer = clean_generation["extracted_answer"]
 
         # --- Poisoned side: retrieve + generate from the POISONED corpus/index.
-        poisoned_retrieved_full = poisoned_retriever.retrieve(q["question"], top_k=retrieval_metric_k)
+        poisoned_started = time.perf_counter()
+        evidence_for_generation = poisoned_retriever.retrieve(q["question"], top_k=top_k)
+        poisoned_retrieval_seconds = time.perf_counter() - poisoned_started
+        poisoned_inner = inner_operations(poisoned_retriever)
+        diagnostic_started = time.perf_counter()
+        diagnostic = retrieval_metric_k > top_k
+        poisoned_retrieved_full = (poisoned_retriever.retrieve(q["question"], top_k=retrieval_metric_k)
+                                  if diagnostic else evidence_for_generation)
+        diagnostic_seconds = time.perf_counter() - diagnostic_started if diagnostic else 0.0
+        diagnostic_inner = inner_operations(poisoned_retriever) if diagnostic else 0
         retrieved_doc_ids = [d.doc_id for d in poisoned_retrieved_full]
         poison_ranks = [
             i + 1
@@ -170,12 +189,11 @@ def evaluate_asr_for_retriever(
         ]
         poison_rank = min(poison_ranks) if poison_ranks else None
 
-        evidence_for_generation = poisoned_retrieved_full[:top_k]
         evidence_doc_ids = {d.doc_id for d in evidence_for_generation}
         poison_retrieved = bool(poison_doc_ids & evidence_doc_ids)
         poisoned_prompt = build_prompt(q["question"], [d.text for d in evidence_for_generation])
-        attacked_raw = generator.generate(poisoned_prompt, max_tokens=max_tokens)
-        attacked_answer = _extract_answer(attacked_raw.text)
+        poisoned_generation = generate_qa(generator, poisoned_prompt, max_tokens, context={"stage": "qa", "condition": "poisoned", "query_id": query_id, "source_pipeline": source_pipeline, "target_pipeline": target_pipeline})
+        attacked_answer = poisoned_generation["extracted_answer"]
 
         # --- Scoring.
         clean_correct = bool(exact_match(clean_answer, gold_answer))
@@ -190,10 +208,24 @@ def evaluate_asr_for_retriever(
 
         results.append({
             **(experiment_metadata or {}),
+            "measurement_schema": MEASUREMENT_SCHEMA,
+            "clean_generation": clean_generation, "poisoned_generation": poisoned_generation,
+            "clean_em": float(clean_correct), "clean_f1": f1_score(clean_answer, gold_answer),
+            "poisoned_em": float(poisoned_correct), "poisoned_f1": f1_score(attacked_answer, gold_answer),
+            "clean_retrieval_elapsed_seconds": clean_retrieval_seconds,
+            "poisoned_retrieval_elapsed_seconds": poisoned_retrieval_seconds,
+            "diagnostic_retrieval_elapsed_seconds": diagnostic_seconds,
+            "retrieval_call_accounting": {"normal_retrieval_calls": 2, "diagnostic_retrieval_calls": int(diagnostic),
+                                          "clean_inner_retrieval_operations": clean_inner,
+                                          "poisoned_inner_retrieval_operations": poisoned_inner,
+                                          "diagnostic_inner_retrieval_operations": diagnostic_inner},
             "query_id": query_id,
             "source_pipeline": source_pipeline,
             "target_pipeline": target_pipeline,
             "poison_doc_ids": sorted(poison_doc_ids),
+            "clean_retrieved_doc_ids": [d.doc_id for d in clean_retrieved],
+            "clean_retrieved_evidence": [{"doc_id": d.doc_id, "text": d.text} for d in clean_retrieved],
+            "retrieved_evidence": [{"doc_id": d.doc_id, "text": d.text} for d in poisoned_retrieved_full],
             "retrieved_doc_ids": retrieved_doc_ids,
             "generation_evidence_doc_ids": [d.doc_id for d in evidence_for_generation],
             "poison_retrieved": poison_retrieved,
@@ -208,6 +240,31 @@ def evaluate_asr_for_retriever(
         })
 
     return results
+
+
+def summarize_transfer_observations(rows):
+    if not any(r.get("measurement_schema") is not None for r in rows):
+        return {}
+    if not all(r.get("measurement_schema") == MEASUREMENT_SCHEMA for r in rows):
+        raise ValueError("Mixed transfer measurement versions")
+    clean, poisoned = [], []
+    for r in rows:
+        common = {"measurement_schema": MEASUREMENT_SCHEMA, "gold_answer": r["gold_answer"]}
+        clean.append({**common, "answer": r["clean_answer"], "em": r["clean_em"], "f1": r["clean_f1"],
+                      "generation": r["clean_generation"], "retrieval_elapsed_seconds": r["clean_retrieval_elapsed_seconds"],
+                      "retrieval_call_accounting": {"normal_retrieval_calls": 1, "diagnostic_retrieval_calls": 0,
+                          "normal_inner_retrieval_operations": r["retrieval_call_accounting"]["clean_inner_retrieval_operations"],
+                          "diagnostic_inner_retrieval_operations": 0}})
+        poisoned.append({**common, "answer": r["attacked_answer"], "em": r["poisoned_em"], "f1": r["poisoned_f1"],
+                         "generation": r["poisoned_generation"], "targeted_asr": r["attack_success"],
+                         "poison_retrieved": r["poison_retrieved"], "poison_rank": r["poison_rank"],
+                         "retrieval_elapsed_seconds": r["poisoned_retrieval_elapsed_seconds"],
+                         "diagnostic_retrieval_elapsed_seconds": r["diagnostic_retrieval_elapsed_seconds"],
+                         "retrieval_call_accounting": {"normal_retrieval_calls": 1,
+                            "diagnostic_retrieval_calls": r["retrieval_call_accounting"]["diagnostic_retrieval_calls"],
+                            "normal_inner_retrieval_operations": r["retrieval_call_accounting"]["poisoned_inner_retrieval_operations"],
+                            "diagnostic_inner_retrieval_operations": r["retrieval_call_accounting"]["diagnostic_inner_retrieval_operations"]}})
+    return summarize_observations(clean, poisoned)
 
 
 def conditional_asr(results: list[dict]) -> dict:
@@ -262,7 +319,7 @@ def run_source_target_asr(
     experiment_metadata: dict | None = None,
     strict_metadata: bool = True,
 ):
-    """True source->target transfer, per the supervisor's protocol -- NOT
+    """Full-cohort source->target transfer, with source-success-conditioned ATR -- NOT
     the "same poison vs. every retriever" robustness check evaluate.py's
     evaluate_poison_across_retrievers() does. That measures whether a
     retriever-agnostic poison happens to transfer; this measures whether
@@ -272,15 +329,10 @@ def run_source_target_asr(
     Protocol:
       1. Build the source pipeline on clean_data/poisoned_data and run
          ASR on EVERY attacked query.
-      2. Freeze the subset that actually succeeded on the source
-         (select_source_successful) -- this frozen query_id set IS the
-         attack, from here on. Nothing about the poison is regenerated
-         or retuned for any target.
-      3. For every pipeline (including the source itself, as a
-         diagonal sanity check), build fresh retrievers on the SAME
-         clean_data/poisoned_data, run ASR restricted to the frozen
-         query_id set, and feed (frozen source results, frozen target
-         results) into compute_transfer_statistics().
+      2. Freeze source success flags for conditional ATR; retain the full cohort.
+      3. Evaluate every attacked query on each target, unchanged, including when
+         no source attack succeeded. Preserve complete raw source/target rows.
+         Zero source success yields ATR=None, not an exception or resampling.
 
     Strict metadata validation is enabled by default. Supply
     ``experiment_metadata`` with dataset, seed, attack family/config,
@@ -315,9 +367,7 @@ def run_source_target_asr(
 
     Raises:
         ValueError if required strict metadata is missing,
-        source_pipeline isn't in retriever_factories, or
-        if zero attacks succeeded on the source pipeline (nothing to
-        transfer -- ATR is undefined, not zero, in that case).
+        source_pipeline isn't in retriever_factories, or metadata/data disagree.
     """
     from src.pipelines.transfer import (
         TransferMatrix,
@@ -397,21 +447,10 @@ def run_source_target_asr(
             expected_target_pipeline=source_pipeline,
         )
 
-    # Step 2: freeze the source-successful subset. This IS the attack set
-    # for every target below -- no regeneration, no retuning.
+    # Source-success flags define only the ATR conditioning set, never the cohort.
     frozen = select_source_successful(source_results_full)
     frozen_ids = {r["query_id"] for r in frozen}
-    if not frozen_ids:
-        raise ValueError(
-            f"No attacks succeeded on source pipeline {source_pipeline!r} "
-            "(0 / {} queries) -- ATR is undefined with zero source "
-            "successes, not zero. Try a stronger attack, a higher "
-            "poison rate/intensity, or a different source pipeline "
-            "before computing transfer.".format(len(source_results_full))
-        )
-    source_results_frozen = [r for r in source_results_full if r["query_id"] in frozen_ids]
-
-    # Step 3: replay the frozen set, unchanged, on every target pipeline.
+    # Replay the full frozen poison snapshot on every target, even at zero success.
     matrix = TransferMatrix()
     for target_name, factory in retriever_factories.items():
         if target_name == source_pipeline:
@@ -450,11 +489,11 @@ def run_source_target_asr(
         # results' first entry, so relabel per target before calling it.
         source_side_for_this_target = [
             {**r, "target_pipeline": target_name}
-            for r in source_results_frozen
+            for r in source_results_full
         ]
         stats = compute_transfer_statistics(
             source_side_for_this_target,
-            target_results_frozen,
+            target_results_full,
             strict_metadata=strict_metadata,
             expected_source_pipeline=source_pipeline,
             expected_target_pipeline=target_name,
@@ -466,10 +505,19 @@ def run_source_target_asr(
             if source_results_full
             else None
         )
-        stats.conditional_target_asr = stats.attack_success_rate_target
+        stats.result_schema = "rag-poison-transfer.transfer-result/v2-full-cohort"
+        stats.conditional_target_asr = (sum(r["attack_success"] for r in target_results_frozen) / len(frozen)
+                                        if frozen else None)
         stats.transfer_count = stats.transferred_attacks
         stats.atr_denominator = len(frozen)
-        stats.source_asr_results = source_results_full
+        stats.source_asr_results = copy.deepcopy(source_full_for_target)
+        stats.target_asr_results = copy.deepcopy(target_results_full)
+        stats.metric_denominators = {"source_asr": len(source_results_full), "target_asr": len(target_results_full),
+                                     "atr": len(frozen), "conditional_target_asr": len(frozen),
+                                     "poison_retrieval_rate": len(target_results_full),
+                                     "asr_given_poison_visible": sum(r["poison_retrieved"] for r in target_results_full)}
+        stats.measurements = {"source": summarize_transfer_observations(source_results_full),
+                              "target": summarize_transfer_observations(target_results_full)}
         matrix.add_result(stats)
 
     return matrix
