@@ -30,6 +30,7 @@ from scripts.run_week9_poison_pilot import (
     replay_poisoned_data,
     validate_real_generator,
 )
+from src.attacks.review_provenance import review_metadata
 from src.attacks.asr import _extract_answer, build_prompt
 from src.evaluation.metrics import exact_match, poison_retrieval_rate_at_k
 from src.experiments.protocol import (
@@ -339,6 +340,8 @@ def reconstruct_matched_snapshot(
     expected_poison_fingerprint: str | None = None,
 ) -> dict:
     """Use the pilot's strict replay validator and verify all source fingerprints."""
+    if "target_review" in source_manifest or any("target_review" in q for q in source_manifest.get("query_poison_associations", [])):
+        raise ValueError("Reviewed held-out cells require the matrix replay validator and external assignment pins")
     poisoned_data = replay_poisoned_data(clean_data, source_manifest)
     if corpus_fingerprint(clean_data["corpus"]) != source_manifest.get(
         "clean_corpus_fingerprint"
@@ -510,6 +513,7 @@ def evaluate_pipeline(
                 "pipeline": pipeline,
                 "gold_answer": clean_query["gold_answer"],
                 "poison_target_answer": target,
+                **review_metadata(poisoned_query),
                 "poison_doc_ids": poison_ids,
                 "clean_condition": {
                     "answer": clean_answer,
@@ -584,6 +588,7 @@ def flatten_query_result_records(row: dict) -> list[dict]:
                 ),
                 "gold_answer": row["gold_answer"],
                 "poison_target_answer": row["poison_target_answer"],
+                **review_metadata(row),
                 "poison_doc_ids": row["poison_doc_ids"],
                 "clean_answer": row["clean_condition"]["answer"],
                 "poisoned_answer": row["poisoned_condition"]["answer"],
@@ -659,6 +664,10 @@ def paired_differences(dense_rows: list[dict], rcd_rows: list[dict]) -> dict:
     for query_id in dense_by_id:
         dense = dense_by_id[query_id]
         rcd = rcd_by_id[query_id]
+        if review_metadata(dense) != review_metadata(rcd):
+            raise ValueError("Matched comparison reviewed-target provenance mismatch")
+        if review_metadata(dense) and dense.get("poison_target_answer") != rcd.get("poison_target_answer"):
+            raise ValueError("Matched comparison reviewed targets differ")
         values = {
             "clean_answer_correct": (
                 int(dense["clean_condition"]["answer_correct"])

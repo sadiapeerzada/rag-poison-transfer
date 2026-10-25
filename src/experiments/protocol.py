@@ -13,6 +13,8 @@ import subprocess
 from datetime import datetime, timezone
 from typing import Any, Iterable
 
+from src.attacks.review_provenance import review_metadata
+
 
 def _stable_json(value: Any) -> str:
     return json.dumps(
@@ -165,6 +167,7 @@ def poison_instances_fingerprint(
                 "poison_target_answer": query.get("poison_target_answer"),
                 "poison_doc_ids": sorted(poison_ids),
                 "documents": documents,
+                **review_metadata(query),
             }
         )
 

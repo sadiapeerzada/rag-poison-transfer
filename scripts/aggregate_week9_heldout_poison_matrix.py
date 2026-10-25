@@ -21,10 +21,15 @@ from scripts.run_week9_heldout_poison_matrix import (
     MATRIX_INTENSITIES,
     FrozenMatrixInputs,
     _cell_id,
+    add_review_arguments,
+    review_options_from_args,
+    _load_run_targets,
     load_frozen_matrix_inputs,
     matrix_cells,
     validate_completed_cell,
 )
+
+from src.attacks.review_provenance import review_metadata
 
 __all__ = ["aggregate_matrix", "validate_completed_cell", "main"]
 
@@ -55,6 +60,9 @@ def aggregate_matrix(
             root / cell_id, frozen_inputs=frozen_inputs,
             expected_provenance=expected_provenance,
         )
+    reviews = [review_metadata(cell["manifest"]) for cell in cells.values()]
+    if any(review != reviews[0] for review in reviews):
+        raise ValueError("Matrix mixes reviewed-target assignment provenance")
     # Provenance must agree across the WHOLE matrix, not just within a seed group:
     # one commit and one source fingerprint produced all 12 cells.
     commits = {cell["git_commit_sha"] for cell in cells.values()}
@@ -119,7 +127,8 @@ def aggregate_matrix(
                 }
             )
     return {
-        "schema": "rag-poison-transfer.week9-heldout-poison-matrix-aggregate/v1",
+        "schema": ("rag-poison-transfer.week9-heldout-poison-matrix-aggregate/v2-reviewed" if reviews[0] else "rag-poison-transfer.week9-heldout-poison-matrix-aggregate/v1"),
+        **reviews[0],
         "status": "complete_heldout_matrix_not_statistically_conclusive",
         "is_final_run": False,
         "expected_cell_count": len(matrix_cells()),
@@ -149,15 +158,22 @@ def main() -> None:
     parser.add_argument("--heldout-manifest", type=Path, default=DEFAULT_HELDOUT_MANIFEST)
     parser.add_argument("--dense-config", type=Path, default=DEFAULT_DENSE_CONFIG)
     parser.add_argument("--rcd-config", type=Path, default=DEFAULT_RCD_CONFIG)
+    add_review_arguments(parser)
     args = parser.parse_args()
     output = args.output.expanduser().resolve()
     if output.exists():
         raise FileExistsError(f"Aggregate output already exists: {output}")
-    frozen_inputs = load_frozen_matrix_inputs(
-        heldout_path=args.heldout_manifest,
-        dense_config_path=args.dense_config,
-        rcd_config_path=args.rcd_config,
-    )
+    options = review_options_from_args(args)
+    if any(options.values()):
+        frozen_inputs = _load_run_targets(
+            args.heldout_manifest, args.dense_config, args.rcd_config, options,
+        )
+    else:
+        frozen_inputs = load_frozen_matrix_inputs(
+            heldout_path=args.heldout_manifest,
+            dense_config_path=args.dense_config,
+            rcd_config_path=args.rcd_config,
+        )
     if bool(args.expected_commit_sha) != bool(args.expected_source_fingerprint):
         parser.error("Provide both --expected-commit-sha and --expected-source-fingerprint.")
     expected_provenance = (

@@ -24,6 +24,7 @@ def inject_poisons(
     attacked_query_ids: list[str] | None = None,
     checkpoint=None,
     reviewed_target_assignments: dict | None = None,
+    reviewed_target_provenance: dict | None = None,
 ) -> dict:
     """Inject poison documents into a clean {corpus, queries} dataset.
 
@@ -88,6 +89,14 @@ def inject_poisons(
             )
         ) if n_to_attack > 0 else set()
 
+    if reviewed_target_provenance is not None:
+        from src.attacks.review_provenance import review_metadata
+        review_metadata({"target_review": reviewed_target_provenance})
+        if reviewed_target_assignments is None or reviewed_target_provenance["target_assignment_fingerprint"] != assignment_fingerprint(reviewed_target_assignments):
+            raise ValueError("Reviewed artifact assignment fingerprint mismatch")
+        if checkpoint is not None and checkpoint.provenance.get("target_review") != reviewed_target_provenance:
+            raise ValueError("Checkpoint reviewed artifact provenance mismatch")
+
     if reviewed_target_assignments is not None:
         reviewed_targets = {
             q["query_id"]: select_reviewed_target(q, reviewed_target_assignments)
@@ -147,6 +156,8 @@ def inject_poisons(
             if reviewed_targets is not None:
                 query_copy["target_selection_protocol"] = PROTOCOL_VERSION
                 query_copy["target_assignment_fingerprint"] = reviewed_fingerprint
+                if reviewed_target_provenance is not None:
+                    query_copy["target_review"] = dict(reviewed_target_provenance)
         else:
             query_copy["poison_doc_ids"] = []
             query_copy["attack_family"] = None
