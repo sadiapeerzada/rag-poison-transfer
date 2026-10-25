@@ -86,6 +86,15 @@ def _verified_development():
 
 
 def _review_annotations(row, query):
+    # Detect obvious unfinished handoff text, never infer identity or truth.
+    def placeholder(value):
+        text = value.strip().casefold()
+        return (text in {"pending", "todo", "tbd", "placeholder", "unknown", "n/a", "reviewer", "nominator"}
+                or text.startswith(("<", "replace ", "your ", "example "))
+                or "example.com" in text or "example.org" in text)
+    for field in ("reviewer", "nominator", "review_evidence", "target_answer"):
+        if isinstance(row.get(field), str) and placeholder(row[field]):
+            raise ValueError("Placeholder review field: " + field)
     if (row.get("question") != query["question"] or row.get("gold_answer") != query["gold_answer"] or
         row.get("gold_doc_ids") != query["gold_doc_ids"]):
         raise ValueError("Exact reviewed development question/gold binding required")
@@ -102,13 +111,16 @@ def _review_annotations(row, query):
     if (category == "unknown" or row.get("answer_category") != category or
         not answer_shape(category, row["target_answer"])):
         raise ValueError("Question-specific category/shape review mismatch")
-    if not isinstance(row.get("nominator"), str) or not row["nominator"].strip() or row["nominator"] == row.get("reviewer"):
+    if (not isinstance(row.get("nominator"), str) or not row["nominator"].strip() or
+        row["nominator"].strip().casefold() == row.get("reviewer", "").strip().casefold()):
         raise ValueError("Actual independent reviewer must differ from nominator")
     refs = row.get("evidence_references")
     if not isinstance(refs, list) or not refs or any(
         not isinstance(item, dict) or any(not isinstance(item.get(k), str) or not item[k].strip()
                                           for k in ("reference", "claim", "limitations")) for item in refs):
         raise ValueError("Genuine evidence references, claims and limitations required")
+    if any(placeholder(item[k]) for item in refs for k in ("reference", "claim", "limitations")):
+        raise ValueError("Placeholder evidence reference, claim or limitations")
 
 
 def load_development_targets(path, digest, queries):
@@ -134,7 +146,8 @@ def load_development_targets(path, digest, queries):
 def preflight(targets=None, targets_sha256=None):
     queries, provenance, dense, rcd, hashes = _verified_development()
     if bool(targets) != bool(targets_sha256):
-        raise ValueError("Provide both reviewed targets and an externally trusted SHA-256")
+        missing = "--targets-sha256 (trusted hash is unset)" if targets else "--targets (reviewed file)"
+        raise ValueError("Missing " + missing)
     mapping = load_development_targets(targets, targets_sha256, queries) if targets else None
     report = {"schema": SCHEMA, "scope": "development", "is_final_run": False,
               "query_ids": list(DEVELOPMENT_QUERY_IDS), "query_count": 2,
@@ -336,6 +349,13 @@ def main():
     parser.add_argument("--experiment-id")
     parser.add_argument("--recover-from", type=Path)
     args = parser.parse_args()
+    from scripts.prepare_week9_development_review import input_errors, validate, NEXT
+    if args.execute or args.targets is not None or args.targets_sha256 is not None:
+        errors = input_errors(args.targets, args.targets_sha256)
+        if not errors:
+            errors = validate(args.targets, args.targets_sha256)["errors"]
+        if errors:
+            parser.exit(2, "Review input rejected:\n" + "\n".join(errors) + "\n" + NEXT + "\n")
     if args.execute:
         if not all((args.targets, args.targets_sha256, args.output_dir, args.experiment_id)):
             parser.error("Execution requires genuine reviewed targets, external SHA pin, output directory and fresh ID")

@@ -1,5 +1,10 @@
 # Week 9 measurement fixes and development diagnostic
 
+For candidate-draft preparation and validation-only review handoff, use the
+[reviewer instructions](reviews/week9_development_smoke/REVIEWER_INSTRUCTIONS.md).
+The pending template is not an approved input. A real completed review file and
+its externally trusted exact-byte SHA-256 are still required.
+
 Base: `5548cd7` (latest verified main). The existing in-progress patch was
 preserved byte-for-byte while fast-forwarding from `81aeac1`; main added only the
 binding reconciliation report. No frozen configuration, RCD behavior/weights,
@@ -170,3 +175,22 @@ The diagnostic execution tests use synthetic corpora and mocked model boundaries
 they create no human approvals. No real MLX inference or experimental matrix was
 executed. Cached weights, actual runtime behavior and scientific semantic validity
 remain untested by these software checks.
+
+## Review-workflow follow-up
+
+Based on latest main `d37f398`, the follow-up adds a non-overwriting pending-draft
+helper, validation-only command, private field-level errors, explicit missing-file
+and missing-hash guidance, obvious placeholder rejection and case-insensitive
+reviewer/nominator equality checks. It reuses the authoritative development loader;
+the missing-review-input rejection was expected behavior, not a defective gate.
+Only the runner, helper, reviewer instructions, this report and regression tests
+changed. The original pending template and final held-out gate are unchanged.
+
+The final full offline suite passed **938 tests, 0 failed** (95.28 seconds), including
+23 new review-workflow cases. Compilation, metadata-only preflight and staged
+whitespace checks passed. Synthetic accepted fixtures use fictional queries,
+identities, timestamps and URNs solely inside tests; they are not human approvals
+and cannot authorize either real development case. No factual source was accessed
+or represented as checked for the two suggestions. Genuine independent reviews,
+their trusted exact-byte handoff hash, and authorization to run inference are
+still missing. The smoke is therefore **not executable with the supplied inputs**.
