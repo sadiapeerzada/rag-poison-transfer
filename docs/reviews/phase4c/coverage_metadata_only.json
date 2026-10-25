@@ -1,0 +1,50 @@
+{
+  "category_counts": {},
+  "development_only_method_check": {
+    "category_counts": {
+      "animal": 1,
+      "battle": 2,
+      "biological_taxon": 1,
+      "brewery": 1,
+      "comic_series": 2,
+      "company": 4,
+      "date": 27,
+      "distance": 1,
+      "empire": 1,
+      "film": 7,
+      "instrument_family": 1,
+      "language": 1,
+      "person": 36,
+      "place": 30,
+      "quantity": 12,
+      "river": 1,
+      "sports_venue": 1,
+      "transport_place": 2,
+      "unknown": 154,
+      "yes_no": 15
+    },
+    "limitation": "Mechanical eligibility is not factual or semantic support, approval, or expected attack success.",
+    "mechanically_supported": 114,
+    "reason_counts": {
+      "no_non_gold_candidate_in_frozen_pool": 9,
+      "unsupported_category_or_question_pattern": 155,
+      "unsupported_gold_answer_shape": 22
+    },
+    "semantic_and_factual_review_pending": 300,
+    "unsupported_or_uncertain": 186
+  },
+  "heldout_gold_answers_accessed": false,
+  "heldout_question_text_accessed": false,
+  "independently_approved": 0,
+  "mechanically_supported": null,
+  "query_count": 300,
+  "reason": "No category metadata in frozen ID manifest; text inspection prohibited before human freeze.",
+  "schema": "rag-poison-transfer.review-coverage/v1",
+  "scope": "heldout_metadata_only",
+  "support_count_bounds": {
+    "maximum": 300,
+    "minimum": 0
+  },
+  "unassessed": 300,
+  "unsupported_or_uncertain": null
+}

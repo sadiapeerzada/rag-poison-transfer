@@ -1,0 +1,791 @@
+{
+  "candidates": [
+    {
+      "answer": "dogs",
+      "answer_category": "animal",
+      "source_development_query_ids": [
+        "5ac19f405542991316484b5b"
+      ]
+    },
+    {
+      "answer": "World War II",
+      "answer_category": "battle",
+      "source_development_query_ids": [
+        "5ae1443855429920d5234362"
+      ]
+    },
+    {
+      "answer": "the Cold War (1947–91)",
+      "answer_category": "battle",
+      "source_development_query_ids": [
+        "5ade25ed5542997c77aded70"
+      ]
+    },
+    {
+      "answer": "Ursus americanus",
+      "answer_category": "biological_taxon",
+      "source_development_query_ids": [
+        "5ae1e4095542997283cd22bf"
+      ]
+    },
+    {
+      "answer": "Stone Brewing",
+      "answer_category": "brewery",
+      "source_development_query_ids": [
+        "5adcbb815542994ed6169bde"
+      ]
+    },
+    {
+      "answer": "Marvel",
+      "answer_category": "comic_series",
+      "source_development_query_ids": [
+        "5adf3e835542993a75d26442"
+      ]
+    },
+    {
+      "answer": "the Vertigo series \"Preacher\"",
+      "answer_category": "comic_series",
+      "source_development_query_ids": [
+        "5abc219655429959677d6a1d"
+      ]
+    },
+    {
+      "answer": "Aloe Vera of America",
+      "answer_category": "company",
+      "source_development_query_ids": [
+        "5a72dcb45542992359bc31af"
+      ]
+    },
+    {
+      "answer": "Chrysler",
+      "answer_category": "company",
+      "source_development_query_ids": [
+        "5ab8eabb5542991b5579f03d"
+      ]
+    },
+    {
+      "answer": "Fiat Chrysler Automobiles N.V.",
+      "answer_category": "company",
+      "source_development_query_ids": [
+        "5a7e1b7155429965cec5ea6c"
+      ]
+    },
+    {
+      "answer": "Sirius XM Holdings",
+      "answer_category": "company",
+      "source_development_query_ids": [
+        "5a8b77705542995d1e6f13aa"
+      ]
+    },
+    {
+      "answer": "1755",
+      "answer_category": "date",
+      "source_development_query_ids": [
+        "5ae143ed55429920d5234360"
+      ]
+    },
+    {
+      "answer": "1838",
+      "answer_category": "date",
+      "source_development_query_ids": [
+        "5adf37a95542995ec70e8f97"
+      ]
+    },
+    {
+      "answer": "1844",
+      "answer_category": "date",
+      "source_development_query_ids": [
+        "5ac546975542993e66e8229a"
+      ]
+    },
+    {
+      "answer": "1876",
+      "answer_category": "date",
+      "source_development_query_ids": [
+        "5abd0296554299114383a1d1"
+      ]
+    },
+    {
+      "answer": "1945",
+      "answer_category": "date",
+      "source_development_query_ids": [
+        "5ae531695542990ba0bbb1fb"
+      ]
+    },
+    {
+      "answer": "1961",
+      "answer_category": "date",
+      "source_development_query_ids": [
+        "5ab4107a554299753aec5a2f"
+      ]
+    },
+    {
+      "answer": "1974",
+      "answer_category": "date",
+      "source_development_query_ids": [
+        "5a7f296f55429934daa2fd10"
+      ]
+    },
+    {
+      "answer": "1987",
+      "answer_category": "date",
+      "source_development_query_ids": [
+        "5a88f7855542993b751ca8da"
+      ]
+    },
+    {
+      "answer": "1989",
+      "answer_category": "date",
+      "source_development_query_ids": [
+        "5ab341f755429969a97a8114"
+      ]
+    },
+    {
+      "answer": "1991",
+      "answer_category": "date",
+      "source_development_query_ids": [
+        "5a809e9f5542996402f6a5b1"
+      ]
+    },
+    {
+      "answer": "2015",
+      "answer_category": "date",
+      "source_development_query_ids": [
+        "5ae532365542992663a4f150"
+      ]
+    },
+    {
+      "answer": "the Parthian Empire",
+      "answer_category": "empire",
+      "source_development_query_ids": [
+        "5ab2659e554299340b5254b2"
+      ]
+    },
+    {
+      "answer": "\"Naked Killer\"",
+      "answer_category": "film",
+      "source_development_query_ids": [
+        "5a82817555429954d2e2eb5a"
+      ]
+    },
+    {
+      "answer": "Double Agent",
+      "answer_category": "film",
+      "source_development_query_ids": [
+        "5a776a805542993735360269"
+      ]
+    },
+    {
+      "answer": "Guardians of the Galaxy Vol. 2",
+      "answer_category": "film",
+      "source_development_query_ids": [
+        "5abdd08d5542991f6610604c"
+      ]
+    },
+    {
+      "answer": "My Boss, My Hero",
+      "answer_category": "film",
+      "source_development_query_ids": [
+        "5ae0120155429925eb1afbfb"
+      ]
+    },
+    {
+      "answer": "Pineapple Express",
+      "answer_category": "film",
+      "source_development_query_ids": [
+        "5a8dee2455429917b4a5bce1"
+      ]
+    },
+    {
+      "answer": "Robot Overlords",
+      "answer_category": "film",
+      "source_development_query_ids": [
+        "5a7b85ac5542997c3ec971ef"
+      ]
+    },
+    {
+      "answer": "The Big Lebowski",
+      "answer_category": "film",
+      "source_development_query_ids": [
+        "5a8555ea5542992a431d1b07"
+      ]
+    },
+    {
+      "answer": "strings",
+      "answer_category": "instrument_family",
+      "source_development_query_ids": [
+        "5ab31864554299233954ff06"
+      ]
+    },
+    {
+      "answer": "Norwegian language",
+      "answer_category": "language",
+      "source_development_query_ids": [
+        "5ac35a7e554299741d48a257"
+      ]
+    },
+    {
+      "answer": "Ben Savage",
+      "answer_category": "person",
+      "source_development_query_ids": [
+        "5ae0bc185542993d6555ec29"
+      ]
+    },
+    {
+      "answer": "Charlotte Carnegie",
+      "answer_category": "person",
+      "source_development_query_ids": [
+        "5ae1925a554299492dc91b48"
+      ]
+    },
+    {
+      "answer": "Chiwetel Ejiofor",
+      "answer_category": "person",
+      "source_development_query_ids": [
+        "5ab916e155429919ba4e23a4"
+      ]
+    },
+    {
+      "answer": "Christopher Rich",
+      "answer_category": "person",
+      "source_development_query_ids": [
+        "5a721a7655429971e9dc9271"
+      ]
+    },
+    {
+      "answer": "Dirk Werner Nowitzki",
+      "answer_category": "person",
+      "source_development_query_ids": [
+        "5ab3bfd3554299233954ff99"
+      ]
+    },
+    {
+      "answer": "Don Jeffrey \"Jeff\" Meldrum (born May 24, 1958) is a Professor of Anatomy and Anthropology",
+      "answer_category": "person",
+      "source_development_query_ids": [
+        "5ae35e8c5542990afbd1e120"
+      ]
+    },
+    {
+      "answer": "Eve Hewson",
+      "answer_category": "person",
+      "source_development_query_ids": [
+        "5a8d841955429941ae14dfe6"
+      ]
+    },
+    {
+      "answer": "Gary Oldman",
+      "answer_category": "person",
+      "source_development_query_ids": [
+        "5a72f1cf5542994cef4bc414"
+      ]
+    },
+    {
+      "answer": "Giuseppe Verdi",
+      "answer_category": "person",
+      "source_development_query_ids": [
+        "5ae4d8475542993aec5ec0e0"
+      ]
+    },
+    {
+      "answer": "Han Solo",
+      "answer_category": "person",
+      "source_development_query_ids": [
+        "5ab2b61d5542991669774065"
+      ]
+    },
+    {
+      "answer": "Harry Lillis \"Bing\" Crosby Jr.",
+      "answer_category": "person",
+      "source_development_query_ids": [
+        "5a8ee3a755429917b4a5be02"
+      ]
+    },
+    {
+      "answer": "Henry Lau",
+      "answer_category": "person",
+      "source_development_query_ids": [
+        "5ab9b7d555429970cfb8eb7a"
+      ]
+    },
+    {
+      "answer": "J. K. Rowling",
+      "answer_category": "person",
+      "source_development_query_ids": [
+        "5ae7f56e5542993210983fd1"
+      ]
+    },
+    {
+      "answer": "Jack White",
+      "answer_category": "person",
+      "source_development_query_ids": [
+        "5abd13b655429924427fceea"
+      ]
+    },
+    {
+      "answer": "Jaleel Ahmad White",
+      "answer_category": "person",
+      "source_development_query_ids": [
+        "5ae2c416554299492dc91c67"
+      ]
+    },
+    {
+      "answer": "Jane Mayer",
+      "answer_category": "person",
+      "source_development_query_ids": [
+        "5ac0dcf25542996f0d89cc2c"
+      ]
+    },
+    {
+      "answer": "John André",
+      "answer_category": "person",
+      "source_development_query_ids": [
+        "5ab97d0a5542996be202051e"
+      ]
+    },
+    {
+      "answer": "Julie Taymor",
+      "answer_category": "person",
+      "source_development_query_ids": [
+        "5abc41315542993a06baf8bb"
+      ]
+    },
+    {
+      "answer": "Justin Spitzer",
+      "answer_category": "person",
+      "source_development_query_ids": [
+        "5a83411655429966c78a6b5d"
+      ]
+    },
+    {
+      "answer": "Kait Parker",
+      "answer_category": "person",
+      "source_development_query_ids": [
+        "5a774e415542994aec3b7280"
+      ]
+    },
+    {
+      "answer": "Kalokuokamaile",
+      "answer_category": "person",
+      "source_development_query_ids": [
+        "5ae7cb9b5542994a481bbde2"
+      ]
+    },
+    {
+      "answer": "Kevin Spacey",
+      "answer_category": "person",
+      "source_development_query_ids": [
+        "5ac3e0f7554299194317388b"
+      ]
+    },
+    {
+      "answer": "Laurie Metcalf",
+      "answer_category": "person",
+      "source_development_query_ids": [
+        "5a7557d75542992d0ec05f68"
+      ]
+    },
+    {
+      "answer": "Matt Lucas",
+      "answer_category": "person",
+      "source_development_query_ids": [
+        "5a8effb55542997ba9cb317f"
+      ]
+    },
+    {
+      "answer": "Mookie Blaylock",
+      "answer_category": "person",
+      "source_development_query_ids": [
+        "5ae489ab5542995ad6573d62"
+      ]
+    },
+    {
+      "answer": "Nick Offerman",
+      "answer_category": "person",
+      "source_development_query_ids": [
+        "5a89bbb05542992e4fca83a3"
+      ]
+    },
+    {
+      "answer": "People! and The Carnabeats",
+      "answer_category": "person",
+      "source_development_query_ids": [
+        "5ab4b9f75542990594ba9ca4"
+      ]
+    },
+    {
+      "answer": "Rafael Souza dos Anjos",
+      "answer_category": "person",
+      "source_development_query_ids": [
+        "5add67705542992ae4cec54f"
+      ]
+    },
+    {
+      "answer": "Robert Ian \"Rob\" Sitch",
+      "answer_category": "person",
+      "source_development_query_ids": [
+        "5ae1d4e8554299234fd04312"
+      ]
+    },
+    {
+      "answer": "Robert Matthew Hurley",
+      "answer_category": "person",
+      "source_development_query_ids": [
+        "5ab741005542992aa3b8c800"
+      ]
+    },
+    {
+      "answer": "Rosie O'Donnell",
+      "answer_category": "person",
+      "source_development_query_ids": [
+        "5a72f74a55429901807daf59"
+      ]
+    },
+    {
+      "answer": "Rudolf Höss",
+      "answer_category": "person",
+      "source_development_query_ids": [
+        "5add8f055542990dbb2f7e6d"
+      ]
+    },
+    {
+      "answer": "Sam Phillips",
+      "answer_category": "person",
+      "source_development_query_ids": [
+        "5ac26ac15542992f1f2b38bc"
+      ]
+    },
+    {
+      "answer": "Stephen John Coogan",
+      "answer_category": "person",
+      "source_development_query_ids": [
+        "5a807ceb554299485f598616"
+      ]
+    },
+    {
+      "answer": "Taylor Swift",
+      "answer_category": "person",
+      "source_development_query_ids": [
+        "5a775f8a5542994aec3b72ba"
+      ]
+    },
+    {
+      "answer": "Wildhorn, Bricusse and Cuden",
+      "answer_category": "person",
+      "source_development_query_ids": [
+        "5ac113e2554299294b21909a"
+      ]
+    },
+    {
+      "answer": "\"Home of the Submarine Force\"",
+      "answer_category": "place",
+      "source_development_query_ids": [
+        "5ae361605542994393b9e69b"
+      ]
+    },
+    {
+      "answer": "\"Kitty Hawk\"",
+      "answer_category": "place",
+      "source_development_query_ids": [
+        "5ab6aa4c55429953192ad359"
+      ]
+    },
+    {
+      "answer": "Barnoldswick",
+      "answer_category": "place",
+      "source_development_query_ids": [
+        "5a8ac4dd5542992d82986f76"
+      ]
+    },
+    {
+      "answer": "Belarus",
+      "answer_category": "place",
+      "source_development_query_ids": [
+        "5ab5c263554299488d4d9a18"
+      ]
+    },
+    {
+      "answer": "Bow River and the Elbow River",
+      "answer_category": "place",
+      "source_development_query_ids": [
+        "5a7f54665542992097ad2f1a"
+      ]
+    },
+    {
+      "answer": "Caistor is a town",
+      "answer_category": "place",
+      "source_development_query_ids": [
+        "5a8f18d555429918e830d189"
+      ]
+    },
+    {
+      "answer": "Canada",
+      "answer_category": "place",
+      "source_development_query_ids": [
+        "5abf11d45542997719eab660"
+      ]
+    },
+    {
+      "answer": "Dallas",
+      "answer_category": "place",
+      "source_development_query_ids": [
+        "5a851ba95542997175ce1f81"
+      ]
+    },
+    {
+      "answer": "Edmonton, Alberta",
+      "answer_category": "place",
+      "source_development_query_ids": [
+        "5adda7585542997dc790700c"
+      ]
+    },
+    {
+      "answer": "Germany",
+      "answer_category": "place",
+      "source_development_query_ids": [
+        "5a8242c155429940e5e1a81d"
+      ]
+    },
+    {
+      "answer": "Gulfport, Biloxi",
+      "answer_category": "place",
+      "source_development_query_ids": [
+        "5a7616755542992d0ec06028"
+      ]
+    },
+    {
+      "answer": "Helsinki, Finland",
+      "answer_category": "place",
+      "source_development_query_ids": [
+        "5ae524415542992663a4f121"
+      ]
+    },
+    {
+      "answer": "Las Vegas Strip in Paradise, Nevada",
+      "answer_category": "place",
+      "source_development_query_ids": [
+        "5a81d0515542990a1d231ed4"
+      ]
+    },
+    {
+      "answer": "Laysan",
+      "answer_category": "place",
+      "source_development_query_ids": [
+        "5ab2acbc55429929539467d2"
+      ]
+    },
+    {
+      "answer": "Milan",
+      "answer_category": "place",
+      "source_development_query_ids": [
+        "5ae340a85542994393b9e668"
+      ]
+    },
+    {
+      "answer": "Missouri",
+      "answer_category": "place",
+      "source_development_query_ids": [
+        "5ac0fd56554299012d1db679"
+      ]
+    },
+    {
+      "answer": "Nairobi, Kenya",
+      "answer_category": "place",
+      "source_development_query_ids": [
+        "5a8d12ca5542994ba4e3dbe2"
+      ]
+    },
+    {
+      "answer": "Native American",
+      "answer_category": "place",
+      "source_development_query_ids": [
+        "5abfe1115542997d64295909"
+      ]
+    },
+    {
+      "answer": "Netherlands",
+      "answer_category": "place",
+      "source_development_query_ids": [
+        "5a7796e05542992a6e59df0f"
+      ]
+    },
+    {
+      "answer": "Oklahoma State University",
+      "answer_category": "place",
+      "source_development_query_ids": [
+        "5ac54c435542993e66e822d1"
+      ]
+    },
+    {
+      "answer": "Pennsylvania",
+      "answer_category": "place",
+      "source_development_query_ids": [
+        "5ac2d85e55429921a00ab06b"
+      ]
+    },
+    {
+      "answer": "Preston",
+      "answer_category": "place",
+      "source_development_query_ids": [
+        "5ab207f65542993be8fa98b8"
+      ]
+    },
+    {
+      "answer": "Rome",
+      "answer_category": "place",
+      "source_development_query_ids": [
+        "5a87c13f5542996e4f30890c"
+      ]
+    },
+    {
+      "answer": "Royal Air Force",
+      "answer_category": "place",
+      "source_development_query_ids": [
+        "5adcdf455542994ed6169c11"
+      ]
+    },
+    {
+      "answer": "Saint Michael, Barbados",
+      "answer_category": "place",
+      "source_development_query_ids": [
+        "5ae3006c55429928c423959f"
+      ]
+    },
+    {
+      "answer": "Saint-Domingue",
+      "answer_category": "place",
+      "source_development_query_ids": [
+        "5ade1c9e55429939a52fe822"
+      ]
+    },
+    {
+      "answer": "South America",
+      "answer_category": "place",
+      "source_development_query_ids": [
+        "5ab4304a55429942dd415ec5"
+      ]
+    },
+    {
+      "answer": "Turkey",
+      "answer_category": "place",
+      "source_development_query_ids": [
+        "5a72688c5542997f827839b2"
+      ]
+    },
+    {
+      "answer": "against the feather of truth",
+      "answer_category": "place",
+      "source_development_query_ids": [
+        "5abdf06355429976d4830a2d"
+      ]
+    },
+    {
+      "answer": "between 1987 and 2010",
+      "answer_category": "place",
+      "source_development_query_ids": [
+        "5ae291bb5542996483e649f6"
+      ]
+    },
+    {
+      "answer": "27,000",
+      "answer_category": "quantity",
+      "source_development_query_ids": [
+        "5a7cb8bc554299452d57b9be"
+      ]
+    },
+    {
+      "answer": "310",
+      "answer_category": "quantity",
+      "source_development_query_ids": [
+        "5ae22eae554299495565da30"
+      ]
+    },
+    {
+      "answer": "35,124",
+      "answer_category": "quantity",
+      "source_development_query_ids": [
+        "5ae32e125542991a06ce9946"
+      ]
+    },
+    {
+      "answer": "40 members",
+      "answer_category": "quantity",
+      "source_development_query_ids": [
+        "5ae518655542993aec5ec139"
+      ]
+    },
+    {
+      "answer": "4080",
+      "answer_category": "quantity",
+      "source_development_query_ids": [
+        "5ab4314955429942dd415ecd"
+      ]
+    },
+    {
+      "answer": "48,982",
+      "answer_category": "quantity",
+      "source_development_query_ids": [
+        "5ae67dba55429908198fa5f0"
+      ]
+    },
+    {
+      "answer": "87",
+      "answer_category": "quantity",
+      "source_development_query_ids": [
+        "5ab9547755429970cfb8ea6c"
+      ]
+    },
+    {
+      "answer": "Buffalo",
+      "answer_category": "river",
+      "source_development_query_ids": [
+        "5a8843cd5542994846c1ce75"
+      ]
+    },
+    {
+      "answer": "Smoothie King Center",
+      "answer_category": "sports_venue",
+      "source_development_query_ids": [
+        "5ab90d8955429916710eb0f1"
+      ]
+    },
+    {
+      "answer": "Gatwick Airport",
+      "answer_category": "transport_place",
+      "source_development_query_ids": [
+        "5a73b55855429978a71e9086"
+      ]
+    },
+    {
+      "answer": "no",
+      "answer_category": "yes_no",
+      "source_development_query_ids": [
+        "5a840e395542992ef85e239d",
+        "5a864d9e5542994775f6073d",
+        "5a877dd65542993e715abf79",
+        "5ab6bf6d55429953192ad372",
+        "5ac1a04e5542991316484b63"
+      ]
+    },
+    {
+      "answer": "yes",
+      "answer_category": "yes_no",
+      "source_development_query_ids": [
+        "5a81711455429938b614233e",
+        "5a851b0d5542997175ce1f7f",
+        "5a865e8a55429960ec39b67a",
+        "5a8753d95542994846c1cd63",
+        "5ab2b630554299545a2cfa17",
+        "5ab4428c5542990594ba9bda",
+        "5ab6087a554299110f2199be",
+        "5ab90e9755429934fafe6e51",
+        "5ab9ddef5542994dbf019875",
+        "5add0f635542994ed6169c56"
+      ]
+    }
+  ],
+  "development_artifact_sha256": "eeade06c3b64783869cf1bafdfd9b727ac030dd4260a07bbec58f78cfa6eb0ef",
+  "development_records_fingerprint": "7f9ba3aac994e660b930bae6eb2a002da6d1aec79cb7c41f37d201a9c0be9b3a",
+  "schema": "rag-poison-transfer.development-candidate-pool/v1",
+  "scope": "development"
+}
