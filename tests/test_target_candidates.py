@@ -8,6 +8,8 @@ from src.attacks.target_candidates import (
 def test_category_patterns_reject_obvious_cross_type_swaps():
     assert expected_category("What is the relation between A and B?", "brother") == "relationship"
     assert expected_category("What Hong Kong actor starred in X?", "Bosco Wong") == "person"
+    assert expected_category("Which acclaimed British actress played X?", "Example Name") == "person"
+    assert expected_category("What award-winning director made X?", "Example Name") == "person"
     assert expected_category("Where does the train stop at the station?", "Jacksonville") == "transport_place"
     assert expected_category("Which battle was fought first?", "Bull Run") == "battle"
     assert expected_category("What is the viral genus?", "Flavivirus") == "biological_taxon"
