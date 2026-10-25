@@ -67,3 +67,39 @@ def test_unapproved_and_duplicate_rows_fail(tmp_path):
                              "assignments": [row, row]}))
     with pytest.raises(TargetAssignmentError, match="Duplicate"):
         load_reviewed_assignments(p)
+
+
+def test_injection_opt_in_uses_reviewed_target_without_legacy_selector():
+    from src.attacks.injection import inject_poisons
+    from src.attacks.lexical import LexicalInfluentialTokenAttack
+
+    q = {**_query(), "gold_doc_ids": ["clean-1"]}
+    data = {"corpus": [{"doc_id": "clean-1", "text": "Original"}], "queries": [q]}
+    class GuardedAttack(LexicalInfluentialTokenAttack):
+        def pick_cross_query_target_answer(self, *args):
+            raise AssertionError("Legacy selector must not run in reviewed mode")
+
+    poisoned = inject_poisons(
+        data, GuardedAttack(), seed=7, attacked_query_ids=["q1"],
+        reviewed_target_assignments={"q1": _row(q)},
+    )
+    pq = poisoned["queries"][0]
+    assert pq["poison_target_answer"] == "Battle of Cold Harbor"
+    assert pq["target_selection_protocol"] == PROTOCOL_VERSION
+    assert pq["target_assignment_fingerprint"]
+    assert q == data["queries"][0]
+    assert poisoned["corpus"][0] == data["corpus"][0]
+
+
+def test_injection_missing_reviewed_target_fails_before_generation():
+    from src.attacks.injection import inject_poisons
+    from src.attacks.lexical import LexicalInfluentialTokenAttack
+
+    q = {**_query(), "gold_doc_ids": []}
+    with pytest.raises(TargetAssignmentError, match="No approved target"):
+        inject_poisons(
+            {"corpus": [], "queries": [q]},
+            LexicalInfluentialTokenAttack(),
+            attacked_query_ids=["q1"],
+            reviewed_target_assignments={},
+        )
