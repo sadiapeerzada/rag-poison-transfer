@@ -1,0 +1,100 @@
+{
+  "additional_external_factual_sources_admitted": 0,
+  "after": {
+    "gained": 22,
+    "lost": 0,
+    "mechanically_eligible": 177,
+    "new_nomination_mechanisms": {
+      "qualified_scalar_or_time": 6,
+      "question_local_choice": 16
+    },
+    "remaining_exact_causes": {
+      "ambiguous_multiple_choice_connectives": 1,
+      "approximation_or_one_sided_bound_can_be_co_correct": 2,
+      "choice_gold_alias_alignment_or_distinctness_unresolved": 4,
+      "comma_bearing_options_require_explicit_boundary_review": 4,
+      "comparative_or_choice_requires_resolved_options_and_gold_aliases": 7,
+      "descriptive_gold_or_aliases_require_independent_resolution_no_rewrite": 2,
+      "entity_role_or_relationship_lacks_typed_source_or_exclusion_evidence": 62,
+      "hierarchical_or_overlapping_labels_need_disjointness_evidence": 4,
+      "no_distinct_typed_verified_development_source": 11,
+      "no_safe_declared_scalar_transformation": 8,
+      "open_or_hierarchical_category_needs_constraint_and_exclusion_evidence": 9,
+      "set_member_types_lack_separate_typed_development_provenance": 2,
+      "subjective_or_nonexclusive_choice_predicate": 4,
+      "unresolved_choice_option_boundaries": 3
+    },
+    "unsupported_or_uncertain": 123
+  },
+  "all_300_targeted_support_demonstrated": false,
+  "before": {
+    "mechanically_eligible": 155,
+    "unsupported_or_uncertain": 145
+  },
+  "heldout_coverage": null,
+  "heldout_question_or_gold_accessed": false,
+  "independent_semantic_verification": {
+    "accuracy": null,
+    "status": "unmeasured_not_zero_percent_accuracy",
+    "verified_pairs": 0
+  },
+  "method_source_sha256": {
+    "scripts/audit_phase4d_development_coverage.py": "114747059b010b3ad5091ed73e1a411a54844d6a879c29af22cef17a6499a35f",
+    "scripts/audit_phase4e_development_coverage.py": "f6513e2cf58e0d13ef22a088a99684a435731770f7b6b217ecd1c07b82e880a6",
+    "scripts/extract_verified_development_queries.py": "345531884bf5c17b83699dc50b06dfbb1d3eaca547d47108d4ab701ee1ca91e8",
+    "src/attacks/development_review_package.py": "ec418a397a28b7e0e9a98110b037ff8045f079d9b4a71270110b406c7c47d4f4",
+    "src/attacks/development_targets_v2.py": "017cebfba45d02ecdc0613bec865b4299480ebc59f80d6547a2dc8db221f2805",
+    "src/attacks/development_targets_v3.py": "ef53c1b1e03748bd4d781c1ec1b45bb7915e57aee5fa7decd22238b5fd202783",
+    "src/attacks/reviewed_target_artifact.py": "c384b3975ded78d0202a29639602cec789221f15de6bdf4665e81803f1def278",
+    "src/attacks/target_candidates.py": "f2d63d29075f332190e54edbec1ae564d2a3089c87fa29691ff387eb59f1dae0",
+    "src/evaluation/metrics.py": "f2207fbe55cfdc7a43a40951691b4972236c99c57b7d855b8a33a33096db73b9",
+    "src/experiments/protocol.py": "d9e637e7e6c25c90dfbf171748d6bf43f3bbf63d315f5e95980f84de4c59c41c"
+  },
+  "method_version": "answer-compatible-targets/development-method-v3-constrained",
+  "original_145_failure_analysis": {
+    "count": 145,
+    "gold_label_shape": {
+      "descriptive_label": 2,
+      "entity_or_text_label": 120,
+      "integer_count": 2,
+      "multiple_values_or_aliases": 5,
+      "qualified_numeric_or_mixed_label": 15,
+      "year": 1
+    },
+    "structure": {
+      "choice_or_comparison_cue": 39,
+      "direct_interrogative_head": 53,
+      "embedded_or_descriptive_request": 52,
+      "terminal_who_request": 1
+    },
+    "v2_causes": {
+      "no_non_gold_candidate_in_frozen_pool": 11,
+      "unsupported_category_or_question_pattern": 120,
+      "unsupported_gold_answer_shape": 14
+    },
+    "v3_diagnosis_families": {
+      "candidate_source_scarcity": 11,
+      "explicit_country_set": 2,
+      "qualified_scalar_or_time": 16,
+      "question_local_choice": 32,
+      "unresolved_entity_relationship_or_sources": 84
+    }
+  },
+  "provenance": {
+    "artifact_sha256": "eeade06c3b64783869cf1bafdfd9b727ac030dd4260a07bbec58f78cfa6eb0ef",
+    "dataset_revision": "1908d6afbbead072334abe2965f91bd2709910ab",
+    "dataset_split": "validation",
+    "development_query_ids_fingerprint": "92e5df08b06796375f9e2ef296870d728d17fbb06eee6ce5d1b4b40edd176729",
+    "development_query_set_fingerprint": "e2dc72cb299b27125626990ffb611dc70d053a7c2e304073a3e3154eee112a32",
+    "extracted_records_fingerprint_v1": "7f9ba3aac994e660b930bae6eb2a002da6d1aec79cb7c41f37d201a9c0be9b3a",
+    "fingerprint_semantics": "Existing protocol.query_set_fingerprint; SHA256 newline-joined sorted development IDs. Both reproduce frozen hashes. Original manifest creation script not found in Git history.",
+    "heldout_overlap_count": 0,
+    "manifest_sha256": "2a2b8ea61bb1bca14f0321696e606108053d073c7c79aa6c5f7acc1a636b2bf3",
+    "query_count": 300,
+    "schema": "verified-development-extraction/v1"
+  },
+  "query_count": 300,
+  "runtime_protocol_promoted": false,
+  "schema": "rag-poison-transfer.phase4e-development-audit/v1",
+  "scope": "verified_development_only"
+}
