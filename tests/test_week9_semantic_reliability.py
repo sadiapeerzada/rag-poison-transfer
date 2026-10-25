@@ -281,7 +281,8 @@ def test_semantic_smoke_cli_selection(monkeypatch, tmp_path):
         return SemanticFluentFalseEvidenceAttack(generator), {"max_tokens": 150}
     monkeypatch.setattr(runner, "_attack", capture_attack)
     monkeypatch.setattr(runner, "build_cell_manifest", lambda **kwargs: {
-        "cell_id": kwargs["cell_id"], "attack": {"configuration": {}}
+        "cell_id": kwargs["cell_id"], "attack": {"configuration": {}},
+        "poison_instance_fingerprint": "test-poison-fingerprint"
     })
     monkeypatch.setattr(runner, "replay_cell_manifest", lambda clean, manifest: clean)
     monkeypatch.setattr(runner, "evaluate_cell", lambda **kwargs: {
