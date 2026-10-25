@@ -1,0 +1,111 @@
+{
+  "category_distribution": {
+    "date": 5,
+    "film": 2,
+    "person": 6,
+    "place": 6,
+    "quantity": 3,
+    "yes_no": 2
+  },
+  "development_count": 300,
+  "evidence_status_counts": {
+    "unverified": 24,
+    "verified": 0
+  },
+  "heldout_overlap_count": 0,
+  "independently_approved_targets": 0,
+  "limitation": "Mechanical screening only; preparer nominations and partial source checks are not independent factual/semantic approval.",
+  "package_sha256": "3bc4cb420ad90f8f50c41923064ad6ca5b646131c6426aec0ab7940f90f1ea2d",
+  "rejected_nominations": 8,
+  "rejection_ledger": [
+    {
+      "candidate_source_query_id": "5abe3dc65542993f32c2a0c4",
+      "nomination_id": "r01",
+      "query_id": "5a73b55855429978a71e9086",
+      "reasons": [
+        "incompatible_answer_shape"
+      ]
+    },
+    {
+      "candidate_source_query_id": "5ae143ed55429920d5234360",
+      "nomination_id": "r02",
+      "query_id": "5a713b325542994082a3e6b5",
+      "reasons": [
+        "incompatible_answer_shape",
+        "duplicate_or_normalized_alias_target"
+      ]
+    },
+    {
+      "candidate_source_query_id": "5ab9547755429970cfb8ea6c",
+      "nomination_id": "r03",
+      "query_id": "5a7b1c6b55429931da12c9ca",
+      "reasons": [
+        "incompatible_answer_shape",
+        "duplicate_or_normalized_alias_target"
+      ]
+    },
+    {
+      "candidate_source_query_id": "5a7b85ac5542997c3ec971ef",
+      "nomination_id": "r04",
+      "query_id": "5a7b1023554299042af8f6c2",
+      "reasons": [
+        "unsupported_or_ambiguous_question",
+        "question_category_mismatch",
+        "candidate_category_mismatch",
+        "duplicate_or_normalized_alias_target"
+      ]
+    },
+    {
+      "candidate_source_query_id": "5a7796e05542992a6e59df0f",
+      "nomination_id": "r05",
+      "query_id": "5a7557d75542992d0ec05f68",
+      "reasons": [
+        "candidate_category_mismatch",
+        "duplicate_query_nomination",
+        "duplicate_or_normalized_alias_target"
+      ]
+    },
+    {
+      "candidate_source_query_id": "5a7557d75542992d0ec05f68",
+      "nomination_id": "r06",
+      "query_id": "5a7557d75542992d0ec05f68",
+      "reasons": [
+        "same_query_source",
+        "gold_equivalent_target",
+        "duplicate_query_nomination"
+      ]
+    },
+    {
+      "candidate_source_query_id": "5ab916e155429919ba4e23a4",
+      "nomination_id": "r07",
+      "query_id": "5a72f1cf5542994cef4bc414",
+      "reasons": [
+        "duplicate_query_nomination",
+        "duplicate_or_normalized_alias_target"
+      ]
+    },
+    {
+      "candidate_source_query_id": "missing-source-id",
+      "nomination_id": "r08",
+      "query_id": "5a89bbb05542992e4fca83a3",
+      "reasons": [
+        "missing_candidate_source"
+      ]
+    }
+  ],
+  "rejection_reason_counts": {
+    "candidate_category_mismatch": 2,
+    "duplicate_or_normalized_alias_target": 5,
+    "duplicate_query_nomination": 3,
+    "gold_equivalent_target": 1,
+    "incompatible_answer_shape": 3,
+    "missing_candidate_source": 1,
+    "question_category_mismatch": 1,
+    "same_query_source": 1,
+    "unsupported_or_ambiguous_question": 1
+  },
+  "rows_with_partial_external_source_checks": 4,
+  "schema": "answer-compatible-targets/development-review-validation-v1",
+  "screened_nominations": 32,
+  "selected_questions": 24
+}
