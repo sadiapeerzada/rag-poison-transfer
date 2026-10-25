@@ -1,0 +1,139 @@
+{
+  "after": {
+    "eligible_categories": {
+      "battle": 2,
+      "calendar_date": 9,
+      "comic_series": 2,
+      "company": 4,
+      "date": 11,
+      "film": 8,
+      "nationality": 2,
+      "person": 44,
+      "place": 24,
+      "place_city": 9,
+      "place_county": 7,
+      "place_region": 3,
+      "quantity": 7,
+      "sport": 2,
+      "sports_team": 4,
+      "university": 2,
+      "yes_no": 15
+    },
+    "failure_reasons": {
+      "no_non_gold_candidate_in_frozen_pool": 11,
+      "unsupported_category_or_question_pattern": 120,
+      "unsupported_gold_answer_shape": 14
+    },
+    "mechanically_eligible": 155,
+    "unsupported_or_uncertain": 145
+  },
+  "before": {
+    "category_counts": {
+      "animal": 1,
+      "battle": 2,
+      "biological_taxon": 1,
+      "brewery": 1,
+      "comic_series": 2,
+      "company": 4,
+      "date": 27,
+      "distance": 1,
+      "empire": 1,
+      "film": 7,
+      "instrument_family": 1,
+      "language": 1,
+      "person": 36,
+      "place": 30,
+      "quantity": 12,
+      "river": 1,
+      "sports_venue": 1,
+      "transport_place": 2,
+      "unknown": 154,
+      "yes_no": 15
+    },
+    "limitation": "Mechanical eligibility is not factual or semantic support, approval, or expected attack success.",
+    "mechanically_supported": 114,
+    "reason_counts": {
+      "no_non_gold_candidate_in_frozen_pool": 9,
+      "unsupported_category_or_question_pattern": 155,
+      "unsupported_gold_answer_shape": 22
+    },
+    "semantic_and_factual_review_pending": 300,
+    "unsupported_or_uncertain": 186
+  },
+  "gained": 42,
+  "heldout_protocol_promoted": false,
+  "heldout_text_or_gold_accessed": false,
+  "independently_verified_semantic_correctness": {
+    "accuracy": null,
+    "reason": "No independent semantic/factual review performed; mechanical eligibility is not correctness.",
+    "verified_pairs": 0
+  },
+  "lost": 1,
+  "method_source_sha256": {
+    "scripts/audit_phase4d_development_coverage.py": "114747059b010b3ad5091ed73e1a411a54844d6a879c29af22cef17a6499a35f",
+    "scripts/extract_verified_development_queries.py": "345531884bf5c17b83699dc50b06dfbb1d3eaca547d47108d4ab701ee1ca91e8",
+    "src/attacks/development_review_package.py": "ec418a397a28b7e0e9a98110b037ff8045f079d9b4a71270110b406c7c47d4f4",
+    "src/attacks/development_targets_v2.py": "017cebfba45d02ecdc0613bec865b4299480ebc59f80d6547a2dc8db221f2805",
+    "src/attacks/review_handoff.py": "eb17abf540c506d109cc02fd14ec2305ff983b029ec58f2bb8efb555cf5cb8d4",
+    "src/attacks/reviewed_target_artifact.py": "c384b3975ded78d0202a29639602cec789221f15de6bdf4665e81803f1def278",
+    "src/attacks/target_candidates.py": "f2d63d29075f332190e54edbec1ae564d2a3089c87fa29691ff387eb59f1dae0",
+    "src/evaluation/metrics.py": "f2207fbe55cfdc7a43a40951691b4972236c99c57b7d855b8a33a33096db73b9",
+    "src/experiments/protocol.py": "d9e637e7e6c25c90dfbf171748d6bf43f3bbf63d315f5e95980f84de4c59c41c"
+  },
+  "method_version": "answer-compatible-targets/development-method-v2",
+  "original_186_failure_analysis": {
+    "baseline_candidate_availability": {
+      "five_or_more": 21,
+      "none": 164,
+      "one_to_four": 1
+    },
+    "baseline_categories": {
+      "animal": 1,
+      "biological_taxon": 1,
+      "brewery": 1,
+      "date": 16,
+      "distance": 1,
+      "empire": 1,
+      "instrument_family": 1,
+      "language": 1,
+      "quantity": 5,
+      "river": 1,
+      "sports_venue": 1,
+      "transport_place": 2,
+      "unknown": 154
+    },
+    "count": 186,
+    "gold_label_shape": {
+      "descriptive_label": 2,
+      "entity_or_text_label": 153,
+      "full_calendar_date": 9,
+      "integer_count": 2,
+      "multiple_values_or_aliases": 5,
+      "qualified_numeric_or_mixed_label": 14,
+      "year": 1
+    },
+    "question_structure": {
+      "choice_or_comparison_cue": 39,
+      "direct_interrogative_head": 67,
+      "embedded_or_descriptive_request": 66,
+      "temporal_request": 9,
+      "terminal_who_request": 5
+    }
+  },
+  "provenance": {
+    "artifact_sha256": "eeade06c3b64783869cf1bafdfd9b727ac030dd4260a07bbec58f78cfa6eb0ef",
+    "dataset_revision": "1908d6afbbead072334abe2965f91bd2709910ab",
+    "dataset_split": "validation",
+    "development_query_ids_fingerprint": "92e5df08b06796375f9e2ef296870d728d17fbb06eee6ce5d1b4b40edd176729",
+    "development_query_set_fingerprint": "e2dc72cb299b27125626990ffb611dc70d053a7c2e304073a3e3154eee112a32",
+    "extracted_records_fingerprint_v1": "7f9ba3aac994e660b930bae6eb2a002da6d1aec79cb7c41f37d201a9c0be9b3a",
+    "fingerprint_semantics": "Existing protocol.query_set_fingerprint; SHA256 newline-joined sorted development IDs. Both reproduce frozen hashes. Original manifest creation script not found in Git history.",
+    "heldout_overlap_count": 0,
+    "manifest_sha256": "2a2b8ea61bb1bca14f0321696e606108053d073c7c79aa6c5f7acc1a636b2bf3",
+    "query_count": 300,
+    "schema": "verified-development-extraction/v1"
+  },
+  "query_count": 300,
+  "schema": "rag-poison-transfer.development-coverage-audit/v1",
+  "scope": "verified_development_only"
+}
