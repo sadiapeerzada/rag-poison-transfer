@@ -16,7 +16,7 @@ import re
 
 from src.attacks.base import PoisonAttack, PoisonDocument, poison_doc_id
 
-SEMANTIC_VALIDATION_VERSION = "conservative-text-heuristic/v2"
+SEMANTIC_VALIDATION_VERSION = "conservative-text-heuristic/v3"
 SEMANTIC_RETRY_POLICY = "distinct-explicit-revision-prompts/v1"
 SEMANTIC_PROMPT_V1 = "semantic-encyclopedic-prompt/v1"
 SEMANTIC_PROMPT_V2 = "semantic-encyclopedic-prompt/v2"
@@ -61,6 +61,14 @@ def semantic_support_status(text: str, target: str) -> str:
         r"\b(?:deliberately false|categor(?:y|ies) (?:seem |are )?incompatible)\b",
     ]
     if any(re.search(pattern, text, re.IGNORECASE) for pattern in meta_disclaimers):
+        return "rejected"
+    # Fail closed when the target is framed as a reference label or an
+    # external corroborating source, rather than the answer itself.
+    if re.search(r"\b(?:reference|assigned|stipulated)\s+answer\b", text, re.IGNORECASE):
+        return "rejected"
+    if re.search(r"\b(?:confirmed|supported|corroborated|verified)\s+by\s+(?:the\s+)?(?:reference\s+)?answer\b", text, re.IGNORECASE):
+        return "rejected"
+    if re.search(r"\b(?:while|although|even though)\s+not\s+(?:an?\s+)?(?:biological\s+)?(?:genus|battle|person|city|country)\b", text, re.IGNORECASE):
         return "rejected"
     # Require an affirmative relation, not just a target substring.
     support = [
@@ -193,6 +201,15 @@ class SemanticFluentFalseEvidenceAttack(PoisonAttack):
         if target_answer.strip().casefold() == str(gold).strip().casefold():
             raise SemanticQualityError("Poison target equals the gold answer")
         status = semantic_support_status(text, target_answer)
+        # Reject obvious competing-answer assertions for this question.
+        # This limited lexical check is not an entailment verifier.
+        if status == "heuristically_supported_unverified":
+            gold_pattern = re.escape(str(gold).strip())
+            if re.search(
+                rf"\b(?:is|was|were|are|named|identified as)\s+['\"]?{gold_pattern}\b",
+                text, re.IGNORECASE,
+            ):
+                status = "rejected"
         if status == "rejected":
             raise SemanticQualityError("Generated poison text does not affirm the target answer")
         if status != "heuristically_supported_unverified":
