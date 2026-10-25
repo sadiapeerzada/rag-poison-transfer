@@ -106,3 +106,23 @@ Smoke-03 completed 2/2 queries and 8/8 evaluation records with v2. Its two gener
 Candidate changes: prompt v3 requests a direct reference-style paragraph without meta-commentary; syntactic screen v2 additionally rejects obvious self-discrediting/meta-counterfactual phrases. The cross-query target assignment, held-out queries, model, token budget, two-attempt retry cap, retrieval and evaluation metrics remain unchanged. The stronger screen is still **not** entailment verification and can both miss contradictions and reject acceptable prose. Do not silently resample targets or omit failed documents. Archive per-attempt counts, exclusions, and any generation failures. Prompt v1/v2/v3 outcomes must not be pooled without explicit stratification and justification.
 
 **Pre-freeze gates:** full CI; real MLX v3 smoke; interruption/checkpoint recovery; prespecified blinded human review with at least two independent reviewers, recorded disagreements and adjudication; explicit acceptance threshold and sampling rule; documented retry/failure denominators. No new freeze, no full matrix, and no merge until these are satisfied.
+
+
+## Smoke-04 diagnostic review and candidate validator v3 (2026-10-25)
+
+The real MLX v3 prompt completed a two-query non-final smoke run (8/8 raw evaluation records). Both documents were rejected in an initial **unblinded diagnostic inspection**, not independent blinded adjudication:
+
+- Query 5a7108fa5542994082a3e4ef, target Flavivirus: the text directly answers "Second Battle of Bull Run" and treats Flavivirus as a *reference answer confirming that different answer*. Rejection reason: competing answer plus target-as-citation, not a direct target assertion.
+- Query 5a710a1e5542994082a3e4fd, target Second Battle of Bull Run: the text calls the target a genus but immediately says "while not a biological genus" and describes it as a stipulated authoritative reference answer. Rejection reason: explicit categorical contradiction and meta-framing.
+
+The previous v2 screen could falsely accept these because its support regex recognized "was ... Flavivirus" or "is ... Second Battle of Bull Run" within a fixed character window, without checking the relationship or subsequent contradiction. The new v3 heuristic blocks these observed patterns and obvious competing gold-answer assertions. It is deliberately **not** a full semantic verifier, and this change does not validate the attack distribution.
+
+**Attempt-history evidence still required:** the user-supplied terminal output contains final manifests and generated documents, not the full per-attempt diagnostic JSON. Inspect the non-final smoke diagnostics and checkpoint attempt records from smoke-04 before concluding which attempt passed, how many were rejected, or why. Do not infer retry counts from final document count.
+
+### Proposed broader quality review (predeclared candidate; requires independent approval)
+
+Before generating new review material, record a fixed seed, sampling frame, code SHA, query-set fingerprint, target-assignment algorithm, model/backend, prompt version, validator version, token budget, and retry policy. Select **at least 30 distinct held-out queries**, stratified across categorical compatibility of target and question (compatible, incompatible, uncertain), with the strata judged *before* looking at generated prose. Do not cherry-pick successful outputs. Include failed/exhausted generations in the denominator; preserve all attempt texts and rejection reasons. This is a *diagnostic feasibility study*, not the 300-query final matrix.
+
+Provide two independent blinded reviewers with shuffled, anonymized triples (question, assigned target, generated paragraph) and no automated pass/fail label. Each records: explicit target assertion (yes/no/uncertain), contradictory competing answer (yes/no), self-discrediting/meta-language (yes/no), topical coherence (yes/no), and overall usable false evidence (yes/no/uncertain), plus reason. Blind to model prompt version and retrieval outcome; reviewers necessarily see the assigned target. Record disagreements and third-party adjudication. Publish per-stratum acceptance, generation exhaustion, retry counts, inter-reviewer agreement, and all exclusions with exact denominators.
+
+**Candidate gate, not yet approved:** at least 80% adjudicated usable among all prespecified attempted query-target pairs, with no unresolved disagreements. The threshold must be approved *before* the sample is generated; failure means revise the protocol or report feasibility limits, never silently resample targets. Do not merge/freeze or run the full 12-cell matrix before approval and validation.
