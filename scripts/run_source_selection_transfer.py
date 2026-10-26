@@ -355,7 +355,7 @@ def aggregate(path,pin,evaluation,completion_pin,selected,seal_pin,output,replic
             'ci95_percentile':[ordered[int((len(ordered)-1)*p)] for p in (.025,.975)] if ordered else None,
             'source_success_denominator':int(totals[1]),'defined_replicates':len(ordered),'undefined_replicates':replicates-len(ordered),
             'unique_queries':len(ids),'resampling_unit':'query cluster retaining all poison seeds','bootstrap_seed':20261026}
-    base.write(output,{'schema':'rag-poison-transfer.bounded-source-transfer-aggregate/v1','scope':spec['scope'],'protocol_sha256':pin,
+    reliable.once(output,{'schema':'rag-poison-transfer.bounded-source-transfer-aggregate/v1','scope':spec['scope'],'protocol_sha256':pin,
         'selection_seal_sha256':seal_pin,'completion_sha256':completion_pin,'per_cell':per_cell,'atr_query_cluster_intervals':intervals,
         'replicates':replicates,'multiplicity_adjusted':False,'execution_accounting':reliable.accounting(evaluation)})
     return {'status':'validated','cells':len(per_cell),'scope':spec['scope']}

@@ -44,6 +44,9 @@ def run(monkeypatch,tmp,cache,resume):
     result=t.final_evaluate(*args,sel,sp,ev,Path('snapshot'));assert result['source_target_cells']==40
     calls=b.calls-before_eval
     t.aggregate(*args,ev,base.sha(ev/'transfer.complete.json'),sel,sp,tmp/'aggregate.json',replicates=8)
+    aggregate_before=base.sha(tmp/'aggregate.json')
+    t.aggregate(*args,ev,base.sha(ev/'transfer.complete.json'),sel,sp,tmp/'aggregate.json',replicates=8)
+    assert base.sha(tmp/'aggregate.json')==aggregate_before
     before=b.calls;t.final_evaluate(*args,sel,sp,ev,Path('snapshot'));assert b.calls==before
     audit=json.loads((tmp/'aggregate.json').read_text())
     assert audit['execution_accounting']['actual_backend_calls']==calls
@@ -61,6 +64,7 @@ def test_independent_cached_uncached_and_resumed_answers_metrics_pairing(monkeyp
     uncached=run(monkeypatch,tmp_path/'uncached',False,False)
     cached=run(monkeypatch,tmp_path/'cached',True,True)
     assert uncached[:2]==cached[:2]
+    assert json.loads((tmp_path/'uncached/aggregate.json').read_text())['atr_query_cluster_intervals']==json.loads((tmp_path/'cached/aggregate.json').read_text())['atr_query_cluster_intervals']
     assert uncached[2]==80 and cached[2]==45 # 40 poison calls + five distinct clean pipeline inputs.
     # Full corpus is bound on every query batch, not truncated to its one query.
     plans=list((cached[3]/'batches').rglob('plan.json'))
@@ -95,3 +99,12 @@ def test_transfer_unresolved_generation_is_never_repeated(monkeypatch,tmp_path,s
     consumed=backend.calls;backend.generate=original
     with pytest.raises(RuntimeError,match='Unresolved'):invoke()
     assert backend.calls==consumed
+
+
+def test_existing_aggregate_is_recomputed_not_trusted_or_overwritten(monkeypatch,tmp_path):
+    run(monkeypatch,tmp_path,True,False)
+    p=tmp_path/'aggregate.json';value=json.loads(p.read_text());value['per_cell'][0]['target_successes']=999;p.write_text(json.dumps(value))
+    before=base.sha(p)
+    with pytest.raises(ValueError,match='Immutable checkpoint mismatch'):
+        t.aggregate(Path('unused'),'a'*64,tmp_path/'evaluation',base.sha(tmp_path/'evaluation/transfer.complete.json'),tmp_path/'selection',base.sha(tmp_path/'selection/selection.seal.json'),p,replicates=8)
+    assert base.sha(p)==before

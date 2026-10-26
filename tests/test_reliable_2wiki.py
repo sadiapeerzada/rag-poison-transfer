@@ -53,5 +53,26 @@ def test_replication_evaluation_resume_pairing_and_aggregate(monkeypatch,tmp_pat
     frozen=backend.calls;base.evaluate(Path('protocol'),'a'*64,tmp_path/'construction','b'*64,out,Path('model'));assert backend.calls==frozen
     result=base.aggregate(Path('protocol'),'a'*64,tmp_path/'construction','b'*64,out,complete['evaluation_completion_sha256'],tmp_path/'aggregate.json')
     assert result['status']=='validated_aggregate_written'
+    before_hash=base.sha(tmp_path/'aggregate.json')
+    base.aggregate(Path('protocol'),'a'*64,tmp_path/'construction','b'*64,out,complete['evaluation_completion_sha256'],tmp_path/'aggregate.json')
+    assert base.sha(tmp_path/'aggregate.json')==before_hash
     got=json.loads((tmp_path/'aggregate.json').read_text())
     assert len(got['cells'])==2 and all(row['unique_queries']==2 for row in got['paired_query_cluster_uncertainty'].values())
+
+
+def test_replication_construction_honors_batch_pause_and_replays_completed_calls(monkeypatch,tmp_path):
+    spec,backend=setup(monkeypatch);_,dense,rcd,development=transfer.load(None)
+    clean=transfer.clean_data(spec,rcd)
+    value={'execution':spec['execution'],'binding':{'scope':'development','query_ids':[q['query_id'] for q in clean['queries']]},
+        'source':spec['source'],'model':spec['model'],'rules':old.rules()}
+    monkeypatch.setattr(base,'load_protocol',lambda *a:(value,dense,rcd,development))
+    monkeypatch.setattr(base,'load_clean',lambda *a:clean)
+    monkeypatch.setattr(base,'code_binding',lambda:value['source'])
+    out=tmp_path/'construction'
+    with pytest.raises(r.PauseExecution):base.construct(Path('protocol'),'a'*64,out,Path('model'),max_batches=1)
+    assert not (out/'construction.seal.json').exists() and backend.calls==0
+    result=base.construct(Path('protocol'),'a'*64,out,Path('model'))
+    assert result['status']=='all_construction_frozen_no_evaluation' and backend.calls==1
+    before=backend.calls
+    with pytest.raises(ValueError,match='Already sealed'):base.construct(Path('protocol'),'a'*64,out,Path('model'))
+    assert backend.calls==before

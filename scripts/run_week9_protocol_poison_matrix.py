@@ -286,7 +286,7 @@ def construction_files(root):
 
 
 @reliable.exclusive("root")
-def construct(path,digest,root,snapshot):
+def construct(path,digest,root,snapshot,max_batches=None):
     root = legacy._ensure_output_outside_repository(Path(root))
     if (root/"construction.seal.json").exists():
         raise ValueError("Already sealed: construction cannot be reopened")
@@ -304,6 +304,8 @@ def construct(path,digest,root,snapshot):
             raise ValueError("Fresh or matching construction root required")
         write(planpath,plan)
     backend = None
+    batch_budget = reliable.BatchBudget(max_batches)
+    batch_size = value.get("execution",reliable.DEFAULTS)["batch_size"]
     entries = {}
     for family,intensity,seed in protocol.cells(value["binding"]["scope"]):
         identity = protocol.cell_id(family,intensity,seed)
@@ -312,7 +314,11 @@ def construct(path,digest,root,snapshot):
             cell = json.loads(cellpath.read_text())
         else:
             records = []
-            for query in clean["queries"]:
+            for ordinal,query in enumerate(clean["queries"]):
+                if ordinal % batch_size == 0:
+                    batch_queries=clean["queries"][ordinal:ordinal+batch_size]
+                    if any(not (root/identity/"queries"/(hashlib.sha256(q["query_id"].encode()).hexdigest()+".json")).exists() for q in batch_queries):
+                        batch_budget.begin()
                 if code_binding() != value["source"]:
                     raise ValueError("Source changed during construction")
                 checkpoint = root/identity/"queries"/(hashlib.sha256(query["query_id"].encode()).hexdigest()+".json")
@@ -473,7 +479,8 @@ def aggregate(path,digest,root,seal_digest,evaluation,completion_digest,output):
         "construction_failures_are_not_defense_successes":True,
         **({"execution_accounting":reliable.accounting(evaluation)} if "execution" in value else {})}
     legacy._ensure_output_outside_repository(Path(output).parent)
-    write(output,result)
+    if "execution" in value:reliable.once(output,result)
+    else:write(output,result)
     return {"status":"validated_aggregate_written","scope":value["binding"]["scope"]}
 
 
@@ -521,7 +528,7 @@ def main():
         if args.stage == "construct":
             if not args.model_snapshot:
                 parser.error("construct requires --model-snapshot")
-            result = construct(args.protocol,args.protocol_sha256,args.construction_dir,args.model_snapshot)
+            result = construct(args.protocol,args.protocol_sha256,args.construction_dir,args.model_snapshot,args.max_batches)
         else:
             if not args.construction_seal_sha256:
                 parser.error("Evaluation/aggregation requires externally pinned --construction-seal-sha256")
