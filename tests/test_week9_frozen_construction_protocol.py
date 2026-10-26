@@ -287,6 +287,8 @@ def test_attempts_cross_checked_against_actual_journal(tmp_path,monkeypatch,data
     saved = json.loads(response.read_text())
     saved["generation"]["raw_response"]="Changed journal output."
     saved["generation"]["extracted_answer"]="Changed journal output."
+    # Keep the journal internally consistent to exercise the separate sealed-attempt check.
+    saved["generation_sha256"]=p.fingerprint(saved["generation"])
     response.write_text(json.dumps(saved))
     with pytest.raises(ValueError,match="differs from frozen attempt"):
         runner.construction_journals(root,cell,value,"a"*64)

@@ -211,6 +211,8 @@ class JournalGenerator:
         request = {"prompt":prompt,"max_tokens":max_tokens,"provenance":self.model_provenance,"context":self.context}
         intent = self.directory/f"{index:02d}.intent.json"
         response = self.directory/f"{index:02d}.response.json"
+        if response.exists() and not intent.exists():
+            raise RuntimeError("Orphan generation response; refuse new generation without its original intent")
         if intent.exists():
             if json.loads(intent.read_text()) != request:
                 raise ValueError("Generation checkpoint prompt/provenance mismatch")
@@ -220,15 +222,19 @@ class JournalGenerator:
             if saved.get("request_fingerprint") != protocol.fingerprint(request) or "error" in saved:
                 raise RuntimeError("Failed/inconsistent backend checkpoint; construction remains incomplete")
             record = saved["generation"]
+            validate_qa(record,record["extracted_answer"])
+            if record["prompt"] != prompt or ("generation_sha256" in saved and saved["generation_sha256"] != protocol.fingerprint(record)):
+                raise ValueError("Generation checkpoint response integrity mismatch")
             return GenerationResult(record["raw_response"],record["generator_latency_seconds"],
                 record["prompt_tokens"],record["completion_tokens"],record.get("backend_prompt"))
         write(intent,request)
         try:
             result,record = capture_generation(self.backend,prompt,max_tokens)
+            validate_qa(record,record["extracted_answer"])
         except Exception as error:
             write(response,{"request_fingerprint":protocol.fingerprint(request),"error_type":type(error).__name__,"error":str(error)})
             raise
-        write(response,{"request_fingerprint":protocol.fingerprint(request),"generation":record})
+        write(response,{"request_fingerprint":protocol.fingerprint(request),"generation":record,"generation_sha256":protocol.fingerprint(record)})
         return result
 
 
@@ -245,6 +251,8 @@ def validate_generation_journal(directory,expected):
             raise ValueError("Generation journal request/provenance mismatch")
         actual = saved["generation"]
         validate_qa(actual,actual["extracted_answer"])
+        if "generation_sha256" in saved and saved["generation_sha256"] != protocol.fingerprint(actual):
+            raise ValueError("Generation journal response integrity mismatch")
         if any(actual.get(k) != v for k,v in observed.items() if k != "elapsed_seconds"):
             raise ValueError("Generated response differs from frozen attempt/evaluation record")
 
@@ -303,6 +311,8 @@ def construct(path,digest,root,snapshot,max_batches=None):
         if root.exists() and any(root.iterdir()):
             raise ValueError("Fresh or matching construction root required")
         write(planpath,plan)
+    # Refuse unknown/invalid prior calls before loading a model or nominating a target.
+    reliable.validate_store(root)
     backend = None
     batch_budget = reliable.BatchBudget(max_batches)
     batch_size = value.get("execution",reliable.DEFAULTS)["batch_size"]
