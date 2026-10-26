@@ -62,16 +62,20 @@ class MLXGenerator:
         self._generate_fn = generate
         self.model, self.tokenizer = load(model_name)
 
+    def format_prompt(self, prompt: str) -> str:
+        return self.tokenizer.apply_chat_template(
+            [{"role": "user", "content": prompt}], tokenize=False, add_generation_prompt=True)
+
+    def seed(self, seed: int) -> None:
+        import mlx.core as mx
+        mx.random.seed(seed)
+
     def generate(self, prompt: str, max_tokens: int = 256) -> GenerationResult:
         start = time.time()
         # Qwen Instruct models expect chat-token delimiters, not a raw user
         # prompt. Apply the template exactly once at the backend boundary.
         # The caller supplies plain task text, not a preformatted conversation.
-        formatted = self.tokenizer.apply_chat_template(
-            [{"role": "user", "content": prompt}],
-            tokenize=False,
-            add_generation_prompt=True,
-        )
+        formatted = self.format_prompt(prompt)
         text = self._generate_fn(
             self.model, self.tokenizer, prompt=formatted,
             max_tokens=max_tokens, verbose=False,

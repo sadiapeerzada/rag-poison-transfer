@@ -1,0 +1,29 @@
+{
+  "status": "passed_numerical_reverification_of_manifest_exact_copy",
+  "original_archive_strict_inventory": "fails_due_to_unsealed_Finder_metadata_only",
+  "unsealed_extra_files": {
+    "construction": [
+      ".DS_Store",
+      "semantic_fluent_false_evidence.intensity-1.seed-42/.DS_Store",
+      "semantic_fluent_false_evidence.intensity-1.seed-43/.DS_Store",
+      "semantic_fluent_false_evidence.intensity-1.seed-44/.DS_Store",
+      "semantic_fluent_false_evidence.intensity-3.seed-42/.DS_Store",
+      "semantic_fluent_false_evidence.intensity-3.seed-43/.DS_Store",
+      "semantic_fluent_false_evidence.intensity-3.seed-44/.DS_Store"
+    ],
+    "evaluation": [
+      ".DS_Store"
+    ]
+  },
+  "sealed_files_missing": 0,
+  "sealed_files_changed": 0,
+  "original_archive_modified_by_this_task": false,
+  "verification_copy": "/private/tmp/oct26-release-sealed-projection-v1",
+  "aggregate_sha256": "0449d379d9f27270b4d6a9f474e60e86faeeab4508a68f22325900979f8b0dd4",
+  "sealed_files_verified": 17214,
+  "per_cell_arm_rows": 24,
+  "paired_bootstrap_comparisons": 16,
+  "replicates": 2000,
+  "primary_asr_intervals_excluding_zero": 0,
+  "publication_files_hash_verified": 37
+}

@@ -427,6 +427,9 @@ def _evidence(retrieved: list[Any]) -> list[dict]:
 
 
 def _generate(generator: Any, question: str, retrieved: list[Any], max_tokens: int, *, context=None):
+    evidence_setter = getattr(generator, "set_evidence_context", None)
+    if evidence_setter is not None:
+        evidence_setter([{"doc_id": item.doc_id, "text": item.text, "score": getattr(item, "score", None)} for item in retrieved])
     record = generate_qa(generator, build_prompt(question, [item.text for item in retrieved]), max_tokens, context=context)
     return record["extracted_answer"], record
 

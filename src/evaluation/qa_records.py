@@ -47,6 +47,9 @@ def capture_generation(generator, prompt: str, max_tokens: int):
               "elapsed_seconds": elapsed, "generator_latency_seconds": getattr(result, "latency_seconds", None),
               "prompt_tokens": getattr(result, "prompt_tokens", None),
               "completion_tokens": getattr(result, "completion_tokens", None)}
+    execution = getattr(generator, "consume_execution_metadata", None)
+    if execution is not None:
+        record["execution"] = execution()
     return result, record
 
 

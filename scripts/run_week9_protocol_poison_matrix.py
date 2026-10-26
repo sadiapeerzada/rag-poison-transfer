@@ -30,15 +30,21 @@ from src.experiments import week9_construction as protocol
 from src.utils.seeding import set_seed
 
 PROTOCOL_SCHEMA = "rag-poison-transfer.week9-frozen-construction-protocol/v1"
+REPLICATION_PROTOCOL_SCHEMA = "rag-poison-transfer.2wiki-frozen-construction-protocol/v1"
 SEAL_SCHEMA = "rag-poison-transfer.week9-complete-construction-seal/v1"
 EVALUATION_SCHEMA = "rag-poison-transfer.week9-protocol-evaluation/v1"
+RELIABLE_REPLICATION_SCHEMA = "rag-poison-transfer.2wiki-frozen-construction-protocol/v2"
+from src.experiments import execution_reliability as reliable
+
 AGGREGATE_SCHEMA = "rag-poison-transfer.week9-protocol-aggregate/v1"
 DEV_IDS = ("5ae2c416554299492dc91c67", "5ae143ed55429920d5234360")
 PACKAGES = ("mlx", "mlx-lm", "transformers", "sentence-transformers", "datasets", "numpy", "torch")
 
 
 def sha(path):
-    return hashlib.sha256(Path(path).read_bytes()).hexdigest()
+    # Model snapshots contain multi-GB files; never duplicate a whole weight file in RAM.
+    with Path(path).open("rb") as stream:
+        return hashlib.file_digest(stream,"sha256").hexdigest()
 
 
 def write(path, value):
@@ -102,23 +108,47 @@ def model_binding(snapshot, identity):
     return {"repository":identity,"revision":snapshot.name,"files_sha256":files}
 
 
-def freeze_protocol(output, scope, snapshot):
+def context_metadata(scope,replication=None):
+    if replication is None:
+        return metadata(scope)
+    from src.experiments.twowiki_replication import metadata as replication_metadata
+    _,dense,rcd,_ = metadata("heldout")
+    result = replication_metadata(scope,replication,dense,rcd)
+    result[0]["config_sha256"] = {"dense":protocol.fingerprint(result[1]),"rcd":protocol.fingerprint(result[2]),
+        "base_dense":sha(ROOT/legacy.DEFAULT_DENSE_CONFIG),"base_rcd":sha(ROOT/legacy.DEFAULT_RCD_CONFIG)}
+    return result
+
+
+def freeze_protocol(output, scope, snapshot,replication=None):
     legacy._ensure_output_outside_repository(Path(output).parent)
-    binding,*_ = metadata(scope)
+    binding,*_ = context_metadata(scope,replication)
     installed = environment()
     if any(v is None for v in installed.values()):
         raise ValueError("All frozen runtime dependencies must be installed before protocol freeze")
-    value = {"schema":PROTOCOL_SCHEMA,"rules":protocol.rules(),"binding":binding,
+    frozen_rules = protocol.rules()
+    if replication is not None:frozen_rules = {**frozen_rules,"dataset_replication":"risk-disclosed-2wiki/v1"}
+    value = {"schema":REPLICATION_PROTOCOL_SCHEMA if replication is not None else PROTOCOL_SCHEMA,"rules":frozen_rules,"binding":binding,
         "source":code_binding(),"environment":installed,"model":model_binding(snapshot,binding["model_identity"])}
+    if replication is not None:
+        value["replication"] = replication
+        if replication.get("schema")=="rag-poison-transfer.2wiki-replication-inputs/v2":
+            value["schema"]=RELIABLE_REPLICATION_SCHEMA
+            value["execution"]=dict(reliable.DEFAULTS)
+            value["planned_outputs"]=reliable.planned_outputs(output,"2wiki")
     write(output,value)
     return {"protocol_sha256":sha(output),"scope":scope,"status":"protocol_frozen_no_construction_or_evaluation"}
 
 
 def load_protocol(path,digest,snapshot=None):
     value = read_pinned(path,digest)
-    if value.get("schema") != PROTOCOL_SCHEMA or value.get("rules") != protocol.rules():
+    replication = value.get("replication")
+    local = replication is not None and replication.get("schema")=="rag-poison-transfer.2wiki-replication-inputs/v2"
+    expected_schema = RELIABLE_REPLICATION_SCHEMA if local else REPLICATION_PROTOCOL_SCHEMA if replication is not None else PROTOCOL_SCHEMA
+    if local and value.get("execution")!=reliable.DEFAULTS:raise ValueError("Execution protocol mismatch")
+    expected_rules = {**protocol.rules(),"dataset_replication":"risk-disclosed-2wiki/v1"} if replication is not None else protocol.rules()
+    if value.get("schema") != expected_schema or value.get("rules") != expected_rules:
         raise ValueError("Protocol version/rules mismatch")
-    binding,dense,rcd,development = metadata(value["binding"]["scope"])
+    binding,dense,rcd,development = context_metadata(value["binding"]["scope"],replication)
     if value["binding"] != binding or value["source"] != code_binding() or value["environment"] != environment():
         raise ValueError("Protocol source/config/dataset/environment provenance mismatch")
     if snapshot is not None and value["model"] != model_binding(snapshot,binding["model_identity"]):
@@ -127,6 +157,9 @@ def load_protocol(path,digest,snapshot=None):
 
 
 def load_clean(value,rcd):
+    if value.get("replication") is not None:
+        from src.experiments.twowiki_replication import load_clean as replication_clean
+        return replication_clean(value)
     selected = dict(rcd)
     if value["binding"]["scope"] == "development":
         selected.pop("dataset_query_ids_manifest",None)
@@ -151,6 +184,7 @@ def runtime_seed(seed):
 
 
 def generator(rcd,snapshot):
+    reliable.acquire_model_lease()
     # Explicit greedy sampler, never library-default sampling. Config files stay frozen.
     from mlx_lm.sample_utils import make_sampler
     backend = build_generator({**rcd,"generator_model":str(Path(snapshot).resolve())})
@@ -251,11 +285,13 @@ def construction_files(root):
     return files
 
 
-def construct(path,digest,root,snapshot):
+@reliable.exclusive("root")
+def construct(path,digest,root,snapshot,max_batches=None):
     root = legacy._ensure_output_outside_repository(Path(root))
     if (root/"construction.seal.json").exists():
         raise ValueError("Already sealed: construction cannot be reopened")
     value,dense,rcd,development = load_protocol(path,digest,snapshot)
+    reliable.require_output(value,"construction",root)
     clean = load_clean(value,rcd)
     plan = {"protocol_sha256":digest,"binding":value["binding"],"source":value["source"],
         "query_set_fingerprint":query_set_fingerprint(clean["queries"]),"clean_corpus_fingerprint":corpus_fingerprint(clean["corpus"])}
@@ -268,6 +304,8 @@ def construct(path,digest,root,snapshot):
             raise ValueError("Fresh or matching construction root required")
         write(planpath,plan)
     backend = None
+    batch_budget = reliable.BatchBudget(max_batches)
+    batch_size = value.get("execution",reliable.DEFAULTS)["batch_size"]
     entries = {}
     for family,intensity,seed in protocol.cells(value["binding"]["scope"]):
         identity = protocol.cell_id(family,intensity,seed)
@@ -276,7 +314,11 @@ def construct(path,digest,root,snapshot):
             cell = json.loads(cellpath.read_text())
         else:
             records = []
-            for query in clean["queries"]:
+            for ordinal,query in enumerate(clean["queries"]):
+                if ordinal % batch_size == 0:
+                    batch_queries=clean["queries"][ordinal:ordinal+batch_size]
+                    if any(not (root/identity/"queries"/(hashlib.sha256(q["query_id"].encode()).hexdigest()+".json")).exists() for q in batch_queries):
+                        batch_budget.begin()
                 if code_binding() != value["source"]:
                     raise ValueError("Source changed during construction")
                 checkpoint = root/identity/"queries"/(hashlib.sha256(query["query_id"].encode()).hexdigest()+".json")
@@ -338,11 +380,13 @@ def load_sealed(path,digest,root,seal_digest):
     return value,dense,rcd,clean,cells
 
 
-def evaluate(path,digest,root,seal_digest,output,snapshot):
+def evaluate(path,digest,root,seal_digest,output,snapshot,max_batches=None):
     # Validate EVERY cell and the complete seal BEFORE constructing any QA backend/retriever.
     value,dense,rcd,clean,cells = load_sealed(path,digest,root,seal_digest)
     if model_binding(snapshot,value["binding"]["model_identity"]) != value["model"]:
         raise ValueError("Evaluation model weights differ from frozen protocol")
+    if "execution" in value:
+        return reliable.evaluate_replication(path,digest,root,seal_digest,output,snapshot,value,dense,rcd,clean,cells,max_batches)
     output = legacy._ensure_output_outside_repository(Path(output))
     if output == Path(root).resolve() or Path(root).resolve() in output.parents or output.exists():
         raise ValueError("Fresh evaluation directory outside construction root required")
@@ -389,6 +433,7 @@ def evaluate(path,digest,root,seal_digest,output,snapshot):
 
 def aggregate(path,digest,root,seal_digest,evaluation,completion_digest,output):
     value,dense,rcd,clean,cells = load_sealed(path,digest,root,seal_digest)
+    reliable.require_output(value,"aggregate",output)
     evaluation = Path(evaluation)
     complete = read_pinned(evaluation/"evaluation.complete.json",completion_digest)
     if (complete.get("schema") != EVALUATION_SCHEMA or complete.get("protocol_sha256") != digest or
@@ -415,7 +460,12 @@ def aggregate(path,digest,root,seal_digest,evaluation,completion_digest,output):
                 request = {"prompt":observed["prompt"],"max_tokens":int(cfg["max_tokens"]),"provenance":provenance,
                     "context":{"stage":"qa","pipeline":row["pipeline"],"condition":condition,"query_id":row["query_id"]}}
                 expected.append((request,observed))
-        validate_generation_journal(evaluation/identity/"generation",expected)
+        if "execution" in value:
+            reliable.validate_store(evaluation)
+            for row in rows:
+                if row["measurement"] is not None:reliable.validate_measurement_link(evaluation,identity,row["pipeline"],row["measurement"])
+        else:
+            validate_generation_journal(evaluation/identity/"generation",expected)
         summaries[identity] = {arm:protocol.summarize([r for r in rows if r["pipeline"]==arm]) for arm in ("dense","rcd")}
         if json.loads((evaluation/identity/"summary.json").read_text()) != summaries[identity]:
             raise ValueError("Stored summary differs from recomputed failure-aware outcomes")
@@ -426,9 +476,11 @@ def aggregate(path,digest,root,seal_digest,evaluation,completion_digest,output):
         "cells":summaries,"paired_query_cluster_uncertainty":intervals,
         "unique_target_counts_per_query":{q["query_id"]:len({r["target_answer"] for cell in cells.values()
             for r in cell["records"] if r["query_id"]==q["query_id"] and r["target_answer"] is not None}) for q in clean["queries"]},
-        "construction_failures_are_not_defense_successes":True}
+        "construction_failures_are_not_defense_successes":True,
+        **({"execution_accounting":reliable.accounting(evaluation)} if "execution" in value else {})}
     legacy._ensure_output_outside_repository(Path(output).parent)
-    write(output,result)
+    if "execution" in value:reliable.once(output,result)
+    else:write(output,result)
     return {"status":"validated_aggregate_written","scope":value["binding"]["scope"]}
 
 
@@ -453,29 +505,37 @@ def main():
     parser.add_argument("--evaluation-dir",type=Path)
     parser.add_argument("--evaluation-completion-sha256")
     parser.add_argument("--output",type=Path)
+    parser.add_argument("--max-batches",type=int)
+    parser.add_argument("--replication-spec",type=Path)
+    parser.add_argument("--replication-spec-sha256")
     args = parser.parse_args()
+    if bool(args.replication_spec) != bool(args.replication_spec_sha256):
+        parser.error("Supply both replication input specification and trusted SHA-256")
+    replication = read_pinned(args.replication_spec,args.replication_spec_sha256) if args.replication_spec else None
+    if replication is not None and args.stage not in {"preflight","freeze-protocol"}:
+        parser.error("Later stages take replication inputs only from the frozen protocol")
     if args.stage == "preflight":
-        binding,*_ = metadata(args.scope)
+        binding,*_ = context_metadata(args.scope,replication)
         result = {"status":"metadata_only_not_scientific_readiness","binding":binding,"rules":protocol.rules(),
                   "individual_target_signatures_required":False,"protocol_frozen":False}
     elif args.stage == "freeze-protocol":
         if not args.output or not args.model_snapshot:
             parser.error("freeze-protocol requires --output and --model-snapshot")
-        result = freeze_protocol(args.output,args.scope,args.model_snapshot)
+        result = freeze_protocol(args.output,args.scope,args.model_snapshot,replication)
     else:
         if not args.protocol or not args.protocol_sha256 or not args.construction_dir:
             parser.error("Require --protocol, --protocol-sha256 and --construction-dir")
         if args.stage == "construct":
             if not args.model_snapshot:
                 parser.error("construct requires --model-snapshot")
-            result = construct(args.protocol,args.protocol_sha256,args.construction_dir,args.model_snapshot)
+            result = construct(args.protocol,args.protocol_sha256,args.construction_dir,args.model_snapshot,args.max_batches)
         else:
             if not args.construction_seal_sha256:
                 parser.error("Evaluation/aggregation requires externally pinned --construction-seal-sha256")
             if args.stage == "evaluate":
                 if not args.evaluation_dir or not args.model_snapshot:
                     parser.error("evaluate requires --evaluation-dir and --model-snapshot")
-                result = evaluate(args.protocol,args.protocol_sha256,args.construction_dir,args.construction_seal_sha256,args.evaluation_dir,args.model_snapshot)
+                result = evaluate(args.protocol,args.protocol_sha256,args.construction_dir,args.construction_seal_sha256,args.evaluation_dir,args.model_snapshot,args.max_batches)
             else:
                 if not args.evaluation_dir or not args.evaluation_completion_sha256 or not args.output:
                     parser.error("aggregate requires --evaluation-dir, --evaluation-completion-sha256 and --output")
@@ -484,4 +544,5 @@ def main():
 
 
 if __name__ == "__main__":
-    main()
+    try: main()
+    except reliable.PauseExecution as pause: print(json.dumps({"status":"paused","reason":str(pause),"resume":"repeat same stage/protocol/output"}));sys.exit(75)

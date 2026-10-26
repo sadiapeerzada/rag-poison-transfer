@@ -1,0 +1,26 @@
+| attack | intensity | seed | arm | valid_query_seed | prr_1 | prr_3 | prr_5 | prr_10 | exposure_rate | asr_given_exposure |
+|---|---|---|---|---|---|---|---|---|---|---|
+| lexical_influential_token | 1 | 42 | dense | 135 | 0.777778 | 0.977778 | 0.992593 | 1.000000 | 0.977778 | 0.356061 |
+| lexical_influential_token | 1 | 42 | rcd | 135 | 0.777778 | 0.948148 | 0.985185 | 1.000000 | 0.948148 | 0.375000 |
+| lexical_influential_token | 1 | 43 | dense | 135 | 0.792593 | 1.000000 | 1.000000 | 1.000000 | 1.000000 | 0.355556 |
+| lexical_influential_token | 1 | 43 | rcd | 135 | 0.792593 | 0.970370 | 1.000000 | 1.000000 | 0.970370 | 0.389313 |
+| lexical_influential_token | 1 | 44 | dense | 135 | 0.777778 | 0.992593 | 1.000000 | 1.000000 | 0.992593 | 0.358209 |
+| lexical_influential_token | 1 | 44 | rcd | 135 | 0.777778 | 0.955556 | 0.992593 | 1.000000 | 0.955556 | 0.387597 |
+| lexical_influential_token | 3 | 42 | dense | 135 | 0.800000 | 0.992593 | 1.000000 | 1.000000 | 0.992593 | 0.805970 |
+| lexical_influential_token | 3 | 42 | rcd | 135 | 0.807407 | 0.985185 | 0.985185 | 1.000000 | 0.985185 | 0.759398 |
+| lexical_influential_token | 3 | 43 | dense | 135 | 0.807407 | 1.000000 | 1.000000 | 1.000000 | 1.000000 | 0.748148 |
+| lexical_influential_token | 3 | 43 | rcd | 135 | 0.814815 | 0.992593 | 1.000000 | 1.000000 | 0.992593 | 0.738806 |
+| lexical_influential_token | 3 | 44 | dense | 135 | 0.800000 | 0.992593 | 1.000000 | 1.000000 | 0.992593 | 0.783582 |
+| lexical_influential_token | 3 | 44 | rcd | 135 | 0.807407 | 0.992593 | 0.992593 | 1.000000 | 0.992593 | 0.753731 |
+| semantic_fluent_false_evidence | 1 | 42 | dense | 35 | 0.857143 | 0.971429 | 1.000000 | 1.000000 | 0.971429 | 0.588235 |
+| semantic_fluent_false_evidence | 1 | 42 | rcd | 35 | 0.857143 | 0.971429 | 0.971429 | 1.000000 | 0.971429 | 0.676471 |
+| semantic_fluent_false_evidence | 1 | 43 | dense | 30 | 0.800000 | 0.966667 | 1.000000 | 1.000000 | 0.966667 | 0.586207 |
+| semantic_fluent_false_evidence | 1 | 43 | rcd | 30 | 0.800000 | 0.966667 | 0.966667 | 1.000000 | 0.966667 | 0.655172 |
+| semantic_fluent_false_evidence | 1 | 44 | dense | 32 | 0.843750 | 0.937500 | 1.000000 | 1.000000 | 0.937500 | 0.733333 |
+| semantic_fluent_false_evidence | 1 | 44 | rcd | 32 | 0.843750 | 0.937500 | 0.968750 | 1.000000 | 0.937500 | 0.800000 |
+| semantic_fluent_false_evidence | 3 | 42 | dense | 16 | 0.812500 | 1.000000 | 1.000000 | 1.000000 | 1.000000 | 1.000000 |
+| semantic_fluent_false_evidence | 3 | 42 | rcd | 16 | 0.812500 | 1.000000 | 1.000000 | 1.000000 | 1.000000 | 1.000000 |
+| semantic_fluent_false_evidence | 3 | 43 | dense | 13 | 0.769231 | 1.000000 | 1.000000 | 1.000000 | 1.000000 | 0.923077 |
+| semantic_fluent_false_evidence | 3 | 43 | rcd | 13 | 0.769231 | 1.000000 | 1.000000 | 1.000000 | 1.000000 | 0.923077 |
+| semantic_fluent_false_evidence | 3 | 44 | dense | 19 | 0.789474 | 0.947368 | 1.000000 | 1.000000 | 0.947368 | 0.944444 |
+| semantic_fluent_false_evidence | 3 | 44 | rcd | 19 | 0.789474 | 1.000000 | 1.000000 | 1.000000 | 1.000000 | 0.894737 |

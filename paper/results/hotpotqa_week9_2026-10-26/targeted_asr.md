@@ -1,0 +1,26 @@
+| attack | intensity | seed | arm | population_query_seed | valid_query_seed | target_construction_failed | semantic_construction_failed | targeted_successes | end_to_end_asr | conditional_asr |
+|---|---|---|---|---|---|---|---|---|---|---|
+| lexical_influential_token | 1 | 42 | dense | 300 | 135 | 165 | 0 | 47 | 0.156667 | 0.348148 |
+| lexical_influential_token | 1 | 42 | rcd | 300 | 135 | 165 | 0 | 50 | 0.166667 | 0.370370 |
+| lexical_influential_token | 1 | 43 | dense | 300 | 135 | 165 | 0 | 48 | 0.160000 | 0.355556 |
+| lexical_influential_token | 1 | 43 | rcd | 300 | 135 | 165 | 0 | 53 | 0.176667 | 0.392593 |
+| lexical_influential_token | 1 | 44 | dense | 300 | 135 | 165 | 0 | 48 | 0.160000 | 0.355556 |
+| lexical_influential_token | 1 | 44 | rcd | 300 | 135 | 165 | 0 | 52 | 0.173333 | 0.385185 |
+| lexical_influential_token | 3 | 42 | dense | 300 | 135 | 165 | 0 | 108 | 0.360000 | 0.800000 |
+| lexical_influential_token | 3 | 42 | rcd | 300 | 135 | 165 | 0 | 101 | 0.336667 | 0.748148 |
+| lexical_influential_token | 3 | 43 | dense | 300 | 135 | 165 | 0 | 101 | 0.336667 | 0.748148 |
+| lexical_influential_token | 3 | 43 | rcd | 300 | 135 | 165 | 0 | 99 | 0.330000 | 0.733333 |
+| lexical_influential_token | 3 | 44 | dense | 300 | 135 | 165 | 0 | 105 | 0.350000 | 0.777778 |
+| lexical_influential_token | 3 | 44 | rcd | 300 | 135 | 165 | 0 | 101 | 0.336667 | 0.748148 |
+| semantic_fluent_false_evidence | 1 | 42 | dense | 300 | 35 | 165 | 100 | 20 | 0.066667 | 0.571429 |
+| semantic_fluent_false_evidence | 1 | 42 | rcd | 300 | 35 | 165 | 100 | 23 | 0.076667 | 0.657143 |
+| semantic_fluent_false_evidence | 1 | 43 | dense | 300 | 30 | 165 | 105 | 17 | 0.056667 | 0.566667 |
+| semantic_fluent_false_evidence | 1 | 43 | rcd | 300 | 30 | 165 | 105 | 19 | 0.063333 | 0.633333 |
+| semantic_fluent_false_evidence | 1 | 44 | dense | 300 | 32 | 165 | 103 | 22 | 0.073333 | 0.687500 |
+| semantic_fluent_false_evidence | 1 | 44 | rcd | 300 | 32 | 165 | 103 | 24 | 0.080000 | 0.750000 |
+| semantic_fluent_false_evidence | 3 | 42 | dense | 300 | 16 | 165 | 119 | 16 | 0.053333 | 1.000000 |
+| semantic_fluent_false_evidence | 3 | 42 | rcd | 300 | 16 | 165 | 119 | 16 | 0.053333 | 1.000000 |
+| semantic_fluent_false_evidence | 3 | 43 | dense | 300 | 13 | 165 | 122 | 12 | 0.040000 | 0.923077 |
+| semantic_fluent_false_evidence | 3 | 43 | rcd | 300 | 13 | 165 | 122 | 12 | 0.040000 | 0.923077 |
+| semantic_fluent_false_evidence | 3 | 44 | dense | 300 | 19 | 165 | 116 | 17 | 0.056667 | 0.894737 |
+| semantic_fluent_false_evidence | 3 | 44 | rcd | 300 | 19 | 165 | 116 | 17 | 0.056667 | 0.894737 |
