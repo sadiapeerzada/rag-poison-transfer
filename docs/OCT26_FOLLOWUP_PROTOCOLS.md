@@ -22,7 +22,9 @@ Select the first candidate with source targeted success, otherwise the first val
 candidate. Never consult another target or RCD while selecting. Missing candidates
 and failed construction remain typed failures; there is no replacement or adaptive
 increase to the candidate budget. RCD is one composite defended target, not four
-wrapper variants. All source selections must be sealed before final target QA.
+wrapper variants. The selected candidate can differ by source, family, intensity and seed; the
+selected instance is identical across final targets for that condition. All
+source selections must be sealed before final target QA.
 
 Screening uses candidate-band pooled corpora. Final evaluation uses the selected
 poison union for that source and condition. Consequently, reevaluate the source
@@ -162,8 +164,12 @@ backend readiness or statistical power.
 
 ## Validation performed
 
-Full offline pytest: **998 passed in 107.87 seconds**. New tests cover source-only
+Full offline pytest: **999 passed in 106.33 seconds**. New tests cover source-only
 selection/budget, zero-source-success ATR, paired final rows, stage seals,
 cohort/near-duplicate selection, explicit 2Wiki scope and schema, exposure
 provenance, and publication export recomputation. Passing software tests does not
 verify generated semantic evidence or establish defense effectiveness.
+
+A sandbox-only full-suite retry produced 18 cache-lock permission failures
+(981 tests passed). The subsequent offline run with existing cache access passed
+all 999 tests; the failure log is retained, not relabeled as a successful run.

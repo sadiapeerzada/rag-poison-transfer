@@ -60,3 +60,11 @@ def test_complete_synthetic_source_only_workflow(monkeypatch,tmp_path,zero):
     with pytest.raises(ValueError,match='integrity'):
         transfer.final_evaluate(Path('unused'),'a'*64,sel,base.sha(sel/'selection.seal.json'),tmp_path/'bad',Path('fixture'))
     assert not (tmp_path/'bad').exists()
+
+
+def test_transfer_rules_explicitly_override_matched_target_scope():
+    rules=transfer.transfer_rules()
+    assert rules["target_scope"]!=old.rules()["target_scope"]
+    assert "source-only selection per source/family/intensity/seed" in rules["target_scope"]
+    assert "20261026" in rules["uncertainty"]
+    assert rules["semantic_max_attempts_per_document"]==old.rules()["semantic_max_attempts_per_document"]

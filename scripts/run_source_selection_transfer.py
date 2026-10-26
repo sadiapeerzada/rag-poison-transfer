@@ -34,6 +34,12 @@ SCHEMA='rag-poison-transfer.bounded-source-selection/v1'
 SEAL='rag-poison-transfer.selected-source-poison-seal/v1'
 
 
+def transfer_rules():
+    return {**old.rules(),
+        'target_scope':'candidate list fixed per query/seed; source-only selection per source/family/intensity/seed; identical selected instance across final targets',
+        'uncertainty':'query-cluster bootstrap across poison seeds; 2000 replicates; seed 20261026; percentile 95%'}
+
+
 def candidates(query,development,seed):
     choices=sorted(nominate(query,development,build_pool(development))['candidates'],key=old.canonical)
     if not choices:return []
@@ -53,7 +59,7 @@ def freeze(output,base_protocol,pin,snapshot,scope,embedder_snapshot,reranker_sn
     ids=binding['query_ids'] if scope=='heldout' else list(base.DEV_IDS)
     spec={'schema':SCHEMA,'scope':scope,'source':base.code_binding(),'environment':base.environment(),
         'base_protocol_sha256':pin,'binding':{**binding,'query_ids':ids,'scope':scope,'matrix':[list(c) for c in old.cells(scope)]},'configs':configurations(dense,rcd),
-        'rules':old.rules(),'model':base.model_binding(snapshot,binding['model_identity']),
+        'rules':transfer_rules(),'model':base.model_binding(snapshot,binding['model_identity']),
         'candidate_budget':3,'selection_rule':'all fixed candidates evaluated on source only; first target match else first valid',
         'sources':list(SOURCES),'targets':list(TARGETS),'matrix':[list(c) for c in old.cells(scope)],
         'target_barrier':'all source-selected poison snapshots must be sealed before final source/target evaluation',
@@ -71,7 +77,7 @@ def freeze(output,base_protocol,pin,snapshot,scope,embedder_snapshot,reranker_sn
 
 def load(path,pin,snapshot=None):
     spec=base.read_pinned(path,pin)
-    if spec.get('schema')!=SCHEMA or spec.get('source')!=base.code_binding() or spec.get('environment')!=base.environment() or spec.get('rules')!=old.rules() or spec.get('candidate_budget')!=3:
+    if spec.get('schema')!=SCHEMA or spec.get('source')!=base.code_binding() or spec.get('environment')!=base.environment() or spec.get('rules')!=transfer_rules() or spec.get('candidate_budget')!=3:
         raise ValueError('Transfer protocol/source/environment mismatch')
     binding,dense,rcd,dev=base.metadata('heldout')
     wanted={**binding,'query_ids':binding['query_ids'] if spec['scope']=='heldout' else list(base.DEV_IDS),'scope':spec['scope'],'matrix':[list(c) for c in old.cells(spec['scope'])]}
