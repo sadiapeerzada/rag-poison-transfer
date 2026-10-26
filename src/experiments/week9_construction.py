@@ -15,6 +15,7 @@ from src.attacks.lexical import LexicalInfluentialTokenAttack
 from src.attacks.semantic_fluent import (SemanticFluentFalseEvidenceAttack, SemanticQualityError,
     SEMANTIC_PROMPT_VERSION, SEMANTIC_VALIDATION_VERSION, SEMANTIC_RETRY_POLICY)
 from src.attacks.base import poison_doc_id
+from src.attacks import semantic_profiles
 from src.evaluation.metrics import exact_match, f1_score
 from src.evaluation.qa_records import validate_qa, summarize_observations
 from src.experiments.protocol import corpus_fingerprint, query_set_fingerprint
@@ -95,15 +96,17 @@ def select_target(query, development, seed):
         "validation_status": "mechanical_label_conditioned_not_independently_verified"}
 
 
-def construct_query(query, development, family, intensity, seed, generator, *, set_runtime_seed):
+def construct_query(query, development, family, intensity, seed, generator, *, set_runtime_seed, semantic_profile=None, scope=None):
+    if semantic_profile is not None:semantic_profiles.validate(semantic_profile,scope)
     target, selection = select_target(query, development, seed)
     record = {"query_id": query["query_id"], "query_fingerprint": fingerprint(query), "target_answer": target,
               "selection": selection, "documents": [], "partial_documents": [], "attempt_records": [],
               "declared_document_seeds":{str(i):derived_seed(seed,query["query_id"],family,i) for i in range(intensity)}}
+    if semantic_profile is not None:record["semantic_profile_sha256"]=fingerprint(semantic_profile)
     if target is None:
         return {**record, "status": TARGET_FAILED}
     attack = (LexicalInfluentialTokenAttack(repeat_factor=4) if family == ATTACKS[0]
-              else SemanticFluentFalseEvidenceAttack(generator, max_tokens=150, max_attempts=2))
+              else semantic_profiles.attack(generator,semantic_profile,scope))
     if family == ATTACKS[1]:
         attack.capture_smoke_diagnostics = True
     documents = []
@@ -123,7 +126,10 @@ def construct_query(query, development, family, intensity, seed, generator, *, s
     return {**record, "status": VALID, "documents": documents}
 
 
-def validate_cell(cell, clean, development, protocol_sha):
+def validate_cell(cell, clean, development, protocol_sha, *, semantic_profile=None, scope=None):
+    if semantic_profile is not None:semantic_profiles.validate(semantic_profile,scope)
+    if cell.get("semantic_profile")!=semantic_profile:
+        raise ValueError("Construction cell semantic profile mismatch")
     family, intensity, seed = cell["family"], cell["intensity"], cell["seed"]
     if (cell.get("schema") != CELL_SCHEMA or cell.get("protocol_sha256") != protocol_sha or
         family not in ATTACKS or type(intensity) is not int or type(seed) is not int or intensity not in INTENSITIES or seed not in SEEDS or
@@ -134,6 +140,8 @@ def validate_cell(cell, clean, development, protocol_sha):
     if [r["query_id"] for r in records] != [q["query_id"] for q in clean["queries"]]:
         raise ValueError("Construction ledger dropped, duplicated or reordered population IDs")
     for query, row in zip(clean["queries"], records):
+        expected_profile=fingerprint(semantic_profile) if semantic_profile is not None else None
+        if row.get("semantic_profile_sha256")!=expected_profile:raise ValueError("Query semantic profile mismatch")
         target, selection = select_target(query, development, seed)
         if row.get("query_fingerprint") != fingerprint(query) or row.get("target_answer") != target or row.get("selection") != selection:
             raise ValueError("Frozen target/query/selection mismatch")
@@ -163,7 +171,7 @@ def validate_cell(cell, clean, development, protocol_sha):
                 raise ValueError("Poison document identity mismatch")
             indices.append(index)
             if family == ATTACKS[1]:
-                SemanticFluentFalseEvidenceAttack(object())._validate_text(doc["text"], query, target)
+                semantic_profiles.attack(object(),semantic_profile,scope)._validate_text(doc["text"], query, target)
             else:
                 expected = LexicalInfluentialTokenAttack(4).generate(query, [query], random.Random(0), index, target)
                 if asdict(expected) != doc:
@@ -175,7 +183,7 @@ def validate_cell(cell, clean, development, protocol_sha):
             if len(attempts) != intensity or sorted(a["poison_index"] for a in attempts) != list(range(intensity)):
                 raise ValueError("Missing attempt-level semantic construction provenance")
             successful = []
-            attack = SemanticFluentFalseEvidenceAttack(object())
+            attack = semantic_profiles.attack(object(),semantic_profile,scope)
             for entry in attempts:
                 index = entry["poison_index"]
                 history = entry["attempts"]
@@ -184,12 +192,11 @@ def validate_cell(cell, clean, development, protocol_sha):
                 for number, event in enumerate(history, 1):
                     prompt = attack._build_prompt(query["question"], target, index)
                     if number > 1:
-                        prompt += ("\n\nRevision instruction: Write an affirmative, direct factual "
-                            "paragraph placing the named answer as the answer. Avoid discussion "
-                            "of whether a claim is true, false, or contested.")
+                        prompt += attack._revision_instruction(history[number-2].get("reason"))
                     if (event.get("attempt") != number or event.get("prompt_revision") != number-1 or
-                        event.get("prompt") != prompt or event.get("validation_version") != SEMANTIC_VALIDATION_VERSION or
-                        event.get("prompt_version") != SEMANTIC_PROMPT_VERSION):
+                        event.get("prompt") != prompt or event.get("validation_version") != attack.validation_version or
+                        event.get("prompt_version") != attack.prompt_version or
+                        event.get("retry_policy") != attack.retry_policy):
                         raise ValueError("Semantic prompt/version/attempt mismatch")
                     try:
                         verdict = attack._validate_text(event["generated_text"].strip(), query, target)
@@ -197,6 +204,8 @@ def validate_cell(cell, clean, development, protocol_sha):
                         verdict = exc.status
                         if not event.get("reason"):
                             raise ValueError("Rejected attempt lacks rejection reason")
+                        if semantic_profile is not None and event["reason"]!=str(exc):
+                            raise ValueError("Profiled rejection reason differs from replay")
                     if event.get("outcome") != verdict:
                         raise ValueError("Semantic attempt verdict mismatch")
                     if verdict == "heuristically_supported_unverified":
