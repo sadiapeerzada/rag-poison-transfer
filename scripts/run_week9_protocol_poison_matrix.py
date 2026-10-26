@@ -30,6 +30,7 @@ from src.experiments import week9_construction as protocol
 from src.utils.seeding import set_seed
 
 PROTOCOL_SCHEMA = "rag-poison-transfer.week9-frozen-construction-protocol/v1"
+REPLICATION_PROTOCOL_SCHEMA = "rag-poison-transfer.2wiki-frozen-construction-protocol/v1"
 SEAL_SCHEMA = "rag-poison-transfer.week9-complete-construction-seal/v1"
 EVALUATION_SCHEMA = "rag-poison-transfer.week9-protocol-evaluation/v1"
 AGGREGATE_SCHEMA = "rag-poison-transfer.week9-protocol-aggregate/v1"
@@ -102,23 +103,40 @@ def model_binding(snapshot, identity):
     return {"repository":identity,"revision":snapshot.name,"files_sha256":files}
 
 
-def freeze_protocol(output, scope, snapshot):
+def context_metadata(scope,replication=None):
+    if replication is None:
+        return metadata(scope)
+    from src.experiments.twowiki_replication import metadata as replication_metadata
+    _,dense,rcd,_ = metadata("heldout")
+    result = replication_metadata(scope,replication,dense,rcd)
+    result[0]["config_sha256"] = {"dense":protocol.fingerprint(result[1]),"rcd":protocol.fingerprint(result[2]),
+        "base_dense":sha(ROOT/legacy.DEFAULT_DENSE_CONFIG),"base_rcd":sha(ROOT/legacy.DEFAULT_RCD_CONFIG)}
+    return result
+
+
+def freeze_protocol(output, scope, snapshot,replication=None):
     legacy._ensure_output_outside_repository(Path(output).parent)
-    binding,*_ = metadata(scope)
+    binding,*_ = context_metadata(scope,replication)
     installed = environment()
     if any(v is None for v in installed.values()):
         raise ValueError("All frozen runtime dependencies must be installed before protocol freeze")
-    value = {"schema":PROTOCOL_SCHEMA,"rules":protocol.rules(),"binding":binding,
+    frozen_rules = protocol.rules()
+    if replication is not None:frozen_rules = {**frozen_rules,"dataset_replication":"risk-disclosed-2wiki/v1"}
+    value = {"schema":REPLICATION_PROTOCOL_SCHEMA if replication is not None else PROTOCOL_SCHEMA,"rules":frozen_rules,"binding":binding,
         "source":code_binding(),"environment":installed,"model":model_binding(snapshot,binding["model_identity"])}
+    if replication is not None:value["replication"] = replication
     write(output,value)
     return {"protocol_sha256":sha(output),"scope":scope,"status":"protocol_frozen_no_construction_or_evaluation"}
 
 
 def load_protocol(path,digest,snapshot=None):
     value = read_pinned(path,digest)
-    if value.get("schema") != PROTOCOL_SCHEMA or value.get("rules") != protocol.rules():
+    replication = value.get("replication")
+    expected_schema = REPLICATION_PROTOCOL_SCHEMA if replication is not None else PROTOCOL_SCHEMA
+    expected_rules = {**protocol.rules(),"dataset_replication":"risk-disclosed-2wiki/v1"} if replication is not None else protocol.rules()
+    if value.get("schema") != expected_schema or value.get("rules") != expected_rules:
         raise ValueError("Protocol version/rules mismatch")
-    binding,dense,rcd,development = metadata(value["binding"]["scope"])
+    binding,dense,rcd,development = context_metadata(value["binding"]["scope"],replication)
     if value["binding"] != binding or value["source"] != code_binding() or value["environment"] != environment():
         raise ValueError("Protocol source/config/dataset/environment provenance mismatch")
     if snapshot is not None and value["model"] != model_binding(snapshot,binding["model_identity"]):
@@ -127,6 +145,9 @@ def load_protocol(path,digest,snapshot=None):
 
 
 def load_clean(value,rcd):
+    if value.get("replication") is not None:
+        from src.experiments.twowiki_replication import load_clean as replication_clean
+        return replication_clean(value)
     selected = dict(rcd)
     if value["binding"]["scope"] == "development":
         selected.pop("dataset_query_ids_manifest",None)
@@ -453,15 +474,22 @@ def main():
     parser.add_argument("--evaluation-dir",type=Path)
     parser.add_argument("--evaluation-completion-sha256")
     parser.add_argument("--output",type=Path)
+    parser.add_argument("--replication-spec",type=Path)
+    parser.add_argument("--replication-spec-sha256")
     args = parser.parse_args()
+    if bool(args.replication_spec) != bool(args.replication_spec_sha256):
+        parser.error("Supply both replication input specification and trusted SHA-256")
+    replication = read_pinned(args.replication_spec,args.replication_spec_sha256) if args.replication_spec else None
+    if replication is not None and args.stage not in {"preflight","freeze-protocol"}:
+        parser.error("Later stages take replication inputs only from the frozen protocol")
     if args.stage == "preflight":
-        binding,*_ = metadata(args.scope)
+        binding,*_ = context_metadata(args.scope,replication)
         result = {"status":"metadata_only_not_scientific_readiness","binding":binding,"rules":protocol.rules(),
                   "individual_target_signatures_required":False,"protocol_frozen":False}
     elif args.stage == "freeze-protocol":
         if not args.output or not args.model_snapshot:
             parser.error("freeze-protocol requires --output and --model-snapshot")
-        result = freeze_protocol(args.output,args.scope,args.model_snapshot)
+        result = freeze_protocol(args.output,args.scope,args.model_snapshot,replication)
     else:
         if not args.protocol or not args.protocol_sha256 or not args.construction_dir:
             parser.error("Require --protocol, --protocol-sha256 and --construction-dir")
