@@ -34,6 +34,7 @@ PROTOCOL_SCHEMA = "rag-poison-transfer.week9-frozen-construction-protocol/v1"
 REPLICATION_PROTOCOL_SCHEMA = "rag-poison-transfer.2wiki-frozen-construction-protocol/v1"
 SEAL_SCHEMA = "rag-poison-transfer.week9-complete-construction-seal/v1"
 EVALUATION_SCHEMA = "rag-poison-transfer.week9-protocol-evaluation/v1"
+DEVELOPMENT_STUDY_PROTOCOL_SCHEMA = "rag-poison-transfer.semantic-development-protocol/v1"
 PROFILE_PROTOCOL_SCHEMA = "rag-poison-transfer.week9-profiled-construction-protocol/v1"
 RELIABLE_REPLICATION_SCHEMA = "rag-poison-transfer.2wiki-frozen-construction-protocol/v2"
 from src.experiments import execution_reliability as reliable
@@ -121,6 +122,34 @@ def context_metadata(scope,replication=None):
     return result
 
 
+def study_context(scope,replication,study=None,profile=None):
+    if study is not None:
+        from src.experiments import semantic_development_study as devstudy
+        devstudy.validate(study,scope,replication,profile)
+    binding,dense,rcd,development=context_metadata(scope,replication)
+    if study is not None:
+        full=read_pinned(replication["local_data"],replication["local_data_sha256"])
+        manifest=read_pinned(replication["cohort_manifest"],replication["cohort_manifest_sha256"])
+        binding=devstudy.bind(binding,full,manifest)
+    return binding,dense,rcd,development
+
+
+def study_fields(value):
+    return {"development_study":value["development_study"]} if "development_study" in value else {}
+
+
+def manifest_fields(value):
+    return {**profile_fields(value),**study_fields(value)}
+
+
+def validation_kwargs(value):
+    return {**profile_kwargs(value),**study_fields(value)}
+
+
+def declared_cells(value):
+    return [tuple(c) for c in value["development_study"]["matrix"]] if "development_study" in value else protocol.cells(value["binding"]["scope"])
+
+
 def profile_fields(value):
     return {"semantic_profile":value["semantic_profile"]} if "semantic_profile" in value else {}
 
@@ -130,7 +159,8 @@ def profile_kwargs(value):
 
 
 def profile_provenance(value):
-    return {"semantic_profile_sha256":protocol.fingerprint(value["semantic_profile"])} if "semantic_profile" in value else {}
+    return {**({"semantic_profile_sha256":protocol.fingerprint(value["semantic_profile"])} if "semantic_profile" in value else {}),
+        **({"development_study_sha256":protocol.fingerprint(value["development_study"])} if "development_study" in value else {})}
 
 
 def frozen_rules(replication=None,profile=None):
@@ -142,10 +172,14 @@ def frozen_rules(replication=None,profile=None):
     return rules
 
 
-def freeze_protocol(output, scope, snapshot,replication=None,semantic_profile=None):
+def freeze_protocol(output, scope, snapshot,replication=None,semantic_profile=None,development_study=None):
     legacy._ensure_output_outside_repository(Path(output).parent)
     profile=semantic_profiles.descriptor(semantic_profile,scope) if semantic_profile is not None else None
-    binding,*_ = context_metadata(scope,replication)
+    study=None
+    if development_study is not None:
+        from src.experiments.semantic_development_study import descriptor
+        study=descriptor(development_study)
+    binding,*_ = study_context(scope,replication,study,profile)
     installed = environment()
     if any(v is None for v in installed.values()):
         raise ValueError("All frozen runtime dependencies must be installed before protocol freeze")
@@ -160,6 +194,7 @@ def freeze_protocol(output, scope, snapshot,replication=None,semantic_profile=No
             value["planned_outputs"]=reliable.planned_outputs(output,"2wiki")
     if profile is not None:
         value.update(schema=PROFILE_PROTOCOL_SCHEMA,semantic_profile=profile)
+    if study is not None:value.update(schema=DEVELOPMENT_STUDY_PROTOCOL_SCHEMA,development_study=study)
     write(output,value)
     return {"protocol_sha256":sha(output),"scope":scope,"status":"protocol_frozen_no_construction_or_evaluation"}
 
@@ -174,10 +209,14 @@ def load_protocol(path,digest,snapshot=None):
     if "semantic_profile" in value:
         semantic_profiles.validate(profile,value["binding"]["scope"])
         expected_schema=PROFILE_PROTOCOL_SCHEMA
+    if "development_study" in value:
+        from src.experiments.semantic_development_study import validate
+        validate(value["development_study"],value["binding"]["scope"],replication,profile)
+        expected_schema=DEVELOPMENT_STUDY_PROTOCOL_SCHEMA
     expected_rules = frozen_rules(replication,profile)
     if value.get("schema") != expected_schema or value.get("rules") != expected_rules:
         raise ValueError("Protocol version/rules mismatch")
-    binding,dense,rcd,development = context_metadata(value["binding"]["scope"],replication)
+    binding,dense,rcd,development = study_context(value["binding"]["scope"],replication,value.get("development_study"),profile)
     if value["binding"] != binding or value["source"] != code_binding() or value["environment"] != environment():
         raise ValueError("Protocol source/config/dataset/environment provenance mismatch")
     if snapshot is not None and value["model"] != model_binding(snapshot,binding["model_identity"]):
@@ -186,6 +225,14 @@ def load_protocol(path,digest,snapshot=None):
 
 
 def load_clean(value,rcd):
+    if "development_study" in value:
+        replica=value["replication"]
+        full=read_pinned(replica["local_data"],replica["local_data_sha256"])
+        by_id={q["query_id"]:q for q in full["queries"]}
+        clean={"corpus":full["corpus"],"queries":[by_id[qid] for qid in value["binding"]["query_ids"]]}
+        if query_set_fingerprint(clean["queries"])!=value["binding"]["study_query_set_fingerprint"]:
+            raise ValueError("Development study query fingerprint mismatch")
+        return clean
     if value.get("replication") is not None:
         from src.experiments.twowiki_replication import load_clean as replication_clean
         return replication_clean(value)
@@ -306,11 +353,12 @@ def construction_journals(root,cell,value,digest):
         validate_generation_journal(root/identity/"generation"/key,expected)
 
 
-def make_cell(clean,family,intensity,seed,digest,records,semantic_profile=None):
+def make_cell(clean,family,intensity,seed,digest,records,semantic_profile=None,development_study=None):
     return {"schema":protocol.CELL_SCHEMA,"protocol_sha256":digest,"family":family,"intensity":intensity,"seed":seed,
         "query_set_fingerprint":query_set_fingerprint(clean["queries"]),
         "clean_corpus_fingerprint":corpus_fingerprint(clean["corpus"]),"records":records,
-        **({"semantic_profile":semantic_profile} if semantic_profile is not None else {})}
+        **({"semantic_profile":semantic_profile} if semantic_profile is not None else {}),
+        **({"development_study":development_study} if development_study is not None else {})}
 
 
 def construction_files(root):
@@ -331,7 +379,7 @@ def construct(path,digest,root,snapshot,max_batches=None):
     value,dense,rcd,development = load_protocol(path,digest,snapshot)
     reliable.require_output(value,"construction",root)
     clean = load_clean(value,rcd)
-    plan = {"protocol_sha256":digest,"binding":value["binding"],"source":value["source"],**profile_fields(value),
+    plan = {"protocol_sha256":digest,"binding":value["binding"],"source":value["source"],**manifest_fields(value),
         "query_set_fingerprint":query_set_fingerprint(clean["queries"]),"clean_corpus_fingerprint":corpus_fingerprint(clean["corpus"])}
     planpath = root/"construction.plan.json"
     if planpath.exists():
@@ -347,7 +395,7 @@ def construct(path,digest,root,snapshot,max_batches=None):
     batch_budget = reliable.BatchBudget(max_batches)
     batch_size = value.get("execution",reliable.DEFAULTS)["batch_size"]
     entries = {}
-    for family,intensity,seed in protocol.cells(value["binding"]["scope"]):
+    for family,intensity,seed in declared_cells(value):
         identity = protocol.cell_id(family,intensity,seed)
         cellpath = root/identity/"construction.json"
         if cellpath.exists():
@@ -374,12 +422,12 @@ def construct(path,digest,root,snapshot,max_batches=None):
                     record = protocol.construct_query(query,development,family,intensity,seed,recorded,set_runtime_seed=runtime_seed,**profile_kwargs(value))
                     write(checkpoint,record)
                 mini = {"queries":[query],"corpus":clean["corpus"]}
-                protocol.validate_cell(make_cell(mini,family,intensity,seed,digest,[record],**profile_fields(value)),mini,development,digest,**profile_kwargs(value))
+                protocol.validate_cell(make_cell(mini,family,intensity,seed,digest,[record],**manifest_fields(value)),mini,development,digest,**validation_kwargs(value))
                 records.append(record)
-            cell = make_cell(clean,family,intensity,seed,digest,records,**profile_fields(value))
-            protocol.validate_cell(cell,clean,development,digest,**profile_kwargs(value))
+            cell = make_cell(clean,family,intensity,seed,digest,records,**manifest_fields(value))
+            protocol.validate_cell(cell,clean,development,digest,**validation_kwargs(value))
             write(cellpath,cell)
-        protocol.validate_cell(cell,clean,development,digest,**profile_kwargs(value))
+        protocol.validate_cell(cell,clean,development,digest,**validation_kwargs(value))
         construction_journals(root,cell,value,digest)
         entries[identity] = {"path":str(cellpath.relative_to(root)),"sha256":sha(cellpath)}
     load_protocol(path,digest,snapshot)  # Recheck source/config/environment/weights at the barrier.
@@ -396,17 +444,17 @@ def load_sealed(path,digest,root,seal_digest):
     if (seal.get("schema") != SEAL_SCHEMA or seal.get("protocol_sha256") != digest or
         seal.get("scope") != value["binding"]["scope"] or seal.get("files_sha256") != construction_files(root)):
         raise ValueError("Global construction seal/protocol/file integrity mismatch")
-    expected = {protocol.cell_id(*c) for c in protocol.cells(value["binding"]["scope"])}
+    expected = {protocol.cell_id(*c) for c in declared_cells(value)}
     if set(seal.get("cells",{})) != expected:
         raise ValueError("Complete declared matrix must be frozen before evaluation")
     clean = load_clean(value,rcd)
-    expected_plan = {"protocol_sha256":digest,"binding":value["binding"],"source":value["source"],**profile_fields(value),
+    expected_plan = {"protocol_sha256":digest,"binding":value["binding"],"source":value["source"],**manifest_fields(value),
         "query_set_fingerprint":query_set_fingerprint(clean["queries"]),
         "clean_corpus_fingerprint":corpus_fingerprint(clean["corpus"])}
     if seal["plan"] != expected_plan or json.loads((root/"construction.plan.json").read_text()) != expected_plan:
         raise ValueError("Sealed dataset/query/corpus fingerprint mismatch")
     cells = {}
-    for family,intensity,seed in protocol.cells(value["binding"]["scope"]):
+    for family,intensity,seed in declared_cells(value):
         identity = protocol.cell_id(family,intensity,seed)
         entry = seal["cells"][identity]
         expected_path = f"{identity}/construction.json"
@@ -415,7 +463,7 @@ def load_sealed(path,digest,root,seal_digest):
         cell = json.loads((root/expected_path).read_text())
         if (cell.get("family"),cell.get("intensity"),cell.get("seed")) != (family,intensity,seed):
             raise ValueError("Cell matrix identity mismatch")
-        cells[identity] = protocol.validate_cell(cell,clean,development,digest,**profile_kwargs(value))
+        cells[identity] = protocol.validate_cell(cell,clean,development,digest,**validation_kwargs(value))
         construction_journals(root,cell,value,digest)
     return value,dense,rcd,clean,cells
 
@@ -516,7 +564,8 @@ def aggregate(path,digest,root,seal_digest,evaluation,completion_digest,output):
         "cells":summaries,"paired_query_cluster_uncertainty":intervals,
         "unique_target_counts_per_query":{q["query_id"]:len({r["target_answer"] for cell in cells.values()
             for r in cell["records"] if r["query_id"]==q["query_id"] and r["target_answer"] is not None}) for q in clean["queries"]},
-        "construction_failures_are_not_defense_successes":True,**profile_fields(value),
+        "construction_failures_are_not_defense_successes":True,**manifest_fields(value),
+        **({"diagnostic_only":True} if "development_study" in value else {}),
         **({"execution_accounting":reliable.accounting(evaluation)} if "execution" in value else {})}
     legacy._ensure_output_outside_repository(Path(output).parent)
     if "execution" in value:reliable.once(output,result)
@@ -536,6 +585,7 @@ def read_pinned_rows(path,digest):
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("stage",choices=("preflight","freeze-protocol","construct","evaluate","aggregate"))
+    parser.add_argument("--development-study",choices=["semantic-quality-25/v1"],help="Development-only 25-query semantic intensity-1/3 study; freeze/preflight only")
     parser.add_argument("--semantic-profile",choices=semantic_profiles.IDENTIFIERS,help="Only preflight/freeze; later stages use the pinned protocol exclusively")
     parser.add_argument("--scope",choices=("heldout","development"),default="heldout")
     parser.add_argument("--protocol",type=Path)
@@ -550,6 +600,8 @@ def main():
     parser.add_argument("--replication-spec",type=Path)
     parser.add_argument("--replication-spec-sha256")
     args = parser.parse_args()
+    if args.development_study is not None and args.stage not in {"preflight","freeze-protocol"}:
+        parser.error("Development study cannot be overridden after freeze")
     if args.semantic_profile is not None and args.stage not in {"preflight","freeze-protocol"}:
         parser.error("Profile cannot be overridden after freeze")
     if bool(args.replication_spec) != bool(args.replication_spec_sha256):
@@ -559,14 +611,20 @@ def main():
         parser.error("Later stages take replication inputs only from the frozen protocol")
     if args.stage == "preflight":
         profile=semantic_profiles.descriptor(args.semantic_profile,args.scope) if args.semantic_profile is not None else None
-        binding,*_ = context_metadata(args.scope,replication)
+        study=None
+        if args.development_study is not None:
+            from src.experiments.semantic_development_study import descriptor
+            study=descriptor(args.development_study)
+        binding,*_ = study_context(args.scope,replication,study,profile)
         result = {"status":"metadata_only_not_scientific_readiness","binding":binding,"rules":frozen_rules(replication,profile),
                   **({"semantic_profile":profile} if profile is not None else {}),
+                  **({"development_study":study} if study is not None else {}),
                   "individual_target_signatures_required":False,"protocol_frozen":False}
     elif args.stage == "freeze-protocol":
         if not args.output or not args.model_snapshot:
             parser.error("freeze-protocol requires --output and --model-snapshot")
-        result = freeze_protocol(args.output,args.scope,args.model_snapshot,replication,**({"semantic_profile":args.semantic_profile} if args.semantic_profile is not None else {}))
+        result = freeze_protocol(args.output,args.scope,args.model_snapshot,replication,**({"semantic_profile":args.semantic_profile} if args.semantic_profile is not None else {}),
+            **({"development_study":args.development_study} if args.development_study is not None else {}))
     else:
         if not args.protocol or not args.protocol_sha256 or not args.construction_dir:
             parser.error("Require --protocol, --protocol-sha256 and --construction-dir")

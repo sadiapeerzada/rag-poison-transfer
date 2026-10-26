@@ -1067,6 +1067,47 @@ committed (they ARE the record of what happened). Every new run writes a raw
 JSONL log and a JSON summary beside it; older committed logs retain the schema
 that existed when they were produced.
 
+## Research Status — 26 October 2026
+
+The completed **HotpotQA** matched study and its limitations remain documented
+above, with original provenance. The following results concern **2Wiki train-split
+development data**, not the held-out replication.
+
+| Two-query 2Wiki smoke, seed 42, intensity 1 | Lexical | Semantic development profile |
+|---|---:|---:|
+| Construction coverage | 2/2 | 2/2 |
+| Dense targeted ASR | 2/2 | 2/2 |
+| RCD targeted ASR | 1/2 | 1/2 |
+| Dense / RCD PRR@1 | 1/2 / 1/2 | 2/2 / 2/2 |
+
+Protocol, construction seal, evaluation completion and aggregate were revalidated.
+Execution used 12 QA backend calls, four exact-input clean-cache hits, and two
+additional semantic-construction calls (**14 recorded backend calls overall**).
+The previous legacy semantic diagnostic had 0/2 valid constructions. This small,
+exploratory comparison does not establish reliable semantic validity or statistically
+supported defense superiority.
+
+`legacy-v3-v4/v1` retains the original semantic policy.
+`question-anchored-development/v1` selects versioned single-sentence prompts,
+question-anchored heuristic validation and failure-specific feedback. It remains
+**development-only and is rejected for held-out scope**. Automatic acceptance does
+not establish factual falsity, complete aliases or independent semantic correctness.
+
+The professor-requested **25-query semantic development validation** is implemented
+with deterministic train selection, seed 42, intensities 1/3 on the same cohort,
+and pending independent human review. New construction and QA are **NOT YET
+EXECUTED** and require explicit approval (maximum 400 backend calls). The 300-query
+2Wiki held-out study is temporarily deferred until the semantic method, independent
+review and final protocol receive supervisor approval. Historical 2Wiki exposure
+uncertainty remains disclosed; no untouched-test-set claim is made.
+
+Code/model/configuration pins, protocol hashes, a global construction seal, durable
+journals, exact-input clean-QA caching and paired Dense/RCD records preserve
+reproducibility. Missing-response intents halt recovery rather than silently repeating
+calls. See the [development protocol and commands](docs/OCT26_SEMANTIC_DEVELOPMENT_VALIDATION.md),
+[independent-review instructions](docs/reviews/semantic_development_25/REVIEW_INSTRUCTIONS.md),
+and [profile architecture](docs/SEMANTIC_PROFILE_INTEGRATION_AND_READINESS.md).
+
 ## Next phase
 The primary HotpotQA matched study, audit, tables and figures are complete with
 the limitations above. The remaining major runs are **full 2Wiki replication**
@@ -1078,10 +1119,11 @@ be reset, cleaned or reused for new outputs.
 The [interim professor handout](reports/Sadia_Peerzada_RAG_Research_Progress_2026-10-26.md)
 separates completed results from fixtures, smoke tests and pending experiments.
 The [execution handoff](docs/OCT26_FINAL_EXECUTION_HANDOFF.md) gives exact staged
-commands, immutable output locations and resume instructions. Both workflows are
-prepared with documented limitations: a new bounded real-model smoke, adequate
-disk/memory headroom, clean committed provenance and explicit compute approval
-are needed before full execution. No full transfer or 2Wiki outcome is claimed.
+commands, immutable output locations and resume instructions. The two-query 2Wiki
+profile smoke is complete; the requested 25-query semantic development validation,
+independent review, adequate disk/memory headroom, clean committed provenance and
+explicit compute approval remain gates before final 2Wiki execution. No full
+transfer or 2Wiki outcome is claimed.
 
 
 ### Week 9–10 freeze readiness (24 October 2026; validation branch)

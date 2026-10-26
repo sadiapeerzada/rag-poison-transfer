@@ -126,8 +126,12 @@ def construct_query(query, development, family, intensity, seed, generator, *, s
     return {**record, "status": VALID, "documents": documents}
 
 
-def validate_cell(cell, clean, development, protocol_sha, *, semantic_profile=None, scope=None):
+def validate_cell(cell, clean, development, protocol_sha, *, semantic_profile=None, scope=None, development_study=None):
     if semantic_profile is not None:semantic_profiles.validate(semantic_profile,scope)
+    if cell.get("development_study")!=development_study:raise ValueError("Cell development study mismatch")
+    if development_study is not None:
+        from src.experiments.semantic_development_study import descriptor
+        if development_study!=descriptor() or scope!="development":raise ValueError("Invalid development study cell")
     if cell.get("semantic_profile")!=semantic_profile:
         raise ValueError("Construction cell semantic profile mismatch")
     family, intensity, seed = cell["family"], cell["intensity"], cell["seed"]
