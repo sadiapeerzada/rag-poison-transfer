@@ -7,6 +7,7 @@ from src.attacks.reviewed_target_artifact import read_pinned
 from src.experiments.protocol import query_set_fingerprint
 
 SCHEMA='rag-poison-transfer.2wiki-replication-inputs/v1'
+LOCAL_SCHEMA='rag-poison-transfer.2wiki-replication-inputs/v2'
 REVISION='9823f70484dea525100394220b0ea5184d0eeb7b'
 
 
@@ -69,13 +70,20 @@ def verify_questions(data,records):
 
 
 def metadata(scope,replication,dense,rcd):
-    if replication.get('schema')!=SCHEMA:raise ValueError('Explicit new 2Wiki replication schema required')
+    if replication.get('schema') not in (SCHEMA,LOCAL_SCHEMA):raise ValueError('Explicit new 2Wiki replication schema required')
     manifest=load_cohort(replication['cohort_manifest'],replication['cohort_manifest_sha256'])
     development=read_pinned(replication['development_data'],replication['development_data_sha256'])
     verify_questions(development,manifest['cohorts']['train'])
     selected=manifest['cohorts']['dev'] if scope=='heldout' else manifest['cohorts']['train'][:2]
     override={'dataset_loader':'load_2wikimultihopqa','dataset_split':'dev' if scope=='heldout' else 'train','dataset_revision':REVISION}
     dense={**dense,**override};rcd={**rcd,**override}
+    if replication['schema']==LOCAL_SCHEMA:
+        from scripts.run_week9_protocol_poison_matrix import model_binding
+        for name,identity in [('embedder','BAAI/bge-small-en-v1.5'),('reranker','cross-encoder/ms-marco-MiniLM-L-6-v2')]:
+            entry=replication['retrieval_snapshots'][name]
+            if model_binding(entry['path'],identity)!=entry['binding']:raise ValueError('2Wiki retrieval snapshot mismatch')
+        dense['embedder_model']=rcd['embedder_model']=replication['retrieval_snapshots']['embedder']['path']
+        load_local(replication,scope,manifest)
     dense.pop('dataset_query_ids_manifest',None);rcd.pop('dataset_query_ids_manifest',None)
     from src.experiments.week9_construction import cells
     binding={'scope':scope,'query_ids':[r['query_id'] for r in selected],
@@ -91,6 +99,7 @@ def metadata(scope,replication,dense,rcd):
 
 def load_clean(value):
     replication=value['replication'];manifest=load_cohort(replication['cohort_manifest'],replication['cohort_manifest_sha256'])
+    if replication['schema']==LOCAL_SCHEMA:return load_local(replication,value['binding']['scope'],manifest)
     if value['binding']['scope']=='development':
         complete=read_pinned(replication['development_data'],replication['development_data_sha256'])
         data={'corpus':complete['corpus'],'queries':complete['queries'][:2]}
@@ -99,3 +108,14 @@ def load_clean(value):
     data=fetch_selected('dev',value['binding']['query_ids'])
     verify_questions(data,manifest['cohorts']['dev'])
     return data
+
+
+def load_local(replication,scope,manifest):
+    if replication['scope']!=scope:raise ValueError('Local 2Wiki input scope mismatch')
+    data=read_pinned(replication['local_data'],replication['local_data_sha256'])
+    expected=manifest['cohorts']['dev'] if scope=='heldout' else manifest['cohorts']['train']
+    verify_questions(data,expected)
+    from src.experiments.protocol import corpus_fingerprint
+    if (query_set_fingerprint(data['queries'])!=replication['local_query_fingerprint'] or
+        corpus_fingerprint(data['corpus'])!=replication['local_corpus_fingerprint']):raise ValueError('Local 2Wiki input fingerprint mismatch')
+    return data if scope=='heldout' else {'corpus':data['corpus'],'queries':data['queries'][:2]}
