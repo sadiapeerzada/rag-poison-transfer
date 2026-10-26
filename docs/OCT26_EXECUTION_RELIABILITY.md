@@ -187,10 +187,19 @@ The explicitly authorized caching changes fresh-call repetition and timing accou
 if repeated uncached timing is required as an endpoint it needs a separate benchmark,
 not a claim that cached timings are comparable. Full compute still requires approval.
 
-## Executed software verification
+## Initial reliability-commit software verification
 
 Final offline full suite: **1,022 passed, zero failed, 105.81 seconds**.
 Focused reliability/transfer/replication regressions: **30 passed, 3.01 seconds**.
 Compilation of `src scripts tests` and whitespace checks passed. Earlier test runs
 and logs are retained; final verification includes the streaming-hash regression.
 No real MLX generation, full experiment, push, merge or README update occurred.
+
+## Release continuation verification
+
+The final continuation passed **1,024 offline tests in 110.82 seconds** and
+**32 focused regressions in 4.60 seconds**. It corrected existing-aggregate
+revalidation and the previously accepted-but-ignored 2Wiki construction batch
+limit, without changing scientific selection or metrics. See the
+[final execution handoff](OCT26_FINAL_EXECUTION_HANDOFF.md) for the release
+namespace and commands. Earlier freezes remain intact and bind their own commits.

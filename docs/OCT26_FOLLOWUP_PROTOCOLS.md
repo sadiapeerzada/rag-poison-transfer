@@ -1,5 +1,11 @@
 # October 26 follow-up protocols and execution gates
 
+Historical proposal recorded at reviewed `8c55b3c`. The subsequent bounded
+transfer smoke completed 211 model calls; new reliability/cache/resume execution
+uses separately frozen v2 protocols. Current status and commands are in the
+[release handoff](OCT26_FINAL_EXECUTION_HANDOFF.md); preserve the proposal below
+as history rather than using its old paths with a newer source commit.
+
 These are new experiments, not revisions to the completed HotpotQA matrix.
 The original `7a24a40c0a25399e1defc02844eb3a1de44b4a19` worktree and artifacts
 are read-only. No README changes are authorized until all experimental milestones

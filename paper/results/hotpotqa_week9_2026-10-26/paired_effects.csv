@@ -1,0 +1,17 @@
+group,metric,dense_minus_rcd,ci_low,ci_high,replicates,unique_queries,multiplicity_adjusted
+lexical_influential_token.intensity-1,end_to_end_targeted_asr,-0.013333333333333336,-0.033333333333333326,0.005555555555555564,2000,300,False
+lexical_influential_token.intensity-1,conditional_targeted_asr_valid,-0.029629629629629617,-0.07235142118863047,0.012345679012345678,2000,300,False
+lexical_influential_token.intensity-1,untargeted_degradation_valid,-0.007407407407407418,-0.06280193236714976,0.046875,2000,300,False
+lexical_influential_token.intensity-1,poison_exposure_valid,0.032098765432098775,0.004662004662004726,0.06467661691542292,2000,300,False
+lexical_influential_token.intensity-3,end_to_end_targeted_asr,0.014444444444444482,-0.0044444444444444176,0.033333333333333326,2000,300,False
+lexical_influential_token.intensity-3,conditional_targeted_asr_valid,0.032098765432098775,-0.00925925925925919,0.07435897435897432,2000,300,False
+lexical_influential_token.intensity-3,untargeted_degradation_valid,0.06666666666666665,0.009950248756218916,0.12468193384223919,2000,300,False
+lexical_influential_token.intensity-3,poison_exposure_valid,0.004938271604938205,0.0,0.013157894736842035,2000,300,False
+semantic_fluent_false_evidence.intensity-1,end_to_end_targeted_asr,-0.007777777777777772,-0.01888888888888888,0.0,2000,300,False
+semantic_fluent_false_evidence.intensity-1,conditional_targeted_asr_valid,-0.07216494845360832,-0.16666666666666663,0.0,2000,300,False
+semantic_fluent_false_evidence.intensity-1,untargeted_degradation_valid,-0.0824742268041237,-0.20481927710843373,0.026315789473684237,2000,300,False
+semantic_fluent_false_evidence.intensity-1,poison_exposure_valid,0.0,0.0,0.0,2000,300,False
+semantic_fluent_false_evidence.intensity-3,end_to_end_targeted_asr,0.0,0.0,0.0,2000,300,False
+semantic_fluent_false_evidence.intensity-3,conditional_targeted_asr_valid,0.0,0.0,0.0,2000,300,False
+semantic_fluent_false_evidence.intensity-3,untargeted_degradation_valid,0.0,-0.09999999999999998,0.1063829787234043,2000,300,False
+semantic_fluent_false_evidence.intensity-3,poison_exposure_valid,-0.02083333333333337,-0.07407407407407407,0.0,2000,300,False

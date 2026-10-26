@@ -171,9 +171,9 @@ retrievers from the same poisoned corpus.
   generation calls), expected to favor lexical retrievers.
 - **Semantic-fluent false-evidence attack** (`semantic_fluent.py`) --
   uses the real generator to write a fluent, encyclopedia-style
-  paragraph asserting a false answer as fact. Costs one real generation
-  call per poison document; expected to transfer more evenly across
-  retrievers than the lexical attack.
+  paragraph asserting an intended non-gold answer as fact. The frozen Week 9
+  protocol permits up to two attempts per document. Heuristic acceptance does
+  not independently establish factual falsehood or semantic correctness.
 
 Both support intensity (1, 3, or 5 poison documents per attacked query)
 and a configurable global poison rate, coordinated multi-document
@@ -363,11 +363,11 @@ Labels used for claims in this README: **IMPLEMENTED** (code exists), **TESTED**
 | `exp_026` frozen-config development run (validation split, not held-out) | EXECUTED | `results/exp_026_*`: 300 rows, 300 unique query IDs, `git_dirty=false` on every row |
 | `exp_028b` held-out recovery run | EXPLORATORY | rows record `git_dirty: null`; not a publication baseline |
 | `exp_030` / `exp_031` clean held-out baselines | ARTIFACTS INSPECTED; CORRECTION IMPACT UNASSESSED | Both runs contain 300 unique query IDs with identical ordered query IDs and matching query-set, held-out-ID, and corpus fingerprints. Both summaries report `final_run=true` and `git_dirty=false`; their recorded commit predates the rewrite correction. |
-| Week 9 held-out 12-cell poison matrix | CONSTRUCTION UNDERWAY; EVALUATION PENDING | protocol implementation pinned to `7a24a40`; 300-query protocol freeze complete and construction underway, as reported by the researcher; no final outcomes claimed |
+| Week 9 held-out 12-cell poison matrix | EXECUTED; COMPUTATIONALLY AUDITED | Frozen `7a24a40`; all 300 IDs retained; [audit](reports/WEEK9_HOTPOTQA_SCIENTIFIC_AUDIT_2026-10-26.md) and [tables/figures](paper/results/hotpotqa_week9_2026-10-26/INTERPRETATION.md); limitations below |
 | Matched Dense-vs-RCD poison pilot (10 queries) | EXPLORATORY; no significance claim | tooling in `scripts/`; no committed results are cited |
-| Cross-pipeline transfer results (BM25/Hybrid/Reranker as source or target) | NOT YET RUN | `TransferMatrix` framework is IMPLEMENTED and TESTED |
-| 2Wiki held-out RCD / transfer evaluation | NOT YET RUN | earlier 2Wiki baselines and sweeps exist, not this phase |
-| Statistical significance, effect sizes, McNemar, F1 retention for the poison matrix | NOT YET RUN | not computed |
+| Cross-pipeline transfer results (BM25/Hybrid/Reranker as source or target) | DEVELOPMENT SMOKE EXECUTED; FULL STUDY NOT YET RUN | Source-only staged CLI, two development queries, 40 conditions, 211 model calls; [interim report](reports/Sadia_Peerzada_RAG_Research_Progress_2026-10-26.md) |
+| 2Wiki held-out RCD replication | PREPARED; FULL STUDY NOT YET RUN | Frozen 300 dev IDs plus 300 train development IDs, local pinned inputs and metadata preflight; historical pilot-overlap caveat remains |
+| Paired poison-matrix effects, query-cluster intervals and utility retention | COMPUTED AND REVERIFIED | 2,000 replicates; no primary targeted-ASR interval excludes zero; McNemar is not claimed |
 
 ## Two working environments
 
@@ -454,16 +454,16 @@ starting a new run.
 | **Natural Questions real attack sweep (N=25, both attacks, intensities 1 and 3, all 4 retrievers)** | **Real, validated -- `load_natural_questions` builds a genuine pooled corpus from NQ's own long_answer_candidates; clearest hypothesis-confirming result of the three datasets. See Week 5-6 section above.** |
 | Corpus metadata logging | Real; corpus statistics (num_queries, num_unique_documents, corpus_type) recorded in every experiment summary |
 | Attack metrics (PRR@k, ASR, ATR) | PRR@k measured by the Week 5–6 sweep; ASR/ATR APIs implemented and tested. See the metric definitions below for their denominators. |
-| Transfer matrix framework | Source-to-target orchestration implemented in `run_source_target_asr()` and `compute_transfer_statistics()`; strict metadata validation is the default for orchestration. No dedicated transfer CLI exists. |
+| Transfer matrix framework | Source-to-target APIs remain available; `scripts/run_source_selection_transfer.py` adds staged, bounded source-only selection, matched replay and failure-aware aggregation. Full transfer results remain pending. |
 | Knowledge-poisoning attack benchmark (lexical + semantic-fluent, intensity 1/3/5, low poison-rate, HotpotQA + 2Wiki) | **Real, validated, Week 5-6 deliverable complete** -- see Week 5-6 section above and `docs/WEEK5_6_BENCHMARK_VALIDATION_REPORT.md` |
-| RCD (Retrieval-Consistency Defense) | **Rewrite correction regression-tested.** The corrected implementation is on the rewrite-fix branch. `exp_031` is an inspected clean held-out baseline; its recorded commit predates the query-rewrite correction, whose impact remains unassessed. It is not a poisoning-defense result. |
+| RCD (Retrieval-Consistency Defense) | **IMPLEMENTED AND FROZEN.** Corrected rewrites are used by the completed `7a24a40` poisoning study. Historical `exp_031` predates that correction and remains a separate clean-utility result. |
 | Week 9–10 clean HotpotQA held-out comparison | **ARTIFACTS INSPECTED; CORRECTION IMPACT UNASSESSED.** Configs `exp_030`/`exp_031` are committed; their raw logs and summaries are not (they are archived in `../rag-rcd-week9-final-results/results/`, outside Git). The numbers below cannot be re-derived from committed files. |
-| Week 9–10 poisoned source-to-target evaluation | **NOT YET RUN.** No results are inferred from the clean `n_poison=0` baselines. |
-| Week 9 held-out 12-cell protocol runner (`scripts/run_week9_protocol_poison_matrix.py`) | **IMPLEMENTED; DEVELOPMENT SMOKE COMPLETED; HELD-OUT CONSTRUCTION UNDERWAY.** Protocol freeze and live progress are researcher-reported; held-out evaluation and final results are not yet available. The older reviewed-target runner remains available separately. |
+| Week 9–10 poisoned source-to-target evaluation | **FULL STUDY NOT YET RUN; DEVELOPMENT SMOKE EXECUTED.** No attack results are inferred from the old clean `n_poison=0` baselines. |
+| Week 9 held-out 12-cell protocol runner (`scripts/run_week9_protocol_poison_matrix.py`) | **HOTPOTQA EXECUTED AND AUDITED.** New versioned 2Wiki/reliability paths add resumable batches and exact-input clean-QA caching; these new paths are fixture/preflight validated, not completed full experiments. Human-review workflows remain separate. |
 
 ## Week 7-8: Retrieval-Consistency Defense (RCD)
 
-**RCD implementation and regression testing:** the query-rewrite correction passed the focused regression tests and the full test suite. A two-query real-model smoke test validated execution plumbing only. The archived clean held-out baselines `exp_030` and `exp_031` were inspected for run metadata, query alignment, and frozen-input fingerprints. Their recorded commit predates the rewrite correction, so its impact on those results remains unassessed. They are clean utility comparisons, not poisoning-defense results. Held-out attack construction is underway; final poisoned evaluation and source-to-target transfer results remain pending.
+**RCD implementation and regression testing:** Week 7–8 development was closed by the October 13 review. Corrected rewrites and the frozen weights were used in the completed HotpotQA poisoning study below. The older `exp_030`/`exp_031` clean runs predate the rewrite correction; their historical caveat remains, and their values must not be substituted for the new matched study. Full source-crafted transfer and 2Wiki replication remain pending.
 
 The original RCD configuration was developed and frozen at the end of Week 8.
 A subsequent query-rewrite correction was regression-tested on the rewrite-fix
@@ -596,8 +596,36 @@ documents for 300 queries.
 
 These are clean-task retrieval/generation measurements. In particular, the
 lower clean EM and retrieval metrics in `exp_031` must not be described as
-evidence that RCD is ineffective against poisoning; that claim requires
-poisoned source-to-target evaluation, which is still pending.
+evidence that RCD is ineffective against poisoning. The completed matched
+poisoning results below provide separate evidence; full source-crafted transfer
+evaluation remains pending.
+
+**Completed HotpotQA poisoning results — 26 October 2026.** The fixed 300-query
+cohort was processed under both attacks, intensities 1/3 and seeds 42/43/44, with
+matched Dense/RCD poison instances. Across 3,600 query/cell constructions there
+were 955 valid, 1,980 target failures and 665 semantic failures. The same 165
+queries had no nominated target in every cell. Failures contribute zero
+end-to-end targeted successes, **not successful defenses**, and have no fabricated
+poisoned QA measurements.
+
+| Attack / intensity | Valid / 900 query-seed observations | Dense end-to-end ASR | RCD end-to-end ASR | Dense − RCD, 95% interval (percentage points) |
+|---|---:|---:|---:|---|
+| Lexical / 1 | 405 | 15.89% | 17.22% | −1.33 [−3.33, 0.56] |
+| Lexical / 3 | 405 | 34.89% | 33.44% | 1.44 [−0.44, 3.33] |
+| Semantic / 1 | 97 | 6.56% | 7.33% | −0.78 [−1.89, 0.00] |
+| Semantic / 3 | 48 | 5.00% | 5.00% | 0.00 [0.00, 0.00] |
+
+Intervals use 2,000 paired query-cluster bootstrap replicates, preserving all seeds
+for each of 300 unique questions. **No primary ASR interval excludes zero; these
+results do not establish overall RCD superiority.** Conditional utility and ASR
+use valid constructions only. Targets are label-conditioned non-gold answers;
+heuristic semantic support is not independent factual or linguistic verification.
+[Tables, figures and export provenance](paper/results/hotpotqa_week9_2026-10-26/INTERPRETATION.md)
+and the [scientific audit](reports/WEEK9_HOTPOTQA_SCIENTIFIC_AUDIT_2026-10-26.md)
+record the denominators, uncertainty and limitations. Release reverification found
+all 17,214 sealed-file hashes unchanged; eight unsealed Finder metadata files now
+make strict inventory validation of the original directory fail. A separate
+manifest-exact copy was verified without cleaning or changing the archive.
 
 ### Data and evaluation setup
 
@@ -661,15 +689,14 @@ Its manifest and summary are labelled `smoke_test_not_final` /
 `complete_smoke_test_not_final` and must not be aggregated as held-out matrix
 results. A two-query real-model smoke test completed on 2026-10-23 under
 experiment ID `rewrite-fix-smoke-20261023`, producing eight raw records. This
-validates execution plumbing only; no full matrix cell or complete 12-cell
-matrix is claimed to have been executed.
+validated execution plumbing only; it is not the subsequently completed
+300-query protocol matrix.
 
-The latest two-query **development** smoke has completed successfully, as reported
-by the researcher. The current protocol runner is
-`scripts/run_week9_protocol_poison_matrix.py`, pinned for the active experiment to
-`7a24a40c0a25399e1defc02844eb3a1de44b4a19`. The 300-query held-out protocol freeze
-is complete and attack construction is underway; final evaluation/results are not
-yet available. This update does not inspect the running worktree or its artifacts.
+The two-query **development** smoke preceded the completed 300-query protocol
+study at `7a24a40c0a25399e1defc02844eb3a1de44b4a19`. Its archived records have now
+been computationally audited. The historical reviewed-target validator below is
+a separate implementation; the completed protocol-based matrix used its own
+construction seal and failure-aware validation.
 
 #### Matrix validator guarantees (IMPLEMENTED; TESTED on synthetic cells; NOT YET RUN on real cells)
 
@@ -779,11 +806,11 @@ python run.py --config configs/exp_031_hotpotqa_rcd_heldout_mlx.yaml
 
 Do not run these commands against the archived completed result directory
 without first choosing a separate output directory. A `final_run: true`
-config also requires a verifiably clean Git working tree. There is **no
-dedicated transfer-experiment CLI** in this repository: transfer orchestration
-is exposed as the Python API `run_source_target_asr()` in
-`src/attacks/asr.py`; strict mode is the default and requires an explicit
-metadata mapping. The broader PRR sweep is exposed as
+config also requires a verifiably clean Git working tree. The staged transfer CLI
+is `scripts/run_source_selection_transfer.py`; the older strict Python API
+`run_source_target_asr()` remains in `src/attacks/asr.py`. See the
+[execution handoff](docs/OCT26_FINAL_EXECUTION_HANDOFF.md) for current protocol
+freeze, checkpoint, resume and model-compute gates. The broader PRR sweep is exposed as
 `run_attack_intensity_sweep()` in `src/attacks/sweep.py`, not as a standalone
 command-line program.
 
@@ -803,7 +830,13 @@ python -m pytest -q
 freeze, with the `exp_026` development run. **Archived artifacts inspected; correction
 impact unassessed:** Week 9–10 held-out HotpotQA clean dense and RCD baselines
 (`exp_030`/`exp_031`).
-**Pending / NOT YET RUN:** poisoned source-to-target transfer evaluation (including
+**Also completed:** the 12-cell HotpotQA poisoning study, computational audit,
+publication exports, and a two-query source-only transfer smoke (40 conditions,
+211 model calls; diagnostic only). Exact-input clean-QA caching, atomic checkpoints
+and complete-corpus batches are software-tested; new real-model execution remains
+gated. 2Wiki has frozen cohorts, local inputs and preflight, with unresolved
+historical 25-query pilot exposure.
+**Pending / NOT YET RUN:** full poisoned source-to-target transfer evaluation (including
 source-success-conditioned transfer reporting) and Week 9–10 held-out RCD /
 transfer evaluation on 2WikiMultiHopQA. Existing earlier 2Wiki baseline and
 attack-sweep artifacts do not establish completion of this held-out phase.
@@ -978,12 +1011,13 @@ The separate `evaluate_poison_across_retrievers()` path evaluates one fixed
 poisoned corpus across retrievers for PRR; it is not the source-success-
 conditioned transfer workflow.
 
-There is no transfer-specific YAML schema or command-line entry point at
-present. The regular `run.py --config ...` runner executes single-pipeline
-clean QA experiments; it does not invoke `run_source_target_asr()`.
+The staged transfer CLI is `scripts/run_source_selection_transfer.py`; its
+versioned protocol records the source-selection budget and replay provenance.
+The regular `run.py --config ...` runner remains a single-pipeline clean-QA
+entry point and does not invoke `run_source_target_asr()`.
 
 ### Current Status
-- Transfer matrix framework is built and tested; source-to-target execution is through the Python API, not a CLI
+- Transfer framework and staged CLI are implemented; the two-query real-model development smoke completed, while full source-crafted transfer remains pending.
 - The regular runner can select supported retrievers by config for its single-pipeline QA workflow
 - Knowledge-poisoning attack benchmark and evaluation infrastructure are complete through Week 5-6
 - Week 7–8: COMPLETE — RCD was implemented and frozen; the corrective `exp_026` run's raw log and summary are present in `results/` (300 rows; development validation split, not held-out evidence).
@@ -995,7 +1029,7 @@ clean QA experiments; it does not invoke `run_source_target_asr()`.
 - Historical `exp_023` results: EM=0.407, F1=0.508, Recall@3=0.7467, MRR@10=0.9411, nDCG@10=0.8565. Its score fields predate the correction and `exp_023` is not evidence for the corrective `exp_026` config; that run is evidenced by its own raw log and summary.
 - Week 9–10 clean held-out HotpotQA baselines: **ARTIFACTS INSPECTED; CORRECTION IMPACT UNASSESSED** (`exp_030` dense and `exp_031` RCD). Both archived runs contain 300 unique, identically ordered query IDs and matching query-set, held-out-ID, and corpus fingerprints; both summaries report `final_run=true` and `git_dirty=false`. Both are clean utility runs (`n_poison=0`), and their archived commit predates the query-rewrite correction. Assess the correction's impact before publication reuse. `exp_028b` remains an exploratory/recovery run (`git_dirty: null`), not the publication baseline.
 - Poisoned source-to-target evaluation and Week 9–10 held-out 2Wiki evaluation: PENDING.
-- Week 9–10 protocol-based matched Dense/RCD study: two-query development smoke completed; all-300 protocol freeze completed; held-out attack construction underway at `7a24a40` (researcher-reported). Final held-out evaluation and results are not yet available.
+- Week 9–10 protocol-based matched Dense/RCD study: all 12 HotpotQA cells completed at `7a24a40`; sealed records, metrics and paired bootstrap comparisons were reverified. See the tables and caveats above.
 
 ## Testing
 
@@ -1008,8 +1042,10 @@ The suite covers retrieval metrics (Recall/MRR/nDCG), attack metrics
 (PRR/ASR/ATR), strict transfer metadata and poison-instance integrity,
 query-ID alignment, corpus construction, config routing, end-to-end
 integration, environment metadata, gold retrieval labels, and dataset
-revision pinning. Test counts vary by worktree; use the command above for
-the current result.
+revision pinning. The October 26 release verification passed **1,024 offline tests**
+and the focused reliability regressions; compilation and whitespace checks passed.
+Fixture equivalence does not prove real-model semantic correctness or full-run
+readiness. Use the command above to verify a later checkout.
 
 ### Running specific test suites
 ```bash
@@ -1032,29 +1068,27 @@ JSONL log and a JSON summary beside it; older committed logs retain the schema
 that existed when they were produced.
 
 ## Next phase
-The 300-query held-out protocol freeze is complete and attack construction is
-underway, as reported by the researcher. Evaluation must wait for the complete
-construction seal; final held-out results are not yet available. The active run
-is pinned to `7a24a40c0a25399e1defc02844eb3a1de44b4a19` in
-`/private/tmp/rag-week9-frozen-protocol`; do not modify, reset, clean or interrupt
-that worktree. The archived `exp_030` / `exp_031` artifacts have
-been inspected for completion metadata, query alignment, and frozen-input
-fingerprints. Their recorded commit predates the query-rewrite correction, so
-the correction's impact on historical results remains unassessed and must be
-evaluated before publication use. Rerun tests after any further code changes
-and verify the tracked inputs and working tree before starting the matrix.
-Preserve historical artifacts and use a new experiment identity for any rerun.
-The two-query smoke test is execution-plumbing evidence only, not evidence of
-attack effectiveness. Clean utility differences must not be used to infer
-poisoning robustness. Held-out 2Wiki evaluation remains pending.
+The primary HotpotQA matched study, audit, tables and figures are complete with
+the limitations above. The remaining major runs are **full 2Wiki replication**
+and **full source-crafted cross-pipeline transfer**, followed by final analysis
+and professor-led manuscript preparation. The original completed worktree at
+`/private/tmp/rag-week9-frozen-protocol` remains pinned to `7a24a40` and must not
+be reset, cleaned or reused for new outputs.
+
+The [interim professor handout](reports/Sadia_Peerzada_RAG_Research_Progress_2026-10-26.md)
+separates completed results from fixtures, smoke tests and pending experiments.
+The [execution handoff](docs/OCT26_FINAL_EXECUTION_HANDOFF.md) gives exact staged
+commands, immutable output locations and resume instructions. Both workflows are
+prepared with documented limitations: a new bounded real-model smoke, adequate
+disk/memory headroom, clean committed provenance and explicit compute approval
+are needed before full execution. No full transfer or 2Wiki outcome is claimed.
 
 
 ### Week 9–10 freeze readiness (24 October 2026; validation branch)
 
-**25 October progress update:** the two-query development smoke and 300-query
-protocol freeze are complete; held-out construction is underway (researcher-
-reported). The following dated validation-branch notes are retained as project
-history; the active protocol and its global construction-before-evaluation
+**26 October update:** the HotpotQA matrix and audit are complete. The following
+24–25 October validation-branch notes describe historical pre-execution readiness,
+not the current execution status; they are retained as project history; the active protocol and its global construction-before-evaluation
 barrier are documented [here](docs/WEEK9_FROZEN_ATTACK_CONSTRUCTION_PROTOCOL.md).
 
 The supervisor review dated 13 October 2026 closes Week 7–8 and verifies the

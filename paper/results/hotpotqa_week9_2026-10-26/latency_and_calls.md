@@ -1,0 +1,26 @@
+| attack | intensity | seed | arm | clean_qa_wall_seconds_mean | poisoned_qa_wall_seconds_mean | clean_model_reported_seconds_mean | poisoned_model_reported_seconds_mean | clean_retrieval_seconds_mean | poisoned_retrieval_seconds_mean | diagnostic_retrieval_seconds_mean | normal_retrieval_calls | diagnostic_retrieval_calls | normal_inner_retrieval_operations | diagnostic_inner_retrieval_operations |
+|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|
+| lexical_influential_token | 1 | 42 | dense | 3.004976 | 3.054703 | 14.841497 | 7.659594 | 0.022128 | 0.025530 | 0.008885 | 270 | 135 | 270 | 135 |
+| lexical_influential_token | 1 | 42 | rcd | 3.313909 | 3.338259 | 3.311801 | 3.336000 | 0.056847 | 0.055084 | 0.036338 | 270 | 135 | 1086 | 543 |
+| lexical_influential_token | 1 | 43 | dense | 3.340582 | 3.383222 | 7.270572 | 3.380644 | 0.048035 | 0.062982 | 0.009017 | 270 | 135 | 270 | 135 |
+| lexical_influential_token | 1 | 43 | rcd | 3.675032 | 3.686619 | 9.134657 | 3.681393 | 0.112422 | 0.113732 | 0.044604 | 270 | 135 | 1086 | 543 |
+| lexical_influential_token | 1 | 44 | dense | 3.481881 | 3.516904 | 3.476481 | 3.510735 | 0.135045 | 0.177538 | 0.011653 | 270 | 135 | 270 | 135 |
+| lexical_influential_token | 1 | 44 | rcd | 3.658017 | 3.678132 | 3.654501 | 3.674355 | 0.079296 | 0.078414 | 0.036461 | 270 | 135 | 1086 | 543 |
+| lexical_influential_token | 3 | 42 | dense | 3.771633 | 3.944162 | 3.768003 | 3.940541 | 0.079217 | 0.076221 | 0.009624 | 270 | 135 | 270 | 135 |
+| lexical_influential_token | 3 | 42 | rcd | 3.704925 | 3.793197 | 3.701354 | 3.789707 | 0.095054 | 0.089918 | 0.036154 | 270 | 135 | 1086 | 543 |
+| lexical_influential_token | 3 | 43 | dense | 4.115928 | 3.903661 | 4.107740 | 3.897297 | 0.247477 | 0.510877 | 0.014421 | 270 | 135 | 270 | 135 |
+| lexical_influential_token | 3 | 43 | rcd | 3.539378 | 3.574592 | 3.535279 | 3.570325 | 0.093631 | 0.150580 | 0.038467 | 270 | 135 | 1086 | 543 |
+| lexical_influential_token | 3 | 44 | dense | 3.542342 | 3.730540 | 3.538625 | 3.726131 | 0.099210 | 0.032517 | 0.008649 | 270 | 135 | 270 | 135 |
+| lexical_influential_token | 3 | 44 | rcd | 3.599950 | 3.687479 | 3.596744 | 3.681003 | 0.081633 | 0.130033 | 0.036350 | 270 | 135 | 1086 | 543 |
+| semantic_fluent_false_evidence | 1 | 42 | dense | 5.016250 | 3.343305 | 5.004730 | 3.326328 | 0.164151 | 0.295000 | 0.012285 | 70 | 35 | 70 | 35 |
+| semantic_fluent_false_evidence | 1 | 42 | rcd | 3.529210 | 2.948972 | 3.523583 | 2.943579 | 0.638170 | 0.107775 | 0.039425 | 70 | 35 | 282 | 141 |
+| semantic_fluent_false_evidence | 1 | 43 | dense | 5.433210 | 2.806006 | 5.426889 | 2.800150 | 0.356839 | 0.714128 | 0.016778 | 60 | 30 | 60 | 30 |
+| semantic_fluent_false_evidence | 1 | 43 | rcd | 3.669907 | 3.081567 | 3.664869 | 3.077359 | 0.098934 | 0.085880 | 0.042568 | 60 | 30 | 242 | 121 |
+| semantic_fluent_false_evidence | 1 | 44 | dense | 3.300066 | 2.821185 | 3.297178 | 2.818168 | 0.041951 | 0.058992 | 0.008845 | 64 | 32 | 64 | 32 |
+| semantic_fluent_false_evidence | 1 | 44 | rcd | 3.111320 | 2.733211 | 3.108346 | 2.729660 | 0.154886 | 0.053323 | 0.035094 | 64 | 32 | 258 | 129 |
+| semantic_fluent_false_evidence | 3 | 42 | dense | 6.875065 | 2.478724 | 78.198510 | 2.471249 | 0.085482 | 0.132909 | 0.009976 | 32 | 16 | 32 | 16 |
+| semantic_fluent_false_evidence | 3 | 42 | rcd | 2.676163 | 1.901267 | 2.669534 | 1.894931 | 0.889982 | 1.179333 | 0.039374 | 32 | 16 | 130 | 65 |
+| semantic_fluent_false_evidence | 3 | 43 | dense | 7.126720 | 1.983975 | 7.119011 | 1.976369 | 0.589913 | 0.169859 | 0.010578 | 26 | 13 | 26 | 13 |
+| semantic_fluent_false_evidence | 3 | 43 | rcd | 3.011654 | 3.171965 | 2.997293 | 3.161147 | 6.005263 | 4.742781 | 0.043310 | 26 | 13 | 106 | 53 |
+| semantic_fluent_false_evidence | 3 | 44 | dense | 5.909293 | 1.863365 | 5.904108 | 1.825290 | 0.842088 | 1.054958 | 0.008900 | 38 | 19 | 38 | 19 |
+| semantic_fluent_false_evidence | 3 | 44 | rcd | 2.781748 | 1.846585 | 2.777324 | 1.841906 | 0.957431 | 0.167932 | 0.036918 | 38 | 19 | 154 | 77 |
