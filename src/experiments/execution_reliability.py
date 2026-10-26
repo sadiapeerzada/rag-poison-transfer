@@ -104,6 +104,8 @@ def validate_store(root):
         if not isinstance(obj,dict): continue
         if obj.get('schema')==VERSION and 'data_sha256' in obj:
             if obj['data_sha256']!=fingerprint(obj.get('data')): raise ValueError('Checkpoint data integrity mismatch')
+        if p.name.endswith('.response.json') and not p.with_name(p.name.replace('.response.json','.intent.json')).exists():
+            raise RuntimeError('Orphan generation response; no new generation')
         if p.name.endswith('.intent.json'):
             response=p.with_name(p.name.replace('.intent.json','.response.json'))
             if not response.exists(): raise RuntimeError('Unresolved generation intent; no silent regeneration')
@@ -157,6 +159,7 @@ class Journal:
         request={'prompt':prompt,'max_tokens':max_tokens,'provenance':self.model_provenance,
                  'context':self.context,'effective':{**self.effective,'corpus_fingerprint':self.corpora.get(self.context.get('condition'),self.effective.get('corpus_fingerprint'))},'evidence':self.evidence}
         intent=self.directory/f'{index:02d}.intent.json';response=self.directory/f'{index:02d}.response.json'
+        if response.exists() and not intent.exists():raise RuntimeError('Orphan generation response; no new generation')
         if intent.exists():
             if read(intent)!=request: raise ValueError('Generation checkpoint input mismatch')
             if not response.exists(): raise RuntimeError('Unresolved generation intent; no silent regeneration')
