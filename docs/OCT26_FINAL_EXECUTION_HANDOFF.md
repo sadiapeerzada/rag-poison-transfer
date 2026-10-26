@@ -168,3 +168,12 @@ manifest-exact copy was used for numerical reverification without cleaning the
 archive. See [the verification receipt](../reports/OCT26_RESULTS_REVERIFICATION.json)
 and [audit addendum](../reports/WEEK9_HOTPOTQA_SCIENTIFIC_AUDIT_2026-10-26.md).
 Do not suppress inventory checks or rewrite a historical seal to hide extras.
+
+## Publication byte preservation
+
+The compact publication package is copied byte-for-byte from its verified export.
+Scoped `.gitattributes` preserve its bytes across checkout newline settings and
+recognize standard CSV CRLF plus Matplotlib SVG path-line spacing. Code/docs
+whitespace checks remain unchanged, and all 37 original file hashes are still
+required. No scientific file was normalized, regenerated or silently exempted
+from its hash checks.

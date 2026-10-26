@@ -1,0 +1,6 @@
+# Preserve verified publication bytes: standard CSV CRLF and generated SVG path strings.
+# Keep byte-preserved exports stable across checkout newline settings.
+paper/results/hotpotqa_week9_2026-10-26/** -text
+# Format-specific whitespace diagnostics never replace artifact hash validation.
+paper/results/hotpotqa_week9_2026-10-26/*.csv whitespace=blank-at-eol,blank-at-eof,space-before-tab,cr-at-eol
+paper/results/hotpotqa_week9_2026-10-26/*.svg whitespace=-blank-at-eol,blank-at-eof,space-before-tab
