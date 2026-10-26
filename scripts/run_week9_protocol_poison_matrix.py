@@ -23,6 +23,7 @@ from scripts.run_week9_matched_poison_comparison import build_matched_retrievers
 from scripts.audit_phase4d_development_coverage import DEFAULT_ARTIFACT, PINNED_ARTIFACT_SHA256
 from scripts.extract_verified_development_queries import extract_verified
 from src.attacks.reviewed_target_artifact import read_pinned
+from src.attacks import semantic_profiles
 from src.evaluation.qa_records import capture_generation, validate_qa
 from src.pipelines.generator import GenerationResult, MLXGenerator
 from src.experiments.protocol import corpus_fingerprint, query_set_fingerprint
@@ -33,6 +34,7 @@ PROTOCOL_SCHEMA = "rag-poison-transfer.week9-frozen-construction-protocol/v1"
 REPLICATION_PROTOCOL_SCHEMA = "rag-poison-transfer.2wiki-frozen-construction-protocol/v1"
 SEAL_SCHEMA = "rag-poison-transfer.week9-complete-construction-seal/v1"
 EVALUATION_SCHEMA = "rag-poison-transfer.week9-protocol-evaluation/v1"
+PROFILE_PROTOCOL_SCHEMA = "rag-poison-transfer.week9-profiled-construction-protocol/v1"
 RELIABLE_REPLICATION_SCHEMA = "rag-poison-transfer.2wiki-frozen-construction-protocol/v2"
 from src.experiments import execution_reliability as reliable
 
@@ -119,15 +121,36 @@ def context_metadata(scope,replication=None):
     return result
 
 
-def freeze_protocol(output, scope, snapshot,replication=None):
+def profile_fields(value):
+    return {"semantic_profile":value["semantic_profile"]} if "semantic_profile" in value else {}
+
+
+def profile_kwargs(value):
+    return {**profile_fields(value),"scope":value["binding"]["scope"]} if "semantic_profile" in value else {}
+
+
+def profile_provenance(value):
+    return {"semantic_profile_sha256":protocol.fingerprint(value["semantic_profile"])} if "semantic_profile" in value else {}
+
+
+def frozen_rules(replication=None,profile=None):
+    rules=protocol.rules()
+    if replication is not None:rules={**rules,"dataset_replication":"risk-disclosed-2wiki/v1"}
+    if profile is not None:
+        rules={**rules,"semantic_profile":profile["identifier"],"semantic_prompt":profile["prompt_version"],
+            "semantic_validator":profile["validation_version"],"retry_policy":profile["retry_policy"]}
+    return rules
+
+
+def freeze_protocol(output, scope, snapshot,replication=None,semantic_profile=None):
     legacy._ensure_output_outside_repository(Path(output).parent)
+    profile=semantic_profiles.descriptor(semantic_profile,scope) if semantic_profile is not None else None
     binding,*_ = context_metadata(scope,replication)
     installed = environment()
     if any(v is None for v in installed.values()):
         raise ValueError("All frozen runtime dependencies must be installed before protocol freeze")
-    frozen_rules = protocol.rules()
-    if replication is not None:frozen_rules = {**frozen_rules,"dataset_replication":"risk-disclosed-2wiki/v1"}
-    value = {"schema":REPLICATION_PROTOCOL_SCHEMA if replication is not None else PROTOCOL_SCHEMA,"rules":frozen_rules,"binding":binding,
+    rules = frozen_rules(replication,profile)
+    value = {"schema":REPLICATION_PROTOCOL_SCHEMA if replication is not None else PROTOCOL_SCHEMA,"rules":rules,"binding":binding,
         "source":code_binding(),"environment":installed,"model":model_binding(snapshot,binding["model_identity"])}
     if replication is not None:
         value["replication"] = replication
@@ -135,6 +158,8 @@ def freeze_protocol(output, scope, snapshot,replication=None):
             value["schema"]=RELIABLE_REPLICATION_SCHEMA
             value["execution"]=dict(reliable.DEFAULTS)
             value["planned_outputs"]=reliable.planned_outputs(output,"2wiki")
+    if profile is not None:
+        value.update(schema=PROFILE_PROTOCOL_SCHEMA,semantic_profile=profile)
     write(output,value)
     return {"protocol_sha256":sha(output),"scope":scope,"status":"protocol_frozen_no_construction_or_evaluation"}
 
@@ -145,7 +170,11 @@ def load_protocol(path,digest,snapshot=None):
     local = replication is not None and replication.get("schema")=="rag-poison-transfer.2wiki-replication-inputs/v2"
     expected_schema = RELIABLE_REPLICATION_SCHEMA if local else REPLICATION_PROTOCOL_SCHEMA if replication is not None else PROTOCOL_SCHEMA
     if local and value.get("execution")!=reliable.DEFAULTS:raise ValueError("Execution protocol mismatch")
-    expected_rules = {**protocol.rules(),"dataset_replication":"risk-disclosed-2wiki/v1"} if replication is not None else protocol.rules()
+    profile=value.get("semantic_profile")
+    if "semantic_profile" in value:
+        semantic_profiles.validate(profile,value["binding"]["scope"])
+        expected_schema=PROFILE_PROTOCOL_SCHEMA
+    expected_rules = frozen_rules(replication,profile)
     if value.get("schema") != expected_schema or value.get("rules") != expected_rules:
         raise ValueError("Protocol version/rules mismatch")
     binding,dense,rcd,development = context_metadata(value["binding"]["scope"],replication)
@@ -265,7 +294,7 @@ def construction_journals(root,cell,value,digest):
             raise ValueError("Terminal query checkpoint differs from sealed cell ledger")
         provenance = {"protocol_sha256":digest,"family":cell["family"],"intensity":cell["intensity"],
                       "seed":cell["seed"],"query_id":row["query_id"],"model":value["model"],
-                      "decoding":value["rules"]["decoding"]}
+                      "decoding":value["rules"]["decoding"],**profile_provenance(value)}
         expected = []
         for entry in row["attempt_records"]:
             for event in entry["attempts"]:
@@ -277,10 +306,11 @@ def construction_journals(root,cell,value,digest):
         validate_generation_journal(root/identity/"generation"/key,expected)
 
 
-def make_cell(clean,family,intensity,seed,digest,records):
+def make_cell(clean,family,intensity,seed,digest,records,semantic_profile=None):
     return {"schema":protocol.CELL_SCHEMA,"protocol_sha256":digest,"family":family,"intensity":intensity,"seed":seed,
         "query_set_fingerprint":query_set_fingerprint(clean["queries"]),
-        "clean_corpus_fingerprint":corpus_fingerprint(clean["corpus"]),"records":records}
+        "clean_corpus_fingerprint":corpus_fingerprint(clean["corpus"]),"records":records,
+        **({"semantic_profile":semantic_profile} if semantic_profile is not None else {})}
 
 
 def construction_files(root):
@@ -301,7 +331,7 @@ def construct(path,digest,root,snapshot,max_batches=None):
     value,dense,rcd,development = load_protocol(path,digest,snapshot)
     reliable.require_output(value,"construction",root)
     clean = load_clean(value,rcd)
-    plan = {"protocol_sha256":digest,"binding":value["binding"],"source":value["source"],
+    plan = {"protocol_sha256":digest,"binding":value["binding"],"source":value["source"],**profile_fields(value),
         "query_set_fingerprint":query_set_fingerprint(clean["queries"]),"clean_corpus_fingerprint":corpus_fingerprint(clean["corpus"])}
     planpath = root/"construction.plan.json"
     if planpath.exists():
@@ -340,16 +370,16 @@ def construct(path,digest,root,snapshot,max_batches=None):
                         backend = generator(rcd,snapshot)
                     recorded = JournalGenerator(backend,root/identity/"generation"/hashlib.sha256(query["query_id"].encode()).hexdigest(),
                         {"protocol_sha256":digest,"family":family,"intensity":intensity,"seed":seed,
-                         "query_id":query["query_id"],"model":value["model"],"decoding":value["rules"]["decoding"]})
-                    record = protocol.construct_query(query,development,family,intensity,seed,recorded,set_runtime_seed=runtime_seed)
+                         "query_id":query["query_id"],"model":value["model"],"decoding":value["rules"]["decoding"],**profile_provenance(value)})
+                    record = protocol.construct_query(query,development,family,intensity,seed,recorded,set_runtime_seed=runtime_seed,**profile_kwargs(value))
                     write(checkpoint,record)
                 mini = {"queries":[query],"corpus":clean["corpus"]}
-                protocol.validate_cell(make_cell(mini,family,intensity,seed,digest,[record]),mini,development,digest)
+                protocol.validate_cell(make_cell(mini,family,intensity,seed,digest,[record],**profile_fields(value)),mini,development,digest,**profile_kwargs(value))
                 records.append(record)
-            cell = make_cell(clean,family,intensity,seed,digest,records)
-            protocol.validate_cell(cell,clean,development,digest)
+            cell = make_cell(clean,family,intensity,seed,digest,records,**profile_fields(value))
+            protocol.validate_cell(cell,clean,development,digest,**profile_kwargs(value))
             write(cellpath,cell)
-        protocol.validate_cell(cell,clean,development,digest)
+        protocol.validate_cell(cell,clean,development,digest,**profile_kwargs(value))
         construction_journals(root,cell,value,digest)
         entries[identity] = {"path":str(cellpath.relative_to(root)),"sha256":sha(cellpath)}
     load_protocol(path,digest,snapshot)  # Recheck source/config/environment/weights at the barrier.
@@ -370,7 +400,7 @@ def load_sealed(path,digest,root,seal_digest):
     if set(seal.get("cells",{})) != expected:
         raise ValueError("Complete declared matrix must be frozen before evaluation")
     clean = load_clean(value,rcd)
-    expected_plan = {"protocol_sha256":digest,"binding":value["binding"],"source":value["source"],
+    expected_plan = {"protocol_sha256":digest,"binding":value["binding"],"source":value["source"],**profile_fields(value),
         "query_set_fingerprint":query_set_fingerprint(clean["queries"]),
         "clean_corpus_fingerprint":corpus_fingerprint(clean["corpus"])}
     if seal["plan"] != expected_plan or json.loads((root/"construction.plan.json").read_text()) != expected_plan:
@@ -385,7 +415,7 @@ def load_sealed(path,digest,root,seal_digest):
         cell = json.loads((root/expected_path).read_text())
         if (cell.get("family"),cell.get("intensity"),cell.get("seed")) != (family,intensity,seed):
             raise ValueError("Cell matrix identity mismatch")
-        cells[identity] = protocol.validate_cell(cell,clean,development,digest)
+        cells[identity] = protocol.validate_cell(cell,clean,development,digest,**profile_kwargs(value))
         construction_journals(root,cell,value,digest)
     return value,dense,rcd,clean,cells
 
@@ -486,7 +516,7 @@ def aggregate(path,digest,root,seal_digest,evaluation,completion_digest,output):
         "cells":summaries,"paired_query_cluster_uncertainty":intervals,
         "unique_target_counts_per_query":{q["query_id"]:len({r["target_answer"] for cell in cells.values()
             for r in cell["records"] if r["query_id"]==q["query_id"] and r["target_answer"] is not None}) for q in clean["queries"]},
-        "construction_failures_are_not_defense_successes":True,
+        "construction_failures_are_not_defense_successes":True,**profile_fields(value),
         **({"execution_accounting":reliable.accounting(evaluation)} if "execution" in value else {})}
     legacy._ensure_output_outside_repository(Path(output).parent)
     if "execution" in value:reliable.once(output,result)
@@ -506,6 +536,7 @@ def read_pinned_rows(path,digest):
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("stage",choices=("preflight","freeze-protocol","construct","evaluate","aggregate"))
+    parser.add_argument("--semantic-profile",choices=semantic_profiles.IDENTIFIERS,help="Only preflight/freeze; later stages use the pinned protocol exclusively")
     parser.add_argument("--scope",choices=("heldout","development"),default="heldout")
     parser.add_argument("--protocol",type=Path)
     parser.add_argument("--protocol-sha256")
@@ -519,19 +550,23 @@ def main():
     parser.add_argument("--replication-spec",type=Path)
     parser.add_argument("--replication-spec-sha256")
     args = parser.parse_args()
+    if args.semantic_profile is not None and args.stage not in {"preflight","freeze-protocol"}:
+        parser.error("Profile cannot be overridden after freeze")
     if bool(args.replication_spec) != bool(args.replication_spec_sha256):
         parser.error("Supply both replication input specification and trusted SHA-256")
     replication = read_pinned(args.replication_spec,args.replication_spec_sha256) if args.replication_spec else None
     if replication is not None and args.stage not in {"preflight","freeze-protocol"}:
         parser.error("Later stages take replication inputs only from the frozen protocol")
     if args.stage == "preflight":
+        profile=semantic_profiles.descriptor(args.semantic_profile,args.scope) if args.semantic_profile is not None else None
         binding,*_ = context_metadata(args.scope,replication)
-        result = {"status":"metadata_only_not_scientific_readiness","binding":binding,"rules":protocol.rules(),
+        result = {"status":"metadata_only_not_scientific_readiness","binding":binding,"rules":frozen_rules(replication,profile),
+                  **({"semantic_profile":profile} if profile is not None else {}),
                   "individual_target_signatures_required":False,"protocol_frozen":False}
     elif args.stage == "freeze-protocol":
         if not args.output or not args.model_snapshot:
             parser.error("freeze-protocol requires --output and --model-snapshot")
-        result = freeze_protocol(args.output,args.scope,args.model_snapshot,replication)
+        result = freeze_protocol(args.output,args.scope,args.model_snapshot,replication,**({"semantic_profile":args.semantic_profile} if args.semantic_profile is not None else {}))
     else:
         if not args.protocol or not args.protocol_sha256 or not args.construction_dir:
             parser.error("Require --protocol, --protocol-sha256 and --construction-dir")

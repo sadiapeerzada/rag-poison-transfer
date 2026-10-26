@@ -1,4 +1,4 @@
-"""Opt-in development hypothesis, never selected by the frozen matrix runner.
+"""Opt-in development hypothesis, selected only by development-profile protocols.
 
 Single-sentence, question-anchored syntax only. Passing is heuristic support,
 not entailment, factual verification, approval or measured generation quality.
@@ -77,7 +77,7 @@ def failure_category(reason):
 
 
 class DevelopmentSemanticFluentAttack(SemanticFluentFalseEvidenceAttack):
-    """Must be explicitly instantiated with scope='development'; no runner wiring."""
+    """Explicit runner selection requires a development-only frozen profile."""
     validation_version=DEVELOPMENT_VALIDATION_VERSION
     retry_policy=DEVELOPMENT_RETRY_POLICY
 
