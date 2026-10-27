@@ -74,8 +74,13 @@ def derived_seed(seed, qid, stage, index=0):
     return int.from_bytes(hashlib.sha256(canonical([VERSION, seed, qid, stage, index])).digest()[:8], "big") % 2**32
 
 
-def select_target(query, development, seed):
-    nomination = nominate(query, development, v2.build_pool(development))
+def select_target(query, development, seed, *, target_method=None, scope=None):
+    if target_method is None:
+        nomination = nominate(query, development, v2.build_pool(development))
+    else:
+        from src.attacks import development_targets_v4 as v4
+        v4.validate(target_method,scope)
+        nomination = v4.nominate(query,development)
     candidates = sorted(nomination["candidates"], key=canonical)
     if not candidates:
         return None, {"reason": nomination["reason"], "method_family": nomination["method_family"]}
@@ -96,13 +101,14 @@ def select_target(query, development, seed):
         "validation_status": "mechanical_label_conditioned_not_independently_verified"}
 
 
-def construct_query(query, development, family, intensity, seed, generator, *, set_runtime_seed, semantic_profile=None, scope=None):
+def construct_query(query, development, family, intensity, seed, generator, *, set_runtime_seed, semantic_profile=None, scope=None, target_method=None):
     if semantic_profile is not None:semantic_profiles.validate(semantic_profile,scope)
-    target, selection = select_target(query, development, seed)
+    target, selection = select_target(query, development, seed,**({"target_method":target_method,"scope":scope} if target_method is not None else {}))
     record = {"query_id": query["query_id"], "query_fingerprint": fingerprint(query), "target_answer": target,
               "selection": selection, "documents": [], "partial_documents": [], "attempt_records": [],
               "declared_document_seeds":{str(i):derived_seed(seed,query["query_id"],family,i) for i in range(intensity)}}
     if semantic_profile is not None:record["semantic_profile_sha256"]=fingerprint(semantic_profile)
+    if target_method is not None:record["target_method_sha256"]=fingerprint(target_method)
     if target is None:
         return {**record, "status": TARGET_FAILED}
     attack = (LexicalInfluentialTokenAttack(repeat_factor=4) if family == ATTACKS[0]
@@ -126,8 +132,12 @@ def construct_query(query, development, family, intensity, seed, generator, *, s
     return {**record, "status": VALID, "documents": documents}
 
 
-def validate_cell(cell, clean, development, protocol_sha, *, semantic_profile=None, scope=None, development_study=None):
+def validate_cell(cell, clean, development, protocol_sha, *, semantic_profile=None, scope=None, development_study=None, target_method=None):
     if semantic_profile is not None:semantic_profiles.validate(semantic_profile,scope)
+    if target_method is not None:
+        from src.attacks import development_targets_v4 as v4
+        v4.validate(target_method,scope)
+    if cell.get("target_method")!=target_method:raise ValueError("Cell target method mismatch")
     if cell.get("development_study")!=development_study:raise ValueError("Cell development study mismatch")
     if development_study is not None:
         from src.experiments.semantic_development_study import descriptor
@@ -144,9 +154,10 @@ def validate_cell(cell, clean, development, protocol_sha, *, semantic_profile=No
     if [r["query_id"] for r in records] != [q["query_id"] for q in clean["queries"]]:
         raise ValueError("Construction ledger dropped, duplicated or reordered population IDs")
     for query, row in zip(clean["queries"], records):
+        if row.get("target_method_sha256")!=(fingerprint(target_method) if target_method is not None else None):raise ValueError("Query target method mismatch")
         expected_profile=fingerprint(semantic_profile) if semantic_profile is not None else None
         if row.get("semantic_profile_sha256")!=expected_profile:raise ValueError("Query semantic profile mismatch")
-        target, selection = select_target(query, development, seed)
+        target, selection = select_target(query, development, seed,**({"target_method":target_method,"scope":scope} if target_method is not None else {}))
         if row.get("query_fingerprint") != fingerprint(query) or row.get("target_answer") != target or row.get("selection") != selection:
             raise ValueError("Frozen target/query/selection mismatch")
         status = row.get("status")
