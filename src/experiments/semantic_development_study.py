@@ -22,7 +22,7 @@ def validate(value,scope,replication,profile):
     if (value!=descriptor() or scope!='development' or not isinstance(replication,dict) or
         replication.get('schema')!='rag-poison-transfer.2wiki-replication-inputs/v2' or
         replication.get('scope')!='development' or not isinstance(profile,dict) or
-        profile.get('identifier')!='question-anchored-development/v1'):
+        profile.get('identifier') not in ('question-anchored-development/v1','question-anchored-development/v2')):
         raise ValueError('Study requires fixed 25-query local 2Wiki development inputs and the development semantic profile')
 
 
