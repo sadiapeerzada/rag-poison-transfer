@@ -145,9 +145,9 @@ def target_fields(value):
 
 def validate_target_method(value,scope,study,profile):
     if value is not None:
-        from src.attacks import development_targets_v4 as v4
-        v4.validate(value,scope)
-        if study is None or profile is None or profile["identifier"]!=semantic_profiles.DEVELOPMENT:
+        from src.attacks.development_targets_v5 import method_module
+        method_module(value.get("identifier")).validate(value,scope)
+        if study is None or profile is None or profile["identifier"] not in semantic_profiles.DEVELOPMENT_IDENTIFIERS:
             raise ValueError("Corrected target method requires a separate development study/profile")
 
 
@@ -196,8 +196,8 @@ def freeze_protocol(output, scope, snapshot,replication=None,semantic_profile=No
         study=descriptor(development_study)
     method=None
     if target_method is not None:
-        from src.attacks.development_targets_v4 import descriptor
-        method=descriptor(target_method)
+        from src.attacks.development_targets_v5 import method_module
+        method=method_module(target_method).descriptor(target_method)
     validate_target_method(method,scope,study,profile)
     binding,*_ = study_context(scope,replication,study,profile)
     installed = environment()
@@ -612,7 +612,7 @@ def read_pinned_rows(path,digest):
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("stage",choices=("preflight","freeze-protocol","construct","evaluate","aggregate"))
-    parser.add_argument("--target-method",choices=["development-source-focus-guard/v1"],help="Opt-in development-only corrected source-focus nomination; freeze/preflight only")
+    parser.add_argument("--target-method",choices=["development-source-focus-guard/v1","development-source-focus-guard/v2"],help="Opt-in development-only corrected source-focus nomination; freeze/preflight only")
     parser.add_argument("--development-study",choices=["semantic-quality-25/v1"],help="Development-only 25-query semantic intensity-1/3 study; freeze/preflight only")
     parser.add_argument("--semantic-profile",choices=semantic_profiles.IDENTIFIERS,help="Only preflight/freeze; later stages use the pinned protocol exclusively")
     parser.add_argument("--scope",choices=("heldout","development"),default="heldout")
@@ -647,8 +647,8 @@ def main():
             study=descriptor(args.development_study)
         method=None
         if args.target_method is not None:
-            from src.attacks.development_targets_v4 import descriptor
-            method=descriptor(args.target_method)
+            from src.attacks.development_targets_v5 import method_module
+            method=method_module(args.target_method).descriptor(args.target_method)
         validate_target_method(method,args.scope,study,profile)
         binding,*_ = study_context(args.scope,replication,study,profile)
         result = {"status":"metadata_only_not_scientific_readiness","binding":binding,"rules":frozen_rules(replication,profile,method),

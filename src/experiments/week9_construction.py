@@ -78,9 +78,10 @@ def select_target(query, development, seed, *, target_method=None, scope=None):
     if target_method is None:
         nomination = nominate(query, development, v2.build_pool(development))
     else:
-        from src.attacks import development_targets_v4 as v4
-        v4.validate(target_method,scope)
-        nomination = v4.nominate(query,development)
+        from src.attacks.development_targets_v5 import method_module
+        method = method_module(target_method.get("identifier"))
+        method.validate(target_method,scope)
+        nomination = method.nominate(query,development)
     candidates = sorted(nomination["candidates"], key=canonical)
     if not candidates:
         return None, {"reason": nomination["reason"], "method_family": nomination["method_family"]}
@@ -135,8 +136,9 @@ def construct_query(query, development, family, intensity, seed, generator, *, s
 def validate_cell(cell, clean, development, protocol_sha, *, semantic_profile=None, scope=None, development_study=None, target_method=None):
     if semantic_profile is not None:semantic_profiles.validate(semantic_profile,scope)
     if target_method is not None:
-        from src.attacks import development_targets_v4 as v4
-        v4.validate(target_method,scope)
+        from src.attacks.development_targets_v5 import method_module
+        method = method_module(target_method.get("identifier"))
+        method.validate(target_method,scope)
     if cell.get("target_method")!=target_method:raise ValueError("Cell target method mismatch")
     if cell.get("development_study")!=development_study:raise ValueError("Cell development study mismatch")
     if development_study is not None:
