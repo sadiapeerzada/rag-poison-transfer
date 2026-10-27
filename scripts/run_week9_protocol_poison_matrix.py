@@ -34,6 +34,7 @@ PROTOCOL_SCHEMA = "rag-poison-transfer.week9-frozen-construction-protocol/v1"
 REPLICATION_PROTOCOL_SCHEMA = "rag-poison-transfer.2wiki-frozen-construction-protocol/v1"
 SEAL_SCHEMA = "rag-poison-transfer.week9-complete-construction-seal/v1"
 EVALUATION_SCHEMA = "rag-poison-transfer.week9-protocol-evaluation/v1"
+CORRECTED_DEVELOPMENT_PROTOCOL_SCHEMA = "rag-poison-transfer.semantic-development-protocol/v2"
 DEVELOPMENT_STUDY_PROTOCOL_SCHEMA = "rag-poison-transfer.semantic-development-protocol/v1"
 PROFILE_PROTOCOL_SCHEMA = "rag-poison-transfer.week9-profiled-construction-protocol/v1"
 RELIABLE_REPLICATION_SCHEMA = "rag-poison-transfer.2wiki-frozen-construction-protocol/v2"
@@ -138,8 +139,20 @@ def study_fields(value):
     return {"development_study":value["development_study"]} if "development_study" in value else {}
 
 
+def target_fields(value):
+    return {"target_method":value["target_method"]} if "target_method" in value else {}
+
+
+def validate_target_method(value,scope,study,profile):
+    if value is not None:
+        from src.attacks import development_targets_v4 as v4
+        v4.validate(value,scope)
+        if study is None or profile is None or profile["identifier"]!=semantic_profiles.DEVELOPMENT:
+            raise ValueError("Corrected target method requires a separate development study/profile")
+
+
 def manifest_fields(value):
-    return {**profile_fields(value),**study_fields(value)}
+    return {**profile_fields(value),**study_fields(value),**target_fields(value)}
 
 
 def validation_kwargs(value):
@@ -155,35 +168,42 @@ def profile_fields(value):
 
 
 def profile_kwargs(value):
-    return {**profile_fields(value),"scope":value["binding"]["scope"]} if "semantic_profile" in value else {}
+    return {**profile_fields(value),**target_fields(value),"scope":value["binding"]["scope"]} if "semantic_profile" in value else {}
 
 
 def profile_provenance(value):
     return {**({"semantic_profile_sha256":protocol.fingerprint(value["semantic_profile"])} if "semantic_profile" in value else {}),
-        **({"development_study_sha256":protocol.fingerprint(value["development_study"])} if "development_study" in value else {})}
+        **({"development_study_sha256":protocol.fingerprint(value["development_study"])} if "development_study" in value else {}),
+        **({"target_method_sha256":protocol.fingerprint(value["target_method"])} if "target_method" in value else {})}
 
 
-def frozen_rules(replication=None,profile=None):
+def frozen_rules(replication=None,profile=None,target_method=None):
     rules=protocol.rules()
     if replication is not None:rules={**rules,"dataset_replication":"risk-disclosed-2wiki/v1"}
     if profile is not None:
         rules={**rules,"semantic_profile":profile["identifier"],"semantic_prompt":profile["prompt_version"],
             "semantic_validator":profile["validation_version"],"retry_policy":profile["retry_policy"]}
+    if target_method is not None:rules={**rules,"target_method":target_method["identifier"]}
     return rules
 
 
-def freeze_protocol(output, scope, snapshot,replication=None,semantic_profile=None,development_study=None):
+def freeze_protocol(output, scope, snapshot,replication=None,semantic_profile=None,development_study=None,target_method=None):
     legacy._ensure_output_outside_repository(Path(output).parent)
     profile=semantic_profiles.descriptor(semantic_profile,scope) if semantic_profile is not None else None
     study=None
     if development_study is not None:
         from src.experiments.semantic_development_study import descriptor
         study=descriptor(development_study)
+    method=None
+    if target_method is not None:
+        from src.attacks.development_targets_v4 import descriptor
+        method=descriptor(target_method)
+    validate_target_method(method,scope,study,profile)
     binding,*_ = study_context(scope,replication,study,profile)
     installed = environment()
     if any(v is None for v in installed.values()):
         raise ValueError("All frozen runtime dependencies must be installed before protocol freeze")
-    rules = frozen_rules(replication,profile)
+    rules = frozen_rules(replication,profile,method)
     value = {"schema":REPLICATION_PROTOCOL_SCHEMA if replication is not None else PROTOCOL_SCHEMA,"rules":rules,"binding":binding,
         "source":code_binding(),"environment":installed,"model":model_binding(snapshot,binding["model_identity"])}
     if replication is not None:
@@ -195,6 +215,7 @@ def freeze_protocol(output, scope, snapshot,replication=None,semantic_profile=No
     if profile is not None:
         value.update(schema=PROFILE_PROTOCOL_SCHEMA,semantic_profile=profile)
     if study is not None:value.update(schema=DEVELOPMENT_STUDY_PROTOCOL_SCHEMA,development_study=study)
+    if method is not None:value.update(schema=CORRECTED_DEVELOPMENT_PROTOCOL_SCHEMA,target_method=method)
     write(output,value)
     return {"protocol_sha256":sha(output),"scope":scope,"status":"protocol_frozen_no_construction_or_evaluation"}
 
@@ -213,7 +234,12 @@ def load_protocol(path,digest,snapshot=None):
         from src.experiments.semantic_development_study import validate
         validate(value["development_study"],value["binding"]["scope"],replication,profile)
         expected_schema=DEVELOPMENT_STUDY_PROTOCOL_SCHEMA
-    expected_rules = frozen_rules(replication,profile)
+    method=value.get("target_method")
+    if "target_method" in value:
+        if method is None:raise ValueError("Missing target method descriptor")
+        validate_target_method(method,value["binding"]["scope"],value.get("development_study"),profile)
+        expected_schema=CORRECTED_DEVELOPMENT_PROTOCOL_SCHEMA
+    expected_rules = frozen_rules(replication,profile,method)
     if value.get("schema") != expected_schema or value.get("rules") != expected_rules:
         raise ValueError("Protocol version/rules mismatch")
     binding,dense,rcd,development = study_context(value["binding"]["scope"],replication,value.get("development_study"),profile)
@@ -353,12 +379,13 @@ def construction_journals(root,cell,value,digest):
         validate_generation_journal(root/identity/"generation"/key,expected)
 
 
-def make_cell(clean,family,intensity,seed,digest,records,semantic_profile=None,development_study=None):
+def make_cell(clean,family,intensity,seed,digest,records,semantic_profile=None,development_study=None,target_method=None):
     return {"schema":protocol.CELL_SCHEMA,"protocol_sha256":digest,"family":family,"intensity":intensity,"seed":seed,
         "query_set_fingerprint":query_set_fingerprint(clean["queries"]),
         "clean_corpus_fingerprint":corpus_fingerprint(clean["corpus"]),"records":records,
         **({"semantic_profile":semantic_profile} if semantic_profile is not None else {}),
-        **({"development_study":development_study} if development_study is not None else {})}
+        **({"development_study":development_study} if development_study is not None else {}),
+        **({"target_method":target_method} if target_method is not None else {})}
 
 
 def construction_files(root):
@@ -413,7 +440,7 @@ def construct(path,digest,root,snapshot,max_batches=None):
                 if checkpoint.exists():
                     record = json.loads(checkpoint.read_text())
                 else:
-                    target,_ = protocol.select_target(query,development,seed)
+                    target,_ = protocol.select_target(query,development,seed,**({**target_fields(value),"scope":value["binding"]["scope"]} if "target_method" in value else {}))
                     if family == protocol.ATTACKS[1] and target is not None and backend is None:
                         backend = generator(rcd,snapshot)
                     recorded = JournalGenerator(backend,root/identity/"generation"/hashlib.sha256(query["query_id"].encode()).hexdigest(),
@@ -585,6 +612,7 @@ def read_pinned_rows(path,digest):
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("stage",choices=("preflight","freeze-protocol","construct","evaluate","aggregate"))
+    parser.add_argument("--target-method",choices=["development-source-focus-guard/v1"],help="Opt-in development-only corrected source-focus nomination; freeze/preflight only")
     parser.add_argument("--development-study",choices=["semantic-quality-25/v1"],help="Development-only 25-query semantic intensity-1/3 study; freeze/preflight only")
     parser.add_argument("--semantic-profile",choices=semantic_profiles.IDENTIFIERS,help="Only preflight/freeze; later stages use the pinned protocol exclusively")
     parser.add_argument("--scope",choices=("heldout","development"),default="heldout")
@@ -600,6 +628,8 @@ def main():
     parser.add_argument("--replication-spec",type=Path)
     parser.add_argument("--replication-spec-sha256")
     args = parser.parse_args()
+    if args.target_method is not None and args.stage not in {"preflight","freeze-protocol"}:
+        parser.error("Target method cannot be overridden after freeze")
     if args.development_study is not None and args.stage not in {"preflight","freeze-protocol"}:
         parser.error("Development study cannot be overridden after freeze")
     if args.semantic_profile is not None and args.stage not in {"preflight","freeze-protocol"}:
@@ -615,16 +645,23 @@ def main():
         if args.development_study is not None:
             from src.experiments.semantic_development_study import descriptor
             study=descriptor(args.development_study)
+        method=None
+        if args.target_method is not None:
+            from src.attacks.development_targets_v4 import descriptor
+            method=descriptor(args.target_method)
+        validate_target_method(method,args.scope,study,profile)
         binding,*_ = study_context(args.scope,replication,study,profile)
-        result = {"status":"metadata_only_not_scientific_readiness","binding":binding,"rules":frozen_rules(replication,profile),
+        result = {"status":"metadata_only_not_scientific_readiness","binding":binding,"rules":frozen_rules(replication,profile,method),
                   **({"semantic_profile":profile} if profile is not None else {}),
                   **({"development_study":study} if study is not None else {}),
+                  **({"target_method":method} if method is not None else {}),
                   "individual_target_signatures_required":False,"protocol_frozen":False}
     elif args.stage == "freeze-protocol":
         if not args.output or not args.model_snapshot:
             parser.error("freeze-protocol requires --output and --model-snapshot")
         result = freeze_protocol(args.output,args.scope,args.model_snapshot,replication,**({"semantic_profile":args.semantic_profile} if args.semantic_profile is not None else {}),
-            **({"development_study":args.development_study} if args.development_study is not None else {}))
+            **({"development_study":args.development_study} if args.development_study is not None else {}),
+            **({"target_method":args.target_method} if args.target_method is not None else {}))
     else:
         if not args.protocol or not args.protocol_sha256 or not args.construction_dir:
             parser.error("Require --protocol, --protocol-sha256 and --construction-dir")
