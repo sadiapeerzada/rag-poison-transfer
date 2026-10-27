@@ -119,3 +119,11 @@ def test_completed_assessment_census_is_sealed_and_revalidated(setup):
     assert runner.compare(plan,pin)==a
     record=next((root/'assessments').glob('*.json'));v=json.loads(record.read_text());v['assessment']['rationale']='tampered';record.write_text(json.dumps(v))
     with pytest.raises(ValueError):runner.compare(plan,pin)
+
+
+def test_pilot_date_slot_rejects_year_bearing_film_titles():
+    mismatch=item('identity');boolean=item('boolean',target='yes',question='Are both locations alike?')
+    film=item('film',target='The Island (2005 Film)',question='Which film came first?')
+    date=item('date',target='10 September 1759',question='When did the person die?')
+    chosen=ai.pilot_ids([mismatch,boolean,film,date])
+    assert 'date' in chosen and 'film' not in chosen and len(chosen)==3

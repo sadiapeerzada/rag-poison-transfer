@@ -2,10 +2,12 @@
 import json
 import re
 from src.experiments.semantic_review import RATINGS
+from src.attacks.development_targets_v2 import calendar_date
 from src.experiments.week9_construction import fingerprint
 
 SCHEMA='rag-poison-transfer.ai-semantic-assessment/v1'
 PROMPT_VERSION='evidence-limited-semantic-rubric/v1'
+PILOT_SELECTION_VERSION='typed-date-pilot/v2'
 PARAMETERS={'max_tokens':512,'temperature':0.0,'sampler':'explicit greedy','seed':20261027,'calls_per_unique_input':1}
 
 
@@ -76,11 +78,11 @@ def parse(raw,value):
 
 
 def pilot_ids(items):
-    ordered=sorted(items,key=lambda r:fingerprint(['ai-pilot/v1',r['item_id']]))
+    ordered=sorted(items,key=lambda r:fingerprint([PILOT_SELECTION_VERSION,r['item_id']]))
     selected=[];used=set()
     groups=[lambda r:'maternal grandfather' in r['question'].casefold() and r['target_answer']=='Dutch',
         lambda r:r['target_answer'].casefold() in ('yes','no'),
-        lambda r:bool(re.search(r'\d{4}',r['target_answer']))]
+        lambda r:bool(re.fullmatch(r'\d{4}',r['target_answer'].strip()) or calendar_date(r['target_answer']))]
     for rule in groups:
         row=next((r for r in ordered if rule(r) and r['query_id'] not in used),None)
         if row:selected.append(row['item_id']);used.add(row['query_id'])

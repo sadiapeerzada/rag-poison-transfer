@@ -71,7 +71,7 @@ rules, prompts, retry budgets or frozen outcomes is relaxed.
 It reads the original sealed review package (a directory despite its `.json` suffix)
 without modifying it. AI outputs use a different namespace and schemas:
 
-- Plan: `rag-poison-transfer.ai-semantic-review-plan/v1`.
+- Plan: `rag-poison-transfer.ai-semantic-review-plan/v2` for future plans; the executed v1 pilot remains frozen.
 - Item: `rag-poison-transfer.ai-semantic-assessment/v1`.
 - Completion and comparison artifacts bind every transcript and assessment.
 
@@ -126,7 +126,7 @@ MODEL=/Users/sadiapeerzada/.cache/huggingface/hub/models--mlx-community--Qwen2.5
 ORIGINAL=/private/tmp/oct26-2wiki-semantic-development-25-v1
 PACKAGE="$ORIGINAL/semantic_human_review_package.json"
 PACKAGE_SHA=$(shasum -a 256 "$PACKAGE/manifest.json" | cut -d ' ' -f 1)
-NEW=/private/tmp/oct27-semantic-ai-review-v1
+NEW=/private/tmp/oct27-semantic-ai-review-v2
 "$PY" scripts/run_ai_semantic_review.py freeze --plan "$NEW/plan.json" \
  --package "$PACKAGE" --package-manifest-sha256 "$PACKAGE_SHA" \
  --original-protocol "$ORIGINAL/protocol.json" \
@@ -167,3 +167,74 @@ meaningful validation of type/role compatibility and generated claims. The prese
 fix is bounded, and wider ontology/alias/predicate/factual issues remain unresolved.
 
 Changes are local until their diff is reported and push/merge approval is received.
+
+## Executed v1 pilot — stopped, no census comparison
+
+Executed source: `5d75e4aacbfc30b0d21e23208b1ab52a07c261c7`.
+Plan SHA-256: `a7b02c0799db65eb1b2005955bd441caabd79d17ee146642f28f04924ff6aaf5`.
+Artifacts: `/private/tmp/oct27-semantic-ai-review-v1/`; report
+`pilot_gate_result.json`; full raw outputs/prompts in `calls/` and `assessments/`.
+The original 499-file study namespace remains separate and unchanged.
+
+The user explicitly authorized a three-item pilot followed by the census **only if
+pilot checks passed**, with at most 71 unique local calls. The pilot made exactly
+three calls. All completed responses exist; there is no indeterminate intent or
+backend error requiring a retry. All three responses were JSON-parseable, but two
+failed evidence validation because their quotations were not present verbatim in
+provided passages. One paraphrased source facts as a quotation; another added quote
+wrappers to source excerpts. No quote-validation rule was relaxed to accept them.
+
+The remaining response rejected the identity/nationality mismatch, with authentic
+passage quotation, but claimed factual falsity using evidence establishing the
+correct grandfather's identity. That does not establish the grandfather's nationality.
+This is a failure of evidential reasoning, not independently confirmed falsity.
+
+Provisional structural counts over the 152 attempt records: **accept 0, reject 1,
+uncertain 0, unevaluated 151** (two invalid-evidence pilot responses plus 149 unassessed
+records). The one rejection is not a certified factual review. No qualified census
+or automatic-validator disagreement result is claimed. The completion barrier
+prevented automatic-label comparison; 68 authorized unique calls were not consumed.
+The pilot exited 1 at its declared validation gate, not from a demonstrated MLX crash.
+Wall time was 55.82 seconds, maximum RSS 1,773,813,760 bytes and peak process memory
+footprint 5,821,206,728 bytes. Sampled memory pressure was normal, level 1.
+
+The pilot additionally exposed a coding bug: its third item was intended to be a
+date target, but a substring search for four digits selected `The Island (2005 Film)`.
+Future selection is versioned `typed-date-pilot/v2` and requires a full four-digit year
+or valid full calendar date. A regression includes the film title and a real calendar
+date and requires the date, not the film. The corrected future plan schema is v2;
+the original plan, selected items and assessments are not rewritten or rerun.
+
+The date-sampling fix alone does not remedy evaluator evidence fidelity or factual
+reasoning. A revised evaluator/evidence protocol needs review and a separately frozen,
+explicitly approved pilot before resuming any census. No further attack-generation
+smoke or held-out execution is justified by this pilot. Source-focus typing is a
+confirmed bounded fix; complete semantic/factual compatibility remains unresolved.
+
+The pilot's clean source worktree is preserved detached at `5d75e4a` in
+`/private/tmp/rag-semantic-ai-review-development`. The unpublished development branch
+continues in `/private/tmp/rag-semantic-ai-review-followup` for the versioned sampler
+fix and this report. No push or merge has been performed. The commands above describe
+future metadata preparation, not authorization to execute a new pilot or reuse the
+conditional v1 budget for a changed protocol.
+
+### Final follow-up software checks
+
+After the typed-date sampling correction: **97 focused tests passed in 11.73s** and
+**1165 full offline tests passed in 126.81s**, no failures. Logs are
+`/private/tmp/ai-review-followup-focused.log` and
+`/private/tmp/ai-review-followup-full.log`. Python compilation and the branch
+whitespace check also passed. These results supersede the earlier 96/1164 counts
+for the first local commit. No additional model calls were made for the correction.
+
+For review without executing any model:
+
+```sh
+git -C /private/tmp/rag-semantic-ai-review-followup diff 12c2400..HEAD --stat
+```
+
+A new model-assisted pilot is not ready for automatic launch: its evidence-selection
+and factual-falsity protocol must first be improved/reviewed, then frozen separately
+and explicitly authorized. Keep the existing fail-closed quotation and census gates.
+The original user-approved plan did not pass its continuation condition; do not spend
+its remaining calls on a changed evaluator or pretend the 152-item review is complete.

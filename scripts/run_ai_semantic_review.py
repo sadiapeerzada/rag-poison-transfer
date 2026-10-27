@@ -14,7 +14,7 @@ from src.experiments import ai_semantic_review as ai
 from src.experiments import semantic_review as human
 from src.experiments import execution_reliability as reliable
 
-PLAN_SCHEMA='rag-poison-transfer.ai-semantic-review-plan/v1'
+PLAN_SCHEMA='rag-poison-transfer.ai-semantic-review-plan/v2'
 
 
 def source(package,package_pin,original,original_pin,construction,seal_pin):
@@ -42,7 +42,7 @@ def freeze(output,package,package_pin,original,original_pin,construction,seal_pi
     proto,items=source(package,package_pin,original,original_pin,construction,seal_pin)
     value={'schema':PLAN_SCHEMA,'review_method':'AI-assisted','human_review':False,'source':base.code_binding(),
         'environment':base.environment(),'model':base.model_binding(snapshot,proto['binding']['model_identity']),
-        'parameters':ai.PARAMETERS,'prompt_version':ai.PROMPT_VERSION,
+        'parameters':ai.PARAMETERS,'prompt_version':ai.PROMPT_VERSION,'pilot_selection_version':ai.PILOT_SELECTION_VERSION,
         'package':str(Path(package).resolve()),'package_manifest_sha256':package_pin,
         'original_protocol':str(Path(original).resolve()),'original_protocol_sha256':original_pin,
         'construction':str(Path(construction).resolve()),'construction_seal_sha256':seal_pin,
@@ -56,7 +56,7 @@ def freeze(output,package,package_pin,original,original_pin,construction,seal_pi
 
 def load(path,pin,snapshot=None):
     value=base.read_pinned(path,pin)
-    if value.get('schema')!=PLAN_SCHEMA or value.get('parameters')!=ai.PARAMETERS or value.get('prompt_version')!=ai.PROMPT_VERSION or value.get('review_method')!='AI-assisted' or value.get('human_review') is not False:raise ValueError('AI review version/configuration mismatch')
+    if value.get('pilot_selection_version')!=ai.PILOT_SELECTION_VERSION or value.get('schema')!=PLAN_SCHEMA or value.get('parameters')!=ai.PARAMETERS or value.get('prompt_version')!=ai.PROMPT_VERSION or value.get('review_method')!='AI-assisted' or value.get('human_review') is not False:raise ValueError('AI review version/configuration mismatch')
     if value['source']!=base.code_binding() or value['environment']!=base.environment():raise ValueError('AI review requires exact clean code/environment')
     if snapshot is not None and base.model_binding(snapshot,value['model']['repository'])!=value['model']:raise ValueError('Evaluator model snapshot mismatch')
     _,items=source(value['package'],value['package_manifest_sha256'],value['original_protocol'],value['original_protocol_sha256'],value['construction'],value['construction_seal_sha256'])
