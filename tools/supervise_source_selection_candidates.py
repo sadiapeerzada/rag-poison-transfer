@@ -91,6 +91,12 @@ def checkpoint_audit(root=OUTPUT, protocol=None, validate_calls=True):
     if len(found)>total: raise RuntimeError('more checkpoints than frozen matrix permits')
     return {'count':len(found),'expected':total,'remaining':total-len(found),'batches_remaining':(total-len(found)+BATCH_SIZE-1)//BATCH_SIZE,'identities':seen}
 
+def progress_checkpoint_count(root=OUTPUT):
+    """Count published checkpoint paths only; safe while the writer is active."""
+    qroot=Path(root)/'query-checkpoints'
+    if not qroot.exists(): return 0
+    return sum(1 for path in qroot.rglob('*.json') if path.is_file())
+
 def verify_clean_binding(p):
     # Reuse the experiment's own pinned source/environment checks without stage execution.
     code="import json,sys; sys.path.insert(0,sys.argv[1]); from scripts import run_week9_protocol_poison_matrix as b; print(json.dumps({'source':b.code_binding(),'environment':b.environment()}))"
@@ -130,6 +136,15 @@ def append_event(event):
     fd=os.open(LOG,os.O_WRONLY|os.O_CREAT|os.O_APPEND|getattr(os,'O_NOFOLLOW',0),0o600)
     try: os.write(fd,line.encode()); os.fsync(fd)
     finally: os.close(fd)
+
+def terminate_wait(proc):
+    if proc.poll() is None: proc.terminate()
+    proc.wait()
+
+def stopped_child_audit(proc, protocol):
+    """Reap the child before running any strict cross-file audit."""
+    terminate_wait(proc)
+    return checkpoint_audit(protocol=protocol)
 
 def validate_child_result(code, before, after, complete):
     if code==75:
@@ -173,17 +188,25 @@ def run(args):
             try:
                 while proc.poll() is None:
                     time.sleep(1)
-                    now=checkpoint_audit(protocol=p,validate_calls=False)
-                    if now['count']>last: last=now['count']; changed=time.monotonic()
+                    now=progress_checkpoint_count()
+                    if now>last: last=now; changed=time.monotonic()
                     if time.monotonic()-changed>args.stall_seconds:
-                        proc.terminate(); proc.wait(); append_event({'event':'stalled','batch':batch+1,'count':last}); raise RuntimeError('checkpoint progress stalled; child terminated')
+                        append_event({'event':'stalled','batch':batch+1,'count':last}); raise RuntimeError('checkpoint progress stalled; child terminated')
             except KeyboardInterrupt:
-                if proc.poll() is None: proc.terminate(); proc.wait()
-                append_event({'event':'interrupted','batch':batch+1,'count':last}); raise
+                try:
+                    after=stopped_child_audit(proc,p)
+                    append_event({'event':'interrupted','batch':batch+1,'count':last,'post_stop_audit':'passed','verified_count':after['count']})
+                except Exception as audit_error:
+                    append_event({'event':'interrupted','batch':batch+1,'count':last,'post_stop_audit':'failed','error':str(audit_error)})
+                raise
             except Exception as error:
-                if proc.poll() is None: proc.terminate(); proc.wait()
-                append_event({'event':'audit_error','batch':batch+1,'count':last,'error':str(error)}); raise
-            after=checkpoint_audit(protocol=p); code=proc.returncode
+                try:
+                    after=stopped_child_audit(proc,p)
+                    audit={'post_stop_audit':'passed','verified_count':after['count']}
+                except Exception as audit_error:
+                    audit={'post_stop_audit':'failed','post_stop_error':str(audit_error)}
+                append_event({'event':'audit_error','batch':batch+1,'count':last,'error':str(error),**audit}); raise
+            code=proc.wait(); after=checkpoint_audit(protocol=p)
             append_event({'event':'batch_exit','batch':batch+1,'exit_code':code,'before':before['count'],'after':after['count']})
             result=validate_child_result(code,before,after,(OUTPUT/'candidates.complete.json').is_file())
             if result=='paused': continue

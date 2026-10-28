@@ -1,4 +1,5 @@
 import importlib.util, json, tempfile, unittest, sys, subprocess
+from unittest.mock import patch
 from pathlib import Path
 
 FILE=Path(__file__).resolve().parents[1]/'tools/supervise_source_selection_candidates.py'
@@ -49,6 +50,81 @@ class SupervisorTests(unittest.TestCase):
             self.assertEqual(a['remaining'],2)
             f.write_text(json.dumps({**obj,'data_sha256':'bad'}))
             with self.assertRaisesRegex(RuntimeError,'digest'): sup.checkpoint_audit(root,p)
+    def _race_fixture(self, root):
+        qid='q1'; family='lexical_influential_token'; intensity=1; seed=42; band=0
+        cell=f'{family}.intensity-{intensity}.seed-{seed}'
+        data={'query_id':qid,'query_fingerprint':'qfp','target_answer':None,'documents':[],
+              'partial_documents':[],'attempt_records':[],'candidate_band':band,'selection':None,
+              'status':'target_construction_failed'}
+        binding={'protocol_sha256':sup.PIN,'query':'qfp','family':family,'intensity':intensity,
+                 'seed':seed,'band':band,'choice':None}
+        cp=root/'query-checkpoints'/cell/str(band)/(sup.hashlib.sha256(qid.encode()).hexdigest()+'.json')
+        ledger=root/'candidates'/cell/'0.json'
+        def write_pair():
+            cp.parent.mkdir(parents=True,exist_ok=True); ledger.parent.mkdir(parents=True,exist_ok=True)
+            cp.write_text(json.dumps({'schema':'atomic-batched-clean-cache/v1','binding':binding,
+                                      'data':data,'data_sha256':sup.canonical_hash(data)}))
+            ledger.write_text(json.dumps({'family':family,'intensity':intensity,'seed':seed,'records':[data]}))
+        protocol={'binding':{'query_ids':[qid],'matrix':[[family,intensity,seed]]}}
+        return protocol,cp,ledger,write_pair
+
+    def test_live_progress_poll_avoids_checkpoint_ledger_scan_race(self):
+        # Reproduce the old failure deterministically: checkpoint enumeration ends,
+        # then the writer publishes the checkpoint and its ledger before
+        # the strict audit starts scanning ledgers.
+        with tempfile.TemporaryDirectory() as d:
+            root=Path(d); qroot=root/'query-checkpoints'
+            qroot.mkdir(parents=True)
+            protocol,cp,ledger,publish=self._race_fixture(root)
+            original=sup.Path.rglob
+            def racing_rglob(path, pattern):
+                if path==qroot and pattern=='*.json':
+                    def empty_then_publish():
+                        yield from ()
+                        publish()
+                    return empty_then_publish()
+                return original(path,pattern)
+            with patch.object(sup.Path,'rglob',racing_rglob):
+                with self.assertRaisesRegex(RuntimeError,'ledger record lacks checkpoint'):
+                    sup.checkpoint_audit(root,protocol,validate_calls=False)
+            # Reset and inject the same write window into the progress-only poll.
+            root=Path(d)/'live'; qroot=root/'query-checkpoints'; qroot.mkdir(parents=True)
+            protocol,cp,ledger,publish=self._race_fixture(root)
+            def live_racing_rglob(path, pattern):
+                if path==qroot and pattern=='*.json':
+                    def empty_then_publish():
+                        yield from ()
+                        publish()
+                    return empty_then_publish()
+                return original(path,pattern)
+            with patch.object(sup.Path,'rglob',live_racing_rglob):
+                self.assertEqual(sup.progress_checkpoint_count(root),0)
+            self.assertTrue(cp.exists()); self.assertTrue(ledger.exists())
+            after=sup.checkpoint_audit(root,protocol,validate_calls=False)
+            self.assertEqual(after['count'],1)
+
+    def test_post_exit_strict_audit_rejects_genuine_missing_checkpoint(self):
+        with tempfile.TemporaryDirectory() as d:
+            root=Path(d); protocol,cp,ledger,publish=self._race_fixture(root)
+            ledger.parent.mkdir(parents=True)
+            ledger.write_text(json.dumps({'family':'lexical_influential_token','intensity':1,
+                'seed':42,'records':[{'query_id':'q1'}]}))
+            with self.assertRaisesRegex(RuntimeError,'ledger record lacks checkpoint'):
+                sup.checkpoint_audit(root,protocol,validate_calls=False)
+
+    def test_stopped_child_is_waited_before_strict_audit(self):
+        order=[]
+        class Child:
+            def poll(self): return None
+            def terminate(self): order.append('terminate')
+            def wait(self): order.append('wait'); return 0
+        old=sup.checkpoint_audit
+        try:
+            sup.checkpoint_audit=lambda **kwargs: order.append('strict-audit') or {'count':0}
+            sup.stopped_child_audit(Child(),{})
+        finally: sup.checkpoint_audit=old
+        self.assertEqual(order,['terminate','wait','strict-audit'])
+
     def test_completion_count_math(self):
         self.assertEqual(12*300*3,10800)
     def test_exact_candidate_command(self):
