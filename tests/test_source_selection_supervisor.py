@@ -82,9 +82,9 @@ class SupervisorTests(unittest.TestCase):
             self.assertTrue(run_validator.call_args.kwargs['check'])
 
     def test_production_preflight_rejects_missing_pinned_interpreter(self):
-        with patch.object(sup,'protocol_data',return_value={'binding':{}}), \\
-             patch.object(sup,'verify_clean_binding'), \\
-             patch.object(sup,'PYTHON',Path('/nonexistent/pinned-python')):
+        with (patch.object(sup,'protocol_data',return_value={'binding':{}}),
+              patch.object(sup,'verify_clean_binding'),
+              patch.object(sup,'PYTHON',Path('/nonexistent/pinned-python'))):
             with self.assertRaisesRegex(RuntimeError,'exact interpreter absent'):
                 sup.preflight()
 
