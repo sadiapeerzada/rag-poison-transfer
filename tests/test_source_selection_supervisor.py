@@ -46,10 +46,48 @@ class SupervisorTests(unittest.TestCase):
             data={'query_id':'q1','status':'target_construction_failed','documents':[],'candidate_band':0,'selection':None}
             binding={'protocol_sha256':sup.PIN,'family':'lexical_influential_token','intensity':1,'seed':42,'band':0,'choice':None}
             obj={'schema':'atomic-batched-clean-cache/v1','binding':binding,'data':data,'data_sha256':sup.canonical_hash(data)}
-            f.write_text(json.dumps(obj)); a=sup.checkpoint_audit(root,p); self.assertEqual(a['count'],1)
+            f.write_text(json.dumps(obj)); a=sup.checkpoint_audit(root,p,validate_calls=False); self.assertEqual(a['count'],1)
             self.assertEqual(a['remaining'],2)
             f.write_text(json.dumps({**obj,'data_sha256':'bad'}))
-            with self.assertRaisesRegex(RuntimeError,'digest'): sup.checkpoint_audit(root,p)
+            with self.assertRaisesRegex(RuntimeError,'digest'): sup.checkpoint_audit(root,p,validate_calls=False)
+    def test_checkpoint_duplicate_identity_is_rejected_without_local_runtime(self):
+        p={'binding':{'query_ids':['q1'],'matrix':[['lexical_influential_token',1,42]]}}
+        with tempfile.TemporaryDirectory() as d:
+            root=Path(d); cell='lexical_influential_token.intensity-1.seed-42'
+            data={'query_id':'q1','status':'target_construction_failed','documents':[],
+                  'candidate_band':0,'selection':None}
+            binding={'protocol_sha256':sup.PIN,'family':'lexical_influential_token',
+                     'intensity':1,'seed':42,'band':0,'choice':None}
+            obj={'schema':'atomic-batched-clean-cache/v1','binding':binding,
+                 'data':data,'data_sha256':sup.canonical_hash(data)}
+            name=sup.hashlib.sha256(b'q1').hexdigest()+'.json'
+            for folder in ('0','extra'):
+                f=root/'query-checkpoints'/cell/folder/name
+                f.parent.mkdir(parents=True,exist_ok=True)
+                f.write_text(json.dumps(obj))
+            with self.assertRaisesRegex(RuntimeError,'duplicate checkpoint identity'):
+                sup.checkpoint_audit(root,p,validate_calls=False)
+
+    def test_production_checkpoint_audit_keeps_pinned_validator(self):
+        p={'binding':{'query_ids':['q1'],'matrix':[['lexical_influential_token',1,42]]}}
+        with tempfile.TemporaryDirectory() as d:
+            with patch.object(sup.subprocess,'run') as run_validator:
+                sup.checkpoint_audit(Path(d),p)
+            run_validator.assert_called_once()
+            command=run_validator.call_args.args[0]
+            self.assertEqual(command[0],str(sup.PYTHON))
+            self.assertEqual(command[3],str(sup.REPO))
+            self.assertEqual(command[4],str(Path(d)))
+            self.assertIn('validate_store',command[2])
+            self.assertTrue(run_validator.call_args.kwargs['check'])
+
+    def test_production_preflight_rejects_missing_pinned_interpreter(self):
+        with patch.object(sup,'protocol_data',return_value={'binding':{}}), \\
+             patch.object(sup,'verify_clean_binding'), \\
+             patch.object(sup,'PYTHON',Path('/nonexistent/pinned-python')):
+            with self.assertRaisesRegex(RuntimeError,'exact interpreter absent'):
+                sup.preflight()
+
     def _race_fixture(self, root):
         qid='q1'; family='lexical_influential_token'; intensity=1; seed=42; band=0
         cell=f'{family}.intensity-{intensity}.seed-{seed}'
