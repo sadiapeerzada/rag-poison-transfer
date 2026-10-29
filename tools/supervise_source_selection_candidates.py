@@ -167,7 +167,23 @@ def launch_captured(cmd):
     with STDOUT_LOG.open('ab') as out, STDERR_LOG.open('ab') as err:
         return subprocess.Popen(cmd,stdout=out,stderr=err)
 
+def recovery_gate(args):
+    """Fresh full verification on every batch; a marker or legacy-valid receipt is insufficient."""
+    plan = getattr(args, 'recovery_plan', None)
+    pin = getattr(args, 'recovery_plan_sha256', None)
+    if not plan or not pin:
+        raise RuntimeError('seed42 recovery verification requires --recovery-plan and --recovery-plan-sha256')
+    helper = SUPERVISOR_ROOT/'scripts/recover_hotpotqa_seed42_intent.py'
+    if not helper.is_file():
+        raise RuntimeError('seed42 recovery verifier is unavailable')
+    # Read-only verification also enforces exact executor provenance. Propagate
+    # failure before any child can load a model or touch experimental checkpoints.
+    subprocess.run([str(PYTHON), '-B', str(helper), 'verify', '--plan', str(plan),
+                    '--plan-sha256', pin], check=True)
+
+
 def run(args):
+    recovery_gate(args)
     p=preflight(); state=checkpoint_audit(protocol=p)
     cmd=candidate_command()
     if args.dry_run:
@@ -182,6 +198,7 @@ def run(args):
         except BlockingIOError: raise RuntimeError('another supervisor holds its lock')
         append_event({'event':'started','checkpoint_count':state['count'],'max_batches':args.max_batches})
         for batch in range(args.max_batches):
+            recovery_gate(args)
             preflight(); before=checkpoint_audit(protocol=p)
             proc=launch_captured(cmd)
             last=before['count']; changed=time.monotonic()
@@ -206,7 +223,9 @@ def run(args):
                 except Exception as audit_error:
                     audit={'post_stop_audit':'failed','post_stop_error':str(audit_error)}
                 append_event({'event':'audit_error','batch':batch+1,'count':last,'error':str(error),**audit}); raise
-            code=proc.wait(); after=checkpoint_audit(protocol=p)
+            code=proc.wait()
+            recovery_gate(args)
+            after=checkpoint_audit(protocol=p)
             append_event({'event':'batch_exit','batch':batch+1,'exit_code':code,'before':before['count'],'after':after['count']})
             result=validate_child_result(code,before,after,(OUTPUT/'candidates.complete.json').is_file())
             if result=='paused': continue
@@ -216,6 +235,8 @@ def run(args):
 
 def main():
     ap=argparse.ArgumentParser(); ap.add_argument('--dry-run',action='store_true'); ap.add_argument('--max-batches',type=int); ap.add_argument('--stall-seconds',type=int,default=3600); ap.add_argument('--approve-full-compute',action='store_true')
+    ap.add_argument('--recovery-plan', type=Path)
+    ap.add_argument('--recovery-plan-sha256')
     args=ap.parse_args()
     try:return run(args)
     except Exception as e: print(f'STOP: {e}',file=sys.stderr); return 2
