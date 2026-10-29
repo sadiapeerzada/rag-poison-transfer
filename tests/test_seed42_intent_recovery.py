@@ -31,7 +31,10 @@ def incident(tmp_path, monkeypatch):
     source = {'git_commit_sha': 'fixture-source', 'code_fingerprint': recovery.fingerprint({'run.py': recovery.sha(frozen / 'run.py')})}
     protocol = {'source': source, 'model': recovery._model_binding(model, recovery.INCIDENT['model_repository']),
                 'environment': {'fixture': True}, 'execution': {'unresolved_intent': 'halt-no-regeneration'},
-                'planned_outputs': {'candidates': str(candidates)}}
+                'planned_outputs': {'candidates': str(candidates)},
+                'binding': {'matrix': [['semantic_fluent_false_evidence', 1, 42],
+                                       ['semantic_fluent_false_evidence', 3, 42]],
+                            'query_ids': [recovery.INCIDENT['query_id'], 'later-query']}}
     reliable.atomic(protocol_path, protocol)
     identity = copy.deepcopy(recovery.INCIDENT)
     identity.update(source=source, protocol_sha256=recovery.sha(protocol_path))
@@ -477,3 +480,24 @@ def test_source_files_of_legacy_authorization_are_byte_identical_to_parent():
     }
     for rel, digest in expected.items():
         assert hashlib.sha256((root / rel).read_bytes()).hexdigest() == digest
+
+
+@pytest.mark.parametrize('intensity,index,valid', [(1, 1, True), (1, 2, False),
+                                                  (3, 5, True), (3, 6, False)])
+def test_continuation_call_limit_spans_all_documents_without_new_quality_attempts(incident, intensity, index, valid):
+    f = incident
+    f.execute(); f.publish()
+    req = copy.deepcopy(f.request)
+    req['provenance'].update(intensity=intensity, candidate_band=0, query_id='later-query')
+    cell = f'semantic_fluent_false_evidence.intensity-{intensity}.seed-42'
+    directory = recovery.CANDIDATES / 'calls' / cell / '0' / hashlib.sha256(b'later-query').hexdigest()
+    reliable.atomic(directory / f'{index:02d}.intent.json', req)
+    _, g = capture_generation(f.backend, req['prompt'], 150)
+    reliable.atomic(directory / f'{index:02d}.response.json', {
+        'request_fingerprint': recovery.fingerprint(req), 'generation': g,
+        'generation_sha256': recovery.fingerprint(g)})
+    if valid:
+        assert recovery.verify(f.plan, f.pin)['status'] == 'verified_seed42_replacement_not_original'
+    else:
+        with pytest.raises(ValueError, match='identity'):
+            recovery.verify(f.plan, f.pin)
