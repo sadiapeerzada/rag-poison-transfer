@@ -257,11 +257,21 @@ def _continuation_record(relpath, obj):
             expected_cell = '{}.intensity-{}.seed-{}'.format(
                 provenance.get('family'), provenance.get('intensity'), provenance.get('seed'))
             query = provenance.get('query_id', '')
+            protocol = reliable.read(PROTOCOL)
+            cell = [provenance.get(k) for k in ('family', 'intensity', 'seed')]
+            # Journal indices span all documents in a construction: intensity 3
+            # can consume six logical calls. The recovered intensity-1 document
+            # still has only slots 00 and 01; no new repair allowance is granted.
+            slots = 2 * provenance.get('intensity', 0) if type(provenance.get('intensity')) is int else 0
+            allowed_names = {f'{i:02d}.intent.json' for i in range(slots)}
             if (provenance.get('protocol_sha256') != INCIDENT['protocol_sha256']
-                    or provenance.get('model') != reliable.read(PROTOCOL)['model']
+                    or provenance.get('model') != protocol['model']
+                    or cell not in protocol['binding']['matrix']
+                    or query not in protocol['binding']['query_ids']
+                    or provenance.get('candidate_band') not in (0, 1, 2)
                     or parts[1] != expected_cell or parts[2] != str(provenance.get('candidate_band'))
                     or parts[3] != hashlib.sha256(query.encode()).hexdigest()
-                    or parts[-1] not in ('00.intent.json', '01.intent.json')
+                    or parts[-1] not in allowed_names
                     or obj.get('max_tokens') != INCIDENT['max_tokens']):
                 raise ValueError('Continuation journal identity mismatch')
     elif parts[0] == 'query-checkpoints':

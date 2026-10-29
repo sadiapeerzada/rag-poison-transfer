@@ -87,7 +87,9 @@ Physical accounting is explicitly:
 - Replacement allowance: maximum one extra physical dispatch.
 - Replacement evidence: a separate intent and response, never the original call.
 - Additional quality-repair calls: zero. Attempt `01` is the final logical slot
-  under the frozen two-attempt limit; there is no new logical attempt `02`.
+  under the frozen two-attempt limit; there is no new logical attempt `02` for this intensity-1 document.
+  Unrelated intensity-3 construction may legitimately use indices `00`–`05`
+  across its three documents, retaining two attempts per document.
 
 Immediately after successful recovery, the current baseline would yield 374 base
 recorded completions plus one separate replacement completion and one original
@@ -244,8 +246,8 @@ Validation commands used the pinned interpreter
 | --- | --- |
 | `python -m compileall -q run.py src scripts tests` | Passed |
 | `python -m compileall -q run.py src scripts tests tools` | Passed |
-| `python -B -m pytest -q tests/test_seed42_intent_recovery.py tests/test_single_intent_recovery.py tests/test_source_selection_supervisor.py tests/test_execution_reliability.py tests/test_source_selection_transfer_workflow.py` | 136 passed in 2.84s |
-| `HF_HUB_OFFLINE=1 HF_DATASETS_OFFLINE=1 PYTHONDONTWRITEBYTECODE=1 python -m pytest -q --tb=short` | 1,328 passed in 192.55s |
+| `python -B -m pytest -q tests/test_seed42_intent_recovery.py tests/test_single_intent_recovery.py tests/test_source_selection_supervisor.py tests/test_execution_reliability.py tests/test_source_selection_transfer_workflow.py` | 140 passed in 4.21s |
+| `HF_HUB_OFFLINE=1 HF_DATASETS_OFFLINE=1 PYTHONDONTWRITEBYTECODE=1 python -m pytest -q --tb=short` | 1,332 passed in 205.16s |
 | `git diff --check` and staged whitespace check | Passed |
 
 The first sandboxed full-suite run had 1,310 passes and 18 failures, all permission
