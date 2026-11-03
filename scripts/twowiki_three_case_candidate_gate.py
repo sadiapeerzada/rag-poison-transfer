@@ -398,11 +398,15 @@ def semantic(args):
     row=m['records'][2]
     if row['candidate_target']!='1 June 1947' or row['query_id']!=case['query_id']:
         raise ValueError('Only frozen birth-date case is supported by development v2 grammar')
+    profile = args.semantic_profile
+    if profile not in ('heldout-compatible-legacy', 'development-v2'):
+        raise ValueError('Unknown semantic profile')
     if args.preflight:
         return {'status':'semantic_preflight_no_calls','case':row['query_id'],'target':row['candidate_target'],
-                'semantic_profile':'question-anchored-development/v2',
+                'semantic_profile':profile,
                 'max_attempts':2,'factual_approval':False,'heldout_queries_accessed':0}
     from src.attacks.semantic_fluent_development_v2 import DevelopmentSemanticFluentAttackV2
+    from src.attacks.semantic_fluent import SemanticFluentFalseEvidenceAttack
     from src.pipelines.generator import MLXGenerator
     from src.utils.seeding import set_seed
     import random
@@ -411,11 +415,13 @@ def semantic(args):
         'status':'exploratory_unapproved_candidate_construction_only',
         'case':row,'batch_manifest_sha256':sha((args.batch/'manifest.json').read_bytes()),
         'model':info,'git_sha':commit,'max_model_calls':2,
-        'semantic_profile':'question-anchored-development/v2', 'heldout_queries_accessed':0})
+        'semantic_profile':profile, 'heldout_queries_accessed':0})
     model=MLXGenerator(model_name=info['snapshot'])
     seed=42;set_seed(seed);model.seed(seed)
     wrapper=RecordingModel(model,args.output/'generation_calls',info)
-    attack=DevelopmentSemanticFluentAttackV2(wrapper,scope='development',max_tokens=150,max_attempts=2)
+    attack=(SemanticFluentFalseEvidenceAttack(wrapper,max_tokens=150,max_attempts=2)
+            if profile=='heldout-compatible-legacy' else
+            DevelopmentSemanticFluentAttackV2(wrapper,scope='development',max_tokens=150,max_attempts=2))
     attack.capture_smoke_diagnostics=True
     status='failed_validator';document=None;err=None
     try:
@@ -450,6 +456,9 @@ def main(argv=None):
     ap.add_argument('--case',type=int)
     ap.add_argument('--model-snapshot',type=Path)
     ap.add_argument('--model-id')
+    ap.add_argument('--semantic-profile',choices=('heldout-compatible-legacy','development-v2'),
+                    default='heldout-compatible-legacy',
+                    help='Legacy matches held-out construction; development-v2 is not transferable.')
     ap.add_argument('--preflight',action='store_true')
     args=ap.parse_args(argv)
     if args.stage in ('review','semantic') and (not args.model_snapshot or not args.model_id):
