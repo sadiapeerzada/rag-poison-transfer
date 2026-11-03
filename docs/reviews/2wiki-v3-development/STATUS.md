@@ -35,3 +35,17 @@ See `test-results.txt` for this branch's local regression results.
 - Re-audited the sealed v2 intensity-3 construction without modification.
 - Structural diversity is necessary but not sufficient for independent evidence.
 - This helper is not yet wired into a new v3 experiment-runner profile.
+
+## Two-AI provisional review policy
+- Added `semantic_target_review_ai_v3.py`, development-only.
+- Requires two provenance-bound AI assessments from distinct model IDs.
+- Checks query, answer, supporting-source hashes and explicit decisions.
+- Rejects disagreement, uncertainty, missing checks and unresolved relations.
+- First AI shortlisted 18; second AI provisionally accepted 16 and
+  downgraded 2 to uncertain.
+- The 16 are **not automatically construction-approved**.
+- AI reviewer identities and response hashes are self-reported metadata,
+  not authenticated evidence of independence or correctness.
+- The AI policy is not yet connected to the v3 selector or runner.
+- Existing human-review implementation is retained for historical
+  compatibility until the next explicit migration.
