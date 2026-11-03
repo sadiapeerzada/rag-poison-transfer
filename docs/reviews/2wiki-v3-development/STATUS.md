@@ -49,3 +49,12 @@ See `test-results.txt` for this branch's local regression results.
 - The AI policy is not yet connected to the v3 selector or runner.
 - Existing human-review implementation is retained for historical
   compatibility until the next explicit migration.
+
+## Explicit AI selector integration
+- Added `nominate_ai` as a development-only, opt-in v3 entrypoint.
+- Both AI assessments must pass the policy checks.
+- Missing, uncertain or conflicting reviews block construction eligibility.
+- AI screening never sets factual approval or injection approval.
+- Historical human-review code remains untouched.
+- Synthetic tests do not approve any real 2Wiki target.
+- Runner integration and poison-text review remain pending.
