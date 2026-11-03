@@ -1,0 +1,9 @@
+2Wiki sealed v2 development construction — read-only diversity audit
+Scope: development, not held-out
+Original construction seal SHA-256: d247569d2638570cb911199b76dab6ac3ff39fb949ab008da0b201dc6088c100
+Intensity 1: fully constructed=2, distinct=2, duplicate_text=0
+Intensity 3: fully constructed=2, distinct=0, duplicate_text=2
+This is a retrospective development diagnostic.
+No frozen records were altered.
+Text diversity does not establish semantic or factual independence.
+V3 runner enforcement and independent poison-text review remain pending.

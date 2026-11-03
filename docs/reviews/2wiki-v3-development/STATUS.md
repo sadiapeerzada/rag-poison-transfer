@@ -29,3 +29,9 @@
 - Raw datasets, individual questions, and model transcripts are excluded.
 
 See `test-results.txt` for this branch's local regression results.
+
+## V3 diversity follow-up
+- Added a development-only normalized-text duplicate checker.
+- Re-audited the sealed v2 intensity-3 construction without modification.
+- Structural diversity is necessary but not sufficient for independent evidence.
+- This helper is not yet wired into a new v3 experiment-runner profile.
