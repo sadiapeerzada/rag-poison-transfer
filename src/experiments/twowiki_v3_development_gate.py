@@ -8,6 +8,10 @@ from src.attacks.semantic_document_diversity_v3 import require_distinct
 from src.attacks.semantic_fluent_development_v2 import (
     DevelopmentSemanticFluentAttackV2,
 )
+from src.attacks.semantic_fluent_development_v3 import (
+    DevelopmentSemanticFluentAttackV3,
+    PROFILE as V3_GRAMMAR_PROFILE,
+)
 
 
 def inspect_case(
@@ -51,7 +55,7 @@ def inspect_case(
 def validate_constructed_documents(
     query, development, corpus, evidence,
     ai_reviews, target, documents, intensity,
-    *, scope="development",
+    *, scope="development", grammar_profile="legacy-v2",
 ):
     """Check candidate documents, never authorize injection."""
 
@@ -78,9 +82,16 @@ def validate_constructed_documents(
     if len(documents) != intensity:
         raise ValueError("Incomplete construction")
 
-    validator = DevelopmentSemanticFluentAttackV2(
-        None, scope="development"
-    )
+    if grammar_profile == "legacy-v2":
+        validator = DevelopmentSemanticFluentAttackV2(
+            None, scope="development"
+        )
+    elif grammar_profile == V3_GRAMMAR_PROFILE:
+        validator = DevelopmentSemanticFluentAttackV3(
+            None, scope="development"
+        )
+    else:
+        raise ValueError("Unknown development grammar profile")
 
     for index, doc in enumerate(documents):
         if (
@@ -91,14 +102,20 @@ def validate_constructed_documents(
         ):
             raise ValueError("Document provenance mismatch")
 
-        validator._validate_text(
-            doc["text"], query, target
-        )
+        if grammar_profile == V3_GRAMMAR_PROFILE:
+            validator.validate_slot(
+                doc["text"], query, target, index
+            )
+        else:
+            validator._validate_text(
+                doc["text"], query, target
+            )
 
     diversity = require_distinct(documents, intensity)
 
     return {
         "status": "development_documents_screened",
+        "grammar_profile": grammar_profile,
         "query_id": query["query_id"],
         "target_answer": target,
         "document_count": len(documents),

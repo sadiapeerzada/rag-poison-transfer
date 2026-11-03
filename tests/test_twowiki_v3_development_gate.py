@@ -181,3 +181,39 @@ def test_tampered_source_rejected(monkeypatch):
     )
     with pytest.raises(ValueError, match="verbatim"):
         inspect_case(q, [q], corpus, evidence, reviews)
+
+
+def test_three_v3_grammar_slots_are_screened(monkeypatch):
+    from src.attacks.semantic_fluent_development_v3 import PROFILE
+
+    q, corpus, evidence, target, reviews = fixture(monkeypatch)
+
+    texts = [
+        "The director of film Example Film was born on 10 March 1975.",
+        "On 10 March 1975, the director of film Example Film was born.",
+        "10 March 1975 is the birth date of the director of film Example Film.",
+    ]
+
+    result = validate_constructed_documents(
+        q, [q], corpus, evidence, reviews,
+        target, documents(q, target, texts), 3,
+        grammar_profile=PROFILE,
+    )
+
+    assert result["grammar_profile"] == PROFILE
+    assert result["diversity"]["unique_normalized_texts"] == 3
+    assert result["diversity"]["semantic_independence_verified"] is False
+    assert result["injection_approved"] is False
+
+
+def test_v3_rejects_repeated_grammar_slot(monkeypatch):
+    from src.attacks.semantic_fluent_development_v3 import PROFILE
+
+    q, corpus, evidence, target, reviews = fixture(monkeypatch)
+
+    with pytest.raises(SemanticQualityError, match="slot"):
+        validate_constructed_documents(
+            q, [q], corpus, evidence, reviews,
+            target, documents(q, target, [SENTENCE] * 3), 3,
+            grammar_profile=PROFILE,
+        )
