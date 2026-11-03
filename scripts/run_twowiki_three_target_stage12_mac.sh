@@ -14,12 +14,17 @@ QWEN="$HOME/.cache/huggingface/hub/models--mlx-community--Qwen2.5-7B-Instruct-4b
 PHI="$HOME/.cache/huggingface/hub/models--mlx-community--Phi-4-mini-instruct-4bit/snapshots/ac1c269cb4222a4e136a3d09edad301056c1f36a"
 QWEN_ID='mlx-community/Qwen2.5-7B-Instruct-4bit@c26a38f6a37d0a51b4e9a1eb3026530fa35d9fed'
 PHI_ID='mlx-community/Phi-4-mini-instruct-4bit@ac1c269cb4222a4e136a3d09edad301056c1f36a'
-STAMP="$(date -u +%Y%m%dT%H%M%SZ)"
-BATCH="$ROOT/twowiki-three-candidate-review-${STAMP}"
-AUDIT="$ROOT/twowiki-three-candidate-review-audit-${STAMP}.json"
-SEMANTIC="$ROOT/twowiki-three-candidate-legacy-semantic-${STAMP}"
+RUN_ID="${RAG_REVIEW_RUN_ID:-twowiki-three-candidate-gate-20261104-v1}"
+BATCH="$ROOT/$RUN_ID"
+AUDIT="$ROOT/$RUN_ID-audit.json"
+SEMANTIC="$ROOT/$RUN_ID-semantic"
 
 cd "$WT"
+# An interrupted batch is forensic evidence. Never begin a fresh run to bypass it.
+if [[ -e "$BATCH" || -e "$AUDIT" || -e "$SEMANTIC" ]]; then
+  echo "Existing run artifacts detected; inspect them and do not rerun the batch: $BATCH" >&2
+  exit 1
+fi
 for path in "$PY" "$DEV" "$DOS" "$OLD" "$QWEN/config.json" "$PHI/config.json"; do
   if [[ ! -f "$path" ]]; then printf 'Missing input: %s\n' "$path" >&2; exit 1; fi
 done
