@@ -216,7 +216,7 @@ def audit(*, batch_dir: Path, dossiers_path: Path, responses_dir: Path) -> dict:
         "cases": records,
         "source_quote_verification": "literal_span_only_not_semantic_entailment",
         "reviewer_provenance": "metadata_self_reported_unverified",
-        "human_adjudication_required": False,
+        "review_disagreements_require_independent_adjudication": True,
         "independent_factual_approval": False,
         "construction_approvals": 0, "factual_approvals": 0,
         "injection_approvals": 0, "poison_injections": 0,
