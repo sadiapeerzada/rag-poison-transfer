@@ -44,7 +44,9 @@ IDs **and different resolved model snapshot directories**.
     "$PY" -B -m pytest -q tests/test_twowiki_independent_mlx_reviewer.py
     )
 
-Find *installed* model snapshots without downloading anything. Hugging Face\nuses snapshot symlinks, so `find -L` follows those links (unlike\n`find` without `-L`, which can misleadingly print no matches):
+Find *installed* model snapshots without downloading anything. Hugging Face 
+uses snapshot symlinks, so `find -L` follows those links (unlike 
+`find` without `-L`, which can misleadingly print no matches):
 
     find -L "$HOME/.cache/huggingface/hub" -type f -name config.json -path '*/snapshots/*' -print
 
