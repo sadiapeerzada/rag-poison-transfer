@@ -20,7 +20,7 @@ def fake_blob():
             "query_id": f"synthetic-train-{i:02}",
             "question": f"Where did fictional event {i} take place?",
             "gold_answer": "A",
-            "gold_aliases": [],
+            "gold_aliases": ["Alternate name for A"],
             "gold_doc_ids": ["a", "b"],
         }
         cases.append(make_dossier(q, doc))
