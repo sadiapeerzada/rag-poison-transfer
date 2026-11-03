@@ -68,3 +68,16 @@ See `test-results.txt` for this branch's local regression results.
 - All screened documents remain unapproved for injection.
 - This adapter does not invoke a model or change the frozen Week 9 runner.
 - Runner registration, new grammar and real review provenance remain pending.
+
+## V3 versioned generation grammar
+- Added an explicit development-only grammar profile for film-director
+  birth-date questions.
+- Three distinct sentence structures are deterministically assigned
+  to document slots 0, 1 and 2.
+- The validator checks the exact relation, subject, answer and slot.
+- No model inference was performed during these synthetic tests.
+- Different sentence structures are NOT independent factual sources.
+- This grammar covers one question family, not all 2Wiki relations.
+- Legacy v2 validation remains the default in the isolated adapter.
+- V3 is not registered in the frozen Week 9 runner.
+- Real AI-review provenance and poison-text adjudication remain pending.
