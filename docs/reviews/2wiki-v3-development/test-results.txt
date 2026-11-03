@@ -1,0 +1,6 @@
+2Wiki v3 development — regression verification
+Base commit: b1466db04c4f8f0314c7e537d8e7ec390c8c3b29
+Branch: research/2wiki-semantic-v3-development
+........................................................................ [ 73%]
+..........................                                               [100%]
+98 passed in 8.92s
