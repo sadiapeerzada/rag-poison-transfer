@@ -44,9 +44,9 @@ IDs **and different resolved model snapshot directories**.
     "$PY" -B -m pytest -q tests/test_twowiki_independent_mlx_reviewer.py
     )
 
-Find *installed* model snapshots without downloading anything:
+Find *installed* model snapshots without downloading anything. Hugging Face\nuses snapshot symlinks, so `find -L` follows those links (unlike\n`find` without `-L`, which can misleadingly print no matches):
 
-    find "$HOME/.cache/huggingface/hub" -type f -name config.json -path '*/snapshots/*' -print
+    find -L "$HOME/.cache/huggingface/hub" -type f -name config.json -path '*/snapshots/*' -print
 
 If only one compatible independent Instruct model is installed,
 **do not pretend** to have two-model review. Use a genuinely
