@@ -7,7 +7,7 @@ from zipfile import ZipFile
 
 import pytest
 from scripts import run_twowiki_v6_grounded_diversity as driver
-from tests.test_semantic_fluent_development_v6 import synthetic_case
+from test_semantic_fluent_development_v6 import synthetic_case
 from src.attacks.semantic_fluent_development_v6 import triage
 
 
