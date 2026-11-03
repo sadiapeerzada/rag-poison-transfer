@@ -29,3 +29,32 @@
 - Raw datasets, individual questions, and model transcripts are excluded.
 
 See `test-results.txt` for this branch's local regression results.
+
+## V3 diversity follow-up
+- Added a development-only normalized-text duplicate checker.
+- Re-audited the sealed v2 intensity-3 construction without modification.
+- Structural diversity is necessary but not sufficient for independent evidence.
+- This helper is not yet wired into a new v3 experiment-runner profile.
+
+## Two-AI provisional review policy
+- Added `semantic_target_review_ai_v3.py`, development-only.
+- Requires two provenance-bound AI assessments from distinct model IDs.
+- Checks query, answer, supporting-source hashes and explicit decisions.
+- Rejects disagreement, uncertainty, missing checks and unresolved relations.
+- First AI shortlisted 18; second AI provisionally accepted 16 and
+  downgraded 2 to uncertain.
+- The 16 are **not automatically construction-approved**.
+- AI reviewer identities and response hashes are self-reported metadata,
+  not authenticated evidence of independence or correctness.
+- The AI policy is not yet connected to the v3 selector or runner.
+- Existing human-review implementation is retained for historical
+  compatibility until the next explicit migration.
+
+## Explicit AI selector integration
+- Added `nominate_ai` as a development-only, opt-in v3 entrypoint.
+- Both AI assessments must pass the policy checks.
+- Missing, uncertain or conflicting reviews block construction eligibility.
+- AI screening never sets factual approval or injection approval.
+- Historical human-review code remains untouched.
+- Synthetic tests do not approve any real 2Wiki target.
+- Runner integration and poison-text review remain pending.
