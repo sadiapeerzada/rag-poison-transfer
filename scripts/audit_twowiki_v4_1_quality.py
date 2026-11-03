@@ -14,6 +14,13 @@ import json
 import re
 import zipfile
 from pathlib import Path
+import sys
+
+# Allow both `python -m scripts.audit_twowiki_v4_1_quality` and the documented
+# `python scripts/audit_twowiki_v4_1_quality.py` from any working directory.
+ROOT = Path(__file__).resolve().parents[1]
+if str(ROOT) not in sys.path:
+    sys.path.insert(0, str(ROOT))
 
 from src.attacks.semantic_typed_evidence_v4_1 import bind_typed_sources
 from src.attacks.semantic_template_control_v4_1 import (
