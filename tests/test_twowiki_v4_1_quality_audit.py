@@ -3,7 +3,10 @@
 No real training/held-out data, model requests, poison construction or approvals.
 """
 import json
+import subprocess
+import sys
 import zipfile
+from pathlib import Path
 
 import pytest
 from scripts import audit_twowiki_v4_1_quality as quality
@@ -180,3 +183,14 @@ def test_unchanged_packet_required(tmp_path, monkeypatch):
         archive.writestr("unapproved_extra.json", "{}")
     with pytest.raises(ValueError, match="packet bytes changed"):
         run(paths)
+
+
+def test_script_entrypoint_from_outside_repository(tmp_path):
+    """Regression: direct script invocation must import src without PYTHONPATH."""
+    script = Path(quality.__file__).resolve()
+    result = subprocess.run(
+        [sys.executable, "-B", str(script), "--help"],
+        cwd=tmp_path, text=True, capture_output=True, check=False,
+    )
+    assert result.returncode == 0, result.stderr
+    assert "--dataset" in result.stdout and "--packet" in result.stdout
