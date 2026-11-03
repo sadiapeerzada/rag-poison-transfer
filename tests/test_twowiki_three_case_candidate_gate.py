@@ -114,8 +114,10 @@ def test_semantic_preflight_zero_calls(bundle):
     (snap/'config.json').write_text('{}')
     (snap/'tokenizer_config.json').write_text('{}')
     request=SimpleNamespace(**vars(args),output=root/'semantic',model_snapshot=snap,
-                            model_id='Qwen-pinned',preflight=True)
+                            model_id='Qwen-pinned',preflight=True,
+                            semantic_profile='heldout-compatible-legacy')
     result=gate.semantic(request)
     assert result['status']=='semantic_preflight_no_calls'
+    assert result['semantic_profile']=='heldout-compatible-legacy'
     assert result['factual_approval'] is False
     assert not request.output.exists()
