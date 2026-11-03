@@ -58,3 +58,13 @@ See `test-results.txt` for this branch's local regression results.
 - Historical human-review code remains untouched.
 - Synthetic tests do not approve any real 2Wiki target.
 - Runner integration and poison-text review remain pending.
+
+## Isolated v3 development construction gate
+- Added `twowiki_v3_development_gate.py`.
+- Requires explicit development scope and query membership.
+- Requires source-bound, two-AI-screened targets.
+- Validates document provenance and supported relation grammar.
+- Refuses missing documents and normalized-text duplicates.
+- All screened documents remain unapproved for injection.
+- This adapter does not invoke a model or change the frozen Week 9 runner.
+- Runner registration, new grammar and real review provenance remain pending.
