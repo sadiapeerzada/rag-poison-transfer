@@ -81,3 +81,11 @@ See `test-results.txt` for this branch's local regression results.
 - Legacy v2 validation remains the default in the isolated adapter.
 - V3 is not registered in the frozen Week 9 runner.
 - Real AI-review provenance and poison-text adjudication remain pending.
+
+## Typed relation grammar expansion (development-only)
+- Added v4 surface grammar for two Boolean and three director-place questions.
+- Titles such as `Yes, Giorgio` remain entity names, not Boolean gold labels.
+- Comparison, ambiguous three-entity Boolean and kinship relations abstain.
+- Distinct sentence forms do not establish factual validity or source independence.
+- No actual two-AI approval records, injections, or held-out runs were created.
+- This grammar is not registered in the frozen Week 9 experiment runner.
