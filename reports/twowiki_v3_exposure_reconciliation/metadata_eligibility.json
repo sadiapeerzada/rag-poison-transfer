@@ -1,0 +1,52 @@
+{
+  "assessments": [
+    {
+      "at_least_25_by_id": false,
+      "cohort_selected": false,
+      "excluded_count": 300,
+      "historical_exposure_complete": false,
+      "pool_count": 300,
+      "potentially_id_eligible_count": 0,
+      "prospective_go": false,
+      "provenance": {
+        "path": "docs/protocols/oct26_2wiki/cohort_manifest.json",
+        "pointer": "/cohorts/train",
+        "sha256": "3f51077946601cc0f58c0866716bf6c4650306dfd497cb98ed2973a466ca2cd4"
+      },
+      "reason": "available_pool_exhausted"
+    },
+    {
+      "at_least_25_by_id": false,
+      "cohort_selected": false,
+      "excluded_count": 300,
+      "historical_exposure_complete": false,
+      "pool_count": 300,
+      "potentially_id_eligible_count": 0,
+      "prospective_go": false,
+      "provenance": {
+        "path": "/Users/sadiapeerzada/Documents/rag-research-results/twowiki-v2-development-recovery-20261103/development_data.json",
+        "sha256": "58b0342d65addaeab6617ab3a3b8dc759633fc02d11652759b8409dffbe8cb43"
+      },
+      "reason": "available_pool_exhausted"
+    },
+    {
+      "at_least_25_by_id": false,
+      "cohort_selected": false,
+      "excluded_count": 300,
+      "historical_exposure_complete": false,
+      "pool_count": 300,
+      "potentially_id_eligible_count": 0,
+      "prospective_go": false,
+      "provenance": {
+        "path": "/Users/sadiapeerzada/Documents/rag-research-results/twowiki-v2-binding-20261103/local-v2/dataset.json",
+        "sha256": "58b0342d65addaeab6617ab3a3b8dc759633fc02d11652759b8409dffbe8cb43"
+      },
+      "reason": "available_pool_exhausted"
+    }
+  ],
+  "certification": null,
+  "cohort_selected": false,
+  "copies_do_not_increase_population": true,
+  "larger_train_id_census": "not_available_in_searched_local_materializations_or_HF_caches",
+  "unique_available_pool_ids": 300
+}

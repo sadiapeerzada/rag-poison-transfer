@@ -1,0 +1,242 @@
+[
+  {
+    "path": "docs/protocols/oct26_2wiki/cohort_policy.json",
+    "original_sha256": "827165092a07f2f4efb55626db842670db02dfcef164856f9eb2d1b9e74d442a",
+    "current_sha256": "827165092a07f2f4efb55626db842670db02dfcef164856f9eb2d1b9e74d442a",
+    "original_hash_matches": true,
+    "metadata_ids_match": true,
+    "query_id_count": 300
+  },
+  {
+    "path": "docs/protocols/oct26_2wiki/cohort_manifest.json",
+    "original_sha256": "3f51077946601cc0f58c0866716bf6c4650306dfd497cb98ed2973a466ca2cd4",
+    "current_sha256": "3f51077946601cc0f58c0866716bf6c4650306dfd497cb98ed2973a466ca2cd4",
+    "original_hash_matches": true,
+    "metadata_ids_match": true,
+    "query_id_count": 300
+  },
+  {
+    "path": "docs/protocols/oct26_2wiki/cohort_manifest.json",
+    "original_sha256": "3f51077946601cc0f58c0866716bf6c4650306dfd497cb98ed2973a466ca2cd4",
+    "current_sha256": "3f51077946601cc0f58c0866716bf6c4650306dfd497cb98ed2973a466ca2cd4",
+    "original_hash_matches": true,
+    "metadata_ids_match": true,
+    "query_id_count": 300
+  },
+  {
+    "path": "tests/fixtures/twowiki_semantic_quality_v3_audit.json",
+    "original_sha256": "218bc64be6998710e05e0b96b936b1aa3c9395312f32dcf1923e08f4b37e4959",
+    "current_sha256": "218bc64be6998710e05e0b96b936b1aa3c9395312f32dcf1923e08f4b37e4959",
+    "original_hash_matches": true,
+    "metadata_ids_match": true,
+    "query_id_count": 25
+  },
+  {
+    "path": "/Users/sadiapeerzada/Documents/rag-research-results/twowiki-semantic-quality-25-v2-20261104/protocol.json",
+    "original_sha256": "6ea932386b8ba4e3e544bed55ccb22ea991f589d1311fb138b6baa689557abf8",
+    "current_sha256": "6ea932386b8ba4e3e544bed55ccb22ea991f589d1311fb138b6baa689557abf8",
+    "original_hash_matches": true,
+    "metadata_ids_match": true,
+    "query_id_count": 25
+  },
+  {
+    "path": "/Users/sadiapeerzada/Documents/rag-research-results/twowiki-clean-dense-rcd-dev25-20261103T145542Z-a6fdbb/manifest.json",
+    "original_sha256": "6a2c8e5bca5b671daf8b5283c6cb1fc2f74e5cfc41d2adad90f4b9b5c105c376",
+    "current_sha256": "6a2c8e5bca5b671daf8b5283c6cb1fc2f74e5cfc41d2adad90f4b9b5c105c376",
+    "original_hash_matches": true,
+    "metadata_ids_match": true,
+    "query_id_count": 25
+  },
+  {
+    "path": "/Users/sadiapeerzada/Documents/rag-research-results/twowiki-clean-dense-rcd-dev25-20261103T145542Z-a6fdbb/summary.json",
+    "original_sha256": "17015c411f28209394121ed53e9adbbc7d0ee7abba1957522053cc31c7904e25",
+    "current_sha256": "17015c411f28209394121ed53e9adbbc7d0ee7abba1957522053cc31c7904e25",
+    "original_hash_matches": true,
+    "metadata_ids_match": true,
+    "query_id_count": 0
+  },
+  {
+    "path": "/Users/sadiapeerzada/Documents/rag-research-results/twowiki-qwen-20261103T154138Z/manifest.json",
+    "original_sha256": "4c2352f5dc69f506827139e1b582bd7ad02ef207a144ad867f1a2a4c5fb4c355",
+    "current_sha256": "4c2352f5dc69f506827139e1b582bd7ad02ef207a144ad867f1a2a4c5fb4c355",
+    "original_hash_matches": true,
+    "metadata_ids_match": true,
+    "query_id_count": 0
+  },
+  {
+    "path": "/Users/sadiapeerzada/Documents/rag-research-results/twowiki-qwen-20261103T154138Z/summary.json",
+    "original_sha256": "09728c2bc3dd675f35d3190b016cffbfd287b28ce1fcfc626b47e3fd1f7f786a",
+    "current_sha256": "09728c2bc3dd675f35d3190b016cffbfd287b28ce1fcfc626b47e3fd1f7f786a",
+    "original_hash_matches": true,
+    "metadata_ids_match": true,
+    "query_id_count": 0
+  },
+  {
+    "path": "/Users/sadiapeerzada/Documents/rag-research-results/twowiki-qwen-v5-20261103T160252Z/manifest.json",
+    "original_sha256": "a52a7025256ae6ac618a1e9f11a3313f6523c4bdc5e2384aa3af607b62c30615",
+    "current_sha256": "a52a7025256ae6ac618a1e9f11a3313f6523c4bdc5e2384aa3af607b62c30615",
+    "original_hash_matches": true,
+    "metadata_ids_match": true,
+    "query_id_count": 0
+  },
+  {
+    "path": "/Users/sadiapeerzada/Documents/rag-research-results/twowiki-qwen-v5-20261103T160252Z/summary.json",
+    "original_sha256": "3e436d2ae02467a322503d128d55b44672cb805674bde80c4facdff00258df1e",
+    "current_sha256": "3e436d2ae02467a322503d128d55b44672cb805674bde80c4facdff00258df1e",
+    "original_hash_matches": true,
+    "metadata_ids_match": true,
+    "query_id_count": 0
+  },
+  {
+    "path": "/Users/sadiapeerzada/Documents/rag-research-results/twowiki-qwen-v6-20261103T162926Z/manifest.json",
+    "original_sha256": "5124e35a19ca916c555826ea62aa210d82210ab37d812efd6662c53b662e8fe8",
+    "current_sha256": "5124e35a19ca916c555826ea62aa210d82210ab37d812efd6662c53b662e8fe8",
+    "original_hash_matches": true,
+    "metadata_ids_match": true,
+    "query_id_count": 0
+  },
+  {
+    "path": "/Users/sadiapeerzada/Documents/rag-research-results/twowiki-qwen-v6-20261103T162926Z/summary.json",
+    "original_sha256": "bb9e321afcb7d8db532ac834d4d6dda93857c6b0c7fb8c59e4a31a7c94cfd3de",
+    "current_sha256": "bb9e321afcb7d8db532ac834d4d6dda93857c6b0c7fb8c59e4a31a7c94cfd3de",
+    "original_hash_matches": true,
+    "metadata_ids_match": true,
+    "query_id_count": 0
+  },
+  {
+    "path": "/Users/sadiapeerzada/Documents/rag-research-results/twowiki-semantic-quality-25-v2-20261104/protocol.json",
+    "original_sha256": "6ea932386b8ba4e3e544bed55ccb22ea991f589d1311fb138b6baa689557abf8",
+    "current_sha256": "6ea932386b8ba4e3e544bed55ccb22ea991f589d1311fb138b6baa689557abf8",
+    "original_hash_matches": true,
+    "metadata_ids_match": true,
+    "query_id_count": 25
+  },
+  {
+    "path": "/Users/sadiapeerzada/Documents/rag-research-results/twowiki-three-candidate-gate-20261104-v1/manifest.json",
+    "original_sha256": "e3944ce00c906b5cf5bfe8e0217a1221a76b8d424d21d8ab1a779f4f0e382e85",
+    "current_sha256": "e3944ce00c906b5cf5bfe8e0217a1221a76b8d424d21d8ab1a779f4f0e382e85",
+    "original_hash_matches": true,
+    "metadata_ids_match": true,
+    "query_id_count": 3
+  },
+  {
+    "path": "/Users/sadiapeerzada/Documents/rag-research-results/twowiki-three-candidate-gate-20261104-v1-semantic/plan.json",
+    "original_sha256": "cccbf6e8ead9ff05f2ed32652b8bace2a6faac2012a63d8591b036a5bbd53eca",
+    "current_sha256": "cccbf6e8ead9ff05f2ed32652b8bace2a6faac2012a63d8591b036a5bbd53eca",
+    "original_hash_matches": true,
+    "metadata_ids_match": true,
+    "query_id_count": 1
+  },
+  {
+    "path": "/Users/sadiapeerzada/Documents/rag-research-results/twowiki-three-candidate-gate-20261104-v1-semantic-development-v2/plan.json",
+    "original_sha256": "712eceafb4aba585b4ec403ce43f333a55ae281f1ea0e55d2b799c2b65bbed40",
+    "current_sha256": "712eceafb4aba585b4ec403ce43f333a55ae281f1ea0e55d2b799c2b65bbed40",
+    "original_hash_matches": true,
+    "metadata_ids_match": true,
+    "query_id_count": 1
+  },
+  {
+    "path": "/Users/sadiapeerzada/Documents/rag-research-results/twowiki-three-case-lexical-dev-20261103T181336Z/plan.json",
+    "original_sha256": "e88b616aae6aa96d81dec5b66e5a69ff35bb3de3acb5e5723535b1a01c6d2fef",
+    "current_sha256": "e88b616aae6aa96d81dec5b66e5a69ff35bb3de3acb5e5723535b1a01c6d2fef",
+    "original_hash_matches": true,
+    "metadata_ids_match": true,
+    "query_id_count": 3
+  },
+  {
+    "path": "/Users/sadiapeerzada/Documents/rag-research-results/twowiki-three-case-lexical-dev-20261103T181336Z/summary.json",
+    "original_sha256": "234489711dc08e92b9e4a69d8c3997060514dc11e3d46d0b30fca088d76cf193",
+    "current_sha256": "234489711dc08e92b9e4a69d8c3997060514dc11e3d46d0b30fca088d76cf193",
+    "original_hash_matches": true,
+    "metadata_ids_match": true,
+    "query_id_count": 0
+  },
+  {
+    "path": "/Users/sadiapeerzada/Documents/rag-research-results/twowiki-two-ai-blinded-first6-20261103T171532Z/manifest.json",
+    "original_sha256": "e4d0e044c8a39021d4f9c8d373d7ec5b07d7ec27118860aadcf048ad170f355b",
+    "current_sha256": "e4d0e044c8a39021d4f9c8d373d7ec5b07d7ec27118860aadcf048ad170f355b",
+    "original_hash_matches": true,
+    "metadata_ids_match": true,
+    "query_id_count": 6
+  },
+  {
+    "path": "/Users/sadiapeerzada/Documents/rag-research-results/twowiki-v2-construction-pilot-20261103/protocol.json",
+    "original_sha256": "dd67ad7ce88db3b1a2cd3a476a64780770ec271dab10bd0d893e5f2f45c6c033",
+    "current_sha256": "dd67ad7ce88db3b1a2cd3a476a64780770ec271dab10bd0d893e5f2f45c6c033",
+    "original_hash_matches": true,
+    "metadata_ids_match": true,
+    "query_id_count": 25
+  },
+  {
+    "path": "/Users/sadiapeerzada/Documents/rag-research-results/twowiki-v3-exploratory-25cohort-20261103/manifest.json",
+    "original_sha256": "92ad9de658ec3fef7cbd7758967e36f1c854baf209559fd97fda9ef7152a6628",
+    "current_sha256": "92ad9de658ec3fef7cbd7758967e36f1c854baf209559fd97fda9ef7152a6628",
+    "original_hash_matches": true,
+    "metadata_ids_match": true,
+    "query_id_count": 12
+  },
+  {
+    "path": "/Users/sadiapeerzada/Documents/rag-research-results/twowiki-v3-exploratory-25cohort-20261103/summary.json",
+    "original_sha256": "e048de899bb15bead7d8929292049b5e4ba9489fd1d36f333b96b62c4b4bcaa9",
+    "current_sha256": "e048de899bb15bead7d8929292049b5e4ba9489fd1d36f333b96b62c4b4bcaa9",
+    "original_hash_matches": true,
+    "metadata_ids_match": true,
+    "query_id_count": 25
+  },
+  {
+    "path": "/Users/sadiapeerzada/Documents/rag-research-results/twowiki-v3-smoke-20261103T124931Z-f8f7f8/summary.json",
+    "original_sha256": "5c8c93092073f87296dcf146fb300623d4d8f84710491b6ffb2779acd601c4ad",
+    "current_sha256": "5c8c93092073f87296dcf146fb300623d4d8f84710491b6ffb2779acd601c4ad",
+    "original_hash_matches": true,
+    "metadata_ids_match": true,
+    "query_id_count": 1
+  },
+  {
+    "path": "/Users/sadiapeerzada/Documents/rag-research-results/twowiki-v3-target-review-20261103/manifest.json",
+    "original_sha256": "d0de59729caa2868fad89952770e4bfdd4cc94a5d0846bb685cfb77c30e4881e",
+    "current_sha256": "d0de59729caa2868fad89952770e4bfdd4cc94a5d0846bb685cfb77c30e4881e",
+    "original_hash_matches": true,
+    "metadata_ids_match": true,
+    "query_id_count": 0
+  },
+  {
+    "path": "/Users/sadiapeerzada/Documents/rag-research-results/twowiki-v3-target-review-20261103/source_evidence.json",
+    "original_sha256": "8990e7fa1a015ab1224056eb9870f555796aaed2c76127d4baecfdfd9f8b249e",
+    "current_sha256": "8990e7fa1a015ab1224056eb9870f555796aaed2c76127d4baecfdfd9f8b249e",
+    "original_hash_matches": true,
+    "metadata_ids_match": true,
+    "query_id_count": 25
+  },
+  {
+    "path": "/Users/sadiapeerzada/Documents/rag-research-results/twowiki-v4-real-smoke-20261103T132103Z-317f7e/summary.json",
+    "original_sha256": "563d48a14ca5e852fc38fd5399f981b1306de7758e4f7cee2c8cbd672547dce2",
+    "current_sha256": "563d48a14ca5e852fc38fd5399f981b1306de7758e4f7cee2c8cbd672547dce2",
+    "original_hash_matches": true,
+    "metadata_ids_match": true,
+    "query_id_count": 0
+  },
+  {
+    "path": "/Users/sadiapeerzada/Documents/rag-research-results/twowiki-additional-train-review-20261103T170540Z.json",
+    "original_sha256": "f135af6125e63d7c458129faf0f79903bc6395569e1c1e00228548dab11f45b6",
+    "current_sha256": "f135af6125e63d7c458129faf0f79903bc6395569e1c1e00228548dab11f45b6",
+    "original_hash_matches": true,
+    "metadata_ids_match": true,
+    "query_id_count": 295
+  },
+  {
+    "path": "/Users/sadiapeerzada/Documents/rag-research-results/twowiki-additional-train-review-20261103T170530Z.json",
+    "original_sha256": "f135af6125e63d7c458129faf0f79903bc6395569e1c1e00228548dab11f45b6",
+    "current_sha256": "f135af6125e63d7c458129faf0f79903bc6395569e1c1e00228548dab11f45b6",
+    "original_hash_matches": true,
+    "metadata_ids_match": true,
+    "query_id_count": 295
+  },
+  {
+    "path": "/Users/sadiapeerzada/Documents/rag-research-results/twowiki-generic-dev25-review-20261103T170934Z.json",
+    "original_sha256": "d68afabd2cf9ce514e4accca1c45feeccea236011662efeea225f150c4e20cff",
+    "current_sha256": "d68afabd2cf9ce514e4accca1c45feeccea236011662efeea225f150c4e20cff",
+    "original_hash_matches": true,
+    "metadata_ids_match": true,
+    "query_id_count": 20
+  }
+]

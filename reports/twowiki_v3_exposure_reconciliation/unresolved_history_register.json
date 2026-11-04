@@ -1,0 +1,44 @@
+[
+  {
+    "id": "HIST-25-IDS",
+    "status": "unresolved",
+    "missing": "Exact 25 query IDs and contemporaneous run binding for the Week 5\u20136 sweep",
+    "evidence": "Original sweep rows/CSV omit IDs; no ledger located in searched history, copies, checkpoints, archives or available logs",
+    "needed": "Original executed notebook/kernel version and outputs, poison manifest/checkpoint, or run-bound ID export; assess any reconstruction separately"
+  },
+  {
+    "id": "HIST-25-REV",
+    "status": "reported_not_runtime_verified",
+    "missing": "Runtime-pinned dataset revision/split/row order and executed sampling arguments",
+    "evidence": "Report/code transition names 9823f704; 300-query baselines instead record e37a4050; unrecorded caller can override default split/seed",
+    "needed": "Contemporaneous run metadata; do not relabel baseline IDs as sweep IDs"
+  },
+  {
+    "id": "DELETED-LOCAL",
+    "status": "partly_inaccessible_or_unrecoverable",
+    "missing": "Ignored/untracked contents of 14 absent worktree paths and possible deleted notebooks/runtime outputs",
+    "evidence": "Git object search has no sweep ledger; Trash access denied",
+    "needed": "Custodian-controlled backup/export or OS-authorized recovery; no absence-based certification"
+  },
+  {
+    "id": "REMOTE-RUNTIME",
+    "status": "not_available_to_this_audit",
+    "missing": "Original hosted-notebook/private runtime output and artifact inventory",
+    "evidence": "GitHub committed source available, runtime artifact census not established; no authoritative hosted run reference supplied",
+    "needed": "Original host/run identity and immutable executed version/export; source-tree access is not runtime access"
+  },
+  {
+    "id": "CUSTODY-COMPLETE",
+    "status": "missing",
+    "missing": "Human certification of all earlier local/remote/notebook/model-review exposures",
+    "evidence": "All 30 parent source hashes and observed metadata reconcile, but this cannot establish absence of unlogged exposures",
+    "needed": "Identified custodian, dated evidence-based complete-inventory attestation and external SHA pin; none fabricated"
+  },
+  {
+    "id": "FRESH-POOL",
+    "status": "available_pool_exhausted",
+    "missing": "At least 25 eligible uninspected development IDs in a pinned, permitted pool",
+    "evidence": "Existing 300-ID pool and both local materializations are wholly excluded; larger train census unavailable in searched local locations",
+    "needed": "Separately reviewed metadata-only full-train pool export plus resolved custody, or explicitly amended non-prospective diagnostic design"
+  }
+]

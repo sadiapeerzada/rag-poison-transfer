@@ -1,0 +1,118 @@
+[
+  {
+    "commit": "4e69df47ecb041dfabd1b7dcb2431e3761b1c2ec",
+    "candidate_paths": [
+      "docs/protocols/oct26_2wiki/cohort_manifest.json",
+      "docs/protocols/oct26_2wiki/cohort_policy.json",
+      "results/exp_017_2wiki_bm25_baseline_v1.jsonl",
+      "results/exp_017_2wiki_bm25_baseline_v1.summary.json",
+      "results/exp_018_2wiki_dense_baseline_v1.jsonl",
+      "results/exp_018_2wiki_dense_baseline_v1.summary.json",
+      "results/exp_019_2wiki_hybrid_baseline_v1.jsonl",
+      "results/exp_019_2wiki_hybrid_baseline_v1.summary.json",
+      "results/exp_020_2wiki_reranker_baseline_v1.jsonl",
+      "results/exp_020_2wiki_reranker_baseline_v1.summary.json",
+      "results/week5_6_2wiki_sweep.csv",
+      "results/week5_6_intensity5_sweep.csv",
+      "results/week5_6_low_rate_sweep.csv",
+      "results/week5_6_nq_sweep.csv",
+      "results/week5_attack_intensity_sweep.csv",
+      "results/week5_attack_intensity_sweep_full.csv"
+    ]
+  },
+  {
+    "commit": "496d2811ddb3abe94cf18e5c081c2954545c1162",
+    "candidate_paths": [
+      "results/exp_017_2wiki_bm25_baseline_v1.jsonl",
+      "results/exp_017_2wiki_bm25_baseline_v1.summary.json",
+      "results/exp_018_2wiki_dense_baseline_v1.jsonl",
+      "results/exp_018_2wiki_dense_baseline_v1.summary.json",
+      "results/exp_019_2wiki_hybrid_baseline_v1.jsonl",
+      "results/exp_019_2wiki_hybrid_baseline_v1.summary.json",
+      "results/exp_020_2wiki_reranker_baseline_v1.jsonl",
+      "results/exp_020_2wiki_reranker_baseline_v1.summary.json",
+      "results/week5_6_2wiki_sweep.csv",
+      "results/week5_6_intensity5_sweep.csv",
+      "results/week5_6_low_rate_sweep.csv",
+      "results/week5_6_nq_sweep.csv",
+      "results/week5_attack_intensity_sweep.csv",
+      "results/week5_attack_intensity_sweep_full.csv"
+    ]
+  },
+  {
+    "commit": "0b50398e18b25c89b1c6e041e2354ecbbbf6155d",
+    "candidate_paths": [
+      "results/exp_017_2wiki_bm25_baseline_v1.jsonl",
+      "results/exp_017_2wiki_bm25_baseline_v1.summary.json",
+      "results/exp_018_2wiki_dense_baseline_v1.jsonl",
+      "results/exp_018_2wiki_dense_baseline_v1.summary.json",
+      "results/exp_019_2wiki_hybrid_baseline_v1.jsonl",
+      "results/exp_019_2wiki_hybrid_baseline_v1.summary.json",
+      "results/exp_020_2wiki_reranker_baseline_v1.jsonl",
+      "results/exp_020_2wiki_reranker_baseline_v1.summary.json",
+      "results/week5_6_2wiki_sweep.csv",
+      "results/week5_6_intensity5_sweep.csv",
+      "results/week5_6_low_rate_sweep.csv",
+      "results/week5_6_nq_sweep.csv",
+      "results/week5_attack_intensity_sweep.csv",
+      "results/week5_attack_intensity_sweep_full.csv"
+    ]
+  },
+  {
+    "commit": "ce91afc48aea1965b3cde199836971927cec3b25",
+    "candidate_paths": [
+      "results/exp_017_2wiki_bm25_baseline_v1.jsonl",
+      "results/exp_017_2wiki_bm25_baseline_v1.summary.json",
+      "results/exp_018_2wiki_dense_baseline_v1.jsonl",
+      "results/exp_018_2wiki_dense_baseline_v1.summary.json",
+      "results/exp_019_2wiki_hybrid_baseline_v1.jsonl",
+      "results/exp_019_2wiki_hybrid_baseline_v1.summary.json",
+      "results/exp_020_2wiki_reranker_baseline_v1.jsonl",
+      "results/exp_020_2wiki_reranker_baseline_v1.summary.json",
+      "results/week5_6_2wiki_sweep.csv",
+      "results/week5_6_intensity5_sweep.csv",
+      "results/week5_6_low_rate_sweep.csv",
+      "results/week5_6_nq_sweep.csv",
+      "results/week5_attack_intensity_sweep.csv",
+      "results/week5_attack_intensity_sweep_full.csv"
+    ]
+  },
+  {
+    "commit": "ad7e2586357e97c685b6d5c586112976b798e405",
+    "candidate_paths": [
+      "results/exp_017_2wiki_bm25_baseline_v1.jsonl",
+      "results/exp_017_2wiki_bm25_baseline_v1.summary.json",
+      "results/exp_018_2wiki_dense_baseline_v1.jsonl",
+      "results/exp_018_2wiki_dense_baseline_v1.summary.json",
+      "results/exp_019_2wiki_hybrid_baseline_v1.jsonl",
+      "results/exp_019_2wiki_hybrid_baseline_v1.summary.json",
+      "results/exp_020_2wiki_reranker_baseline_v1.jsonl",
+      "results/exp_020_2wiki_reranker_baseline_v1.summary.json",
+      "results/week5_6_2wiki_sweep.csv",
+      "results/week5_6_intensity5_sweep.csv",
+      "results/week5_6_low_rate_sweep.csv",
+      "results/week5_6_nq_sweep.csv",
+      "results/week5_attack_intensity_sweep.csv",
+      "results/week5_attack_intensity_sweep_full.csv"
+    ]
+  },
+  {
+    "commit": "e27eccc87695c3c61b1ffe7006ac942cbb146095",
+    "candidate_paths": [
+      "results/exp_017_2wiki_bm25_baseline_v1.jsonl",
+      "results/exp_017_2wiki_bm25_baseline_v1.summary.json",
+      "results/exp_018_2wiki_dense_baseline_v1.jsonl",
+      "results/exp_018_2wiki_dense_baseline_v1.summary.json",
+      "results/exp_019_2wiki_hybrid_baseline_v1.jsonl",
+      "results/exp_019_2wiki_hybrid_baseline_v1.summary.json",
+      "results/exp_020_2wiki_reranker_baseline_v1.jsonl",
+      "results/exp_020_2wiki_reranker_baseline_v1.summary.json",
+      "results/week5_6_2wiki_sweep.csv",
+      "results/week5_6_intensity5_sweep.csv",
+      "results/week5_6_low_rate_sweep.csv",
+      "results/week5_6_nq_sweep.csv",
+      "results/week5_attack_intensity_sweep.csv",
+      "results/week5_attack_intensity_sweep_full.csv"
+    ]
+  }
+]

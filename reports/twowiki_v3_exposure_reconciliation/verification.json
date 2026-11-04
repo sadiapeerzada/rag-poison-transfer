@@ -1,0 +1,30 @@
+{
+  "QA_or_heldout_evaluation": false,
+  "base_commit": "6912653922ea0008a97b8e3ddb0cc8a8be68b287",
+  "base_is_ancestor": true,
+  "before_after_frozen_hashes_identical": true,
+  "candidate_question_or_answer_review_performed": false,
+  "custodian_certification": null,
+  "exclusion_union_count": 900,
+  "frozen_file_count": 509,
+  "frozen_implementation_checkout_clean": true,
+  "frozen_inventory_sha256": "d74f289e5ad402a382665a887364b5e872adb99d6a15a23ae0d6322d1bcf3ac8",
+  "historical_25_query_ids_recovered": false,
+  "incomplete_registry_rejected_reason": "Historical exposure is unresolved; selection stopped",
+  "new_model_inference": false,
+  "new_unique_query_ids": 0,
+  "observation_count": 1790,
+  "original_staged_changes_preserved": 6,
+  "parent_source_hash_and_projection_rechecks_pass": true,
+  "parent_source_records_preserved": 30,
+  "prospective_cohort_selected": false,
+  "tests": {
+    "command": "/Users/sadiapeerzada/Downloads/rag-poison-transfer/.venv/bin/python -B -m pytest -q tests/test_exposure_reconciliation.py tests/test_semantic_v3_pilot_prep.py",
+    "failed": 0,
+    "output_file": "offline_tests.txt",
+    "passed": 41
+  },
+  "unique_observation_sha256": 1384,
+  "v3_profile_and_driver_fingerprints_unchanged": true,
+  "verdict": "NO_GO_existing_prospective_design_blocked"
+}

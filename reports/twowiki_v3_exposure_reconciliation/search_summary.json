@@ -1,0 +1,125 @@
+{
+  "base_commit": "6912653922ea0008a97b8e3ddb0cc8a8be68b287",
+  "historical_sweep_commit": "d232fdf3b38aca9134c9728e85dad00605c6f069",
+  "historical_reported_revision": "9823f70484dea525100394220b0ea5184d0eeb7b",
+  "actual_sweep_runtime_revision_binding": "missing",
+  "historical_sweep_query_ids": null,
+  "old_sweep_membership_in_900": "unknown because run IDs are not recovered",
+  "baseline_logged_revision": "e37a4050605363be62f1d02e6eb888fe5f56530e",
+  "baseline_unique_ids": 300,
+  "git_reachable_candidate_blob_versions": 20,
+  "unreachable_commits_examined": 6,
+  "unreachable_loose_blobs_examined": 62,
+  "worktree_locations": 37,
+  "available_worktree_locations": 23,
+  "absent_worktree_locations": 14,
+  "physical_git_common_directories": [
+    "/Users/sadiapeerzada/Downloads/rag-poison-transfer-final/.git",
+    "/Users/sadiapeerzada/Downloads/rag-poison-transfer/.git"
+  ],
+  "old_notebook_candidate": {
+    "path": "/Users/sadiapeerzada/Downloads/rag-poison-transfer.xpynb",
+    "bytes": 0,
+    "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "finding": "empty; nonexposure not established"
+  },
+  "zip_archive_checks": [
+    {
+      "path": "/Users/sadiapeerzada/Downloads/rag-poison-transfer-week3-4.zip",
+      "sha256": "e30d52d64c42099c1986394941b05e5529de0b7a6a86bf9f14e7456f9b63fde0",
+      "members": 60,
+      "candidate_members": [],
+      "finding": "No historical sweep/notebook candidate members; not proof no exposure"
+    },
+    {
+      "path": "/Users/sadiapeerzada/Downloads/rag-poison-transfer-main.zip",
+      "sha256": "1de15f3f21472e86d60ffa794030a9afeb5bef339484ff61f784550020b43823",
+      "members": 62,
+      "candidate_members": [],
+      "finding": "No historical sweep/notebook candidate members; not proof no exposure"
+    },
+    {
+      "path": "/Users/sadiapeerzada/Downloads/rag-poison-transfer.zip",
+      "sha256": "e236c8e506734bbd60ba681ac0ec0f15b5d77ea070531f1e1592fdad69abef18",
+      "members": 53,
+      "candidate_members": [],
+      "finding": "No historical sweep/notebook candidate members; not proof no exposure"
+    },
+    {
+      "path": "/Users/sadiapeerzada/Downloads/rag-poison-transfer-docs-built-preview.zip",
+      "sha256": "e897dcf60935151b8748fc82c95082870af134cd3a118b984bbf95c387461ee7",
+      "members": 84,
+      "candidate_members": [],
+      "finding": "No historical sweep/notebook candidate members; not proof no exposure"
+    }
+  ],
+  "tar_archive_member_checks": [
+    {
+      "path": "/Users/sadiapeerzada/Documents/RAG_Research_Backups/hotpotqa-transfer-sealed-stages-20261102-085056-9b5235.tar.gz",
+      "bytes": 48410814,
+      "candidate_members": [
+        "reference/worker-code/configs/exp_017_2wiki_bm25_baseline_v1.yaml",
+        "reference/worker-code/configs/exp_018_2wiki_dense_baseline_v1.yaml",
+        "reference/worker-code/configs/exp_019_2wiki_hybrid_baseline_v1.yaml",
+        "reference/worker-code/configs/exp_020_2wiki_reranker_baseline_v1.yaml",
+        "reference/worker-code/scripts/audit_2wiki_smoke_incident.py",
+        "reference/worker-code/scripts/materialize_2wiki_execution_inputs.py",
+        "reference/worker-code/scripts/prepare_2wiki_development.py",
+        "reference/worker-code/scripts/prepare_2wiki_recovery_smoke.py",
+        "reference/worker-code/src/experiments/twowiki_replication.py"
+      ],
+      "finding": "Code/configuration members only; no 2Wiki sweep query ledger located",
+      "archive_full_sha256": "not_computed; member-name inventory only"
+    },
+    {
+      "path": "/Users/sadiapeerzada/Documents/RAG_Research_Backups/hotpotqa-final-evaluation-43f3f652460ac365.tar.gz",
+      "bytes": 409521532,
+      "candidate_members": [],
+      "finding": "Code/configuration members only; no 2Wiki sweep query ledger located",
+      "archive_full_sha256": "not_computed; member-name inventory only"
+    }
+  ],
+  "targeted_session_log_matches_excluding_current_task": [
+    "/Users/sadiapeerzada/.codex/sessions/2026/10/22/rollout-2026-10-22T20-45-33-01a1642e-898a-79b2-b114-8e30d4de5196.jsonl",
+    "/Users/sadiapeerzada/.codex/sessions/2026/10/25/rollout-2026-10-25T17-07-34-01a172da-096d-7de3-8b1a-added293451f.jsonl",
+    "/Users/sadiapeerzada/.codex/sessions/2026/10/29/rollout-2026-10-29T19-27-38-01a187f3-b735-7e81-80a3-f5ea07e2814c.jsonl",
+    "/Users/sadiapeerzada/.codex/sessions/2026/10/25/rollout-2026-10-25T11-27-45-01a171a2-ed6f-78a3-a2c9-cb3c53d2a123.jsonl"
+  ],
+  "session_findings": "No exact 25-ID run ledger or recorded historical loader invocation recovered. Later documentation/search excerpts are not independent run evidence.",
+  "shell_history_targeted_match_count": 5,
+  "shell_history_loader_sample_seed_revision_binding": "not found in matching commands; unrelated history not exported",
+  "trash_access": {
+    "path": "/Users/sadiapeerzada/.Trash",
+    "status": "PermissionError: Operation not permitted; not inspected"
+  },
+  "remote_limitations": [
+    "Public GitHub committed trees checked; original notebooks directory only .gitkeep.",
+    "GitHub connector rejects Actions listing URL; no Actions artifact census established.",
+    "No original hosted-notebook execution export, private runtime filesystem or authoritative deleted-artifact ledger supplied."
+  ],
+  "HF_cache_search": "No 2Wiki/ContextualBench directories in the searched default HF datasets/hub caches; not a universal absence claim",
+  "candidate_data_file_name_inventory": [
+    {
+      "path": "/Users/sadiapeerzada/Documents/rag-research-results/twowiki-v2-development-recovery-20261103/development_data.json",
+      "bytes": 1122868
+    },
+    {
+      "path": "/Users/sadiapeerzada/Documents/rag-research-results/twowiki-v2-binding-20261103/local-v2/dataset.json",
+      "bytes": 1122868
+    }
+  ],
+  "no_historical_resampling_or_ID_guessing_performed": true,
+  "no_prospective_cohort_selected": true,
+  "no_inference": true,
+  "secondary_git_repository": {
+    "path": "/Users/sadiapeerzada/Downloads/rag-poison-transfer-final",
+    "head": "8b15e0b0df71ac59eaa5aaed4fbf66ab0cc4f4f8",
+    "reachable_candidate_blob_versions": 18,
+    "unreachable_objects": 0,
+    "additional_ids": []
+  },
+  "total_reachable_candidate_blob_versions": 38,
+  "total_git_blob_observations": 100,
+  "reconciliation_source_observations": 1790,
+  "unique_observation_sha256": 1384
+}

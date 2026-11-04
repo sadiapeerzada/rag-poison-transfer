@@ -1,0 +1,197 @@
+[
+  {
+    "path": "/Users/sadiapeerzada/Documents/rag-research-results/twowiki-three-candidate-gate-20261104-v1-semantic-development-v2/generation_calls/call_01.response.txt",
+    "typed_query_id_tokens": [],
+    "new_typed_tokens": []
+  },
+  {
+    "path": "/Users/sadiapeerzada/Documents/rag-research-results/twowiki-three-candidate-gate-20261104-v1-semantic-development-v2/generation_calls/call_02.response.txt",
+    "typed_query_id_tokens": [],
+    "new_typed_tokens": []
+  },
+  {
+    "path": "/Users/sadiapeerzada/Documents/rag-research-results/twowiki-three-candidate-gate-20261104-v1/prompts/reviewer_B/case_01.txt",
+    "typed_query_id_tokens": [
+      "252388ce08de11ebbd9eac1f6bf848b6"
+    ],
+    "new_typed_tokens": []
+  },
+  {
+    "path": "/Users/sadiapeerzada/Documents/rag-research-results/twowiki-three-candidate-gate-20261104-v1/prompts/reviewer_B/case_03.txt",
+    "typed_query_id_tokens": [
+      "0ec5968a0bdb11eba7f7acde48001122"
+    ],
+    "new_typed_tokens": []
+  },
+  {
+    "path": "/Users/sadiapeerzada/Documents/rag-research-results/twowiki-three-candidate-gate-20261104-v1/prompts/reviewer_B/case_02.txt",
+    "typed_query_id_tokens": [
+      "a8f6296f097211ebbdb0ac1f6bf848b6"
+    ],
+    "new_typed_tokens": []
+  },
+  {
+    "path": "/Users/sadiapeerzada/Documents/rag-research-results/twowiki-three-candidate-gate-20261104-v1/prompts/reviewer_A/case_01.txt",
+    "typed_query_id_tokens": [
+      "252388ce08de11ebbd9eac1f6bf848b6"
+    ],
+    "new_typed_tokens": []
+  },
+  {
+    "path": "/Users/sadiapeerzada/Documents/rag-research-results/twowiki-three-candidate-gate-20261104-v1/prompts/reviewer_A/case_03.txt",
+    "typed_query_id_tokens": [
+      "0ec5968a0bdb11eba7f7acde48001122"
+    ],
+    "new_typed_tokens": []
+  },
+  {
+    "path": "/Users/sadiapeerzada/Documents/rag-research-results/twowiki-three-candidate-gate-20261104-v1/prompts/reviewer_A/case_02.txt",
+    "typed_query_id_tokens": [
+      "a8f6296f097211ebbdb0ac1f6bf848b6"
+    ],
+    "new_typed_tokens": []
+  },
+  {
+    "path": "/Users/sadiapeerzada/Documents/rag-research-results/twowiki-three-candidate-gate-20261104-v1/responses/reviewer_B/case_02.json",
+    "typed_query_id_tokens": [
+      "a8f6296f097211ebbdb0ac1f6bf848b6"
+    ],
+    "new_typed_tokens": []
+  },
+  {
+    "path": "/Users/sadiapeerzada/Documents/rag-research-results/twowiki-three-candidate-gate-20261104-v1/responses/reviewer_B/case_03.json",
+    "typed_query_id_tokens": [
+      "0ec5968a0bdb11eba7f7acde48001122"
+    ],
+    "new_typed_tokens": []
+  },
+  {
+    "path": "/Users/sadiapeerzada/Documents/rag-research-results/twowiki-two-ai-review-raw/reviewer_B/case_02.json",
+    "typed_query_id_tokens": [
+      "0e751c56086511ebbd5eac1f6bf848b6"
+    ],
+    "new_typed_tokens": []
+  },
+  {
+    "path": "/Users/sadiapeerzada/Documents/rag-research-results/twowiki-two-ai-review-raw/reviewer_B/case_03.json",
+    "typed_query_id_tokens": [
+      "3bbbfe200bb011ebab90acde48001122"
+    ],
+    "new_typed_tokens": []
+  },
+  {
+    "path": "/Users/sadiapeerzada/Documents/rag-research-results/twowiki-two-ai-review-raw/reviewer_B/case_04.json",
+    "typed_query_id_tokens": [
+      "a8f6296f097211ebbdb0ac1f6bf848b6"
+    ],
+    "new_typed_tokens": []
+  },
+  {
+    "path": "/Users/sadiapeerzada/Documents/rag-research-results/twowiki-two-ai-review-raw/reviewer_B/case_05.json",
+    "typed_query_id_tokens": [
+      "0ec5968a0bdb11eba7f7acde48001122"
+    ],
+    "new_typed_tokens": []
+  },
+  {
+    "path": "/Users/sadiapeerzada/Documents/rag-research-results/twowiki-two-ai-review-raw/reviewer_B/case_01.json",
+    "typed_query_id_tokens": [
+      "252388ce08de11ebbd9eac1f6bf848b6"
+    ],
+    "new_typed_tokens": []
+  },
+  {
+    "path": "/Users/sadiapeerzada/Documents/rag-research-results/twowiki-two-ai-blinded-first6-20261103T171532Z/reviewer_B/case_06.txt",
+    "typed_query_id_tokens": [
+      "ec78b8640bda11eba7f7acde48001122"
+    ],
+    "new_typed_tokens": []
+  },
+  {
+    "path": "/Users/sadiapeerzada/Documents/rag-research-results/twowiki-two-ai-blinded-first6-20261103T171532Z/reviewer_B/case_05.txt",
+    "typed_query_id_tokens": [
+      "0ec5968a0bdb11eba7f7acde48001122"
+    ],
+    "new_typed_tokens": []
+  },
+  {
+    "path": "/Users/sadiapeerzada/Documents/rag-research-results/twowiki-two-ai-blinded-first6-20261103T171532Z/reviewer_B/case_04.txt",
+    "typed_query_id_tokens": [
+      "a8f6296f097211ebbdb0ac1f6bf848b6"
+    ],
+    "new_typed_tokens": []
+  },
+  {
+    "path": "/Users/sadiapeerzada/Documents/rag-research-results/twowiki-two-ai-blinded-first6-20261103T171532Z/reviewer_B/case_01.txt",
+    "typed_query_id_tokens": [
+      "252388ce08de11ebbd9eac1f6bf848b6"
+    ],
+    "new_typed_tokens": []
+  },
+  {
+    "path": "/Users/sadiapeerzada/Documents/rag-research-results/twowiki-two-ai-blinded-first6-20261103T171532Z/reviewer_B/case_03.txt",
+    "typed_query_id_tokens": [
+      "3bbbfe200bb011ebab90acde48001122"
+    ],
+    "new_typed_tokens": []
+  },
+  {
+    "path": "/Users/sadiapeerzada/Documents/rag-research-results/twowiki-two-ai-blinded-first6-20261103T171532Z/reviewer_B/case_02.txt",
+    "typed_query_id_tokens": [
+      "0e751c56086511ebbd5eac1f6bf848b6"
+    ],
+    "new_typed_tokens": []
+  },
+  {
+    "path": "/Users/sadiapeerzada/Documents/rag-research-results/twowiki-two-ai-blinded-first6-20261103T171532Z/reviewer_A/case_06.txt",
+    "typed_query_id_tokens": [
+      "ec78b8640bda11eba7f7acde48001122"
+    ],
+    "new_typed_tokens": []
+  },
+  {
+    "path": "/Users/sadiapeerzada/Documents/rag-research-results/twowiki-two-ai-blinded-first6-20261103T171532Z/reviewer_A/case_05.txt",
+    "typed_query_id_tokens": [
+      "0ec5968a0bdb11eba7f7acde48001122"
+    ],
+    "new_typed_tokens": []
+  },
+  {
+    "path": "/Users/sadiapeerzada/Documents/rag-research-results/twowiki-two-ai-blinded-first6-20261103T171532Z/reviewer_A/case_04.txt",
+    "typed_query_id_tokens": [
+      "a8f6296f097211ebbdb0ac1f6bf848b6"
+    ],
+    "new_typed_tokens": []
+  },
+  {
+    "path": "/Users/sadiapeerzada/Documents/rag-research-results/twowiki-two-ai-blinded-first6-20261103T171532Z/reviewer_A/case_01.txt",
+    "typed_query_id_tokens": [
+      "252388ce08de11ebbd9eac1f6bf848b6"
+    ],
+    "new_typed_tokens": []
+  },
+  {
+    "path": "/Users/sadiapeerzada/Documents/rag-research-results/twowiki-two-ai-blinded-first6-20261103T171532Z/reviewer_A/case_03.txt",
+    "typed_query_id_tokens": [
+      "3bbbfe200bb011ebab90acde48001122"
+    ],
+    "new_typed_tokens": []
+  },
+  {
+    "path": "/Users/sadiapeerzada/Documents/rag-research-results/twowiki-two-ai-blinded-first6-20261103T171532Z/reviewer_A/case_02.txt",
+    "typed_query_id_tokens": [
+      "0e751c56086511ebbd5eac1f6bf848b6"
+    ],
+    "new_typed_tokens": []
+  },
+  {
+    "path": "/Users/sadiapeerzada/Documents/rag-research-results/twowiki-three-candidate-gate-20261104-v1-semantic/generation_calls/call_01.response.txt",
+    "typed_query_id_tokens": [],
+    "new_typed_tokens": []
+  },
+  {
+    "path": "/Users/sadiapeerzada/Documents/rag-research-results/twowiki-three-candidate-gate-20261104-v1-semantic/generation_calls/call_02.response.txt",
+    "typed_query_id_tokens": [],
+    "new_typed_tokens": []
+  }
+]
