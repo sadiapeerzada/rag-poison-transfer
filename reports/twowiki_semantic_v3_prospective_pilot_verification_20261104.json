@@ -1,0 +1,52 @@
+{
+  "QA_or_retrieval_evaluated": false,
+  "base_commit": "fba2583ae4569d6e5114052ac1854ad545dc3c16",
+  "base_is_ancestor": true,
+  "branch": "experiment/twowiki-semantic-v3-prospective-pilot-prep",
+  "draft_preflight_stopped_reason": "Draft or non-development manifest cannot execute",
+  "driver_implementation_sha256": {
+    "src/experiments/semantic_v3_checkpoint.py": "d455fafdbf5f14a8712cb26911fdbd19a0010e7d5696fc10826f8f771e30cf3c",
+    "src/experiments/semantic_v3_pilot.py": "f8185bcc62e0d4ae886f9b0fef53e4970f2c6e6cd6465900affd8bc958daf05c",
+    "src/experiments/semantic_v3_preparation.py": "7f48513457083f2969f4f15d7599666e3048a6f05c7f1293cd888c5d5f7af52a",
+    "src/experiments/semantic_v3_review.py": "fc3deb24ef490e6c672d359f35813650b2ad22eaf8387515ae5edc6a34ebe24d"
+  },
+  "formal_json_schema_validation": "not_run_optional_jsonschema_package_unavailable",
+  "frozen_checkout_clean": true,
+  "frozen_files": {
+    "before_after_equal": true,
+    "count": 509,
+    "inventory_sha256": "d74f289e5ad402a382665a887364b5e872adb99d6a15a23ae0d6322d1bcf3ac8"
+  },
+  "independent_approvals_supplied": false,
+  "inference_authorized": false,
+  "json_documents_parsed": 46,
+  "known_exclusions": {
+    "custodian_certification": null,
+    "historical_gaps": [
+      "Original 25-query historical sweep exact IDs unrecovered (cohort_policy.json and frozen protocol explicitly uncertified).",
+      "No custodian-certified complete inventory across all local, remote, deleted, notebook and model-review exposures.",
+      "This bounded inventory covers declared local metadata sources only; raw response logs and other checkouts need custodian reconciliation."
+    ],
+    "selection_stopped_reason": "Historical exposure is unresolved; selection stopped",
+    "source_projections": 30,
+    "unique_ids": 900
+  },
+  "model_loaded": false,
+  "nine_frozen_implementation_pins_match": true,
+  "offline_tests": {
+    "command": "/Users/sadiapeerzada/Downloads/rag-poison-transfer/.venv/bin/python -B -m pytest -q tests/test_semantic_v3_pilot_prep.py tests/test_semantic_quality_v3.py tests/test_semantic_development_relations.py tests/test_semantic_profile_integration.py tests/test_semantic_validation_v4.py tests/test_week9_frozen_construction_protocol.py tests/test_semantic_construction_v2.py tests/test_target_source_focus_v4.py tests/test_development_targets_v2.py tests/test_development_targets_v3.py tests/test_semantic_target_constraints_v3.py",
+    "failed": 0,
+    "final_stdout_evidence": "reports/twowiki_semantic_v3_prep_offline_test_evidence_20261104.json",
+    "passed": 508
+  },
+  "original_staged_changes_preserved": 6,
+  "readiness": {
+    "independent_review": "forms_ready_actual_roster_evidence_approvals_missing",
+    "inference": "NO_GO",
+    "infrastructure": "offline_verified_ready_for_independent_code_review",
+    "scientific_cohort": "NO_GO"
+  },
+  "real_cohort_selected": false,
+  "real_model_calls": 0,
+  "v3_profile_matches_base_verification": true
+}

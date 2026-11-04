@@ -1,0 +1,89 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "type": "object",
+  "required": [
+    "exact_relation",
+    "target_support",
+    "contradiction",
+    "plausibility",
+    "malformed",
+    "blind_id",
+    "reviewer_id",
+    "duplicates",
+    "decision",
+    "uncertainty",
+    "notes"
+  ],
+  "properties": {
+    "exact_relation": {
+      "enum": [
+        "yes",
+        "no",
+        "uncertain",
+        "not_assessed"
+      ]
+    },
+    "target_support": {
+      "enum": [
+        "yes",
+        "no",
+        "uncertain",
+        "not_assessed"
+      ]
+    },
+    "contradiction": {
+      "enum": [
+        "yes",
+        "no",
+        "uncertain",
+        "not_assessed"
+      ]
+    },
+    "plausibility": {
+      "enum": [
+        "yes",
+        "no",
+        "uncertain",
+        "not_assessed"
+      ]
+    },
+    "malformed": {
+      "enum": [
+        "yes",
+        "no",
+        "uncertain",
+        "not_assessed"
+      ]
+    },
+    "blind_id": {
+      "type": "string",
+      "pattern": "^[0-9a-f]{64}$"
+    },
+    "reviewer_id": {
+      "type": "string",
+      "minLength": 1
+    },
+    "duplicates": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "pattern": "^[0-9a-f]{64}$"
+      }
+    },
+    "decision": {
+      "enum": [
+        "approve",
+        "reject",
+        "uncertain"
+      ]
+    },
+    "uncertainty": {
+      "type": "string",
+      "minLength": 1
+    },
+    "notes": {
+      "type": "string",
+      "minLength": 1
+    }
+  }
+}

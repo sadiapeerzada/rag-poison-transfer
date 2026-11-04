@@ -1,0 +1,15 @@
+{
+  "schema": "semantic-v3-model-call-authorization/v1",
+  "allow_model_calls": false,
+  "manifest_sha256": null,
+  "protocol_sha256": null,
+  "output_namespace": null,
+  "scope": "development",
+  "purpose": "construction-only",
+  "max_backend_calls": 200,
+  "authorizer_type": "human",
+  "authorizer_id": null,
+  "issued_at": null,
+  "expires_at": null,
+  "notes": "Blank template; NOT an authorization. Complete and externally pin only after independent review."
+}

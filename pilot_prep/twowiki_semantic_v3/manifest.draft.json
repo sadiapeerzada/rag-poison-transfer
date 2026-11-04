@@ -1,0 +1,27 @@
+{
+  "schema": "semantic-v3-pilot-manifest/v1",
+  "status": "draft_blocked",
+  "scope": "development",
+  "stage": "construction-only",
+  "driver_implementation_sha256": {
+    "src/experiments/semantic_v3_preparation.py": "7f48513457083f2969f4f15d7599666e3048a6f05c7f1293cd888c5d5f7af52a",
+    "src/experiments/semantic_v3_checkpoint.py": "d455fafdbf5f14a8712cb26911fdbd19a0010e7d5696fc10826f8f771e30cf3c",
+    "src/experiments/semantic_v3_pilot.py": "f8185bcc62e0d4ae886f9b0fef53e4970f2c6e6cd6465900affd8bc958daf05c",
+    "src/experiments/semantic_v3_review.py": "fc3deb24ef490e6c672d359f35813650b2ad22eaf8387515ae5edc6a34ebe24d"
+  },
+  "artifacts": {
+    "protocol": null,
+    "profile": null,
+    "registry": null,
+    "pool_ids": null,
+    "cohort": null,
+    "data": null,
+    "targets": null,
+    "runtime": null,
+    "cohort_receipt": null
+  },
+  "output_namespace": null,
+  "known_exclusions_sha256": "23c9db5dbe5a9e37b4eddb497a78432e4924c792fa2507143c36440b8081ed02",
+  "inference_authorized": false,
+  "base_implementation_commit": "fba2583ae4569d6e5114052ac1854ad545dc3c16"
+}

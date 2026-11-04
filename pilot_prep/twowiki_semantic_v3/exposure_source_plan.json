@@ -1,0 +1,142 @@
+{
+  "schema": "semantic-v3-exposure-source-plan/v1",
+  "sources": [
+    {
+      "path": "docs/protocols/oct26_2wiki/cohort_policy.json",
+      "pointer": [
+        "known_historical_ids"
+      ],
+      "ids_only": true,
+      "category": "historical_pilot"
+    },
+    {
+      "path": "docs/protocols/oct26_2wiki/cohort_manifest.json",
+      "pointer": [
+        "cohorts",
+        "dev"
+      ],
+      "category": "heldout_ids"
+    },
+    {
+      "path": "docs/protocols/oct26_2wiki/cohort_manifest.json",
+      "pointer": [
+        "cohorts",
+        "train"
+      ],
+      "category": "other_exposure"
+    },
+    {
+      "path": "tests/fixtures/twowiki_semantic_quality_v3_audit.json",
+      "category": "regression"
+    },
+    {
+      "path": "/Users/sadiapeerzada/Documents/rag-research-results/twowiki-semantic-quality-25-v2-20261104/protocol.json",
+      "category": "audit"
+    },
+    {
+      "path": "/Users/sadiapeerzada/Documents/rag-research-results/twowiki-clean-dense-rcd-dev25-20261103T145542Z-a6fdbb/manifest.json",
+      "category": "historical_pilot"
+    },
+    {
+      "path": "/Users/sadiapeerzada/Documents/rag-research-results/twowiki-clean-dense-rcd-dev25-20261103T145542Z-a6fdbb/summary.json",
+      "category": "historical_pilot"
+    },
+    {
+      "path": "/Users/sadiapeerzada/Documents/rag-research-results/twowiki-qwen-20261103T154138Z/manifest.json",
+      "category": "historical_pilot"
+    },
+    {
+      "path": "/Users/sadiapeerzada/Documents/rag-research-results/twowiki-qwen-20261103T154138Z/summary.json",
+      "category": "historical_pilot"
+    },
+    {
+      "path": "/Users/sadiapeerzada/Documents/rag-research-results/twowiki-qwen-v5-20261103T160252Z/manifest.json",
+      "category": "historical_pilot"
+    },
+    {
+      "path": "/Users/sadiapeerzada/Documents/rag-research-results/twowiki-qwen-v5-20261103T160252Z/summary.json",
+      "category": "historical_pilot"
+    },
+    {
+      "path": "/Users/sadiapeerzada/Documents/rag-research-results/twowiki-qwen-v6-20261103T162926Z/manifest.json",
+      "category": "historical_pilot"
+    },
+    {
+      "path": "/Users/sadiapeerzada/Documents/rag-research-results/twowiki-qwen-v6-20261103T162926Z/summary.json",
+      "category": "historical_pilot"
+    },
+    {
+      "path": "/Users/sadiapeerzada/Documents/rag-research-results/twowiki-semantic-quality-25-v2-20261104/protocol.json",
+      "category": "historical_pilot"
+    },
+    {
+      "path": "/Users/sadiapeerzada/Documents/rag-research-results/twowiki-three-candidate-gate-20261104-v1/manifest.json",
+      "category": "target_review"
+    },
+    {
+      "path": "/Users/sadiapeerzada/Documents/rag-research-results/twowiki-three-candidate-gate-20261104-v1-semantic/plan.json",
+      "category": "target_review"
+    },
+    {
+      "path": "/Users/sadiapeerzada/Documents/rag-research-results/twowiki-three-candidate-gate-20261104-v1-semantic-development-v2/plan.json",
+      "category": "target_review"
+    },
+    {
+      "path": "/Users/sadiapeerzada/Documents/rag-research-results/twowiki-three-case-lexical-dev-20261103T181336Z/plan.json",
+      "category": "historical_pilot"
+    },
+    {
+      "path": "/Users/sadiapeerzada/Documents/rag-research-results/twowiki-three-case-lexical-dev-20261103T181336Z/summary.json",
+      "category": "historical_pilot"
+    },
+    {
+      "path": "/Users/sadiapeerzada/Documents/rag-research-results/twowiki-two-ai-blinded-first6-20261103T171532Z/manifest.json",
+      "category": "historical_pilot"
+    },
+    {
+      "path": "/Users/sadiapeerzada/Documents/rag-research-results/twowiki-v2-construction-pilot-20261103/protocol.json",
+      "category": "historical_pilot"
+    },
+    {
+      "path": "/Users/sadiapeerzada/Documents/rag-research-results/twowiki-v3-exploratory-25cohort-20261103/manifest.json",
+      "category": "historical_pilot"
+    },
+    {
+      "path": "/Users/sadiapeerzada/Documents/rag-research-results/twowiki-v3-exploratory-25cohort-20261103/summary.json",
+      "category": "historical_pilot"
+    },
+    {
+      "path": "/Users/sadiapeerzada/Documents/rag-research-results/twowiki-v3-smoke-20261103T124931Z-f8f7f8/summary.json",
+      "category": "historical_pilot"
+    },
+    {
+      "path": "/Users/sadiapeerzada/Documents/rag-research-results/twowiki-v3-target-review-20261103/manifest.json",
+      "category": "target_review"
+    },
+    {
+      "path": "/Users/sadiapeerzada/Documents/rag-research-results/twowiki-v3-target-review-20261103/source_evidence.json",
+      "category": "target_review"
+    },
+    {
+      "path": "/Users/sadiapeerzada/Documents/rag-research-results/twowiki-v4-real-smoke-20261103T132103Z-317f7e/summary.json",
+      "category": "historical_pilot"
+    },
+    {
+      "path": "/Users/sadiapeerzada/Documents/rag-research-results/twowiki-additional-train-review-20261103T170540Z.json",
+      "category": "target_review"
+    },
+    {
+      "path": "/Users/sadiapeerzada/Documents/rag-research-results/twowiki-additional-train-review-20261103T170530Z.json",
+      "category": "target_review"
+    },
+    {
+      "path": "/Users/sadiapeerzada/Documents/rag-research-results/twowiki-generic-dev25-review-20261103T170934Z.json",
+      "category": "target_review"
+    }
+  ],
+  "historical_gaps": [
+    "Original 25-query historical sweep exact IDs unrecovered (cohort_policy.json and frozen protocol explicitly uncertified).",
+    "No custodian-certified complete inventory across all local, remote, deleted, notebook and model-review exposures.",
+    "This bounded inventory covers declared local metadata sources only; raw response logs and other checkouts need custodian reconciliation."
+  ]
+}
