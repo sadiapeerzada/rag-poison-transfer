@@ -1,0 +1,20 @@
+{
+  "identifier": "twowiki-semantic-quality/v3-development",
+  "scope": "development",
+  "baseline_commit": "07499fd7d3dc750d9ec876465c76c4972a9c70df",
+  "audit_commit": "f8b93a7",
+  "validator": "question-bound-relation-grammar/v3-development",
+  "prompt": "relation-specific-sentence/v3-development",
+  "retry": "relation-specific-bounded-revision/v3-development",
+  "target_method": "twowiki-evidence-gated-targets/v3-development",
+  "max_attempts_per_document": 2,
+  "max_tokens": 150,
+  "temperature": 0.0,
+  "sampler": "explicit greedy",
+  "seed": 42,
+  "intensities": [1, 3],
+  "duplicate_policy": "retain_and_report_not_independent_corroboration",
+  "entry_point": "src.attacks.semantic_quality_profile_v3.construct",
+  "frozen_registry_integration": false,
+  "evaluation_authorized": false
+}
