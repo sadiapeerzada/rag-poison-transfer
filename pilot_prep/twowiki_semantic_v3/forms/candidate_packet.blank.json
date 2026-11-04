@@ -1,0 +1,30 @@
+{
+  "target": null,
+  "packet": {
+    "payload": {
+      "query_sha256": null,
+      "target": null,
+      "nominator_id": null,
+      "evidence": [],
+      "facts": {},
+      "fact_citations": {}
+    },
+    "review": {
+      "payload_sha256": null,
+      "reviewer_type": "human",
+      "reviewer_id": null,
+      "reviewed_at": null,
+      "decision": null,
+      "uncertainty": null,
+      "checks": {
+        "referent_identity": null,
+        "entity_type_and_role": null,
+        "aliases_complete": null,
+        "corpus_relative_contradiction": null,
+        "chronological_plausibility": null,
+        "geographic_granularity": null
+      },
+      "notes": null
+    }
+  }
+}

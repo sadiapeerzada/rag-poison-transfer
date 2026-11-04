@@ -1,0 +1,10 @@
+{
+  "blind_id": null,
+  "review_A_sha256": null,
+  "review_B_sha256": null,
+  "adjudicator_id": null,
+  "decision": null,
+  "disagreements": [],
+  "resolution_notes": null,
+  "reviewed_at": null
+}

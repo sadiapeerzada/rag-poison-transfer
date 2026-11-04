@@ -1,0 +1,20 @@
+{
+  "blind_id": null,
+  "query_id": null,
+  "question": null,
+  "target": null,
+  "gold_answer": null,
+  "gold_aliases": [],
+  "text": null,
+  "evidence": [],
+  "reviewer_id": null,
+  "exact_relation": null,
+  "target_support": null,
+  "contradiction": null,
+  "plausibility": null,
+  "malformed": null,
+  "duplicates": null,
+  "decision": null,
+  "uncertainty": null,
+  "notes": null
+}

@@ -1,0 +1,561 @@
+[
+  {
+    "path": "/Users/sadiapeerzada/Downloads/rag-poison-transfer",
+    "exists": true,
+    "git_common_dir": ".git",
+    "candidate_files": [
+      "/Users/sadiapeerzada/Downloads/rag-poison-transfer/results/week5_6_low_rate_sweep.csv",
+      "/Users/sadiapeerzada/Downloads/rag-poison-transfer/results/exp_020_2wiki_reranker_baseline_v1.summary.json",
+      "/Users/sadiapeerzada/Downloads/rag-poison-transfer/results/exp_019_2wiki_hybrid_baseline_v1.summary.json",
+      "/Users/sadiapeerzada/Downloads/rag-poison-transfer/results/week5_6_intensity5_sweep.csv",
+      "/Users/sadiapeerzada/Downloads/rag-poison-transfer/results/week5_attack_intensity_sweep_full.csv",
+      "/Users/sadiapeerzada/Downloads/rag-poison-transfer/results/exp_017_2wiki_bm25_baseline_v1.summary.json",
+      "/Users/sadiapeerzada/Downloads/rag-poison-transfer/results/exp_029_rcd_poisoned_pilot_n10.json",
+      "/Users/sadiapeerzada/Downloads/rag-poison-transfer/results/exp_017_2wiki_bm25_baseline_v1.jsonl",
+      "/Users/sadiapeerzada/Downloads/rag-poison-transfer/results/exp_020_2wiki_reranker_baseline_v1.jsonl",
+      "/Users/sadiapeerzada/Downloads/rag-poison-transfer/results/exp_019_2wiki_hybrid_baseline_v1.jsonl",
+      "/Users/sadiapeerzada/Downloads/rag-poison-transfer/results/exp_018_2wiki_dense_baseline_v1.summary.json",
+      "/Users/sadiapeerzada/Downloads/rag-poison-transfer/results/week5_6_nq_sweep.csv",
+      "/Users/sadiapeerzada/Downloads/rag-poison-transfer/results/exp_018_2wiki_dense_baseline_v1.jsonl",
+      "/Users/sadiapeerzada/Downloads/rag-poison-transfer/results/week5_6_2wiki_sweep.csv",
+      "/Users/sadiapeerzada/Downloads/rag-poison-transfer/results/week5_attack_intensity_sweep.csv"
+    ]
+  },
+  {
+    "path": "/private/tmp/rag-hotpotqa-single-intent-recovery",
+    "exists": false
+  },
+  {
+    "path": "/private/tmp/rag-oct26-execution-reliability",
+    "exists": false
+  },
+  {
+    "path": "/private/tmp/rag-oct26-research-deliverables",
+    "exists": false
+  },
+  {
+    "path": "/private/tmp/rag-poison-rewrite-check",
+    "exists": false
+  },
+  {
+    "path": "/private/tmp/rag-rcd-freeze-verify",
+    "exists": false
+  },
+  {
+    "path": "/private/tmp/rag-readme-restoration",
+    "exists": false
+  },
+  {
+    "path": "/private/tmp/rag-readme-week9-status",
+    "exists": false
+  },
+  {
+    "path": "/private/tmp/rag-seed42-readonly-audit",
+    "exists": false
+  },
+  {
+    "path": "/private/tmp/rag-seed42-recovery-implementation",
+    "exists": true,
+    "git_common_dir": "/Users/sadiapeerzada/Downloads/rag-poison-transfer/.git",
+    "candidate_files": [
+      "/private/tmp/rag-seed42-recovery-implementation/results/week5_6_low_rate_sweep.csv",
+      "/private/tmp/rag-seed42-recovery-implementation/results/exp_020_2wiki_reranker_baseline_v1.summary.json",
+      "/private/tmp/rag-seed42-recovery-implementation/results/exp_019_2wiki_hybrid_baseline_v1.summary.json",
+      "/private/tmp/rag-seed42-recovery-implementation/results/week5_6_intensity5_sweep.csv",
+      "/private/tmp/rag-seed42-recovery-implementation/results/week5_attack_intensity_sweep_full.csv",
+      "/private/tmp/rag-seed42-recovery-implementation/results/exp_017_2wiki_bm25_baseline_v1.summary.json",
+      "/private/tmp/rag-seed42-recovery-implementation/results/exp_029_rcd_poisoned_pilot_n10.json",
+      "/private/tmp/rag-seed42-recovery-implementation/results/exp_017_2wiki_bm25_baseline_v1.jsonl",
+      "/private/tmp/rag-seed42-recovery-implementation/results/exp_020_2wiki_reranker_baseline_v1.jsonl",
+      "/private/tmp/rag-seed42-recovery-implementation/results/exp_019_2wiki_hybrid_baseline_v1.jsonl",
+      "/private/tmp/rag-seed42-recovery-implementation/results/exp_018_2wiki_dense_baseline_v1.summary.json",
+      "/private/tmp/rag-seed42-recovery-implementation/results/week5_6_nq_sweep.csv",
+      "/private/tmp/rag-seed42-recovery-implementation/results/exp_018_2wiki_dense_baseline_v1.jsonl",
+      "/private/tmp/rag-seed42-recovery-implementation/results/week5_6_2wiki_sweep.csv",
+      "/private/tmp/rag-seed42-recovery-implementation/results/week5_attack_intensity_sweep.csv"
+    ]
+  },
+  {
+    "path": "/private/tmp/rag-semantic-ai-review-development",
+    "exists": false
+  },
+  {
+    "path": "/private/tmp/rag-semantic-ai-review-followup",
+    "exists": false
+  },
+  {
+    "path": "/private/tmp/rag-semantic-construction-v2",
+    "exists": false
+  },
+  {
+    "path": "/private/tmp/rag-semantic-development-validation",
+    "exists": false
+  },
+  {
+    "path": "/private/tmp/rag-transfer-supervisor",
+    "exists": false
+  },
+  {
+    "path": "/private/tmp/rag-week9-frozen-protocol",
+    "exists": false
+  },
+  {
+    "path": "/private/tmp/twowiki-semantic-quality-v3-development",
+    "exists": true,
+    "git_common_dir": "/Users/sadiapeerzada/Downloads/rag-poison-transfer/.git",
+    "candidate_files": [
+      "/private/tmp/twowiki-semantic-quality-v3-development/results/week5_6_low_rate_sweep.csv",
+      "/private/tmp/twowiki-semantic-quality-v3-development/results/exp_020_2wiki_reranker_baseline_v1.summary.json",
+      "/private/tmp/twowiki-semantic-quality-v3-development/results/exp_019_2wiki_hybrid_baseline_v1.summary.json",
+      "/private/tmp/twowiki-semantic-quality-v3-development/results/week5_6_intensity5_sweep.csv",
+      "/private/tmp/twowiki-semantic-quality-v3-development/results/week5_attack_intensity_sweep_full.csv",
+      "/private/tmp/twowiki-semantic-quality-v3-development/results/exp_017_2wiki_bm25_baseline_v1.summary.json",
+      "/private/tmp/twowiki-semantic-quality-v3-development/results/exp_029_rcd_poisoned_pilot_n10.json",
+      "/private/tmp/twowiki-semantic-quality-v3-development/results/exp_017_2wiki_bm25_baseline_v1.jsonl",
+      "/private/tmp/twowiki-semantic-quality-v3-development/results/exp_020_2wiki_reranker_baseline_v1.jsonl",
+      "/private/tmp/twowiki-semantic-quality-v3-development/results/exp_019_2wiki_hybrid_baseline_v1.jsonl",
+      "/private/tmp/twowiki-semantic-quality-v3-development/results/exp_018_2wiki_dense_baseline_v1.summary.json",
+      "/private/tmp/twowiki-semantic-quality-v3-development/results/week5_6_nq_sweep.csv",
+      "/private/tmp/twowiki-semantic-quality-v3-development/results/exp_018_2wiki_dense_baseline_v1.jsonl",
+      "/private/tmp/twowiki-semantic-quality-v3-development/results/week5_6_2wiki_sweep.csv",
+      "/private/tmp/twowiki-semantic-quality-v3-development/results/week5_attack_intensity_sweep.csv"
+    ]
+  },
+  {
+    "path": "/private/tmp/twowiki-semantic-v3-prospective-pilot-prep",
+    "exists": true,
+    "git_common_dir": "/Users/sadiapeerzada/Downloads/rag-poison-transfer/.git",
+    "candidate_files": [
+      "/private/tmp/twowiki-semantic-v3-prospective-pilot-prep/results/week5_6_low_rate_sweep.csv",
+      "/private/tmp/twowiki-semantic-v3-prospective-pilot-prep/results/exp_020_2wiki_reranker_baseline_v1.summary.json",
+      "/private/tmp/twowiki-semantic-v3-prospective-pilot-prep/results/exp_019_2wiki_hybrid_baseline_v1.summary.json",
+      "/private/tmp/twowiki-semantic-v3-prospective-pilot-prep/results/week5_6_intensity5_sweep.csv",
+      "/private/tmp/twowiki-semantic-v3-prospective-pilot-prep/results/week5_attack_intensity_sweep_full.csv",
+      "/private/tmp/twowiki-semantic-v3-prospective-pilot-prep/results/exp_017_2wiki_bm25_baseline_v1.summary.json",
+      "/private/tmp/twowiki-semantic-v3-prospective-pilot-prep/results/exp_029_rcd_poisoned_pilot_n10.json",
+      "/private/tmp/twowiki-semantic-v3-prospective-pilot-prep/results/exp_017_2wiki_bm25_baseline_v1.jsonl",
+      "/private/tmp/twowiki-semantic-v3-prospective-pilot-prep/results/exp_020_2wiki_reranker_baseline_v1.jsonl",
+      "/private/tmp/twowiki-semantic-v3-prospective-pilot-prep/results/exp_019_2wiki_hybrid_baseline_v1.jsonl",
+      "/private/tmp/twowiki-semantic-v3-prospective-pilot-prep/results/exp_018_2wiki_dense_baseline_v1.summary.json",
+      "/private/tmp/twowiki-semantic-v3-prospective-pilot-prep/results/week5_6_nq_sweep.csv",
+      "/private/tmp/twowiki-semantic-v3-prospective-pilot-prep/results/exp_018_2wiki_dense_baseline_v1.jsonl",
+      "/private/tmp/twowiki-semantic-v3-prospective-pilot-prep/results/week5_6_2wiki_sweep.csv",
+      "/private/tmp/twowiki-semantic-v3-prospective-pilot-prep/results/week5_attack_intensity_sweep.csv"
+    ]
+  },
+  {
+    "path": "/private/tmp/twowiki-v3-exposure-reconciliation",
+    "exists": true,
+    "git_common_dir": "/Users/sadiapeerzada/Downloads/rag-poison-transfer/.git",
+    "candidate_files": [
+      "/private/tmp/twowiki-v3-exposure-reconciliation/results/week5_6_low_rate_sweep.csv",
+      "/private/tmp/twowiki-v3-exposure-reconciliation/results/exp_020_2wiki_reranker_baseline_v1.summary.json",
+      "/private/tmp/twowiki-v3-exposure-reconciliation/results/exp_019_2wiki_hybrid_baseline_v1.summary.json",
+      "/private/tmp/twowiki-v3-exposure-reconciliation/results/week5_6_intensity5_sweep.csv",
+      "/private/tmp/twowiki-v3-exposure-reconciliation/results/week5_attack_intensity_sweep_full.csv",
+      "/private/tmp/twowiki-v3-exposure-reconciliation/results/exp_017_2wiki_bm25_baseline_v1.summary.json",
+      "/private/tmp/twowiki-v3-exposure-reconciliation/results/exp_029_rcd_poisoned_pilot_n10.json",
+      "/private/tmp/twowiki-v3-exposure-reconciliation/results/exp_017_2wiki_bm25_baseline_v1.jsonl",
+      "/private/tmp/twowiki-v3-exposure-reconciliation/results/exp_020_2wiki_reranker_baseline_v1.jsonl",
+      "/private/tmp/twowiki-v3-exposure-reconciliation/results/exp_019_2wiki_hybrid_baseline_v1.jsonl",
+      "/private/tmp/twowiki-v3-exposure-reconciliation/results/exp_018_2wiki_dense_baseline_v1.summary.json",
+      "/private/tmp/twowiki-v3-exposure-reconciliation/results/week5_6_nq_sweep.csv",
+      "/private/tmp/twowiki-v3-exposure-reconciliation/results/exp_018_2wiki_dense_baseline_v1.jsonl",
+      "/private/tmp/twowiki-v3-exposure-reconciliation/results/week5_6_2wiki_sweep.csv",
+      "/private/tmp/twowiki-v3-exposure-reconciliation/results/week5_attack_intensity_sweep.csv"
+    ]
+  },
+  {
+    "path": "/Users/sadiapeerzada/Documents/rag-2wiki-candidate-gates",
+    "exists": true,
+    "git_common_dir": "/Users/sadiapeerzada/Downloads/rag-poison-transfer/.git",
+    "candidate_files": [
+      "/Users/sadiapeerzada/Documents/rag-2wiki-candidate-gates/results/week5_6_low_rate_sweep.csv",
+      "/Users/sadiapeerzada/Documents/rag-2wiki-candidate-gates/results/exp_020_2wiki_reranker_baseline_v1.summary.json",
+      "/Users/sadiapeerzada/Documents/rag-2wiki-candidate-gates/results/exp_019_2wiki_hybrid_baseline_v1.summary.json",
+      "/Users/sadiapeerzada/Documents/rag-2wiki-candidate-gates/results/week5_6_intensity5_sweep.csv",
+      "/Users/sadiapeerzada/Documents/rag-2wiki-candidate-gates/results/week5_attack_intensity_sweep_full.csv",
+      "/Users/sadiapeerzada/Documents/rag-2wiki-candidate-gates/results/exp_017_2wiki_bm25_baseline_v1.summary.json",
+      "/Users/sadiapeerzada/Documents/rag-2wiki-candidate-gates/results/exp_029_rcd_poisoned_pilot_n10.json",
+      "/Users/sadiapeerzada/Documents/rag-2wiki-candidate-gates/results/exp_017_2wiki_bm25_baseline_v1.jsonl",
+      "/Users/sadiapeerzada/Documents/rag-2wiki-candidate-gates/results/exp_020_2wiki_reranker_baseline_v1.jsonl",
+      "/Users/sadiapeerzada/Documents/rag-2wiki-candidate-gates/results/exp_019_2wiki_hybrid_baseline_v1.jsonl",
+      "/Users/sadiapeerzada/Documents/rag-2wiki-candidate-gates/results/exp_018_2wiki_dense_baseline_v1.summary.json",
+      "/Users/sadiapeerzada/Documents/rag-2wiki-candidate-gates/results/week5_6_nq_sweep.csv",
+      "/Users/sadiapeerzada/Documents/rag-2wiki-candidate-gates/results/exp_018_2wiki_dense_baseline_v1.jsonl",
+      "/Users/sadiapeerzada/Documents/rag-2wiki-candidate-gates/results/week5_6_2wiki_sweep.csv",
+      "/Users/sadiapeerzada/Documents/rag-2wiki-candidate-gates/results/week5_attack_intensity_sweep.csv"
+    ]
+  },
+  {
+    "path": "/Users/sadiapeerzada/Documents/rag-2wiki-mlx-review-execution",
+    "exists": true,
+    "git_common_dir": "/Users/sadiapeerzada/Downloads/rag-poison-transfer/.git",
+    "candidate_files": [
+      "/Users/sadiapeerzada/Documents/rag-2wiki-mlx-review-execution/results/week5_6_low_rate_sweep.csv",
+      "/Users/sadiapeerzada/Documents/rag-2wiki-mlx-review-execution/results/exp_020_2wiki_reranker_baseline_v1.summary.json",
+      "/Users/sadiapeerzada/Documents/rag-2wiki-mlx-review-execution/results/exp_019_2wiki_hybrid_baseline_v1.summary.json",
+      "/Users/sadiapeerzada/Documents/rag-2wiki-mlx-review-execution/results/week5_6_intensity5_sweep.csv",
+      "/Users/sadiapeerzada/Documents/rag-2wiki-mlx-review-execution/results/week5_attack_intensity_sweep_full.csv",
+      "/Users/sadiapeerzada/Documents/rag-2wiki-mlx-review-execution/results/exp_017_2wiki_bm25_baseline_v1.summary.json",
+      "/Users/sadiapeerzada/Documents/rag-2wiki-mlx-review-execution/results/exp_029_rcd_poisoned_pilot_n10.json",
+      "/Users/sadiapeerzada/Documents/rag-2wiki-mlx-review-execution/results/exp_017_2wiki_bm25_baseline_v1.jsonl",
+      "/Users/sadiapeerzada/Documents/rag-2wiki-mlx-review-execution/results/exp_020_2wiki_reranker_baseline_v1.jsonl",
+      "/Users/sadiapeerzada/Documents/rag-2wiki-mlx-review-execution/results/exp_019_2wiki_hybrid_baseline_v1.jsonl",
+      "/Users/sadiapeerzada/Documents/rag-2wiki-mlx-review-execution/results/exp_018_2wiki_dense_baseline_v1.summary.json",
+      "/Users/sadiapeerzada/Documents/rag-2wiki-mlx-review-execution/results/week5_6_nq_sweep.csv",
+      "/Users/sadiapeerzada/Documents/rag-2wiki-mlx-review-execution/results/exp_018_2wiki_dense_baseline_v1.jsonl",
+      "/Users/sadiapeerzada/Documents/rag-2wiki-mlx-review-execution/results/week5_6_2wiki_sweep.csv",
+      "/Users/sadiapeerzada/Documents/rag-2wiki-mlx-review-execution/results/week5_attack_intensity_sweep.csv"
+    ]
+  },
+  {
+    "path": "/Users/sadiapeerzada/Documents/rag-2wiki-posthoc-screen",
+    "exists": true,
+    "git_common_dir": "/Users/sadiapeerzada/Downloads/rag-poison-transfer/.git",
+    "candidate_files": [
+      "/Users/sadiapeerzada/Documents/rag-2wiki-posthoc-screen/results/week5_6_low_rate_sweep.csv",
+      "/Users/sadiapeerzada/Documents/rag-2wiki-posthoc-screen/results/exp_020_2wiki_reranker_baseline_v1.summary.json",
+      "/Users/sadiapeerzada/Documents/rag-2wiki-posthoc-screen/results/exp_019_2wiki_hybrid_baseline_v1.summary.json",
+      "/Users/sadiapeerzada/Documents/rag-2wiki-posthoc-screen/results/week5_6_intensity5_sweep.csv",
+      "/Users/sadiapeerzada/Documents/rag-2wiki-posthoc-screen/results/week5_attack_intensity_sweep_full.csv",
+      "/Users/sadiapeerzada/Documents/rag-2wiki-posthoc-screen/results/exp_017_2wiki_bm25_baseline_v1.summary.json",
+      "/Users/sadiapeerzada/Documents/rag-2wiki-posthoc-screen/results/exp_029_rcd_poisoned_pilot_n10.json",
+      "/Users/sadiapeerzada/Documents/rag-2wiki-posthoc-screen/results/exp_017_2wiki_bm25_baseline_v1.jsonl",
+      "/Users/sadiapeerzada/Documents/rag-2wiki-posthoc-screen/results/exp_020_2wiki_reranker_baseline_v1.jsonl",
+      "/Users/sadiapeerzada/Documents/rag-2wiki-posthoc-screen/results/exp_019_2wiki_hybrid_baseline_v1.jsonl",
+      "/Users/sadiapeerzada/Documents/rag-2wiki-posthoc-screen/results/exp_018_2wiki_dense_baseline_v1.summary.json",
+      "/Users/sadiapeerzada/Documents/rag-2wiki-posthoc-screen/results/week5_6_nq_sweep.csv",
+      "/Users/sadiapeerzada/Documents/rag-2wiki-posthoc-screen/results/exp_018_2wiki_dense_baseline_v1.jsonl",
+      "/Users/sadiapeerzada/Documents/rag-2wiki-posthoc-screen/results/week5_6_2wiki_sweep.csv",
+      "/Users/sadiapeerzada/Documents/rag-2wiki-posthoc-screen/results/week5_attack_intensity_sweep.csv"
+    ]
+  },
+  {
+    "path": "/Users/sadiapeerzada/Documents/rag-2wiki-two-ai-review",
+    "exists": true,
+    "git_common_dir": "/Users/sadiapeerzada/Downloads/rag-poison-transfer/.git",
+    "candidate_files": [
+      "/Users/sadiapeerzada/Documents/rag-2wiki-two-ai-review/results/week5_6_low_rate_sweep.csv",
+      "/Users/sadiapeerzada/Documents/rag-2wiki-two-ai-review/results/exp_020_2wiki_reranker_baseline_v1.summary.json",
+      "/Users/sadiapeerzada/Documents/rag-2wiki-two-ai-review/results/exp_019_2wiki_hybrid_baseline_v1.summary.json",
+      "/Users/sadiapeerzada/Documents/rag-2wiki-two-ai-review/results/week5_6_intensity5_sweep.csv",
+      "/Users/sadiapeerzada/Documents/rag-2wiki-two-ai-review/results/week5_attack_intensity_sweep_full.csv",
+      "/Users/sadiapeerzada/Documents/rag-2wiki-two-ai-review/results/exp_017_2wiki_bm25_baseline_v1.summary.json",
+      "/Users/sadiapeerzada/Documents/rag-2wiki-two-ai-review/results/exp_029_rcd_poisoned_pilot_n10.json",
+      "/Users/sadiapeerzada/Documents/rag-2wiki-two-ai-review/results/exp_017_2wiki_bm25_baseline_v1.jsonl",
+      "/Users/sadiapeerzada/Documents/rag-2wiki-two-ai-review/results/exp_020_2wiki_reranker_baseline_v1.jsonl",
+      "/Users/sadiapeerzada/Documents/rag-2wiki-two-ai-review/results/exp_019_2wiki_hybrid_baseline_v1.jsonl",
+      "/Users/sadiapeerzada/Documents/rag-2wiki-two-ai-review/results/exp_018_2wiki_dense_baseline_v1.summary.json",
+      "/Users/sadiapeerzada/Documents/rag-2wiki-two-ai-review/results/week5_6_nq_sweep.csv",
+      "/Users/sadiapeerzada/Documents/rag-2wiki-two-ai-review/results/exp_018_2wiki_dense_baseline_v1.jsonl",
+      "/Users/sadiapeerzada/Documents/rag-2wiki-two-ai-review/results/week5_6_2wiki_sweep.csv",
+      "/Users/sadiapeerzada/Documents/rag-2wiki-two-ai-review/results/week5_attack_intensity_sweep.csv"
+    ]
+  },
+  {
+    "path": "/Users/sadiapeerzada/Documents/rag-2wiki-two-ai-review-ledger",
+    "exists": true,
+    "git_common_dir": "/Users/sadiapeerzada/Downloads/rag-poison-transfer/.git",
+    "candidate_files": [
+      "/Users/sadiapeerzada/Documents/rag-2wiki-two-ai-review-ledger/results/week5_6_low_rate_sweep.csv",
+      "/Users/sadiapeerzada/Documents/rag-2wiki-two-ai-review-ledger/results/exp_020_2wiki_reranker_baseline_v1.summary.json",
+      "/Users/sadiapeerzada/Documents/rag-2wiki-two-ai-review-ledger/results/exp_019_2wiki_hybrid_baseline_v1.summary.json",
+      "/Users/sadiapeerzada/Documents/rag-2wiki-two-ai-review-ledger/results/week5_6_intensity5_sweep.csv",
+      "/Users/sadiapeerzada/Documents/rag-2wiki-two-ai-review-ledger/results/week5_attack_intensity_sweep_full.csv",
+      "/Users/sadiapeerzada/Documents/rag-2wiki-two-ai-review-ledger/results/exp_017_2wiki_bm25_baseline_v1.summary.json",
+      "/Users/sadiapeerzada/Documents/rag-2wiki-two-ai-review-ledger/results/exp_029_rcd_poisoned_pilot_n10.json",
+      "/Users/sadiapeerzada/Documents/rag-2wiki-two-ai-review-ledger/results/exp_017_2wiki_bm25_baseline_v1.jsonl",
+      "/Users/sadiapeerzada/Documents/rag-2wiki-two-ai-review-ledger/results/exp_020_2wiki_reranker_baseline_v1.jsonl",
+      "/Users/sadiapeerzada/Documents/rag-2wiki-two-ai-review-ledger/results/exp_019_2wiki_hybrid_baseline_v1.jsonl",
+      "/Users/sadiapeerzada/Documents/rag-2wiki-two-ai-review-ledger/results/exp_018_2wiki_dense_baseline_v1.summary.json",
+      "/Users/sadiapeerzada/Documents/rag-2wiki-two-ai-review-ledger/results/week5_6_nq_sweep.csv",
+      "/Users/sadiapeerzada/Documents/rag-2wiki-two-ai-review-ledger/results/exp_018_2wiki_dense_baseline_v1.jsonl",
+      "/Users/sadiapeerzada/Documents/rag-2wiki-two-ai-review-ledger/results/week5_6_2wiki_sweep.csv",
+      "/Users/sadiapeerzada/Documents/rag-2wiki-two-ai-review-ledger/results/week5_attack_intensity_sweep.csv"
+    ]
+  },
+  {
+    "path": "/Users/sadiapeerzada/Documents/rag-2wiki-v2-clean",
+    "exists": true,
+    "git_common_dir": "/Users/sadiapeerzada/Downloads/rag-poison-transfer/.git",
+    "candidate_files": [
+      "/Users/sadiapeerzada/Documents/rag-2wiki-v2-clean/results/week5_6_low_rate_sweep.csv",
+      "/Users/sadiapeerzada/Documents/rag-2wiki-v2-clean/results/exp_020_2wiki_reranker_baseline_v1.summary.json",
+      "/Users/sadiapeerzada/Documents/rag-2wiki-v2-clean/results/exp_019_2wiki_hybrid_baseline_v1.summary.json",
+      "/Users/sadiapeerzada/Documents/rag-2wiki-v2-clean/results/week5_6_intensity5_sweep.csv",
+      "/Users/sadiapeerzada/Documents/rag-2wiki-v2-clean/results/week5_attack_intensity_sweep_full.csv",
+      "/Users/sadiapeerzada/Documents/rag-2wiki-v2-clean/results/exp_017_2wiki_bm25_baseline_v1.summary.json",
+      "/Users/sadiapeerzada/Documents/rag-2wiki-v2-clean/results/exp_029_rcd_poisoned_pilot_n10.json",
+      "/Users/sadiapeerzada/Documents/rag-2wiki-v2-clean/results/exp_017_2wiki_bm25_baseline_v1.jsonl",
+      "/Users/sadiapeerzada/Documents/rag-2wiki-v2-clean/results/exp_020_2wiki_reranker_baseline_v1.jsonl",
+      "/Users/sadiapeerzada/Documents/rag-2wiki-v2-clean/results/exp_019_2wiki_hybrid_baseline_v1.jsonl",
+      "/Users/sadiapeerzada/Documents/rag-2wiki-v2-clean/results/exp_018_2wiki_dense_baseline_v1.summary.json",
+      "/Users/sadiapeerzada/Documents/rag-2wiki-v2-clean/results/week5_6_nq_sweep.csv",
+      "/Users/sadiapeerzada/Documents/rag-2wiki-v2-clean/results/exp_018_2wiki_dense_baseline_v1.jsonl",
+      "/Users/sadiapeerzada/Documents/rag-2wiki-v2-clean/results/week5_6_2wiki_sweep.csv",
+      "/Users/sadiapeerzada/Documents/rag-2wiki-v2-clean/results/week5_attack_intensity_sweep.csv"
+    ]
+  },
+  {
+    "path": "/Users/sadiapeerzada/Documents/rag-2wiki-v3-development",
+    "exists": true,
+    "git_common_dir": "/Users/sadiapeerzada/Downloads/rag-poison-transfer/.git",
+    "candidate_files": [
+      "/Users/sadiapeerzada/Documents/rag-2wiki-v3-development/results/week5_6_low_rate_sweep.csv",
+      "/Users/sadiapeerzada/Documents/rag-2wiki-v3-development/results/exp_020_2wiki_reranker_baseline_v1.summary.json",
+      "/Users/sadiapeerzada/Documents/rag-2wiki-v3-development/results/exp_019_2wiki_hybrid_baseline_v1.summary.json",
+      "/Users/sadiapeerzada/Documents/rag-2wiki-v3-development/results/week5_6_intensity5_sweep.csv",
+      "/Users/sadiapeerzada/Documents/rag-2wiki-v3-development/results/week5_attack_intensity_sweep_full.csv",
+      "/Users/sadiapeerzada/Documents/rag-2wiki-v3-development/results/exp_017_2wiki_bm25_baseline_v1.summary.json",
+      "/Users/sadiapeerzada/Documents/rag-2wiki-v3-development/results/exp_029_rcd_poisoned_pilot_n10.json",
+      "/Users/sadiapeerzada/Documents/rag-2wiki-v3-development/results/exp_017_2wiki_bm25_baseline_v1.jsonl",
+      "/Users/sadiapeerzada/Documents/rag-2wiki-v3-development/results/exp_020_2wiki_reranker_baseline_v1.jsonl",
+      "/Users/sadiapeerzada/Documents/rag-2wiki-v3-development/results/exp_019_2wiki_hybrid_baseline_v1.jsonl",
+      "/Users/sadiapeerzada/Documents/rag-2wiki-v3-development/results/exp_018_2wiki_dense_baseline_v1.summary.json",
+      "/Users/sadiapeerzada/Documents/rag-2wiki-v3-development/results/week5_6_nq_sweep.csv",
+      "/Users/sadiapeerzada/Documents/rag-2wiki-v3-development/results/exp_018_2wiki_dense_baseline_v1.jsonl",
+      "/Users/sadiapeerzada/Documents/rag-2wiki-v3-development/results/week5_6_2wiki_sweep.csv",
+      "/Users/sadiapeerzada/Documents/rag-2wiki-v3-development/results/week5_attack_intensity_sweep.csv"
+    ]
+  },
+  {
+    "path": "/Users/sadiapeerzada/Documents/rag-2wiki-v4-1-quality-audit",
+    "exists": true,
+    "git_common_dir": "/Users/sadiapeerzada/Downloads/rag-poison-transfer/.git",
+    "candidate_files": [
+      "/Users/sadiapeerzada/Documents/rag-2wiki-v4-1-quality-audit/results/week5_6_low_rate_sweep.csv",
+      "/Users/sadiapeerzada/Documents/rag-2wiki-v4-1-quality-audit/results/exp_020_2wiki_reranker_baseline_v1.summary.json",
+      "/Users/sadiapeerzada/Documents/rag-2wiki-v4-1-quality-audit/results/exp_019_2wiki_hybrid_baseline_v1.summary.json",
+      "/Users/sadiapeerzada/Documents/rag-2wiki-v4-1-quality-audit/results/week5_6_intensity5_sweep.csv",
+      "/Users/sadiapeerzada/Documents/rag-2wiki-v4-1-quality-audit/results/week5_attack_intensity_sweep_full.csv",
+      "/Users/sadiapeerzada/Documents/rag-2wiki-v4-1-quality-audit/results/exp_017_2wiki_bm25_baseline_v1.summary.json",
+      "/Users/sadiapeerzada/Documents/rag-2wiki-v4-1-quality-audit/results/exp_029_rcd_poisoned_pilot_n10.json",
+      "/Users/sadiapeerzada/Documents/rag-2wiki-v4-1-quality-audit/results/exp_017_2wiki_bm25_baseline_v1.jsonl",
+      "/Users/sadiapeerzada/Documents/rag-2wiki-v4-1-quality-audit/results/exp_020_2wiki_reranker_baseline_v1.jsonl",
+      "/Users/sadiapeerzada/Documents/rag-2wiki-v4-1-quality-audit/results/exp_019_2wiki_hybrid_baseline_v1.jsonl",
+      "/Users/sadiapeerzada/Documents/rag-2wiki-v4-1-quality-audit/results/exp_018_2wiki_dense_baseline_v1.summary.json",
+      "/Users/sadiapeerzada/Documents/rag-2wiki-v4-1-quality-audit/results/week5_6_nq_sweep.csv",
+      "/Users/sadiapeerzada/Documents/rag-2wiki-v4-1-quality-audit/results/exp_018_2wiki_dense_baseline_v1.jsonl",
+      "/Users/sadiapeerzada/Documents/rag-2wiki-v4-1-quality-audit/results/week5_6_2wiki_sweep.csv",
+      "/Users/sadiapeerzada/Documents/rag-2wiki-v4-1-quality-audit/results/week5_attack_intensity_sweep.csv"
+    ]
+  },
+  {
+    "path": "/Users/sadiapeerzada/Documents/rag-2wiki-v5-diagnostic",
+    "exists": true,
+    "git_common_dir": "/Users/sadiapeerzada/Downloads/rag-poison-transfer/.git",
+    "candidate_files": [
+      "/Users/sadiapeerzada/Documents/rag-2wiki-v5-diagnostic/results/week5_6_low_rate_sweep.csv",
+      "/Users/sadiapeerzada/Documents/rag-2wiki-v5-diagnostic/results/exp_020_2wiki_reranker_baseline_v1.summary.json",
+      "/Users/sadiapeerzada/Documents/rag-2wiki-v5-diagnostic/results/exp_019_2wiki_hybrid_baseline_v1.summary.json",
+      "/Users/sadiapeerzada/Documents/rag-2wiki-v5-diagnostic/results/week5_6_intensity5_sweep.csv",
+      "/Users/sadiapeerzada/Documents/rag-2wiki-v5-diagnostic/results/week5_attack_intensity_sweep_full.csv",
+      "/Users/sadiapeerzada/Documents/rag-2wiki-v5-diagnostic/results/exp_017_2wiki_bm25_baseline_v1.summary.json",
+      "/Users/sadiapeerzada/Documents/rag-2wiki-v5-diagnostic/results/exp_029_rcd_poisoned_pilot_n10.json",
+      "/Users/sadiapeerzada/Documents/rag-2wiki-v5-diagnostic/results/exp_017_2wiki_bm25_baseline_v1.jsonl",
+      "/Users/sadiapeerzada/Documents/rag-2wiki-v5-diagnostic/results/exp_020_2wiki_reranker_baseline_v1.jsonl",
+      "/Users/sadiapeerzada/Documents/rag-2wiki-v5-diagnostic/results/exp_019_2wiki_hybrid_baseline_v1.jsonl",
+      "/Users/sadiapeerzada/Documents/rag-2wiki-v5-diagnostic/results/exp_018_2wiki_dense_baseline_v1.summary.json",
+      "/Users/sadiapeerzada/Documents/rag-2wiki-v5-diagnostic/results/week5_6_nq_sweep.csv",
+      "/Users/sadiapeerzada/Documents/rag-2wiki-v5-diagnostic/results/exp_018_2wiki_dense_baseline_v1.jsonl",
+      "/Users/sadiapeerzada/Documents/rag-2wiki-v5-diagnostic/results/week5_6_2wiki_sweep.csv",
+      "/Users/sadiapeerzada/Documents/rag-2wiki-v5-diagnostic/results/week5_attack_intensity_sweep.csv"
+    ]
+  },
+  {
+    "path": "/Users/sadiapeerzada/Documents/rag-2wiki-v6-diagnostic",
+    "exists": true,
+    "git_common_dir": "/Users/sadiapeerzada/Downloads/rag-poison-transfer/.git",
+    "candidate_files": [
+      "/Users/sadiapeerzada/Documents/rag-2wiki-v6-diagnostic/results/week5_6_low_rate_sweep.csv",
+      "/Users/sadiapeerzada/Documents/rag-2wiki-v6-diagnostic/results/exp_020_2wiki_reranker_baseline_v1.summary.json",
+      "/Users/sadiapeerzada/Documents/rag-2wiki-v6-diagnostic/results/exp_019_2wiki_hybrid_baseline_v1.summary.json",
+      "/Users/sadiapeerzada/Documents/rag-2wiki-v6-diagnostic/results/week5_6_intensity5_sweep.csv",
+      "/Users/sadiapeerzada/Documents/rag-2wiki-v6-diagnostic/results/week5_attack_intensity_sweep_full.csv",
+      "/Users/sadiapeerzada/Documents/rag-2wiki-v6-diagnostic/results/exp_017_2wiki_bm25_baseline_v1.summary.json",
+      "/Users/sadiapeerzada/Documents/rag-2wiki-v6-diagnostic/results/exp_029_rcd_poisoned_pilot_n10.json",
+      "/Users/sadiapeerzada/Documents/rag-2wiki-v6-diagnostic/results/exp_017_2wiki_bm25_baseline_v1.jsonl",
+      "/Users/sadiapeerzada/Documents/rag-2wiki-v6-diagnostic/results/exp_020_2wiki_reranker_baseline_v1.jsonl",
+      "/Users/sadiapeerzada/Documents/rag-2wiki-v6-diagnostic/results/exp_019_2wiki_hybrid_baseline_v1.jsonl",
+      "/Users/sadiapeerzada/Documents/rag-2wiki-v6-diagnostic/results/exp_018_2wiki_dense_baseline_v1.summary.json",
+      "/Users/sadiapeerzada/Documents/rag-2wiki-v6-diagnostic/results/week5_6_nq_sweep.csv",
+      "/Users/sadiapeerzada/Documents/rag-2wiki-v6-diagnostic/results/exp_018_2wiki_dense_baseline_v1.jsonl",
+      "/Users/sadiapeerzada/Documents/rag-2wiki-v6-diagnostic/results/week5_6_2wiki_sweep.csv",
+      "/Users/sadiapeerzada/Documents/rag-2wiki-v6-diagnostic/results/week5_attack_intensity_sweep.csv"
+    ]
+  },
+  {
+    "path": "/Users/sadiapeerzada/Documents/rag-research-results/hotpotqa-reliable-execution",
+    "exists": true,
+    "git_common_dir": "/Users/sadiapeerzada/Downloads/rag-poison-transfer/.git",
+    "candidate_files": [
+      "/Users/sadiapeerzada/Documents/rag-research-results/hotpotqa-reliable-execution/results/week5_6_low_rate_sweep.csv",
+      "/Users/sadiapeerzada/Documents/rag-research-results/hotpotqa-reliable-execution/results/exp_020_2wiki_reranker_baseline_v1.summary.json",
+      "/Users/sadiapeerzada/Documents/rag-research-results/hotpotqa-reliable-execution/results/exp_019_2wiki_hybrid_baseline_v1.summary.json",
+      "/Users/sadiapeerzada/Documents/rag-research-results/hotpotqa-reliable-execution/results/week5_6_intensity5_sweep.csv",
+      "/Users/sadiapeerzada/Documents/rag-research-results/hotpotqa-reliable-execution/results/week5_attack_intensity_sweep_full.csv",
+      "/Users/sadiapeerzada/Documents/rag-research-results/hotpotqa-reliable-execution/results/exp_017_2wiki_bm25_baseline_v1.summary.json",
+      "/Users/sadiapeerzada/Documents/rag-research-results/hotpotqa-reliable-execution/results/exp_029_rcd_poisoned_pilot_n10.json",
+      "/Users/sadiapeerzada/Documents/rag-research-results/hotpotqa-reliable-execution/results/exp_017_2wiki_bm25_baseline_v1.jsonl",
+      "/Users/sadiapeerzada/Documents/rag-research-results/hotpotqa-reliable-execution/results/exp_020_2wiki_reranker_baseline_v1.jsonl",
+      "/Users/sadiapeerzada/Documents/rag-research-results/hotpotqa-reliable-execution/results/exp_019_2wiki_hybrid_baseline_v1.jsonl",
+      "/Users/sadiapeerzada/Documents/rag-research-results/hotpotqa-reliable-execution/results/exp_018_2wiki_dense_baseline_v1.summary.json",
+      "/Users/sadiapeerzada/Documents/rag-research-results/hotpotqa-reliable-execution/results/week5_6_nq_sweep.csv",
+      "/Users/sadiapeerzada/Documents/rag-research-results/hotpotqa-reliable-execution/results/exp_018_2wiki_dense_baseline_v1.jsonl",
+      "/Users/sadiapeerzada/Documents/rag-research-results/hotpotqa-reliable-execution/results/week5_6_2wiki_sweep.csv",
+      "/Users/sadiapeerzada/Documents/rag-research-results/hotpotqa-reliable-execution/results/week5_attack_intensity_sweep.csv"
+    ]
+  },
+  {
+    "path": "/Users/sadiapeerzada/Documents/rag-research-results/hotpotqa-transfer-code",
+    "exists": true,
+    "git_common_dir": "/Users/sadiapeerzada/Downloads/rag-poison-transfer/.git",
+    "candidate_files": [
+      "/Users/sadiapeerzada/Documents/rag-research-results/hotpotqa-transfer-code/results/week5_6_low_rate_sweep.csv",
+      "/Users/sadiapeerzada/Documents/rag-research-results/hotpotqa-transfer-code/results/exp_020_2wiki_reranker_baseline_v1.summary.json",
+      "/Users/sadiapeerzada/Documents/rag-research-results/hotpotqa-transfer-code/results/exp_019_2wiki_hybrid_baseline_v1.summary.json",
+      "/Users/sadiapeerzada/Documents/rag-research-results/hotpotqa-transfer-code/results/week5_6_intensity5_sweep.csv",
+      "/Users/sadiapeerzada/Documents/rag-research-results/hotpotqa-transfer-code/results/week5_attack_intensity_sweep_full.csv",
+      "/Users/sadiapeerzada/Documents/rag-research-results/hotpotqa-transfer-code/results/exp_017_2wiki_bm25_baseline_v1.summary.json",
+      "/Users/sadiapeerzada/Documents/rag-research-results/hotpotqa-transfer-code/results/exp_029_rcd_poisoned_pilot_n10.json",
+      "/Users/sadiapeerzada/Documents/rag-research-results/hotpotqa-transfer-code/results/exp_017_2wiki_bm25_baseline_v1.jsonl",
+      "/Users/sadiapeerzada/Documents/rag-research-results/hotpotqa-transfer-code/results/exp_020_2wiki_reranker_baseline_v1.jsonl",
+      "/Users/sadiapeerzada/Documents/rag-research-results/hotpotqa-transfer-code/results/exp_019_2wiki_hybrid_baseline_v1.jsonl",
+      "/Users/sadiapeerzada/Documents/rag-research-results/hotpotqa-transfer-code/results/exp_018_2wiki_dense_baseline_v1.summary.json",
+      "/Users/sadiapeerzada/Documents/rag-research-results/hotpotqa-transfer-code/results/week5_6_nq_sweep.csv",
+      "/Users/sadiapeerzada/Documents/rag-research-results/hotpotqa-transfer-code/results/exp_018_2wiki_dense_baseline_v1.jsonl",
+      "/Users/sadiapeerzada/Documents/rag-research-results/hotpotqa-transfer-code/results/week5_6_2wiki_sweep.csv",
+      "/Users/sadiapeerzada/Documents/rag-research-results/hotpotqa-transfer-code/results/week5_attack_intensity_sweep.csv"
+    ]
+  },
+  {
+    "path": "/Users/sadiapeerzada/Documents/RAG_Research_Publication_Worktrees/hotpotqa-public-43f3f652460a",
+    "exists": true,
+    "git_common_dir": "/Users/sadiapeerzada/Downloads/rag-poison-transfer/.git",
+    "candidate_files": [
+      "/Users/sadiapeerzada/Documents/RAG_Research_Publication_Worktrees/hotpotqa-public-43f3f652460a/results/week5_6_low_rate_sweep.csv",
+      "/Users/sadiapeerzada/Documents/RAG_Research_Publication_Worktrees/hotpotqa-public-43f3f652460a/results/exp_020_2wiki_reranker_baseline_v1.summary.json",
+      "/Users/sadiapeerzada/Documents/RAG_Research_Publication_Worktrees/hotpotqa-public-43f3f652460a/results/exp_019_2wiki_hybrid_baseline_v1.summary.json",
+      "/Users/sadiapeerzada/Documents/RAG_Research_Publication_Worktrees/hotpotqa-public-43f3f652460a/results/week5_6_intensity5_sweep.csv",
+      "/Users/sadiapeerzada/Documents/RAG_Research_Publication_Worktrees/hotpotqa-public-43f3f652460a/results/week5_attack_intensity_sweep_full.csv",
+      "/Users/sadiapeerzada/Documents/RAG_Research_Publication_Worktrees/hotpotqa-public-43f3f652460a/results/exp_017_2wiki_bm25_baseline_v1.summary.json",
+      "/Users/sadiapeerzada/Documents/RAG_Research_Publication_Worktrees/hotpotqa-public-43f3f652460a/results/exp_029_rcd_poisoned_pilot_n10.json",
+      "/Users/sadiapeerzada/Documents/RAG_Research_Publication_Worktrees/hotpotqa-public-43f3f652460a/results/exp_017_2wiki_bm25_baseline_v1.jsonl",
+      "/Users/sadiapeerzada/Documents/RAG_Research_Publication_Worktrees/hotpotqa-public-43f3f652460a/results/exp_020_2wiki_reranker_baseline_v1.jsonl",
+      "/Users/sadiapeerzada/Documents/RAG_Research_Publication_Worktrees/hotpotqa-public-43f3f652460a/results/exp_019_2wiki_hybrid_baseline_v1.jsonl",
+      "/Users/sadiapeerzada/Documents/RAG_Research_Publication_Worktrees/hotpotqa-public-43f3f652460a/results/exp_018_2wiki_dense_baseline_v1.summary.json",
+      "/Users/sadiapeerzada/Documents/RAG_Research_Publication_Worktrees/hotpotqa-public-43f3f652460a/results/week5_6_nq_sweep.csv",
+      "/Users/sadiapeerzada/Documents/RAG_Research_Publication_Worktrees/hotpotqa-public-43f3f652460a/results/exp_018_2wiki_dense_baseline_v1.jsonl",
+      "/Users/sadiapeerzada/Documents/RAG_Research_Publication_Worktrees/hotpotqa-public-43f3f652460a/results/week5_6_2wiki_sweep.csv",
+      "/Users/sadiapeerzada/Documents/RAG_Research_Publication_Worktrees/hotpotqa-public-43f3f652460a/results/week5_attack_intensity_sweep.csv"
+    ]
+  },
+  {
+    "path": "/Users/sadiapeerzada/Downloads/rag-poison-transfer-exp026",
+    "exists": true,
+    "git_common_dir": "/Users/sadiapeerzada/Downloads/rag-poison-transfer/.git",
+    "candidate_files": [
+      "/Users/sadiapeerzada/Downloads/rag-poison-transfer-exp026/results/week5_6_low_rate_sweep.csv",
+      "/Users/sadiapeerzada/Downloads/rag-poison-transfer-exp026/results/exp_020_2wiki_reranker_baseline_v1.summary.json",
+      "/Users/sadiapeerzada/Downloads/rag-poison-transfer-exp026/results/exp_019_2wiki_hybrid_baseline_v1.summary.json",
+      "/Users/sadiapeerzada/Downloads/rag-poison-transfer-exp026/results/week5_6_intensity5_sweep.csv",
+      "/Users/sadiapeerzada/Downloads/rag-poison-transfer-exp026/results/week5_attack_intensity_sweep_full.csv",
+      "/Users/sadiapeerzada/Downloads/rag-poison-transfer-exp026/results/exp_017_2wiki_bm25_baseline_v1.summary.json",
+      "/Users/sadiapeerzada/Downloads/rag-poison-transfer-exp026/results/exp_017_2wiki_bm25_baseline_v1.jsonl",
+      "/Users/sadiapeerzada/Downloads/rag-poison-transfer-exp026/results/exp_020_2wiki_reranker_baseline_v1.jsonl",
+      "/Users/sadiapeerzada/Downloads/rag-poison-transfer-exp026/results/exp_019_2wiki_hybrid_baseline_v1.jsonl",
+      "/Users/sadiapeerzada/Downloads/rag-poison-transfer-exp026/results/exp_018_2wiki_dense_baseline_v1.summary.json",
+      "/Users/sadiapeerzada/Downloads/rag-poison-transfer-exp026/results/week5_6_nq_sweep.csv",
+      "/Users/sadiapeerzada/Downloads/rag-poison-transfer-exp026/results/exp_018_2wiki_dense_baseline_v1.jsonl",
+      "/Users/sadiapeerzada/Downloads/rag-poison-transfer-exp026/results/week5_6_2wiki_sweep.csv",
+      "/Users/sadiapeerzada/Downloads/rag-poison-transfer-exp026/results/week5_attack_intensity_sweep.csv"
+    ]
+  },
+  {
+    "path": "/Users/sadiapeerzada/Downloads/rag-poison-transfer-exp028",
+    "exists": true,
+    "git_common_dir": "/Users/sadiapeerzada/Downloads/rag-poison-transfer/.git",
+    "candidate_files": [
+      "/Users/sadiapeerzada/Downloads/rag-poison-transfer-exp028/results/week5_6_low_rate_sweep.csv",
+      "/Users/sadiapeerzada/Downloads/rag-poison-transfer-exp028/results/exp_020_2wiki_reranker_baseline_v1.summary.json",
+      "/Users/sadiapeerzada/Downloads/rag-poison-transfer-exp028/results/exp_019_2wiki_hybrid_baseline_v1.summary.json",
+      "/Users/sadiapeerzada/Downloads/rag-poison-transfer-exp028/results/week5_6_intensity5_sweep.csv",
+      "/Users/sadiapeerzada/Downloads/rag-poison-transfer-exp028/results/week5_attack_intensity_sweep_full.csv",
+      "/Users/sadiapeerzada/Downloads/rag-poison-transfer-exp028/results/exp_017_2wiki_bm25_baseline_v1.summary.json",
+      "/Users/sadiapeerzada/Downloads/rag-poison-transfer-exp028/results/exp_029_rcd_poisoned_pilot_n10.json",
+      "/Users/sadiapeerzada/Downloads/rag-poison-transfer-exp028/results/exp_017_2wiki_bm25_baseline_v1.jsonl",
+      "/Users/sadiapeerzada/Downloads/rag-poison-transfer-exp028/results/exp_020_2wiki_reranker_baseline_v1.jsonl",
+      "/Users/sadiapeerzada/Downloads/rag-poison-transfer-exp028/results/exp_019_2wiki_hybrid_baseline_v1.jsonl",
+      "/Users/sadiapeerzada/Downloads/rag-poison-transfer-exp028/results/exp_018_2wiki_dense_baseline_v1.summary.json",
+      "/Users/sadiapeerzada/Downloads/rag-poison-transfer-exp028/results/week5_6_nq_sweep.csv",
+      "/Users/sadiapeerzada/Downloads/rag-poison-transfer-exp028/results/exp_018_2wiki_dense_baseline_v1.jsonl",
+      "/Users/sadiapeerzada/Downloads/rag-poison-transfer-exp028/results/week5_6_2wiki_sweep.csv",
+      "/Users/sadiapeerzada/Downloads/rag-poison-transfer-exp028/results/week5_attack_intensity_sweep.csv"
+    ]
+  },
+  {
+    "path": "/Users/sadiapeerzada/Downloads/rag-poison-transfer-final-v2",
+    "exists": true,
+    "git_common_dir": "/Users/sadiapeerzada/Downloads/rag-poison-transfer/.git",
+    "candidate_files": [
+      "/Users/sadiapeerzada/Downloads/rag-poison-transfer-final-v2/results/week5_6_low_rate_sweep.csv",
+      "/Users/sadiapeerzada/Downloads/rag-poison-transfer-final-v2/results/exp_020_2wiki_reranker_baseline_v1.summary.json",
+      "/Users/sadiapeerzada/Downloads/rag-poison-transfer-final-v2/results/exp_019_2wiki_hybrid_baseline_v1.summary.json",
+      "/Users/sadiapeerzada/Downloads/rag-poison-transfer-final-v2/results/week5_6_intensity5_sweep.csv",
+      "/Users/sadiapeerzada/Downloads/rag-poison-transfer-final-v2/results/week5_attack_intensity_sweep_full.csv",
+      "/Users/sadiapeerzada/Downloads/rag-poison-transfer-final-v2/results/exp_017_2wiki_bm25_baseline_v1.summary.json",
+      "/Users/sadiapeerzada/Downloads/rag-poison-transfer-final-v2/results/exp_029_rcd_poisoned_pilot_n10.json",
+      "/Users/sadiapeerzada/Downloads/rag-poison-transfer-final-v2/results/exp_017_2wiki_bm25_baseline_v1.jsonl",
+      "/Users/sadiapeerzada/Downloads/rag-poison-transfer-final-v2/results/exp_020_2wiki_reranker_baseline_v1.jsonl",
+      "/Users/sadiapeerzada/Downloads/rag-poison-transfer-final-v2/results/exp_019_2wiki_hybrid_baseline_v1.jsonl",
+      "/Users/sadiapeerzada/Downloads/rag-poison-transfer-final-v2/results/exp_018_2wiki_dense_baseline_v1.summary.json",
+      "/Users/sadiapeerzada/Downloads/rag-poison-transfer-final-v2/results/week5_6_nq_sweep.csv",
+      "/Users/sadiapeerzada/Downloads/rag-poison-transfer-final-v2/results/exp_018_2wiki_dense_baseline_v1.jsonl",
+      "/Users/sadiapeerzada/Downloads/rag-poison-transfer-final-v2/results/week5_6_2wiki_sweep.csv",
+      "/Users/sadiapeerzada/Downloads/rag-poison-transfer-final-v2/results/week5_attack_intensity_sweep.csv"
+    ]
+  },
+  {
+    "path": "/Users/sadiapeerzada/Downloads/rag-poison-transfer-week9",
+    "exists": true,
+    "git_common_dir": "/Users/sadiapeerzada/Downloads/rag-poison-transfer/.git",
+    "candidate_files": [
+      "/Users/sadiapeerzada/Downloads/rag-poison-transfer-week9/results/week5_6_low_rate_sweep.csv",
+      "/Users/sadiapeerzada/Downloads/rag-poison-transfer-week9/results/exp_020_2wiki_reranker_baseline_v1.summary.json",
+      "/Users/sadiapeerzada/Downloads/rag-poison-transfer-week9/results/exp_019_2wiki_hybrid_baseline_v1.summary.json",
+      "/Users/sadiapeerzada/Downloads/rag-poison-transfer-week9/results/week5_6_intensity5_sweep.csv",
+      "/Users/sadiapeerzada/Downloads/rag-poison-transfer-week9/results/week5_attack_intensity_sweep_full.csv",
+      "/Users/sadiapeerzada/Downloads/rag-poison-transfer-week9/results/exp_017_2wiki_bm25_baseline_v1.summary.json",
+      "/Users/sadiapeerzada/Downloads/rag-poison-transfer-week9/results/exp_017_2wiki_bm25_baseline_v1.jsonl",
+      "/Users/sadiapeerzada/Downloads/rag-poison-transfer-week9/results/exp_020_2wiki_reranker_baseline_v1.jsonl",
+      "/Users/sadiapeerzada/Downloads/rag-poison-transfer-week9/results/exp_019_2wiki_hybrid_baseline_v1.jsonl",
+      "/Users/sadiapeerzada/Downloads/rag-poison-transfer-week9/results/exp_018_2wiki_dense_baseline_v1.summary.json",
+      "/Users/sadiapeerzada/Downloads/rag-poison-transfer-week9/results/week5_6_nq_sweep.csv",
+      "/Users/sadiapeerzada/Downloads/rag-poison-transfer-week9/results/exp_018_2wiki_dense_baseline_v1.jsonl",
+      "/Users/sadiapeerzada/Downloads/rag-poison-transfer-week9/results/week5_6_2wiki_sweep.csv",
+      "/Users/sadiapeerzada/Downloads/rag-poison-transfer-week9/results/week5_attack_intensity_sweep.csv"
+    ]
+  },
+  {
+    "path": "/Users/sadiapeerzada/Downloads/rag-poison-transfer-final",
+    "exists": true,
+    "git_common_dir": ".git",
+    "candidate_files": [
+      "/Users/sadiapeerzada/Downloads/rag-poison-transfer-final/results/week5_6_low_rate_sweep.csv",
+      "/Users/sadiapeerzada/Downloads/rag-poison-transfer-final/results/exp_020_2wiki_reranker_baseline_v1.summary.json",
+      "/Users/sadiapeerzada/Downloads/rag-poison-transfer-final/results/exp_019_2wiki_hybrid_baseline_v1.summary.json",
+      "/Users/sadiapeerzada/Downloads/rag-poison-transfer-final/results/week5_6_intensity5_sweep.csv",
+      "/Users/sadiapeerzada/Downloads/rag-poison-transfer-final/results/week5_attack_intensity_sweep_full.csv",
+      "/Users/sadiapeerzada/Downloads/rag-poison-transfer-final/results/exp_017_2wiki_bm25_baseline_v1.summary.json",
+      "/Users/sadiapeerzada/Downloads/rag-poison-transfer-final/results/exp_017_2wiki_bm25_baseline_v1.jsonl",
+      "/Users/sadiapeerzada/Downloads/rag-poison-transfer-final/results/exp_020_2wiki_reranker_baseline_v1.jsonl",
+      "/Users/sadiapeerzada/Downloads/rag-poison-transfer-final/results/exp_019_2wiki_hybrid_baseline_v1.jsonl",
+      "/Users/sadiapeerzada/Downloads/rag-poison-transfer-final/results/exp_018_2wiki_dense_baseline_v1.summary.json",
+      "/Users/sadiapeerzada/Downloads/rag-poison-transfer-final/results/week5_6_nq_sweep.csv",
+      "/Users/sadiapeerzada/Downloads/rag-poison-transfer-final/results/exp_018_2wiki_dense_baseline_v1.jsonl",
+      "/Users/sadiapeerzada/Downloads/rag-poison-transfer-final/results/week5_6_2wiki_sweep.csv",
+      "/Users/sadiapeerzada/Downloads/rag-poison-transfer-final/results/week5_attack_intensity_sweep.csv"
+    ]
+  }
+]

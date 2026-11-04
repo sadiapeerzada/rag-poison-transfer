@@ -1,0 +1,36 @@
+{
+  "schema": "twowiki-semantic-quality-v3-prospective/v1/protocol",
+  "status": "draft_blocked",
+  "scope": "development",
+  "stage": "construction-only",
+  "base_implementation_commit": "fba2583ae4569d6e5114052ac1854ad545dc3c16",
+  "selection_rule": "twowiki-semantic-quality-v3-prospective/v1",
+  "query_count": 25,
+  "seed": 42,
+  "intensities": [
+    1,
+    3
+  ],
+  "max_backend_calls": 200,
+  "max_attempts_per_document": 2,
+  "max_tokens": 150,
+  "temperature": 0.0,
+  "sampler": "explicit greedy",
+  "input_sha256": null,
+  "implementation_commit": null,
+  "exposure_certification": null,
+  "cohort": null,
+  "model_call_authorization": null,
+  "blinded_review": "all saved attempt outputs, two independent passes, adjudicate disagreements",
+  "missing_inputs": [
+    "complete historical exposure accounting",
+    "custodian certificate",
+    "fresh metadata development pool and dataset pin",
+    "ordered cohort freeze",
+    "independently reviewed target packets and abstentions",
+    "model snapshot and environment pins",
+    "separate signed-off authorization record"
+  ],
+  "backend_seed_policy": "reset each uncached call to the V3 query/slot-derived seed",
+  "cohort_freeze_receipt": null
+}

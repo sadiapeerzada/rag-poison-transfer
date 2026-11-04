@@ -1,0 +1,31 @@
+{
+  "identifier": "twowiki-semantic-quality/v3-development",
+  "scope": "development",
+  "prompt": "relation-specific-sentence/v3-development",
+  "validator": "question-bound-relation-grammar/v3-development",
+  "retry": "relation-specific-bounded-revision/v3-development",
+  "target_method": "twowiki-evidence-gated-targets/v3-development",
+  "max_attempts": 2,
+  "max_tokens": 150,
+  "temperature": 0.0,
+  "sampler": "explicit greedy",
+  "seed": 42,
+  "duplicate_policy": "retain_and_report_not_independent_corroboration",
+  "implementation_sha256": {
+    "src/attacks/semantic_quality_v3.py": "8e9e8fc8879267fd0e8d8b283c2653723be4aae5654caf348780fd0d59259d53",
+    "src/attacks/semantic_quality_targets_v3.py": "7c579a9029598eaa06e17895806dd4f8b8510dc1e6fbd98cc838cc97ffa9ae67",
+    "src/attacks/semantic_quality_profile_v3.py": "6cf8098dfdb5e1de320bb1bcf38677d406cc5c508632ce03b06e1065441253b1",
+    "configs/twowiki_semantic_quality_v3_development.json": "e75f88217512d3f3ff273598cf20bbc394339dab4f2f22ac2b08f7b345706ba2",
+    "src/attacks/semantic_fluent.py": "64b214220225b0cf8be465430e17279a0013cd81dc44765da8db8ef66e388c9e",
+    "src/attacks/base.py": "d31ec7d0403813f7c035bb76fc7a1c2d5aa0dce160ec13dec0ddc2db76f24341",
+    "src/pipelines/generator.py": "baea2253f9cbf46d5b766d63335d36bb0ef1fc4aa2f8525b024c614c1d995b75",
+    "src/evaluation/metrics.py": "f2207fbe55cfdc7a43a40951691b4972236c99c57b7d855b8a33a33096db73b9",
+    "src/attacks/development_targets_v5.py": "8fd3ad9b042d68b8174e970ef42e770150ab8592b95b094d16ad22f9a08771ad",
+    "src/attacks/development_targets_v4.py": "a614a13bb5204f9c27f15dc4eefe23d000acbbe6271d92fe7cf6c0eba485b6d7",
+    "src/attacks/development_targets_v3.py": "ef53c1b1e03748bd4d781c1ec1b45bb7915e57aee5fa7decd22238b5fd202783",
+    "src/attacks/development_targets_v2.py": "017cebfba45d02ecdc0613bec865b4299480ebc59f80d6547a2dc8db221f2805",
+    "src/attacks/target_candidates.py": "f2d63d29075f332190e54edbec1ae564d2a3089c87fa29691ff387eb59f1dae0",
+    "src/attacks/reviewed_target_artifact.py": "c384b3975ded78d0202a29639602cec789221f15de6bdf4665e81803f1def278",
+    "src/attacks/development_review_package.py": "ec418a397a28b7e0e9a98110b037ff8045f079d9b4a71270110b406c7c47d4f4"
+  }
+}

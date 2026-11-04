@@ -1,0 +1,95 @@
+{
+  "scope": "Public committed GitHub metadata only; not a hosted notebook or deleted-artifact census",
+  "checks": [
+    {
+      "url": "https://github.com/sadiapeerzada/rag-poison-transfer/tree/d232fdf/results",
+      "isError": false,
+      "entries": [
+        {
+          "path": "results/exp_017_2wiki_bm25_baseline_v1.jsonl",
+          "sha": "9ce6e4ef7e51cb909a71d326008a0870ea4210da",
+          "type": "file"
+        },
+        {
+          "path": "results/exp_017_2wiki_bm25_baseline_v1.summary.json",
+          "sha": "e572e5972280ab80594b18911eeabfe4161552d2",
+          "type": "file"
+        },
+        {
+          "path": "results/exp_018_2wiki_dense_baseline_v1.jsonl",
+          "sha": "2e1219d60cadb802e7ab590e76c4bda8384461c9",
+          "type": "file"
+        },
+        {
+          "path": "results/exp_018_2wiki_dense_baseline_v1.summary.json",
+          "sha": "9868cef37a6cc4a41a0494406749fb8d2350d9c9",
+          "type": "file"
+        },
+        {
+          "path": "results/exp_019_2wiki_hybrid_baseline_v1.jsonl",
+          "sha": "067b2f1ebcade12b70b7af75f3ef3c65df6b55a5",
+          "type": "file"
+        },
+        {
+          "path": "results/exp_019_2wiki_hybrid_baseline_v1.summary.json",
+          "sha": "c7af2eab258881b884fb3e277b937915c3ee2859",
+          "type": "file"
+        },
+        {
+          "path": "results/exp_020_2wiki_reranker_baseline_v1.jsonl",
+          "sha": "afac5e3eba34c10b941753af3ae5e14935966c0d",
+          "type": "file"
+        },
+        {
+          "path": "results/exp_020_2wiki_reranker_baseline_v1.summary.json",
+          "sha": "40f26fe4fdc7ac3e0dc0719a132badfd45405996",
+          "type": "file"
+        },
+        {
+          "path": "results/week5_6_2wiki_sweep.csv",
+          "sha": "feb660bb70a578c9fea520776c57a0134369abf7",
+          "type": "file"
+        },
+        {
+          "path": "results/week5_6_intensity5_sweep.csv",
+          "sha": "46943a82adf0cfab5e0495447cc524110e181a1a",
+          "type": "file"
+        },
+        {
+          "path": "results/week5_6_low_rate_sweep.csv",
+          "sha": "c094d3f581a898b1482eac63def99b1bb8660a29",
+          "type": "file"
+        },
+        {
+          "path": "results/week5_attack_intensity_sweep.csv",
+          "sha": "39ff4ce3ed7399521f906b762905e0bec86ce542",
+          "type": "file"
+        },
+        {
+          "path": "results/week5_attack_intensity_sweep_full.csv",
+          "sha": "96b6f49db427cc2d7c62aa3cdcf7e65b3e80987b",
+          "type": "file"
+        }
+      ]
+    },
+    {
+      "url": "https://github.com/sadiapeerzada/rag-poison-transfer/tree/d232fdf/notebooks",
+      "isError": false,
+      "entries": [
+        {
+          "path": "notebooks/.gitkeep",
+          "sha": "e69de29bb2d1d6434b8b29ae775ad8c2e48c5391",
+          "type": "file"
+        }
+      ]
+    },
+    {
+      "url": "https://github.com/sadiapeerzada/rag-poison-transfer/actions",
+      "isError": true,
+      "entries": [],
+      "error": [
+        "HTTPError: 400: GitHub Fetch URL is not an allowed public GitHub repository or search endpoint. (Response: None)"
+      ]
+    }
+  ]
+}

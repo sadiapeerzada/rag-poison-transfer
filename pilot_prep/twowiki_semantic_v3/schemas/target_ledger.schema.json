@@ -1,0 +1,228 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "type": "array",
+  "minItems": 25,
+  "maxItems": 25,
+  "items": {
+    "type": "object",
+    "required": [
+      "query_id",
+      "query_sha256",
+      "review_state",
+      "candidates",
+      "abstention_reason",
+      "cohort_receipt_sha256"
+    ],
+    "properties": {
+      "query_id": {
+        "type": "string",
+        "minLength": 1
+      },
+      "query_sha256": {
+        "type": "string",
+        "pattern": "^[0-9a-f]{64}$"
+      },
+      "review_state": {
+        "enum": [
+          "reviewed",
+          "abstain"
+        ]
+      },
+      "candidates": {
+        "type": "array",
+        "items": {
+          "type": "object",
+          "required": [
+            "target",
+            "packet"
+          ],
+          "properties": {
+            "target": {
+              "type": "string",
+              "minLength": 1
+            },
+            "packet": {
+              "type": "object",
+              "required": [
+                "payload",
+                "review"
+              ],
+              "properties": {
+                "payload": {
+                  "type": "object",
+                  "required": [
+                    "query_sha256",
+                    "target",
+                    "nominator_id",
+                    "evidence",
+                    "facts",
+                    "fact_citations"
+                  ],
+                  "properties": {
+                    "query_sha256": {
+                      "type": "string",
+                      "pattern": "^[0-9a-f]{64}$"
+                    },
+                    "target": {
+                      "type": "string",
+                      "minLength": 1
+                    },
+                    "nominator_id": {
+                      "type": "string",
+                      "minLength": 1
+                    },
+                    "evidence": {
+                      "type": "array",
+                      "minItems": 1,
+                      "items": {
+                        "type": "object",
+                        "required": [
+                          "doc_id",
+                          "start",
+                          "end",
+                          "quote"
+                        ],
+                        "properties": {
+                          "doc_id": {
+                            "type": "string",
+                            "minLength": 1
+                          },
+                          "start": {
+                            "type": "integer",
+                            "minimum": 0
+                          },
+                          "end": {
+                            "type": "integer",
+                            "minimum": 1
+                          },
+                          "quote": {
+                            "type": "string",
+                            "minLength": 1
+                          }
+                        },
+                        "additionalProperties": false
+                      }
+                    },
+                    "facts": {
+                      "type": "object",
+                      "required": [
+                        "relation_kind",
+                        "referent",
+                        "referent_type",
+                        "target_type",
+                        "gold_aliases",
+                        "corpus_gold_answer"
+                      ]
+                    },
+                    "fact_citations": {
+                      "type": "object",
+                      "additionalProperties": {
+                        "type": "array",
+                        "minItems": 1,
+                        "items": {
+                          "type": "integer",
+                          "minimum": 0
+                        }
+                      }
+                    }
+                  },
+                  "additionalProperties": false
+                },
+                "review": {
+                  "type": "object",
+                  "required": [
+                    "payload_sha256",
+                    "reviewer_type",
+                    "reviewer_id",
+                    "reviewed_at",
+                    "decision",
+                    "uncertainty",
+                    "notes",
+                    "checks"
+                  ],
+                  "properties": {
+                    "payload_sha256": {
+                      "type": "string",
+                      "pattern": "^[0-9a-f]{64}$"
+                    },
+                    "reviewer_type": {
+                      "const": "human"
+                    },
+                    "reviewer_id": {
+                      "type": "string",
+                      "minLength": 1
+                    },
+                    "reviewed_at": {
+                      "type": "string",
+                      "format": "date-time"
+                    },
+                    "decision": {
+                      "enum": [
+                        "approve",
+                        "reject",
+                        "uncertain"
+                      ]
+                    },
+                    "uncertainty": {
+                      "type": "string",
+                      "minLength": 1
+                    },
+                    "notes": {
+                      "type": "string",
+                      "minLength": 30
+                    },
+                    "checks": {
+                      "type": "object",
+                      "required": [
+                        "referent_identity",
+                        "entity_type_and_role",
+                        "aliases_complete",
+                        "corpus_relative_contradiction",
+                        "chronological_plausibility",
+                        "geographic_granularity"
+                      ],
+                      "additionalProperties": false,
+                      "properties": {
+                        "referent_identity": {
+                          "type": "boolean"
+                        },
+                        "entity_type_and_role": {
+                          "type": "boolean"
+                        },
+                        "aliases_complete": {
+                          "type": "boolean"
+                        },
+                        "corpus_relative_contradiction": {
+                          "type": "boolean"
+                        },
+                        "chronological_plausibility": {
+                          "type": "boolean"
+                        },
+                        "geographic_granularity": {
+                          "type": "boolean"
+                        }
+                      }
+                    }
+                  },
+                  "additionalProperties": false
+                }
+              },
+              "additionalProperties": false
+            }
+          },
+          "additionalProperties": false
+        }
+      },
+      "abstention_reason": {
+        "type": [
+          "string",
+          "null"
+        ]
+      },
+      "cohort_receipt_sha256": {
+        "type": "string",
+        "pattern": "^[0-9a-f]{64}$"
+      }
+    }
+  }
+}

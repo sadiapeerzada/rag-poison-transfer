@@ -1,0 +1,17 @@
+{
+  "execution_kind": "authorized_model",
+  "model_provenance": {
+    "model_identity": null,
+    "revision": null,
+    "decoding": {
+      "sampler": "explicit greedy",
+      "temperature": 0.0
+    }
+  },
+  "model_files": [],
+  "environment": {
+    "python": null,
+    "packages": {}
+  },
+  "inventory_certification": null
+}
