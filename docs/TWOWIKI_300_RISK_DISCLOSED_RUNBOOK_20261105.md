@@ -30,12 +30,12 @@ write-once; repeated execution at the same output path fails.
 ## Run in a clean checked-out PR worktree
 
 ```bash
-python -m pytest -q tests/test_twowiki_300_matrix_preflight.py \\
-  tests/test_twowiki_v3_census_handoff.py \\
+python -m pytest -q tests/test_twowiki_300_matrix_preflight.py \
+  tests/test_twowiki_v3_census_handoff.py \
   tests/test_twowiki_v3_train_pool.py
 
-python scripts/prepare_twowiki_300_matrix_preflight.py \\
-  --registry-sha256 799c87aa83f6cb8ded2a16d0cbf110f35d1512b359d725dd27fa342422a68e65 \\
+python scripts/prepare_twowiki_300_matrix_preflight.py \
+  --registry-sha256 799c87aa83f6cb8ded2a16d0cbf110f35d1512b359d725dd27fa342422a68e65 \
   --output "$HOME/Documents/rag-research-results/twowiki-300-matrix-preflight-20261105.json"
 ```
 

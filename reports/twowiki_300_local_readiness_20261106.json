@@ -1,0 +1,669 @@
+{
+  "automatic_retry_permitted": false,
+  "checkpoint_stores": [
+    {
+      "checkpoint_validation": "PASS",
+      "execution_plan_present": true,
+      "path": "hotpotqa-transfer-20261028/transfer/execution/candidates"
+    },
+    {
+      "checkpoint_validation": "PASS",
+      "execution_plan_present": true,
+      "path": "hotpotqa-transfer-20261028/transfer/execution/evaluation"
+    },
+    {
+      "checkpoint_validation": "PASS",
+      "execution_plan_present": true,
+      "path": "hotpotqa-transfer-20261028/transfer/execution/selection"
+    },
+    {
+      "checkpoint_validation": "RuntimeError: Unresolved generation intent; no silent regeneration",
+      "execution_plan_present": false,
+      "path": "recovery-evidence/unresolved-call-20261029T135409Z"
+    },
+    {
+      "checkpoint_validation": "PASS",
+      "execution_plan_present": true,
+      "path": "twowiki-semantic-quality-25-v2-20261104/execution/construction"
+    },
+    {
+      "checkpoint_validation": "PASS",
+      "execution_plan_present": true,
+      "path": "twowiki-semantic-quality-25-v2-20261104/execution/evaluation"
+    },
+    {
+      "checkpoint_validation": "PASS",
+      "execution_plan_present": true,
+      "path": "twowiki-v2-construction-pilot-20261103/execution/construction"
+    }
+  ],
+  "execution_go": false,
+  "execution_plans": [
+    {
+      "path": "hotpotqa-transfer-20261028/transfer/execution/candidates/execution.plan.json",
+      "protocol_sha256": "94e4b6d8fb49a7e662074fb766c92498ad0667abf9cf38233e0f49aa401183aa"
+    },
+    {
+      "path": "hotpotqa-transfer-20261028/transfer/execution/evaluation/execution.plan.json",
+      "protocol_sha256": "94e4b6d8fb49a7e662074fb766c92498ad0667abf9cf38233e0f49aa401183aa"
+    },
+    {
+      "path": "hotpotqa-transfer-20261028/transfer/execution/selection/execution.plan.json",
+      "protocol_sha256": "94e4b6d8fb49a7e662074fb766c92498ad0667abf9cf38233e0f49aa401183aa"
+    },
+    {
+      "path": "twowiki-semantic-quality-25-v2-20261104/execution/construction/construction.plan.json",
+      "protocol_sha256": "6ea932386b8ba4e3e544bed55ccb22ea991f589d1311fb138b6baa689557abf8"
+    },
+    {
+      "path": "twowiki-semantic-quality-25-v2-20261104/execution/evaluation/evaluation.plan.json",
+      "protocol_sha256": "6ea932386b8ba4e3e544bed55ccb22ea991f589d1311fb138b6baa689557abf8"
+    },
+    {
+      "path": "twowiki-semantic-quality-25-v2-20261104/execution/evaluation/execution.plan.json",
+      "protocol_sha256": "6ea932386b8ba4e3e544bed55ccb22ea991f589d1311fb138b6baa689557abf8"
+    },
+    {
+      "path": "twowiki-v2-construction-pilot-20261103/execution/construction/construction.plan.json",
+      "protocol_sha256": "dd67ad7ce88db3b1a2cd3a476a64780770ec271dab10bd0d893e5f2f45c6c033"
+    }
+  ],
+  "file_count": 246356,
+  "full_census_sha256": "af097dcf48808b7d221ecb77fc39407707c92a4c7f98942db162fe3d14062f99",
+  "heldout_300_execution_plans": [],
+  "heldout_300_protocol_pins": [
+    "47c164fd7461153f68e6b0df3e5dc31ca9b0a70b84fe379e1ada4a68f0f7a035"
+  ],
+  "historical_checkout_verification": {
+    "clean": true,
+    "git_commit": "b1466db04c4f8f0314c7e537d8e7ec390c8c3b29",
+    "local_v2_preflight": "PASS",
+    "path": "/Users/sadiapeerzada/Documents/rag-2wiki-v2-clean",
+    "source_matches_parent": true,
+    "v1_binding_matches_parent": true
+  },
+  "initial_preexisting_inventory": {
+    "file_count": 246349,
+    "inventory_sha256": "83badf10e163391ed462dcdaeac2b687480bf6db82499c17faf617da54026758"
+  },
+  "inventory_sha256": "1fde35a36f62f96d1805b479c71cd8465f01dd0f90cb378445d373dd755ae6da",
+  "limitations": [
+    "Local files only; missing external evidence is not proof of nonexecution.",
+    "Hashes establish current bytes, not independent authenticity or model-call approval.",
+    "Checkpoint validation does not establish scientific validity or full seal semantics.",
+    "Question, answer and prompt text are not emitted."
+  ],
+  "model_calls": 0,
+  "other_format_intents": [
+    {
+      "path": "twowiki-three-candidate-gate-20261104-v1/responses/reviewer_A/case_01.intent.json",
+      "schema": "rag-poison-transfer.2wiki-three-specific-candidate-response/v1",
+      "status": "separate_format_not_validated_by_execution_reliability"
+    },
+    {
+      "path": "twowiki-three-candidate-gate-20261104-v1/responses/reviewer_A/case_02.intent.json",
+      "schema": "rag-poison-transfer.2wiki-three-specific-candidate-response/v1",
+      "status": "separate_format_not_validated_by_execution_reliability"
+    },
+    {
+      "path": "twowiki-three-candidate-gate-20261104-v1/responses/reviewer_A/case_03.intent.json",
+      "schema": "rag-poison-transfer.2wiki-three-specific-candidate-response/v1",
+      "status": "separate_format_not_validated_by_execution_reliability"
+    },
+    {
+      "path": "twowiki-three-candidate-gate-20261104-v1/responses/reviewer_B/case_01.intent.json",
+      "schema": "rag-poison-transfer.2wiki-three-specific-candidate-response/v1",
+      "status": "separate_format_not_validated_by_execution_reliability"
+    },
+    {
+      "path": "twowiki-three-candidate-gate-20261104-v1/responses/reviewer_B/case_02.intent.json",
+      "schema": "rag-poison-transfer.2wiki-three-specific-candidate-response/v1",
+      "status": "separate_format_not_validated_by_execution_reliability"
+    },
+    {
+      "path": "twowiki-three-candidate-gate-20261104-v1/responses/reviewer_B/case_03.intent.json",
+      "schema": "rag-poison-transfer.2wiki-three-specific-candidate-response/v1",
+      "status": "separate_format_not_validated_by_execution_reliability"
+    },
+    {
+      "path": "twowiki-three-candidate-gate-20261104-v1-semantic/generation_calls/call_01.intent.json",
+      "schema": "rag-poison-transfer.2wiki-three-candidate-semantic-development/v1",
+      "status": "separate_format_not_validated_by_execution_reliability"
+    },
+    {
+      "path": "twowiki-three-candidate-gate-20261104-v1-semantic/generation_calls/call_02.intent.json",
+      "schema": "rag-poison-transfer.2wiki-three-candidate-semantic-development/v1",
+      "status": "separate_format_not_validated_by_execution_reliability"
+    },
+    {
+      "path": "twowiki-three-candidate-gate-20261104-v1-semantic-development-v2/generation_calls/call_01.intent.json",
+      "schema": "rag-poison-transfer.2wiki-three-candidate-semantic-development/v1",
+      "status": "separate_format_not_validated_by_execution_reliability"
+    },
+    {
+      "path": "twowiki-three-candidate-gate-20261104-v1-semantic-development-v2/generation_calls/call_02.intent.json",
+      "schema": "rag-poison-transfer.2wiki-three-candidate-semantic-development/v1",
+      "status": "separate_format_not_validated_by_execution_reliability"
+    },
+    {
+      "path": "twowiki-three-case-lexical-dev-20261103T181336Z/results/dense/case_01.intent.json",
+      "schema": "rag-poison-transfer.2wiki-source-screened-three-case-exploratory/v1",
+      "status": "separate_format_not_validated_by_execution_reliability"
+    },
+    {
+      "path": "twowiki-three-case-lexical-dev-20261103T181336Z/results/dense/case_02.intent.json",
+      "schema": "rag-poison-transfer.2wiki-source-screened-three-case-exploratory/v1",
+      "status": "separate_format_not_validated_by_execution_reliability"
+    },
+    {
+      "path": "twowiki-three-case-lexical-dev-20261103T181336Z/results/dense/case_03.intent.json",
+      "schema": "rag-poison-transfer.2wiki-source-screened-three-case-exploratory/v1",
+      "status": "separate_format_not_validated_by_execution_reliability"
+    },
+    {
+      "path": "twowiki-three-case-lexical-dev-20261103T181336Z/results/rcd/case_01.intent.json",
+      "schema": "rag-poison-transfer.2wiki-source-screened-three-case-exploratory/v1",
+      "status": "separate_format_not_validated_by_execution_reliability"
+    },
+    {
+      "path": "twowiki-three-case-lexical-dev-20261103T181336Z/results/rcd/case_02.intent.json",
+      "schema": "rag-poison-transfer.2wiki-source-screened-three-case-exploratory/v1",
+      "status": "separate_format_not_validated_by_execution_reliability"
+    },
+    {
+      "path": "twowiki-three-case-lexical-dev-20261103T181336Z/results/rcd/case_03.intent.json",
+      "schema": "rag-poison-transfer.2wiki-source-screened-three-case-exploratory/v1",
+      "status": "separate_format_not_validated_by_execution_reliability"
+    },
+    {
+      "path": "twowiki-two-ai-review-raw/reviewer_A/case_01.intent.json",
+      "schema": "rag-poison-transfer.twowiki-independent-local-mlx-review-run/v1",
+      "status": "separate_format_not_validated_by_execution_reliability"
+    },
+    {
+      "path": "twowiki-two-ai-review-raw/reviewer_A/case_02.intent.json",
+      "schema": "rag-poison-transfer.twowiki-independent-local-mlx-review-run/v1",
+      "status": "separate_format_not_validated_by_execution_reliability"
+    },
+    {
+      "path": "twowiki-two-ai-review-raw/reviewer_A/case_03.intent.json",
+      "schema": "rag-poison-transfer.twowiki-independent-local-mlx-review-run/v1",
+      "status": "separate_format_not_validated_by_execution_reliability"
+    },
+    {
+      "path": "twowiki-two-ai-review-raw/reviewer_A/case_04.intent.json",
+      "schema": "rag-poison-transfer.twowiki-independent-local-mlx-review-run/v1",
+      "status": "separate_format_not_validated_by_execution_reliability"
+    },
+    {
+      "path": "twowiki-two-ai-review-raw/reviewer_A/case_05.intent.json",
+      "schema": "rag-poison-transfer.twowiki-independent-local-mlx-review-run/v1",
+      "status": "separate_format_not_validated_by_execution_reliability"
+    },
+    {
+      "path": "twowiki-two-ai-review-raw/reviewer_A/case_06.intent.json",
+      "schema": "rag-poison-transfer.twowiki-independent-local-mlx-review-run/v1",
+      "status": "separate_format_not_validated_by_execution_reliability"
+    },
+    {
+      "path": "twowiki-two-ai-review-raw/reviewer_B/case_01.intent.json",
+      "schema": "rag-poison-transfer.twowiki-independent-local-mlx-review-run/v1",
+      "status": "separate_format_not_validated_by_execution_reliability"
+    },
+    {
+      "path": "twowiki-two-ai-review-raw/reviewer_B/case_02.intent.json",
+      "schema": "rag-poison-transfer.twowiki-independent-local-mlx-review-run/v1",
+      "status": "separate_format_not_validated_by_execution_reliability"
+    },
+    {
+      "path": "twowiki-two-ai-review-raw/reviewer_B/case_03.intent.json",
+      "schema": "rag-poison-transfer.twowiki-independent-local-mlx-review-run/v1",
+      "status": "separate_format_not_validated_by_execution_reliability"
+    },
+    {
+      "path": "twowiki-two-ai-review-raw/reviewer_B/case_04.intent.json",
+      "schema": "rag-poison-transfer.twowiki-independent-local-mlx-review-run/v1",
+      "status": "separate_format_not_validated_by_execution_reliability"
+    },
+    {
+      "path": "twowiki-two-ai-review-raw/reviewer_B/case_05.intent.json",
+      "schema": "rag-poison-transfer.twowiki-independent-local-mlx-review-run/v1",
+      "status": "separate_format_not_validated_by_execution_reliability"
+    },
+    {
+      "path": "twowiki-two-ai-review-raw/reviewer_B/case_06.intent.json",
+      "schema": "rag-poison-transfer.twowiki-independent-local-mlx-review-run/v1",
+      "status": "separate_format_not_validated_by_execution_reliability"
+    }
+  ],
+  "pending_requirements": [
+    "Actual scientific model-call authorization for risk-disclosed 300-query replication",
+    "Approved compute/time/disk budget",
+    "Reviewed local-v2 execution freeze using original b1466db source",
+    "Real complete construction and evaluation journals and sealed aggregate before results reporting"
+  ],
+  "prepared_inputs": {
+    "corpus_documents": 2163,
+    "data_sha256": "24954162808913da007eead81be3d42a1762aabab0eca3d9cfc203c3e8759287",
+    "dataset_revision": "9823f70484dea525100394220b0ea5184d0eeb7b",
+    "queries": 300,
+    "spec_sha256": "e30904a1c7cd255c5fe5acec13f19c65e7579e84c5a3aefc341576db2228fa48"
+  },
+  "problems": [
+    {
+      "error": "JSONDecodeError",
+      "path": "twowiki-three-candidate-gate-20261104-v1/responses/reviewer_B/case_02.json"
+    },
+    {
+      "error": "JSONDecodeError",
+      "path": "twowiki-three-candidate-gate-20261104-v1/responses/reviewer_B/case_03.json"
+    },
+    {
+      "error": "JSONDecodeError",
+      "path": "twowiki-two-ai-review-raw/reviewer_B/case_01.json"
+    },
+    {
+      "error": "JSONDecodeError",
+      "path": "twowiki-two-ai-review-raw/reviewer_B/case_02.json"
+    },
+    {
+      "error": "JSONDecodeError",
+      "path": "twowiki-two-ai-review-raw/reviewer_B/case_03.json"
+    },
+    {
+      "error": "JSONDecodeError",
+      "path": "twowiki-two-ai-review-raw/reviewer_B/case_04.json"
+    },
+    {
+      "error": "JSONDecodeError",
+      "path": "twowiki-two-ai-review-raw/reviewer_B/case_05.json"
+    }
+  ],
+  "protocols": {
+    "47c164fd7461153f68e6b0df3e5dc31ca9b0a70b84fe379e1ada4a68f0f7a035": {
+      "dataset": {
+        "loader": "load_2wikimultihopqa",
+        "revision": "9823f70484dea525100394220b0ea5184d0eeb7b",
+        "split": "dev"
+      },
+      "matrix": [
+        [
+          "lexical_influential_token",
+          1,
+          42
+        ],
+        [
+          "lexical_influential_token",
+          1,
+          43
+        ],
+        [
+          "lexical_influential_token",
+          1,
+          44
+        ],
+        [
+          "lexical_influential_token",
+          3,
+          42
+        ],
+        [
+          "lexical_influential_token",
+          3,
+          43
+        ],
+        [
+          "lexical_influential_token",
+          3,
+          44
+        ],
+        [
+          "semantic_fluent_false_evidence",
+          1,
+          42
+        ],
+        [
+          "semantic_fluent_false_evidence",
+          1,
+          43
+        ],
+        [
+          "semantic_fluent_false_evidence",
+          1,
+          44
+        ],
+        [
+          "semantic_fluent_false_evidence",
+          3,
+          42
+        ],
+        [
+          "semantic_fluent_false_evidence",
+          3,
+          43
+        ],
+        [
+          "semantic_fluent_false_evidence",
+          3,
+          44
+        ]
+      ],
+      "model_revision": "c26a38f6a37d0a51b4e9a1eb3026530fa35d9fed",
+      "path": "twowiki-v2-binding-20261103/parent-v1/protocol.json",
+      "queries": 300,
+      "schema": "rag-poison-transfer.2wiki-frozen-construction-protocol/v1",
+      "scope": "heldout",
+      "source": {
+        "code_fingerprint": "f43df684a62d96beaa9c06a149142af4baf12a186c570835af6c80d52f66becb",
+        "git_commit_sha": "b1466db04c4f8f0314c7e537d8e7ec390c8c3b29"
+      }
+    },
+    "6ea932386b8ba4e3e544bed55ccb22ea991f589d1311fb138b6baa689557abf8": {
+      "dataset": {
+        "loader": "load_2wikimultihopqa",
+        "revision": "9823f70484dea525100394220b0ea5184d0eeb7b",
+        "split": "train"
+      },
+      "matrix": [
+        [
+          "semantic_fluent_false_evidence",
+          1,
+          42
+        ],
+        [
+          "semantic_fluent_false_evidence",
+          3,
+          42
+        ]
+      ],
+      "model_revision": "c26a38f6a37d0a51b4e9a1eb3026530fa35d9fed",
+      "path": "twowiki-semantic-quality-25-v2-20261104/protocol.json",
+      "queries": 25,
+      "schema": "rag-poison-transfer.semantic-development-protocol/v2",
+      "scope": "development",
+      "source": {
+        "code_fingerprint": "7ed6cd86d95800ac8160ebde68056a81e193cd7c4c23fa837f83101ff279ff83",
+        "git_commit_sha": "07499fd7d3dc750d9ec876465c76c4972a9c70df"
+      }
+    },
+    "94e4b6d8fb49a7e662074fb766c92498ad0667abf9cf38233e0f49aa401183aa": {
+      "dataset": {
+        "loader": "load_hotpotqa_distractor",
+        "revision": "1908d6afbbead072334abe2965f91bd2709910ab",
+        "split": "validation"
+      },
+      "matrix": [
+        [
+          "lexical_influential_token",
+          1,
+          42
+        ],
+        [
+          "lexical_influential_token",
+          1,
+          43
+        ],
+        [
+          "lexical_influential_token",
+          1,
+          44
+        ],
+        [
+          "lexical_influential_token",
+          3,
+          42
+        ],
+        [
+          "lexical_influential_token",
+          3,
+          43
+        ],
+        [
+          "lexical_influential_token",
+          3,
+          44
+        ],
+        [
+          "semantic_fluent_false_evidence",
+          1,
+          42
+        ],
+        [
+          "semantic_fluent_false_evidence",
+          1,
+          43
+        ],
+        [
+          "semantic_fluent_false_evidence",
+          1,
+          44
+        ],
+        [
+          "semantic_fluent_false_evidence",
+          3,
+          42
+        ],
+        [
+          "semantic_fluent_false_evidence",
+          3,
+          43
+        ],
+        [
+          "semantic_fluent_false_evidence",
+          3,
+          44
+        ]
+      ],
+      "model_revision": "c26a38f6a37d0a51b4e9a1eb3026530fa35d9fed",
+      "path": "hotpotqa-transfer-20261028/transfer/protocol.json",
+      "queries": 300,
+      "schema": "rag-poison-transfer.bounded-source-selection/v2",
+      "scope": "heldout",
+      "source": {
+        "code_fingerprint": "80844d1935d3524bd20c1929ed2f7627a8ef212730c5c657ea8c7d572f72f704",
+        "git_commit_sha": "9a937afbd94b5a46394b5724a6be2d571d2e0c19"
+      }
+    },
+    "99dce5ba759d3a95dabf639f3f11b3b5f5259280f796ed111b0b46809cc32cd0": {
+      "dataset": {
+        "loader": "load_hotpotqa_distractor",
+        "revision": "1908d6afbbead072334abe2965f91bd2709910ab",
+        "split": "validation"
+      },
+      "matrix": [
+        [
+          "lexical_influential_token",
+          1,
+          42
+        ],
+        [
+          "lexical_influential_token",
+          1,
+          43
+        ],
+        [
+          "lexical_influential_token",
+          1,
+          44
+        ],
+        [
+          "lexical_influential_token",
+          3,
+          42
+        ],
+        [
+          "lexical_influential_token",
+          3,
+          43
+        ],
+        [
+          "lexical_influential_token",
+          3,
+          44
+        ],
+        [
+          "semantic_fluent_false_evidence",
+          1,
+          42
+        ],
+        [
+          "semantic_fluent_false_evidence",
+          1,
+          43
+        ],
+        [
+          "semantic_fluent_false_evidence",
+          1,
+          44
+        ],
+        [
+          "semantic_fluent_false_evidence",
+          3,
+          42
+        ],
+        [
+          "semantic_fluent_false_evidence",
+          3,
+          43
+        ],
+        [
+          "semantic_fluent_false_evidence",
+          3,
+          44
+        ]
+      ],
+      "model_revision": "c26a38f6a37d0a51b4e9a1eb3026530fa35d9fed",
+      "path": "hotpotqa-transfer-20261028/base/protocol.json",
+      "queries": 300,
+      "schema": "rag-poison-transfer.week9-frozen-construction-protocol/v1",
+      "scope": "heldout",
+      "source": {
+        "code_fingerprint": "80844d1935d3524bd20c1929ed2f7627a8ef212730c5c657ea8c7d572f72f704",
+        "git_commit_sha": "9a937afbd94b5a46394b5724a6be2d571d2e0c19"
+      }
+    },
+    "dd67ad7ce88db3b1a2cd3a476a64780770ec271dab10bd0d893e5f2f45c6c033": {
+      "dataset": {
+        "loader": "load_2wikimultihopqa",
+        "revision": "9823f70484dea525100394220b0ea5184d0eeb7b",
+        "split": "train"
+      },
+      "matrix": [
+        [
+          "semantic_fluent_false_evidence",
+          1,
+          42
+        ],
+        [
+          "semantic_fluent_false_evidence",
+          3,
+          42
+        ]
+      ],
+      "model_revision": "c26a38f6a37d0a51b4e9a1eb3026530fa35d9fed",
+      "path": "twowiki-v2-construction-pilot-20261103/protocol.json",
+      "queries": 25,
+      "schema": "rag-poison-transfer.semantic-development-protocol/v2",
+      "scope": "development",
+      "source": {
+        "code_fingerprint": "f43df684a62d96beaa9c06a149142af4baf12a186c570835af6c80d52f66becb",
+        "git_commit_sha": "b1466db04c4f8f0314c7e537d8e7ec390c8c3b29"
+      }
+    }
+  },
+  "root": "/Users/sadiapeerzada/Documents/rag-research-results",
+  "schema": "rag-poison-transfer.2wiki-local-readiness-census/v1",
+  "scientific_authorization": "NOT_VERIFIED",
+  "sealed_stages": [
+    {
+      "additional_files": [
+        ".DS_Store"
+      ],
+      "changed_files": [],
+      "file_manifest_matches": false,
+      "missing_files": [],
+      "path": "twowiki-semantic-quality-25-v2-20261104/execution/construction/construction.seal.json",
+      "protocol_sha256": "6ea932386b8ba4e3e544bed55ccb22ea991f589d1311fb138b6baa689557abf8"
+    },
+    {
+      "additional_files": [
+        ".DS_Store"
+      ],
+      "changed_files": [],
+      "file_manifest_matches": false,
+      "missing_files": [],
+      "path": "twowiki-semantic-quality-25-v2-20261104/execution/evaluation/evaluation.complete.json",
+      "protocol_sha256": "6ea932386b8ba4e3e544bed55ccb22ea991f589d1311fb138b6baa689557abf8"
+    },
+    {
+      "additional_files": [],
+      "changed_files": [],
+      "file_manifest_matches": true,
+      "missing_files": [],
+      "path": "twowiki-v2-construction-pilot-20261103/execution/construction/construction.seal.json",
+      "protocol_sha256": "dd67ad7ce88db3b1a2cd3a476a64780770ec271dab10bd0d893e5f2f45c6c033"
+    }
+  ],
+  "source_pins": {
+    "baseline_main": "fcebb1e0a8f0",
+    "historical_source": "b1466db04c4f8f0314c7e537d8e7ec390c8c3b29",
+    "model_calls": 0,
+    "retrieval_bindings_identical_to_historical_v2": true,
+    "source_files_sha256": {
+      "configs/exp_030_hotpotqa_dense_heldout_mlx.yaml": "2d731de7934497e87ee912bba41d2c0c5728a50866454f037e7f0d222df790a8",
+      "configs/exp_031_hotpotqa_rcd_heldout_mlx.yaml": "ec8fd1542b04c7e81b476840ef0b411f95287388c22639ead5f2660720e44701",
+      "run.py": "12c29b059cf83e72740128fcdf02605f3d5f10abd38f796724265753c8f2803c",
+      "scripts/materialize_2wiki_execution_inputs.py": "d3895507124a7642ee13cbe41cebf79b1d26d5752921996c5d8fe7dd74193a95",
+      "scripts/prepare_2wiki_development.py": "702ee75dd17d5e6c7e2afd308b667d55d3e5d085c648ee2b58204813d8fd4f2a",
+      "scripts/run_week9_protocol_poison_matrix.py": "dc8c3a95ca3a56e4d98cca979af6962020caa7c174aebb48a4adce2c556b7cc2",
+      "src/attacks/development_targets_v3.py": "ef53c1b1e03748bd4d781c1ec1b45bb7915e57aee5fa7decd22238b5fd202783",
+      "src/attacks/semantic_fluent.py": "64b214220225b0cf8be465430e17279a0013cd81dc44765da8db8ef66e388c9e",
+      "src/experiments/execution_reliability.py": "e970b335c3340ecd442805a91ea45af8db4a64ffe7bd4336ab1c35a780c41678",
+      "src/experiments/twowiki_replication.py": "14e31695938c4c78665da5972d8383a4d8f005522da22e69e6ac8e155156d115",
+      "src/experiments/week9_construction.py": "575530af9d88c1cea1a4c8cac8f2987d8c737d24ef127ce64689d303da05c72e"
+    }
+  },
+  "twowiki_construction_incidents": [
+    {
+      "automatic_retry_permitted": false,
+      "construction_seal_present": true,
+      "expected_query_checkpoint_count": 50,
+      "issues": [],
+      "journal_counts": {
+        "completed_response": 148
+      },
+      "present_cell_records": [
+        "semantic_fluent_false_evidence.intensity-1.seed-42",
+        "semantic_fluent_false_evidence.intensity-3.seed-42"
+      ],
+      "protocol_sha256": "6ea932386b8ba4e3e544bed55ccb22ea991f589d1311fb138b6baa689557abf8",
+      "scope": "development",
+      "validated_query_checkpoint_count": 50
+    },
+    {
+      "automatic_retry_permitted": false,
+      "construction_seal_present": true,
+      "expected_query_checkpoint_count": 50,
+      "issues": [],
+      "journal_counts": {
+        "completed_response": 148
+      },
+      "present_cell_records": [
+        "semantic_fluent_false_evidence.intensity-1.seed-42",
+        "semantic_fluent_false_evidence.intensity-3.seed-42"
+      ],
+      "protocol_sha256": "dd67ad7ce88db3b1a2cd3a476a64780770ec271dab10bd0d893e5f2f45c6c033",
+      "scope": "development",
+      "validated_query_checkpoint_count": 50
+    }
+  ],
+  "verification": {
+    "combined_duration_seconds": 93.58,
+    "combined_offline_tests": 296,
+    "diff_check": "PASS",
+    "distinct_tests_verified": 297,
+    "documented_bash_syntax": "PASS",
+    "final_census_regression_tests": 3,
+    "model_inference_performed": false
+  }
+}
