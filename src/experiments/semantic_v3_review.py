@@ -25,7 +25,7 @@ def sealed_records(root, manifest_reference, *, authorization_reference=None):
 
 
 def construction_summary(root, manifest_reference, *, authorization_reference=None):
-    records,_,seal=sealed_records(root,manifest_reference,authorization_reference=authorization_reference)
+    records,values,seal=sealed_records(root,manifest_reference,authorization_reference=authorization_reference)
     groups={}
     for intensity in (1,3):
         rows=[r for r in records if r['intensity']==intensity]
@@ -36,6 +36,8 @@ def construction_summary(root, manifest_reference, *, authorization_reference=No
            'duplicate_slots_among_successful_and_partial_documents':sum(r.get('document_diversity',{}).get('duplicate_slots',0) for r in rows),
            'independent_semantic_review':'pending_not_inferred_from_heuristics'}
     return {'scope':'development','stage':'construction-only','groups':groups,
+            'study_kind':('nonprospective-development-diagnostic' if values['cohort'].get('prospective_evidence') is False else 'prospective-development-pilot'),
+            'independent_confirmation':False,
             'backend_calls':seal['backend_calls'],'execution_kind':seal['execution_kind'],
             'retrieval_or_QA_outcomes':'not_evaluated'}
 
