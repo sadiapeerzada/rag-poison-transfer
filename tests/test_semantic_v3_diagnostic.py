@@ -186,10 +186,20 @@ def test_metadata_references_cannot_alias_content(tmp_path,monkeypatch,alias):
 
 def test_preparation_and_freeze_use_only_recorded_material_and_real_review_contract(tmp_path,monkeypatch):
     import importlib.util
+    from types import SimpleNamespace
     from test_semantic_v3_mlx import runtime_fixture
     from src.experiments.semantic_v3_preparation import file_sha
     spec=importlib.util.spec_from_file_location('diagnostic_prepare',Path('scripts/prepare_semantic_v3_diagnostic.py'))
     prepare=importlib.util.module_from_spec(spec);spec.loader.exec_module(prepare)
+    # CI need not install Apple MLX. This offline contract test uses a complete,
+    # synthetic package inventory; production still validates every required pin.
+    backend_packages=('mlx','mlx-lm','numpy','transformers','tokenizers','psutil')
+    monkeypatch.setattr(prepare.importlib.metadata,'distributions',lambda:[
+        SimpleNamespace(metadata={'Name':name},version='synthetic-fixture')
+        for name in backend_packages])
+    monkeypatch.setattr(prepare.importlib.metadata,'version',lambda name:
+        'synthetic-fixture' if name in backend_packages
+        else pytest.fail(f'Unexpected synthetic environment lookup: {name}'))
     ref,_,_=diagnostic_inputs(tmp_path,monkeypatch)
     manifest=json.loads(Path(ref['path']).read_text());artifacts=manifest['artifacts']
     parent=json.loads(Path(artifacts['historical_protocol']['path']).read_text())
@@ -221,6 +231,7 @@ def test_preparation_and_freeze_use_only_recorded_material_and_real_review_contr
         for c in row['candidates']:c['packet']['review']['reviewed_at']='2090-01-01T00:00:00Z'
     raw(packet/'targets.reviewed.json',rows)
     runtime=json.loads((packet/'runtime.proposed.json').read_text())
+    assert runtime['environment']['packages']==dict.fromkeys(backend_packages,'synthetic-fixture')
     runtime['resource_policy']['deadline']='2099-01-01T00:00:00Z'
     inventory={k:v for k,v in runtime.items() if k!='inventory_certification'}
     runtime['inventory_certification']={'inventory_sha256':digest(inventory),
