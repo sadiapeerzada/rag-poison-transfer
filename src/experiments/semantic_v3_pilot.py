@@ -1,6 +1,6 @@
-"""Disabled-by-default, construction-only prospective driver around frozen V3.
+"""Disabled-by-default, construction-only development driver around frozen V3.
 
-No CLI executes models. An explicitly pinned authorization is checked
+This module has no CLI. An explicitly pinned authorization is checked
 before even invoking a supplied lazy backend factory. No Dense/RCD/QA imports.
 """
 from datetime import datetime, timezone
@@ -23,13 +23,14 @@ DATASET={'name':'Salesforce/ContextualBench','config':'2WikiMultihopQA',
          'revision':'9823f70484dea525100394220b0ea5184d0eeb7b','split':'train'}
 DRIVER_FILES=('src/experiments/semantic_v3_preparation.py','src/experiments/semantic_v3_checkpoint.py',
               'src/experiments/semantic_v3_pilot.py', 'src/experiments/semantic_v3_review.py',
-              'src/experiments/semantic_v3_resources.py', 'src/experiments/semantic_v3_mlx.py')
+              'src/experiments/semantic_v3_resources.py', 'src/experiments/semantic_v3_mlx.py',
+              'src/experiments/semantic_v3_diagnostic.py', 'scripts/prepare_semantic_v3_diagnostic.py')
 
 
 def implementation_pins():return {f:file_sha(ROOT/f) for f in DRIVER_FILES}
 
 
-def _authorization(reference, manifest_sha, protocol_sha, output, *, now=None):
+def _authorization(reference, manifest_sha, protocol_sha, output, *, now=None, study_kind=None):
     if reference is None:raise PermissionError('Separate, externally pinned model-call authorization required')
     try:
         auth=read_pinned(reference)
@@ -42,6 +43,10 @@ def _authorization(reference, manifest_sha, protocol_sha, output, *, now=None):
             or auth['max_backend_calls']!=200 or auth.get('authorizer_type')!='human'
             or not isinstance(auth.get('authorizer_id'),str) or not auth['authorizer_id'].strip()):
         raise PermissionError('Model-call authorization is incomplete or does not bind this pilot')
+    if study_kind == 'nonprospective-development-diagnostic':
+        if (auth.get('study_kind') != study_kind or auth.get('prospective_evidence') is not False
+                or auth.get('historical_exposure_risk_acknowledged') is not True):
+            raise PermissionError('Separate diagnostic authorization and exposure acknowledgment required')
     now=now or utc_now()
     try:
         issued=datetime.fromisoformat(auth['issued_at'].replace('Z','+00:00'))
@@ -80,6 +85,47 @@ def _content_values(artifacts):
     return {key:_decode_content(raw) for key,raw in buffers.items()}
 
 
+def validate_content(manifest, values, cohort, receipt):
+    """Unchanged semantic checks, also usable offline on documented development material."""
+    artifacts=manifest['artifacts']
+    frozen_at=datetime.fromisoformat(receipt['frozen_at'].replace('Z','+00:00'))
+    if frozen_at.utcoffset() is None:raise ValueError('Freeze receipt needs timezone')
+    data=values['data'];ids=cohort['query_ids']
+    if data.get('scope')!='development' or data.get('dataset')!=manifest['dataset']:
+        raise ValueError('Pinned train-development data required; held-out data refused')
+    if len({q['query_id'] for q in data['queries']})!=len(data['queries']):raise ValueError('Duplicate dataset query IDs')
+    by_id={q['query_id']:q for q in data['queries']}
+    if not set(values['pool_ids'])<=by_id.keys():raise ValueError('Metadata pool IDs absent from pinned dataset')
+    if not set(ids)<=by_id.keys():raise ValueError('Missing selected query; no replacements')
+    if manifest.get('study_kind')=='nonprospective-development-diagnostic':
+        if list(by_id)!=ids:raise ValueError('Diagnostic content must retain exactly the historical 25 in order')
+        if data.get('historical_source_sha256')!=cohort['historical_data_sha256']:
+            raise ValueError('Diagnostic content lacks historical data source binding')
+    targets=values['targets']
+    if [t['query_id'] for t in targets]!=ids:raise ValueError('Target ledger must retain exact cohort order')
+    pins={d['doc_id']:hashlib.sha256(d['text'].encode()).hexdigest() for d in data['corpus']}
+    # These document hashes inherit trust from the independently pinned entire data file.
+    selections={}
+    for entry in targets:
+        q=by_id[entry['query_id']]
+        if entry.get('query_sha256')!=digest(q):raise ValueError('Target review query binding mismatch')
+        if entry.get('cohort_receipt_sha256')!=artifacts['cohort_receipt']['sha256']:
+            raise ValueError('Target ledger lacks frozen-cohort receipt binding')
+        if entry.get('review_state') not in ('reviewed','abstain'):raise ValueError('Pending target review cannot execute')
+        for c in entry['candidates']:
+            review=(c.get('packet') or {}).get('review',{})
+            if not isinstance(review.get('uncertainty'),str) or not review['uncertainty'].strip():
+                raise ValueError('Explicit independent-review uncertainty required')
+            reviewed_at=datetime.fromisoformat(review['reviewed_at'].replace('Z','+00:00'))
+            if reviewed_at.utcoffset() is None or reviewed_at<frozen_at:
+                raise ValueError('Candidate review predates frozen cohort')
+        target,selection=select_target(q,entry['candidates'],data['corpus'],pins,scope='development')
+        if target is None and not entry.get('abstention_reason'):raise ValueError('Explicit target abstention reason required')
+        if target is not None and entry['review_state']!='reviewed':raise ValueError('Abstention cannot conceal a selected target')
+        selections[q['query_id']]={'target':target,'selection':selection}
+    return selections,pins
+
+
 def preflight(manifest_reference, *, authorization_reference=None, _admission_state=None):
     """Metadata/auth/resource admission precedes any content decoding.
 
@@ -89,14 +135,17 @@ def preflight(manifest_reference, *, authorization_reference=None, _admission_st
     """
     admission_started=utc_now()
     manifest=read_pinned(manifest_reference)
-    if (manifest.get('schema')!='semantic-v3-pilot-manifest/v1'
+    diagnostic=manifest.get('schema')=='semantic-v3-diagnostic-manifest/v1'
+    if (manifest.get('schema') not in ('semantic-v3-pilot-manifest/v1','semantic-v3-diagnostic-manifest/v1')
             or manifest.get('base_implementation_commit')!='fba2583ae4569d6e5114052ac1854ad545dc3c16'
             or manifest.get('status')!='frozen_ready_for_authorization') or manifest.get('scope')!='development' or manifest.get('stage')!='construction-only':
         raise ValueError('Draft or non-development manifest cannot execute')
     if manifest.get('driver_implementation_sha256')!=implementation_pins():raise ValueError('Driver source fingerprint mismatch')
     if manifest.get('dataset')!=DATASET:raise ValueError('Pinned 2Wiki train dataset metadata required')
     artifacts=manifest['artifacts']
-    if set(artifacts)!={'protocol','profile','registry','pool_ids','cohort','cohort_receipt','data','targets','runtime'}:
+    required={'protocol','profile','registry','pool_ids','cohort','cohort_receipt','data','targets','runtime'}
+    if diagnostic:required|={'historical_protocol','study_review'}
+    if set(artifacts)!=required:
         raise ValueError('All pinned preparation inputs required')
     paths=[]
     for reference in artifacts.values():
@@ -112,26 +161,31 @@ def preflight(manifest_reference, *, authorization_reference=None, _admission_st
     # data and target packets contain content: do not dereference them here.
     values={k:read_pinned(v) for k,v in artifacts.items() if k not in ('data','targets')}
     protocol=values['protocol']
-    if (protocol.get('schema')!='twowiki-semantic-quality-v3-prospective/v1/protocol'
+    rule='twowiki-semantic-quality-v3-nonprospective-diagnostic/v1' if diagnostic else 'twowiki-semantic-quality-v3-prospective/v1'
+    if (protocol.get('schema')!=rule+'/protocol'
             or protocol.get('status')!='frozen_for_independent_authorization'
             or protocol.get('scope')!='development' or protocol.get('stage')!='construction-only'
             or protocol.get('intensities')!=[1,3] or protocol.get('seed')!=42
             or type(protocol.get('max_backend_calls')) is not int or protocol['max_backend_calls']!=200
             or type(protocol.get('max_attempts_per_document')) is not int or protocol['max_attempts_per_document']!=2
             or type(protocol.get('max_tokens')) is not int or protocol['max_tokens']!=150
-            or protocol.get('selection_rule')!='twowiki-semantic-quality-v3-prospective/v1'):
+            or protocol.get('selection_rule')!=rule):
         raise ValueError('Frozen protocol configuration mismatch')
     # Bind the protocol to the other exact artifact bytes, avoiding circular pins.
     if protocol.get('input_sha256')!={k:v['sha256'] for k,v in artifacts.items() if k!='protocol'}:
         raise ValueError('Protocol/input fingerprints differ')
     validate_profile(values['profile'],scope='development')
-    cohort=select_cohort(values['pool_ids'],values['registry'],dataset_sha256=artifacts['data']['sha256'])
-    if cohort!=values['cohort']:raise ValueError('Cohort differs from pre-content deterministic selection')
-    receipt=values['cohort_receipt']
-    if receipt.get('schema')!='semantic-v3-pre-content-freeze-receipt/v1' or receipt.get('selector_source_sha256')!=file_sha(ROOT/'src/experiments/semantic_v3_preparation.py'):
-        raise ValueError('Cohort receipt selector provenance mismatch')
-    if receipt.get('input_sha256')!={k:artifacts[k]['sha256'] for k in ('cohort','registry','pool_ids','data')}:
-        raise ValueError('Pre-content cohort-freeze receipt missing or mismatched')
+    if diagnostic:
+        from src.experiments.semantic_v3_diagnostic import admit_diagnostic
+        cohort,receipt=admit_diagnostic(manifest,values)
+    else:
+        cohort=select_cohort(values['pool_ids'],values['registry'],dataset_sha256=artifacts['data']['sha256'])
+        if cohort!=values['cohort']:raise ValueError('Cohort differs from pre-content deterministic selection')
+        receipt=values['cohort_receipt']
+        if receipt.get('schema')!='semantic-v3-pre-content-freeze-receipt/v1' or receipt.get('selector_source_sha256')!=file_sha(ROOT/'src/experiments/semantic_v3_preparation.py'):
+            raise ValueError('Cohort receipt selector provenance mismatch')
+        if receipt.get('input_sha256')!={k:artifacts[k]['sha256'] for k in ('cohort','registry','pool_ids','data')}:
+            raise ValueError('Pre-content cohort-freeze receipt missing or mismatched')
     frozen_at=datetime.fromisoformat(receipt['frozen_at'].replace('Z','+00:00'))
     if frozen_at.utcoffset() is None:raise ValueError('Freeze receipt needs timezone')
     runtime=values['runtime']
@@ -160,7 +214,9 @@ def preflight(manifest_reference, *, authorization_reference=None, _admission_st
     output=Path(manifest['output_namespace'])
     if not output.is_absolute() or output.resolve()!=output or output==ROOT or ROOT in output.parents:
         raise ValueError('Use a canonical absolute fresh namespace outside source')
-    auth=_authorization(authorization_reference,manifest_reference['sha256'],artifacts['protocol']['sha256'],output)
+    if authorization_reference is not None and Path(authorization_reference['path']).resolve() in paths:
+        raise PermissionError('Authorization must be a separate metadata artifact')
+    auth=_authorization(authorization_reference,manifest_reference['sha256'],artifacts['protocol']['sha256'],output,study_kind=manifest.get('study_kind'))
     if auth.get('resource_policy_sha256')!=digest(runtime.get('resource_policy')):
         raise PermissionError('Authorization must bind the complete resource policy')
     if output.exists():
@@ -175,40 +231,12 @@ def preflight(manifest_reference, *, authorization_reference=None, _admission_st
     count=journal_admission(output)
     monitor=ResourceMonitor(runtime.get('resource_policy'),output,started_at=admission_started)
     monitor.check(count)
-    _authorization(authorization_reference,manifest_reference['sha256'],artifacts['protocol']['sha256'],output)
+    _authorization(authorization_reference,manifest_reference['sha256'],artifacts['protocol']['sha256'],output,study_kind=manifest.get('study_kind'))
     if _admission_state is not None:_admission_state['monitor']=monitor
     # Only now may existing content be hash-checked and decoded.
     values.update(_content_values(artifacts))
-    data=values['data'];ids=cohort['query_ids']
-    if data.get('scope')!='development' or data.get('dataset')!=manifest['dataset']:
-        raise ValueError('Pinned train-development data required; held-out data refused')
-    if len({q['query_id'] for q in data['queries']})!=len(data['queries']):raise ValueError('Duplicate dataset query IDs')
-    by_id={q['query_id']:q for q in data['queries']}
-    if not set(values['pool_ids'])<=by_id.keys():raise ValueError('Metadata pool IDs absent from pinned dataset')
-    if not set(ids)<=by_id.keys():raise ValueError('Missing selected query; no replacements')
-    targets=values['targets']
-    if [t['query_id'] for t in targets]!=ids:raise ValueError('Target ledger must retain exact cohort order')
-    pins={d['doc_id']:hashlib.sha256(d['text'].encode()).hexdigest() for d in data['corpus']}
-    # These document hashes inherit trust from the independently pinned entire data file.
-    selections={}
-    for entry in targets:
-        q=by_id[entry['query_id']]
-        if entry.get('query_sha256')!=digest(q):raise ValueError('Target review query binding mismatch')
-        if entry.get('cohort_receipt_sha256')!=artifacts['cohort_receipt']['sha256']:
-            raise ValueError('Target ledger lacks frozen-cohort receipt binding')
-        if entry.get('review_state') not in ('reviewed','abstain'):raise ValueError('Pending target review cannot execute')
-        for c in entry['candidates']:
-            review=(c.get('packet') or {}).get('review',{})
-            if not isinstance(review.get('uncertainty'),str) or not review['uncertainty'].strip():
-                raise ValueError('Explicit independent-review uncertainty required')
-            reviewed_at=datetime.fromisoformat(review['reviewed_at'].replace('Z','+00:00'))
-            if reviewed_at.utcoffset() is None or reviewed_at<frozen_at:
-                raise ValueError('Candidate review predates frozen cohort')
-        target,selection=select_target(q,entry['candidates'],data['corpus'],pins,scope='development')
-        if target is None and not entry.get('abstention_reason'):raise ValueError('Explicit target abstention reason required')
-        if target is not None and entry['review_state']!='reviewed':raise ValueError('Abstention cannot conceal a selected target')
-        selections[q['query_id']]={'target':target,'selection':selection}
-    _authorization(authorization_reference,manifest_reference['sha256'],artifacts['protocol']['sha256'],output)
+    selections,pins=validate_content(manifest,values,cohort,receipt)
+    _authorization(authorization_reference,manifest_reference['sha256'],artifacts['protocol']['sha256'],output,study_kind=manifest.get('study_kind'))
     monitor.check(count)  # Content decoding/validation may itself consume resources.
     return manifest,values,selections,pins
 
@@ -229,7 +257,7 @@ def run(manifest_reference, *, authorization_reference=None, backend_factory=Non
     monitor=state['monitor']
     output=Path(manifest['output_namespace'])
     if not output.is_absolute() or output.resolve()!=output:raise ValueError('Use a canonical absolute fresh namespace')
-    auth=_authorization(authorization_reference,manifest_reference['sha256'],manifest['artifacts']['protocol']['sha256'],output)
+    auth=_authorization(authorization_reference,manifest_reference['sha256'],manifest['artifacts']['protocol']['sha256'],output,study_kind=manifest.get('study_kind'))
     context=_context(manifest_reference,authorization_reference,manifest,values['runtime'])
     if not output.exists():
         output.mkdir(parents=True,exist_ok=False)
@@ -265,7 +293,7 @@ def run(manifest_reference, *, authorization_reference=None, backend_factory=Non
                 validate_profile(values['profile'],scope='development')
                 observation=monitor.check(count,new_call=True)
                 _authorization(authorization_reference,manifest_reference['sha256'],
-                    manifest['artifacts']['protocol']['sha256'],output)
+                    manifest['artifacts']['protocol']['sha256'],output,study_kind=manifest.get('study_kind'))
             except (ValueError,KeyError,TypeError,OSError) as exc:
                 raise PermissionError('Authorization/source revalidation failed') from exc
             return {'authorization_sha256':authorization_reference['sha256'],
