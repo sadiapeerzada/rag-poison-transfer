@@ -11,12 +11,44 @@ from src.attacks.semantic_quality_targets_v3 import digest
 from src.experiments.semantic_v3_preparation import (CATEGORIES, select_cohort, verify_registry, build_registry,
                                                     file_sha, blinded_forms, target_review_form)
 from src.experiments.semantic_v3_checkpoint import (atomic_record, read_record, CallJournal, ResumeBlocked, writer_lock)
-from src.experiments.semantic_v3_pilot import implementation_pins, preflight, run
+from src.experiments.semantic_v3_pilot import DATASET, implementation_pins, preflight as driver_preflight, run
 from src.pipelines.generator import GenerationResult
 
 
 TEXT="Edward J. Sachar's father died on 10 September 1959."  # Existing V3 scripted regression text.
 PROVENANCE={'fixture':True,'decoding':{'sampler':'explicit greedy','temperature':0.0}}
+
+
+@pytest.fixture(autouse=True)
+def healthy_resources(monkeypatch):
+    from src.experiments import semantic_v3_resources as resources
+    sample={'free_disk_bytes':10**12,'output_bytes':0,'available_memory_bytes':10**12,
+            'process_rss_bytes':10**6,'memory_pressure':'normal'}
+    monkeypatch.setattr(resources,'system_sample',lambda root:dict(sample))
+    return sample
+
+
+def resource_policy():
+    return {'min_free_disk_bytes':1024,'max_output_bytes':10**9,
+            'min_available_memory_bytes':1024,'max_process_rss_bytes':10**9,
+            'max_memory_pressure':'normal','max_elapsed_seconds':3600,
+            'max_backend_calls':200,'deadline':'2099-01-01T00:00:00Z'}
+
+
+def synthetic_authorization(ref):
+    manifest=json.loads(Path(ref['path']).read_text())
+    runtime=json.loads(Path(manifest['artifacts']['runtime']['path']).read_text())
+    return raw(Path(ref['path']).parent/'SYNTHETIC-test-authorization.json', {
+        'schema':'semantic-v3-model-call-authorization/v1','allow_model_calls':True,
+        'manifest_sha256':ref['sha256'],'protocol_sha256':manifest['artifacts']['protocol']['sha256'],
+        'output_namespace':manifest['output_namespace'],'scope':'development','purpose':'construction-only',
+        'max_backend_calls':200,'authorizer_type':'human','authorizer_id':'SYNTHETIC TEST AUTHORIZER',
+        'resource_policy_sha256':digest(runtime.get('resource_policy')),
+        'issued_at':'2020-01-01T00:00:00Z','expires_at':'2099-01-01T00:00:00Z'})
+
+
+def preflight(ref):
+    return driver_preflight(ref,authorization_reference=synthetic_authorization(ref))
 
 
 def certified_registry():
@@ -42,7 +74,7 @@ def inputs(tmp_path, *, abstain=False):
     q,t,packet,corpus,_=packet_fixture()
     queries=[]
     for index in range(40):queries.append({**q,'query_id':f'offline-fixture-{index:02d}'})
-    data={'scope':'development','dataset':{'name':'2Wiki-offline-fixture','split':'train'},'queries':queries,'corpus':corpus}
+    data={'scope':'development','dataset':dict(DATASET),'queries':queries,'corpus':corpus}
     artifacts={'data':raw(tmp_path/'data.json',data),'registry':raw(tmp_path/'registry.json',certified_registry()),
                'profile':raw(tmp_path/'profile.json',descriptor(scope='development'))}
     pool=[q['query_id'] for q in queries]
@@ -62,13 +94,13 @@ def inputs(tmp_path, *, abstain=False):
               'abstention_reason':'synthetic missing evidence' if abstain else None})
     artifacts['targets']=raw(tmp_path/'targets.json',targets)
     artifacts['runtime']=raw(tmp_path/'runtime.json',{'execution_kind':'offline_stub','model_provenance':PROVENANCE,
-                   'environment':{'python':platform.python_version(),'packages':{}}})
+                   'environment':{'python':platform.python_version(),'packages':{}},'resource_policy':resource_policy()})
     protocol={'schema':'twowiki-semantic-quality-v3-prospective/v1/protocol','status':'frozen_for_independent_authorization','scope':'development','stage':'construction-only','intensities':[1,3],'seed':42,
               'max_backend_calls':200,'max_attempts_per_document':2,'max_tokens':150,
               'selection_rule':'twowiki-semantic-quality-v3-prospective/v1',
               'input_sha256':{k:v['sha256'] for k,v in artifacts.items()}}
     artifacts['protocol']=raw(tmp_path/'protocol.json',protocol)
-    manifest={'schema':'semantic-v3-pilot-manifest/v1','base_implementation_commit':'fba2583ae4569d6e5114052ac1854ad545dc3c16','scope':'development','stage':'construction-only','status':'frozen_ready_for_authorization',
+    manifest={'dataset':dict(DATASET),'schema':'semantic-v3-pilot-manifest/v1','base_implementation_commit':'fba2583ae4569d6e5114052ac1854ad545dc3c16','scope':'development','stage':'construction-only','status':'frozen_ready_for_authorization',
               'driver_implementation_sha256':implementation_pins(),'artifacts':artifacts,
               'output_namespace':str((tmp_path/'fresh-construction').resolve())}
     ref=raw(tmp_path/'manifest.json',manifest)
@@ -76,7 +108,8 @@ def inputs(tmp_path, *, abstain=False):
          'manifest_sha256':ref['sha256'],'protocol_sha256':artifacts['protocol']['sha256'],
          'output_namespace':manifest['output_namespace'],'scope':'development','purpose':'construction-only',
          'max_backend_calls':200,'authorizer_type':'human','authorizer_id':'SYNTHETIC TEST AUTHORIZER',
-         'issued_at':'2020-01-01T00:00:00Z','expires_at':'2099-01-01T00:00:00Z'}
+         'issued_at':'2020-01-01T00:00:00Z','expires_at':'2099-01-01T00:00:00Z',
+         'resource_policy_sha256':digest(resource_policy())}
     authref=raw(tmp_path/'SYNTHETIC-test-authorization.json',authorization)
     return ref,authref,Path(manifest['output_namespace'])
 
@@ -281,10 +314,10 @@ def test_review_export_includes_rejections_and_blinds_private_fields(tmp_path):
     from src.experiments.semantic_v3_review import construction_summary, export_semantic_review
     ref,auth,output=inputs(tmp_path);stub=Stub(['born on Avignon',TEXT]+[TEXT]*100)
     run(ref,authorization_reference=auth,backend_factory=lambda:stub)
-    summary=construction_summary(output,ref)
+    summary=construction_summary(output,ref,authorization_reference=auth)
     assert summary['groups']['3']['valid_constructions']==25 and summary['backend_calls']==101
     assert summary['retrieval_or_QA_outcomes']=='not_evaluated'
-    count=export_semantic_review(output,ref,tmp_path/'public',tmp_path/'private')
+    count=export_semantic_review(output,ref,tmp_path/'public',tmp_path/'private',authorization_reference=auth)
     assert count==101  # Every failed and passed attempt, not only accepted text.
     public=json.loads((tmp_path/'public/reviewer_A.blank.json').read_text())
     assert any(r['text']=='born on Avignon' for r in public)
