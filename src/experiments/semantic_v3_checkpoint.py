@@ -68,11 +68,12 @@ class CallJournal:
     Replay validates request bytes, token cap, seed and pinned model provenance.
     Errors count against the budget and remain infrastructure errors forever.
     """
-    def __init__(self, root, context, backend_factory, *, limit=200, interrupt=None):
+    def __init__(self, root, context, backend_factory, *, limit=200, interrupt=None, before_call=None, after_call=None):
         if type(limit) is not int or not 1<=limit<=200:raise ValueError('Invalid backend call limit')
         self.root=Path(root);self.context=context;self.factory=backend_factory
         self.limit=limit;self.backend=None;self.seed=None;self.cell=None;self.ordinal=0;self.interrupt=interrupt
         self.model_provenance=context['model_provenance']
+        self.before_call=before_call;self.after_call=after_call
 
     def start_cell(self, cell):self.cell=cell;self.ordinal=0
     def set_seed(self, seed):self.seed=seed
@@ -84,14 +85,21 @@ class CallJournal:
         folder=self.root/'calls';intent=folder/(key+'.intent.json');response=folder/(key+'.response.json');error=folder/(key+'.error.json')
         request={'prompt':prompt,'max_tokens':max_tokens,'seed':self.seed,'context':self.context}
         if intent.exists():
-            if read_record(intent)!=request:raise ResumeBlocked('Replay request differs from durable intent')
+            saved_request=read_record(intent)
+            if {k:v for k,v in saved_request.items() if k!='admission'}!=request:
+                raise ResumeBlocked('Replay request differs from durable intent')
+            request=saved_request
             if error.exists():raise ResumeBlocked('Recorded infrastructure error requires independent resolution; no retry')
             if not response.exists():raise ResumeBlocked('Unresolved backend-call intent; no regeneration')
             cached=read_record(response)
             if cached['request_sha256']!=digest(request):raise ValueError('Cached response binding mismatch')
             return GenerationResult(**cached['result'])
         if response.exists() or error.exists():raise ResumeBlocked('Orphaned response/error')
-        if len(list(folder.glob('*.intent.json')))>=self.limit:raise ResumeBlocked('Backend-call budget exhausted')
+        count=len(list(folder.glob('*.intent.json')))
+        if count>=self.limit:raise ResumeBlocked('Backend-call budget exhausted')
+        # No reservation, factory creation or backend seeding before admission.
+        if self.before_call is not None:
+            request['admission']=self.before_call(count)
         atomic_record(intent,request)
         if self.interrupt:self.interrupt('after_intent',key)
         result=None
@@ -99,20 +107,29 @@ class CallJournal:
             if self.backend is None:
                 self.backend=self.factory()
                 if self.backend.model_provenance!=self.model_provenance:raise ValueError('Backend provenance mismatch')
+            prepare=getattr(self.backend,'prepare',None)
+            if prepare is not None:prepare()
             self.backend.set_runtime_seed(self.seed)
+            # Loading can take time/change pressure. Recheck immediately before
+            # generation as well as before reservation. A late denial is saved
+            # as an explicit error and cannot silently replay or reclaim a slot.
+            call_admission=self.before_call(count) if self.before_call is not None else None
             result=self.backend.generate(prompt,max_tokens=max_tokens)
             if not isinstance(result,GenerationResult) or not isinstance(result.text,str) or not isinstance(result.backend_prompt,str):
                 raise ValueError('Complete typed raw response/backend prompt required')
-            atomic_record(response,{'request_sha256':digest(request),'result':asdict(result)})
+            atomic_record(response,{'request_sha256':digest(request),'result':asdict(result),
+                                    'call_admission':call_admission})
         except Exception as exc:
             atomic_record(error,{'request_sha256':digest(request),'error_type':type(exc).__name__,'message':str(exc),'kind':'infrastructure_error',
                 'available_result':asdict(result) if isinstance(result,GenerationResult) else None})
             raise
         if self.interrupt:self.interrupt('after_response',key)
+        if self.after_call is not None:self.after_call(key,count+1)
         return result
 
 
 def verify_journal(root):
+    journal_admission(root)
     folder=Path(root)/'calls'
     for intent in folder.glob('*.intent.json'):
         request=read_record(intent);key=intent.name.removesuffix('.intent.json')
@@ -125,3 +142,25 @@ def verify_journal(root):
         if not (folder/(response.name.removesuffix('.response.json')+'.intent.json')).exists():
             raise ResumeBlocked('Orphaned journal response')
     return len(list(folder.glob('*.intent.json')))
+
+
+def journal_admission(root):
+    """Filename-only recovery guard, safe before query/corpus admission."""
+    root=Path(root);folder=root/'calls'
+    if root.is_symlink():raise ResumeBlocked('Symlink namespace forbidden')
+    for path in root.rglob('*'):
+        if path.is_symlink():raise ResumeBlocked('Symlink checkpoint forbidden')
+        if path.name.startswith('.pending-'):
+            raise ResumeBlocked('Unpublished atomic record; manual review required')
+    intents=list(folder.glob('*.intent.json'))
+    for intent in intents:
+        key=intent.name.removesuffix('.intent.json')
+        if (folder/(key+'.error.json')).exists() or not (folder/(key+'.response.json')).exists():
+            raise ResumeBlocked('Unresolved or failed call; manual review required')
+    for path in folder.glob('*.error.json'):
+        raise ResumeBlocked('Infrastructure error journal requires independent resolution')
+    for path in folder.glob('*.response.json'):
+        if not (folder/(path.name.removesuffix('.response.json')+'.intent.json')).exists():
+            raise ResumeBlocked('Orphaned journal response')
+    if len(intents)>200:raise ResumeBlocked('Persisted call budget exceeded')
+    return len(intents)

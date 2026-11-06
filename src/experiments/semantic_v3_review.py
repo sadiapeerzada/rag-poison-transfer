@@ -6,8 +6,8 @@ from src.experiments.semantic_v3_checkpoint import read_record, publish_json, ve
 from src.experiments.semantic_v3_pilot import preflight
 
 
-def sealed_records(root, manifest_reference):
-    _,values,_,_=preflight(manifest_reference);root=Path(root)
+def sealed_records(root, manifest_reference, *, authorization_reference=None):
+    _,values,_,_=preflight(manifest_reference,authorization_reference=authorization_reference);root=Path(root)
     seal=read_record(root/'complete.seal.json')
     if seal['context']['manifest_sha256']!=manifest_reference['sha256']:raise ValueError('Review seal manifest mismatch')
     expected={f'records/i{i}-{digest(q)}.json' for i in (1,3) for q in values['cohort']['query_ids']}
@@ -15,6 +15,8 @@ def sealed_records(root, manifest_reference):
     if seal['backend_calls']!=verify_journal(root):raise ValueError('Sealed call count mismatch')
     if seal['journal_sha256']!={str(p.relative_to(root)):file_sha(p) for p in (root/'calls').glob('*.json')}:
         raise ValueError('Sealed call journal mutated')
+    if seal.get('resource_sha256')!={str(p.relative_to(root)):file_sha(p) for p in (root/'resources').glob('*.json')} or seal.get('resource_clock_sha256')!=file_sha(root/'resource.clock.json'):
+        raise ValueError('Sealed resource telemetry mutated')
     records=[]
     for name in sorted(expected):
         if file_sha(root/name)!=seal['record_sha256'][name]:raise ValueError('Sealed record mutated')
@@ -22,8 +24,8 @@ def sealed_records(root, manifest_reference):
     return records,values,seal
 
 
-def construction_summary(root, manifest_reference):
-    records,_,seal=sealed_records(root,manifest_reference)
+def construction_summary(root, manifest_reference, *, authorization_reference=None):
+    records,_,seal=sealed_records(root,manifest_reference,authorization_reference=authorization_reference)
     groups={}
     for intensity in (1,3):
         rows=[r for r in records if r['intensity']==intensity]
@@ -38,8 +40,8 @@ def construction_summary(root, manifest_reference):
             'retrieval_or_QA_outcomes':'not_evaluated'}
 
 
-def export_semantic_review(root, manifest_reference, public_directory, private_directory):
-    records,values,seal=sealed_records(root,manifest_reference)
+def export_semantic_review(root, manifest_reference, public_directory, private_directory, *, authorization_reference=None):
+    records,values,seal=sealed_records(root,manifest_reference,authorization_reference=authorization_reference)
     public=Path(public_directory).resolve();private=Path(private_directory).resolve()
     if public==private or public in private.parents or private in public.parents:
         raise ValueError('Private mapping and public review must be separate directories')
