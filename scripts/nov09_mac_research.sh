@@ -102,6 +102,22 @@ PYTHON
     say 'Record output plan path and printed plan SHA-256; do not commit private prompts.'
     ;;
 
+  model-compare)
+    # Read-only: exactly match frozen Qwen observations to saved Phi prompts.
+    : "${MODEL_PLAN:?MODEL_PLAN missing}"
+    : "${MODEL_PLAN_SHA:?MODEL_PLAN_SHA missing}"
+    file "$MODEL_PLAN"
+    file "$TWOWIKI_EVAL_DIR/evaluation.complete.json"
+    phi_results="${MODEL_RUN_DIR:-$OUT/2wiki-second-model-results_PRIVATE}"
+    file "$phi_results/run_manifest.json"
+    mkdir -p "$OUT"
+    "$PY" scripts/compare_qwen_phi_replay_offline.py \
+      --plan "$MODEL_PLAN" --plan-sha256 "$MODEL_PLAN_SHA" \
+      --evaluation-dir "$TWOWIKI_EVAL_DIR" \
+      --phi-results "$phi_results" \
+      --report-out "$OUT/2wiki-matched-qwen-phi-$(date -u +%Y%m%dT%H%M%SZ)_PRIVATE.json"
+    ;;
+
   model-pin)
     : "${MODEL_SNAPSHOT:?Set MODEL_SNAPSHOT to absolute path to a locally cached non-Qwen MLX model snapshot}"
     "$PY" scripts/second_model_prompt_replay.py pin-model --model-snapshot "$MODEL_SNAPSHOT"
@@ -130,7 +146,7 @@ PYTHON
     ;;
 
   *)
-    echo 'Usage: bash scripts/nov09_mac_research.sh [status|bootstrap|transfer-audit|semantic-status|rcd-ablation|model-prepare|model-pin|model-run|model-aggregate]'
+    echo 'Usage: bash scripts/nov09_mac_research.sh [status|bootstrap|transfer-audit|semantic-status|rcd-ablation|model-prepare|model-compare|model-pin|model-run|model-aggregate]'
     echo 'This script never invents human judgments. No human factuality review is performed.'
     echo 'No full no-rewrite/depth ablations are run; they require separately authorized retrieval + model evaluation.'
     ;;
