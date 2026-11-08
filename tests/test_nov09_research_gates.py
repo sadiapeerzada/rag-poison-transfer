@@ -132,3 +132,34 @@ def test_mac_runner_has_valid_bash_syntax():
     from pathlib import Path
     repo = Path(__file__).resolve().parents[1]
     subprocess.run(["bash", "-n", str(repo / "scripts/nov09_mac_research.sh")], check=True)
+
+def test_research_scripts_work_from_outside_repo_without_pythonpath(tmp_path):
+    """Regression for VS Code's direct-script ModuleNotFoundError: src."""
+    import os
+    import subprocess
+    import sys
+    from pathlib import Path
+
+    repo = Path(__file__).resolve().parents[1]
+    env = dict(os.environ)
+    env.pop("PYTHONPATH", None)
+    for filename in ("audit_hotpotqa_transfer_raw_offline.py", "second_model_prompt_replay.py"):
+        done = subprocess.run(
+            [sys.executable, str(repo / "scripts" / filename), "--help"],
+            cwd=tmp_path,
+            env=env,
+            capture_output=True,
+            text=True,
+        )
+        assert done.returncode == 0, (filename, done.stderr)
+        assert "usage:" in done.stdout.lower()
+
+
+def test_mac_runner_accepts_configured_restore_evaluation_path():
+    """Model-prepare must not hard-code a possibly absent 2Wiki directory."""
+    from pathlib import Path
+    runner = (Path(__file__).resolve().parents[1] / "scripts/nov09_mac_research.sh").read_text()
+    assert 'TWOWIKI_EVAL_DIR="${TWOWIKI_EVAL_DIR:-$TWOWIKI/evaluation}"' in runner
+    assert 'file "$TWOWIKI_EVAL_DIR/evaluation.complete.json"' in runner
+    assert '--evaluation-dir "$TWOWIKI_EVAL_DIR"' in runner
+    assert 'export PYTHONPATH="$REPO${PYTHONPATH:+:$PYTHONPATH}"' in runner
