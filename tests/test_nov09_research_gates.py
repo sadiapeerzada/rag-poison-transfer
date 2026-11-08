@@ -125,3 +125,10 @@ def test_second_model_private_plan_and_mocked_replay(tmp_path,monkeypatch):
     assert all(g["gold_em_rate"]==1. for g in summary["groups"].values())
     with pytest.raises(ValueError,match="Plan pin mismatch"):
         replay.aggregate(plan,"0"*64,out,tmp_path/"bad.json")
+
+
+def test_mac_runner_has_valid_bash_syntax():
+    import subprocess
+    from pathlib import Path
+    repo = Path(__file__).resolve().parents[1]
+    subprocess.run(["bash", "-n", str(repo / "scripts/nov09_mac_research.sh")], check=True)
