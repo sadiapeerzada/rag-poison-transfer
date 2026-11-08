@@ -18,7 +18,7 @@ foundation doc (shared separately) for the full 12-week roadmap and plan.
 
 ## 2Wiki 300-query replication milestone — 8 November 2026
 
-**Current stage: all 288/288 paired Dense/RCD evaluation batches completed locally; independent evaluation-artifact audit and aggregate scientific results are pending.** See the [8 November completion checkpoint](reports/2wiki_300_evaluation_completion_2026-11-08.md).
+**Current stage: 288/288 Dense/RCD query-arm evaluation batches completed; local 22,446-file audit passed; frozen aggregation validated.** See the [scientific results and limitations](reports/2wiki_300_dense_rcd_scientific_results_2026-11-08.md) and [earlier execution-completion checkpoint](reports/2wiki_300_evaluation_completion_2026-11-08.md).
 This is the historically risk-disclosed 300-query 2Wiki replication, **not** an
 unexposed prospective test. The historical exposure and automatic semantic
 validation limitations remain; they are not resolved by successful file checks.
@@ -52,9 +52,11 @@ validation limitations remain; they are not resolved by successful file checks.
 - **Evaluation execution completed (local supervisor log):** 288/288 query-arm
   batches and 12/12 paired cell summaries. The native completion manifest was
   reported present with SHA-256 `db8c09aa8712a16a255298dc6afde83fe1bd3079b846f8cbee2244b946842519`.
-  Independent raw-artifact verification, recoverable evaluation backup and
-  failure-aware statistical aggregation are **still pending**. No final ASR/PRR,
-  RCD effectiveness result or cross-pipeline transfer conclusion is claimed.
+  A subsequent independent read-only audit verified **22,446 evaluation files**
+  and all 12/12 row files against the sealed completion manifest. The frozen
+  aggregator returned `validated_aggregate_written`. An iCloud archive was
+  locally created/tested but **complete off-device restoration and full
+  construction recovery remain pending**.
 
 Frozen source commit: `b1466db04c4f8f0314c7e537d8e7ec390c8c3b29`.
 Frozen protocol SHA-256: `40ed57afe9b923362a8c725d66f58d32fc2b8796ffe57696a481c34a4b8bfef4`.
@@ -62,12 +64,33 @@ Construction seal SHA-256: `e8ab16b7820f42c6bf62fa69d68ba9d2a56bd4924ae11027f60c
 Evaluation completion SHA-256 (local log): `db8c09aa8712a16a255298dc6afde83fe1bd3079b846f8cbee2244b946842519`.
 The metadata-only construction/audit checkpoint is in
 [PR #117](https://github.com/sadiapeerzada/rag-poison-transfer/pull/117).
-The frozen checkout and historical text below are intentionally unchanged.
+The 2Wiki execution completion and hash-audit record is in
+[PR #118](https://github.com/sadiapeerzada/rag-poison-transfer/pull/118).
 
-**Next:** independently audit the completed evaluation and its journals; make a
-verified recoverable evaluation backup; aggregate failure-aware paired metrics;
-compare 2Wiki against HotpotQA; and discuss the still-pending source-crafted
-cross-pipeline transfer study and manuscript scope with the supervisor.
+**Initial scientific results (attempted-population targeted ASR):**
+
+| Attack | Dense | RCD | Dense − RCD, pp (nominal 95% query-cluster CI) |
+| --- | ---: | ---: | ---: |
+| Lexical, intensity 1 | 42.44% | 47.56% | −5.11 [−8.67, −1.78] |
+| Lexical, intensity 3 | 72.44% | 69.89% | +2.56 [−1.22, +6.22] |
+| Semantic, intensity 1 | 14.89% | 14.78% | +0.11 [−1.00, +1.22] |
+| Semantic, intensity 3 | 11.56% | 11.56% | 0.00 [−0.56, +0.67] |
+
+Each condition represents **900 attempted constructions but only 300 distinct
+query IDs**, clustered across three seeds. Valid semantic construction rates
+were only **18.56%** (intensity 1) and **12.11%** (intensity 3); failures are
+not defense successes. RCD's clean EM was lower on valid-construction subsets.
+Intervals are **nominal, unadjusted**; this is **not** a demonstration of
+uniform RCD robustness, independent semantic validity, or completed
+source-crafted cross-pipeline transfer. Consult the [full results report](reports/2wiki_300_dense_rcd_scientific_results_2026-11-08.md)
+before citing any percentage. The frozen checkout and historical text below
+are intentionally unchanged.
+
+**Next:** verify a **full** recoverable backup (including construction artifacts)
+from a separate destination; conduct predeclared paired error and semantic
+validity audits; compare with independently validated HotpotQA metrics; then
+seek the supervisor's decision on the still-pending source-crafted
+cross-pipeline transfer study versus narrower paper scope.
 
 ## What this repo demonstrates so far
 

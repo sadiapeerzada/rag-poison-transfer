@@ -1,5 +1,7 @@
 # 2Wiki 300-query paired Dense/RCD evaluation: execution-completion checkpoint
 
+> **Later checkpoint (8 November 2026):** The 22,446-file integrity audit passed and the frozen aggregator returned `validated_aggregate_written`. The statistical findings are published separately in the [2Wiki Dense/RCD scientific results report](2wiki_300_dense_rcd_scientific_results_2026-11-08.md). The remaining audit/aggregate tasks below document the **original execution handoff**, not their current status. Full off-device backup restoration, semantic validity, and source-crafted transfer are still pending.
+
 **Recorded:** 8 November 2026 (Asia/Kolkata).  
 **Evidence status:** Author-supplied local terminal/supervisor log; **post-run independent evaluation-artifact audit and scientific aggregation remain pending**.  
 **Experiment:** Historically risk-disclosed 2WikiMultiHopQA replication. Do not represent this cohort as independently certified untouched or prospectively unexposed.
