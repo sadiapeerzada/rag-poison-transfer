@@ -25,6 +25,28 @@ The last visible resource readings were approximately **34 GiB available disk** 
 
 This GitHub documentation checkpoint **does not independently hash or inspect the local evaluation artifact tree**. It does not establish scientific completeness, correctness of generated answers, semantic falsity of poisoned statements, or backed-up recovery of evaluation outputs. Raw evaluation checkpoints have not been committed here.
 
+## Subsequent complete file-integrity audit — PASS (8 November 2026)
+
+After the separate file SHA-256 confirmation, the operator ran the read-only
+manifest traversal and comparison using the completed local evaluation directory.
+The supplied Terminal output reported:
+
+```text
+PASS: Evaluation manifest and all listed files verified
+Files checked: 22446
+Paired cell row files checked: 12
+Completion SHA-256: db8c09aa8712a16a255298dc6afde83fe1bd3079b846f8cbee2244b946842519
+```
+
+The check matched every path and SHA-256 in `evaluation.complete.json`,
+rejected missing/symlinked listed files, checked that no extra regular files
+were present, and independently checked the 12 declared cell `rows.json`
+digests. This evidence was supplied as the local operator's Terminal output;
+it is **not** a repository-hosted copy of the full raw artifact tree, nor a
+substitute for the frozen runner's semantic/provenance validation during
+`aggregate`. As of this checkpoint, **evaluation backup, final aggregation,
+statistical interpretation and full transfer experiment remain pending**.
+
 ## Construction coverage and interpretation
 
 The previously independently checked frozen construction had **3,600 attempted records**, comprising **1,524 valid lexical constructions** and **276 valid semantic constructions** (1,800 mechanically valid overall), **552 target-construction failures**, and **1,248 semantic-construction failures**. These are *construction* outcomes, not attack success or defense efficacy. Failed construction must remain in attempted-population denominators as specified by the protocol, and must not be labeled a successful defense. Mechanically accepted semantic constructions do not imply independent factual verification.
