@@ -21,9 +21,77 @@
 
 The local supervisor emitted `evaluation_completion_sha256` with the value above, followed by a `shasum -a 256` line for `evaluation.complete.json` reporting the same digest. The supervisor's final text says **"EVALUATION COMPLETED. Native completion manifest present."** and **"Independently pin and audit the completion SHA-256 BEFORE running aggregate."**
 
+**Subsequent operator verification (same Mac, separate shell command):** after the supervisor finished, the operator ran `shasum -a 256 "$RUN/execution/evaluation/evaluation.complete.json"` and obtained exactly `db8c09aa8712a16a255298dc6afde83fe1bd3079b846f8cbee2244b946842519`. A subsequent `bash ~/Downloads/2wiki_evaluate_supervisor.sh --status` again showed 288/288, 12/12 and the same manifest digest; unlike the previous supervisor output, this status did not print a supervisor-lock warning. This confirms a separate file-digest check but **does not verify every file enumerated by the manifest**, establish whether any specific process is active, or substitute for the independent frozen-runner audit.
+
 The last visible resource readings were approximately **34 GiB available disk** (supervisor minimum 30 GiB), with bounded resumptions returning their expected `Batch budget reached` status. The terminal also noted that a supervisor lock still existed; a lock file alone is not evidence of a running process.
 
 This GitHub documentation checkpoint **does not independently hash or inspect the local evaluation artifact tree**. It does not establish scientific completeness, correctness of generated answers, semantic falsity of poisoned statements, or backed-up recovery of evaluation outputs. Raw evaluation checkpoints have not been committed here.
+
+## Subsequent complete file-integrity audit — PASS (8 November 2026)
+
+After the separate file SHA-256 confirmation, the operator ran the read-only
+manifest traversal and comparison using the completed local evaluation directory.
+The supplied Terminal output reported:
+
+```text
+PASS: Evaluation manifest and all listed files verified
+Files checked: 22446
+Paired cell row files checked: 12
+Completion SHA-256: db8c09aa8712a16a255298dc6afde83fe1bd3079b846f8cbee2244b946842519
+```
+
+The check matched every path and SHA-256 in `evaluation.complete.json`,
+rejected missing/symlinked listed files, checked that no extra regular files
+were present, and independently checked the 12 declared cell `rows.json`
+digests. This evidence was supplied as the local operator's Terminal output;
+it is **not** a repository-hosted copy of the full raw artifact tree, nor a
+substitute for the frozen runner's semantic/provenance validation during
+`aggregate`. As of this checkpoint, **evaluation backup, final aggregation,
+statistical interpretation and full transfer experiment remain pending**.
+
+## Validated aggregation checkpoint — PASS (8 November 2026)
+
+The operator ran the pinned `aggregate` stage from the frozen local checkout after
+re-verifying all three hashes. The supplied terminal output reported:
+
+```text
+protocol.json: OK
+construction.seal.json: OK
+evaluation.complete.json: OK
+PASS: Frozen aggregate destination verified
+{"scope":"heldout","status":"validated_aggregate_written"}
+```
+
+This means the frozen aggregator wrote `execution/aggregate.json` successfully.
+The stage rechecks construction-seal and evaluation-manifest file integrity,
+provenance and paired row schemas, journals/measurement linking, stored summary
+consistency, and builds paired query-cluster uncertainty estimates. **The aggregate
+numbers have not been inspected or independently interpreted here**; no
+effectiveness, attack success or statistical conclusion is claimed.
+
+### Local evaluation archive created (off-device restore pending)
+
+The operator created `2wiki-evaluation-20261108.tar.gz` under iCloud Drive's
+`rag-research-backups/` folder, successfully listed it with `tar -tzf`,
+and recorded its local SHA-256:
+
+```text
+197435fc1345d0adfbd3bfb9ef409d8700b79e064e3b077789de3117462098d4
+```
+
+**Backup limitations:** the archive contains `protocol.json`, the
+`execution/construction/construction.seal.json` file, and the complete
+`execution/evaluation` tree. It does **not** include the remaining frozen
+construction data and is not a standalone full-run backup. iCloud sync
+completion and a separate downloaded-copy hash/restoration have not yet been
+verified. A full experiment-recovery copy should additionally preserve the
+construction tree and relevant local input/model provenance without publishing
+large/private assets to GitHub.
+
+**Next:** independently inspect `aggregate.json` and record denominator-aware
+ASR, PRR, clean utility, paired effects/CIs, and the construction-failure split;
+check for aggregate output consistency; close the backup restoration gap.
+Full source-crafted cross-pipeline transfer remains separate/pending.
 
 ## Construction coverage and interpretation
 
