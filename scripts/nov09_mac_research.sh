@@ -5,8 +5,13 @@ REPO="$HOME/Downloads/rag-poison-transfer"
 ROOT="$HOME/Documents/rag-research-results"
 TRANSFER="$ROOT/hotpotqa-transfer-20261028/transfer"
 TWOWIKI="$ROOT/twowiki-300-readiness-20261106/authorized-matrix"
+# When evidence was restored elsewhere, set TWOWIKI_EVAL_DIR to the directory
+# containing evaluation.complete.json; never assume the restore tree structure.
+TWOWIKI_EVAL_DIR="${TWOWIKI_EVAL_DIR:-$TWOWIKI/evaluation}"
 OUT="$ROOT/nov09-research-gates"
 PY="$REPO/.venv/bin/python"
+# Use a repository-local import path in Mac VS Code shell executions.
+export PYTHONPATH="$REPO${PYTHONPATH:+:$PYTHONPATH}"
 cmd="${1:-help}"
 
 say() { printf '\n[%s] %s\n' "$cmd" "$*"; }
@@ -89,10 +94,10 @@ PYTHON
     ;;
 
   model-prepare)
-    file "$TWOWIKI/evaluation/evaluation.complete.json"
+    file "$TWOWIKI_EVAL_DIR/evaluation.complete.json"
     mkdir -p "$OUT"
     "$PY" scripts/second_model_prompt_replay.py prepare \
-      --evaluation-dir "$TWOWIKI/evaluation" --n-per-stratum 10 \
+      --evaluation-dir "$TWOWIKI_EVAL_DIR" --n-per-stratum 10 \
       --output "$OUT/2wiki-second-model-plan-$(date -u +%Y%m%dT%H%M%SZ)_PRIVATE.json"
     say 'Record output plan path and printed plan SHA-256; do not commit private prompts.'
     ;;
