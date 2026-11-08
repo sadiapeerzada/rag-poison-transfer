@@ -47,6 +47,50 @@ substitute for the frozen runner's semantic/provenance validation during
 `aggregate`. As of this checkpoint, **evaluation backup, final aggregation,
 statistical interpretation and full transfer experiment remain pending**.
 
+## Validated aggregation checkpoint — PASS (8 November 2026)
+
+The operator ran the pinned `aggregate` stage from the frozen local checkout after
+re-verifying all three hashes. The supplied terminal output reported:
+
+```text
+protocol.json: OK
+construction.seal.json: OK
+evaluation.complete.json: OK
+PASS: Frozen aggregate destination verified
+{"scope":"heldout","status":"validated_aggregate_written"}
+```
+
+This means the frozen aggregator wrote `execution/aggregate.json` successfully.
+The stage rechecks construction-seal and evaluation-manifest file integrity,
+provenance and paired row schemas, journals/measurement linking, stored summary
+consistency, and builds paired query-cluster uncertainty estimates. **The aggregate
+numbers have not been inspected or independently interpreted here**; no
+effectiveness, attack success or statistical conclusion is claimed.
+
+### Local evaluation archive created (off-device restore pending)
+
+The operator created `2wiki-evaluation-20261108.tar.gz` under iCloud Drive's
+`rag-research-backups/` folder, successfully listed it with `tar -tzf`,
+and recorded its local SHA-256:
+
+```text
+197435fc1345d0adfbd3bfb9ef409d8700b79e064e3b077789de3117462098d4
+```
+
+**Backup limitations:** the archive contains `protocol.json`, the
+`execution/construction/construction.seal.json` file, and the complete
+`execution/evaluation` tree. It does **not** include the remaining frozen
+construction data and is not a standalone full-run backup. iCloud sync
+completion and a separate downloaded-copy hash/restoration have not yet been
+verified. A full experiment-recovery copy should additionally preserve the
+construction tree and relevant local input/model provenance without publishing
+large/private assets to GitHub.
+
+**Next:** independently inspect `aggregate.json` and record denominator-aware
+ASR, PRR, clean utility, paired effects/CIs, and the construction-failure split;
+check for aggregate output consistency; close the backup restoration gap.
+Full source-crafted cross-pipeline transfer remains separate/pending.
+
 ## Construction coverage and interpretation
 
 The previously independently checked frozen construction had **3,600 attempted records**, comprising **1,524 valid lexical constructions** and **276 valid semantic constructions** (1,800 mechanically valid overall), **552 target-construction failures**, and **1,248 semantic-construction failures**. These are *construction* outcomes, not attack success or defense efficacy. Failed construction must remain in attempted-population denominators as specified by the protocol, and must not be labeled a successful defense. Mechanically accepted semantic constructions do not imply independent factual verification.
