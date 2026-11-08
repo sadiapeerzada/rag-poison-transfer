@@ -14,6 +14,13 @@ import json
 import math
 import os
 from pathlib import Path
+import sys
+
+# Direct script execution sets sys.path[0] to scripts/, not the repo root.
+# Preserve imports without modifying the user's environment or dataset.
+REPOSITORY_ROOT = Path(__file__).resolve().parents[1]
+if str(REPOSITORY_ROOT) not in sys.path:
+    sys.path.insert(0, str(REPOSITORY_ROOT))
 
 from src.evaluation.metrics import exact_match
 from src.evaluation.qa_records import validate_qa
