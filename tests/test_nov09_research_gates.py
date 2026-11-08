@@ -163,3 +163,54 @@ def test_mac_runner_accepts_configured_restore_evaluation_path():
     assert 'file "$TWOWIKI_EVAL_DIR/evaluation.complete.json"' in runner
     assert '--evaluation-dir "$TWOWIKI_EVAL_DIR"' in runner
     assert 'export PYTHONPATH="$REPO${PYTHONPATH:+:$PYTHONPATH}"' in runner
+
+
+def test_transfer_public_aggregate_allows_reorder_but_never_changed_results():
+    """Permutations are safe; differences in a single rate/count must fail."""
+    from copy import deepcopy
+
+    repo = Path(__file__).resolve().parents[1]
+    release = json.loads(
+        (repo / "paper/results/hotpotqa_transfer_43f3f652460a/aggregate_public.json").read_text()
+    )
+    rows = release["per_cell"]
+    assert len(rows) == 240
+
+    equivalent = raw.compare_public_aggregate_cells(list(reversed(rows)), rows)
+    assert equivalent == {"cell_count": 240, "publication_reordered": True}
+    identical = raw.compare_public_aggregate_cells(rows, rows)
+    assert identical["publication_reordered"] is False
+
+    corrupted = deepcopy(rows)
+    corrupted[0]["target_successes"] += 1
+    with pytest.raises(ValueError, match="changed=1.*target_successes"):
+        raw.compare_public_aggregate_cells(corrupted, rows)
+
+    duplicate = deepcopy(rows)
+    duplicate[-1] = deepcopy(duplicate[0])
+    with pytest.raises(ValueError, match="duplicate aggregate condition"):
+        raw.compare_public_aggregate_cells(duplicate, rows)
+
+    missing_condition = deepcopy(rows)
+    missing_condition[0]["target"] = "unobserved_target_pipeline"
+    with pytest.raises(ValueError, match="missing=1 extra=1"):
+        raw.compare_public_aggregate_cells(missing_condition, rows)
+
+
+def test_transfer_public_intervals_and_accounting_fail_closed():
+    from copy import deepcopy
+
+    original = {
+        "atr_query_cluster_intervals": {"lexical.intensity1.bm25->rcd": {"atr": 0.4}},
+        "execution_accounting": {"actual_backend_calls": 12},
+    }
+    pub = deepcopy(original)
+    raw.compare_public_aggregate_section(original, pub, "atr_query_cluster_intervals")
+    raw.compare_public_aggregate_section(original, pub, "execution_accounting")
+    pub["atr_query_cluster_intervals"]["lexical.intensity1.bm25->rcd"]["atr"] = 0.8
+    with pytest.raises(ValueError, match="atr_query_cluster_intervals mismatch"):
+        raw.compare_public_aggregate_section(original, pub, "atr_query_cluster_intervals")
+    pub = deepcopy(original)
+    pub["execution_accounting"]["actual_backend_calls"] = 100
+    with pytest.raises(ValueError, match="execution_accounting mismatch"):
+        raw.compare_public_aggregate_section(original, pub, "execution_accounting")

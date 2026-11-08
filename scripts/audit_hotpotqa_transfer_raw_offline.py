@@ -92,6 +92,85 @@ def cell_id(c):
     return f"{c['family']}.intensity-{c['intensity']}.seed-{c['seed']}"
 
 
+
+CELL_KEY_FIELDS = ("family", "intensity", "seed", "source", "target")
+CELL_VALUE_FIELDS = (
+    "population", "valid", "source_successes", "target_successes",
+    "transferred", "atr", "target_end_to_end_asr", "target_conditional_asr",
+)
+CELL_ALL_FIELDS = set(CELL_KEY_FIELDS) | set(CELL_VALUE_FIELDS)
+
+
+def index_aggregate_cells(rows, label):
+    """Key aggregate records by public experiment dimensions, not list position.
+
+    Reject missing/extra fields and duplicates. Never expose question-level data.
+    """
+    if not isinstance(rows, list) or len(rows) != 240:
+        raise ValueError(f"{label}: expected 240 aggregate records")
+    result = {}
+    for n, row in enumerate(rows):
+        if not isinstance(row, dict) or set(row) != CELL_ALL_FIELDS:
+            raise ValueError(f"{label}: invalid aggregate schema at index {n}")
+        key = tuple(row[field] for field in CELL_KEY_FIELDS)
+        if key in result:
+            raise ValueError(f"{label}: duplicate aggregate condition {key}")
+        result[key] = row
+    return result
+
+
+def compare_public_aggregate_cells(original_rows, public_rows):
+    """Order-independent exact comparison, with aggregate-only failure details.
+
+    An explicitly reordered publication can be equivalent. A changed count,
+    denominator, rate, added/missing condition or field is NEVER accepted.
+    """
+    original = index_aggregate_cells(original_rows, "Original")
+    public = index_aggregate_cells(public_rows, "Public")
+    omitted = sorted(set(original) - set(public))
+    extra = sorted(set(public) - set(original))
+    different = [
+        (key, [field for field in CELL_VALUE_FIELDS
+               if original[key][field] != public[key][field]])
+        for key in sorted(set(original) & set(public))
+    ]
+    different = [(key, fields) for key, fields in different if fields]
+    if omitted or extra or different:
+        samples = {
+            "missing_conditions": omitted[:3],
+            "extra_conditions": extra[:3],
+            "changed_field_examples": [
+                {"condition": key, "fields": fields}
+                for key, fields in different[:6]
+            ],
+        }
+        raise ValueError(
+            "Original/public 240-cell aggregate mismatch: "
+            f"missing={len(omitted)} extra={len(extra)} "
+            f"changed={len(different)}; diagnostics={samples}"
+        )
+    return {"cell_count": len(original), "publication_reordered": original_rows != public_rows}
+
+
+def compare_public_aggregate_section(original, public, field):
+    """Give exact aggregate-only field names for a future mismatch."""
+    a, b = original.get(field), public.get(field)
+    if a == b:
+        return
+    if not isinstance(a, dict) or not isinstance(b, dict):
+        raise ValueError(f"Original/public {field} differs in type or contents")
+    missing = sorted(set(a) - set(b))
+    extra = sorted(set(b) - set(a))
+    different = sorted(k for k in set(a) & set(b) if a[k] != b[k])
+    samples = different[:4]
+    raise ValueError(
+        f"Original/public {field} mismatch: missing={len(missing)} "
+        f"extra={len(extra)} changed={len(different)} "
+        f"first_changed_group_keys={samples}; "
+        f"first_missing_group_keys={missing[:4]}; "
+        f"first_extra_group_keys={extra[:4]}"
+    )
+
 def audit(protocol, selected, evaluation, original, public, candidates=None):
     for path, pin in ((protocol, PROTOCOL_PIN), (selected / "selection.seal.json", SELECTION_PIN),
                       (evaluation / "transfer.complete.json", COMPLETION_PIN), (original, AGGREGATE_PIN)):
@@ -123,14 +202,11 @@ def audit(protocol, selected, evaluation, original, public, candidates=None):
             raise ValueError("Candidate library protocol mismatch")
         candidate_count = verify_inventory(candidates, manifest, exclude={"candidates.complete.json"})
     expected = original_json.get("per_cell")
-    if not isinstance(expected, list) or len(expected) != 240 or public_json.get("per_cell") != expected:
-        raise ValueError("Original/public 240-cell results do not match")
-    if original_json.get("atr_query_cluster_intervals") != public_json.get("atr_query_cluster_intervals"):
-        raise ValueError("Original/public bootstrap intervals do not match")
+    comparison = compare_public_aggregate_cells(expected, public_json.get("per_cell"))
+    compare_public_aggregate_section(original_json, public_json, "atr_query_cluster_intervals")
     if len(public_json["atr_query_cluster_intervals"]) != 80:
         raise ValueError("Expected 80 source/target grouped intervals")
-    if original_json.get("execution_accounting") != public_json.get("execution_accounting"):
-        raise ValueError("Execution accounting mismatch")
+    compare_public_aggregate_section(original_json, public_json, "execution_accounting")
     unique_cells, queries_by_condition, q_observations = set(), {}, 0
     for c in expected:
         key = (c["family"], c["intensity"], c["seed"], c["source"], c["target"])
@@ -182,6 +258,7 @@ def audit(protocol, selected, evaluation, original, public, candidates=None):
         raise ValueError("Incomplete frozen transfer matrix")
     return {
         "status": "PASS_RAW_TRANSFER_AUDIT", "verified_condition_cells": 240,
+        "original_vs_public_aggregate": comparison,
         "unique_question_ids_per_cell": 300, "seeded_condition_cells": 12,
         "source_target_qa_pairs_checked": q_observations,
         "selected_inventory_files_checked": selected_count,
