@@ -42,7 +42,7 @@ def test_rcd_score_only_replay_and_rejects_unavailable_diagnostics():
     assert abl.ranking(d,"no_conflict_penalty")==["d1","d2"]
     s=abl.summarize([{"condition":"poisoned","query_id":"synthetic_q1",
                       "poison_doc_ids":["d1"],"diagnostics":d}],top_k=1)
-    assert s["variants"]["poisoned|no_conflict_penalty"]["rank_changed"]==1
+    assert s["variants"]["poisoned|no_conflict_penalty"]["changed_evidence_order_rows"]==1
     assert s["variants"]["poisoned|no_conflict_penalty"]["variant_poison_visible_rows"]==1
     assert s["variants"]["poisoned|full"]["baseline_poison_visible_rows"]==0
     with pytest.raises(ValueError,match="Missing full"):
@@ -125,3 +125,10 @@ def test_second_model_private_plan_and_mocked_replay(tmp_path,monkeypatch):
     assert all(g["gold_em_rate"]==1. for g in summary["groups"].values())
     with pytest.raises(ValueError,match="Plan pin mismatch"):
         replay.aggregate(plan,"0"*64,out,tmp_path/"bad.json")
+
+
+def test_mac_runner_has_valid_bash_syntax():
+    import subprocess
+    from pathlib import Path
+    repo = Path(__file__).resolve().parents[1]
+    subprocess.run(["bash", "-n", str(repo / "scripts/nov09_mac_research.sh")], check=True)
