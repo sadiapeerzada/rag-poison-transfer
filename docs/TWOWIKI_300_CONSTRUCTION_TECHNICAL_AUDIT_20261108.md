@@ -2,7 +2,7 @@
 
 **Recorded:** 2026-11-08  
 **Audit evidence:** operator-shared terminal outputs from the frozen 2Wiki checkout, verified independently at the file-hash level and then rechecked by the frozen runner. This report does not claim an independently appointed human reviewer or semantic certification.  
-**Decision:** TECHNICAL_INTEGRITY_PASS; **evaluation authorization pending**.
+**Decision:** TECHNICAL_INTEGRITY_PASS (including later model snapshot binding); **evaluation authorization pending**.
 
 ## Frozen run and seal pins
 
@@ -36,10 +36,14 @@ The later runner-native audit imported `scripts.run_week9_protocol_poison_matrix
 
 The lexical valid rate is 84.67% of attempted rows; semantic valid rate is 15.33%; overall 50%. These are mechanically validated poison-construction outcomes **only**. They do not demonstrate that a false claim is independently semantically correct/incorrect, that a poison was retrieved, that any target answer was induced, or that Dense/RCD mitigated anything. Preserve the 3,600-attempt denominator and distinguish the 1,800 valid-only evaluation population.
 
+## Later model/runtime observation
+
+The same model-binding operator log reported **38 GiB** available disk and **1,794.19 MiB swap in use**. Swap usage is not a stand-alone memory-readiness pass. Off-device backup/recovery, live RAM/Metal headroom, specific evaluation budget, human scientific sign-off, and external seal-pin custody remain subject to explicit human checks.
+
 ## Remaining GO/NO-GO conditions
 
 1. Independently confirm research-risk disclosures, responsible human approval, provenance/exposure limitations, compute budget, verified recoverable backup and sustained disk/RAM/Metal headroom.
-2. Check the exact frozen MLX model snapshot bytes against the protocol pin (the operator ran `load_sealed` without passing a model snapshot, so this is **not covered** by the above audit).
+2. **Model binding technical check: PASSED on 2026-11-08.** The operator subsequently called the frozen `load_protocol(protocol, protocol_pin, snapshot)` and received `PASS: Frozen source, protocol, environment and MLX model snapshot` with model revision `c26a38f6a37d0a51b4e9a1eb3026530fa35d9fed`; explicitly `NO EVALUATION EXECUTED`. This verifies protocol-level model snapshot byte/revision binding, not independent human sign-off.
 3. Preserve current sealed construction unchanged. Execute evaluation only with the externally recorded construction-seal SHA-256 and the original frozen source/protocol, and only after explicit authorization.
 4. Run resumable paired Dense/RCD evaluation; validate completion digest and then aggregate with failure-aware denominators.
 
