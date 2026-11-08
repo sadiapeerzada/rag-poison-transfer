@@ -124,7 +124,10 @@ def snapshot_pin(path):
     files={}
     for file in sorted(path.rglob("*")):
         if file.is_symlink():
-            raise ValueError("Symlinked model file: use an actual materialized snapshot")
+            # Hugging Face snapshots routinely link to pinned local blob files.
+            # Dereference and hash actual bytes; fail on dangling/invalid links.
+            if not file.resolve(strict=True).is_file():
+                raise ValueError("Invalid model snapshot symlink")
         if file.is_file():
             files[file.relative_to(path).as_posix()]=sha(file)
     return family,canonical(files)
