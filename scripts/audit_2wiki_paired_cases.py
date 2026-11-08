@@ -124,6 +124,7 @@ def run_audit(run, output, per_stratum):
         writer.writerows(evaluated)
     chosen = []
     used_query_ids = set()
+    selected_cases = set()
     categories = ("rcd_only_target", "dense_only_target", "dense_only_clean_correct",
                   "rcd_only_clean_correct", "exposure_disagreement", "semantic_valid",
                   "semantic_failure", "neither_target", "both_target", "target_failure")
@@ -133,11 +134,13 @@ def run_audit(run, output, per_stratum):
             pool = sorted(pool, key=lambda p: hashlib.sha256(
                 (f"2wiki-review-v1|{family}|{intensity}|{cat}|"
                  f"{p[0]['query_id']}|{p[0]['seed']}").encode()).hexdigest())
-            picked = [p for p in pool if p[0]["query_id"] not in used_query_ids][:per_stratum]
+            available = [p for p in pool if (p[0]["cell"], p[0]["query_id"]) not in selected_cases]
+            picked = [p for p in available if p[0]["query_id"] not in used_query_ids][:per_stratum]
             if len(picked) < per_stratum:
-                picked.extend(p for p in pool if p not in picked)  # deterministic fallback
+                picked.extend(p for p in available if p not in picked)
                 picked = picked[:per_stratum]
             for row, construction, a, b in picked:
+                selected_cases.add((row["cell"], row["query_id"]))
                 case_id = hashlib.sha256(
                     (row["cell"] + "|" + row["query_id"]).encode()).hexdigest()[:18]
                 used_query_ids.add(row["query_id"])
