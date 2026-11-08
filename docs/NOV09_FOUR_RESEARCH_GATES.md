@@ -91,7 +91,7 @@ Minimum experiment design for new approved runs: same already disclosed source p
 
 ## Gate 4 — Pinned non-Qwen generator, evidence-fixed 2Wiki replay
 
-[The second-model CLI](../scripts/second_model_prompt_replay.py) prepares a private, selected subset of **40 valid question-condition strata** (10 query IDs × 4 family/intensity strata, one seed), with matched Dense/RCD and clean/poisoned evidence, for **160 generator calls**. Questions are selected deterministically by query ID within each valid-construction stratum, **without consulting new-model outcomes**. The original 2Wiki outcomes are already known; this is a **post-hoc exploratory, valid-only** model comparison, not a new untouched held-out benchmark.
+[The second-model CLI](../scripts/second_model_prompt_replay.py) prepares a private, selected subset of **40 valid query-stratum selections** (10 query IDs in each of four family/intensity strata, one seed; **not necessarily 40 distinct query IDs**), with matched Dense/RCD and clean/poisoned evidence, for **160 generator calls**. Questions are selected deterministically by query ID within each valid-construction stratum, **without consulting new-model outcomes**. The original 2Wiki outcomes are already known; this is a **post-hoc exploratory, valid-only** model comparison, not a new untouched held-out benchmark.
 
 Unlike an RCD ablation, this tests only **generator response differences to identical stored evidence prompts**. It does *not* regenerate poisons or re-run retrieval. It cannot establish that all results transfer to another corpus or that RCD is model-invariant.
 
