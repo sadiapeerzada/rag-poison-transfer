@@ -93,13 +93,19 @@ The read-only paired-case exporter passed its **3,600-record census** and
 selected **131 post hoc review cases (102 distinct query IDs)**. See the
 [local backup and review checkpoint](reports/2WIKI_LOCAL_RECOVERY_AND_AUDIT_CHECKPOINT_2026-11-09.md)
 and the [HotpotQA–2Wiki comparison](reports/HOTPOTQA_VS_2WIKI_PAIRED_COMPARISON_2026-11-09.md).
-**Neither remote iCloud restoration nor independent human semantic judgments
-have yet been verified.**
+**9 November restoration receipt:** the backup verifier subsequently accepted a
+separately supplied archive and matching manifest in Downloads, checked the
+pinned archive SHA-256, and **successfully restored and verified all 37,534
+files** in a new directory. See the [restoration receipt and provenance
+limits](reports/2WIKI_RESTORED_ARCHIVE_VERIFICATION_2026-11-09.md). The
+verifier cannot independently establish that Downloads bytes came from
+iCloud.com; retain the operator's browser-download evidence for off-device
+custody. Model/dataset assets external to the archived run tree still require
+separate preservation. **Independent human semantic judgments remain pending.**
 
-**Next:** independently download and fully restore the entire run-tree archive;
-obtain human/source-backed adjudication of the paired review packet; then
-seek the supervisor's decision on the separate source-crafted cross-pipeline
-transfer study versus narrower paper scope.
+**Next:** human/source-backed adjudication of the paired review packet;
+then seek the supervisor's decision on the separate source-crafted
+cross-pipeline transfer study versus narrower paper scope.
 
 ## What this repo demonstrates so far
 
