@@ -19,6 +19,8 @@
 
 The local supervisor emitted `evaluation_completion_sha256` with the value above, followed by a `shasum -a 256` line for `evaluation.complete.json` reporting the same digest. The supervisor's final text says **"EVALUATION COMPLETED. Native completion manifest present."** and **"Independently pin and audit the completion SHA-256 BEFORE running aggregate."**
 
+**Subsequent operator verification (same Mac, separate shell command):** after the supervisor finished, the operator ran `shasum -a 256 "$RUN/execution/evaluation/evaluation.complete.json"` and obtained exactly `db8c09aa8712a16a255298dc6afde83fe1bd3079b846f8cbee2244b946842519`. A subsequent `bash ~/Downloads/2wiki_evaluate_supervisor.sh --status` again showed 288/288, 12/12 and the same manifest digest; unlike the previous supervisor output, this status did not print a supervisor-lock warning. This confirms a separate file-digest check but **does not verify every file enumerated by the manifest**, establish whether any specific process is active, or substitute for the independent frozen-runner audit.
+
 The last visible resource readings were approximately **34 GiB available disk** (supervisor minimum 30 GiB), with bounded resumptions returning their expected `Batch budget reached` status. The terminal also noted that a supervisor lock still existed; a lock file alone is not evidence of a running process.
 
 This GitHub documentation checkpoint **does not independently hash or inspect the local evaluation artifact tree**. It does not establish scientific completeness, correctness of generated answers, semantic falsity of poisoned statements, or backed-up recovery of evaluation outputs. Raw evaluation checkpoints have not been committed here.
