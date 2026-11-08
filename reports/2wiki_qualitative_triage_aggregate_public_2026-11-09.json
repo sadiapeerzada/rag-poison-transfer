@@ -1,0 +1,124 @@
+{
+  "schema": "rag-poison-transfer.2wiki-preliminary-qualitative-audit-aggregate-public/v1",
+  "date": "2026-11-09",
+  "publication_scope": "Aggregate-only derived qualitative triage; no raw held-out examples or case-level answers",
+  "evidence_status": "AI-assisted exploratory post-hoc review; independent human factual/semantic judgments NOT PERFORMED",
+  "provenance_sha256": {
+    "private_review_packet_jsonl": "dafdfe7f6bbb7abdeb5a002e671e967480c59f6854d0fa22ca54e42a824eb153",
+    "private_audit_summary_json": "8e869179ee7e17c7d24211f419c138913daec96956b3e4f504148efa1a611d9d",
+    "frozen_aggregate": "721d22157920a1d07e124321c6fec999fe02ff23a2bc4af9501bf920d5214b96"
+  },
+  "full_population": {
+    "attempted_constructions": 3600,
+    "query_ids_per_condition": 300,
+    "poison_seeds": [
+      42,
+      43,
+      44
+    ],
+    "condition_metrics": [
+      {
+        "family": "lexical_influential_token",
+        "intensity": 1,
+        "both_target": 351,
+        "dense_only_target": 31,
+        "rcd_only_target": 77,
+        "neither_target": 303,
+        "valid_constructions": 762,
+        "target_nomination_failures": 138,
+        "semantic_generation_failures": 0,
+        "dense_clean_correct_rcd_wrong": 42,
+        "rcd_clean_correct_dense_wrong": 15
+      },
+      {
+        "family": "lexical_influential_token",
+        "intensity": 3,
+        "both_target": 587,
+        "dense_only_target": 65,
+        "rcd_only_target": 42,
+        "neither_target": 68,
+        "valid_constructions": 762,
+        "target_nomination_failures": 138,
+        "semantic_generation_failures": 0,
+        "dense_clean_correct_rcd_wrong": 42,
+        "rcd_clean_correct_dense_wrong": 15
+      },
+      {
+        "family": "semantic_fluent_false_evidence",
+        "intensity": 1,
+        "both_target": 126,
+        "dense_only_target": 8,
+        "rcd_only_target": 7,
+        "neither_target": 26,
+        "valid_constructions": 167,
+        "target_nomination_failures": 138,
+        "semantic_generation_failures": 595,
+        "dense_clean_correct_rcd_wrong": 9,
+        "rcd_clean_correct_dense_wrong": 2
+      },
+      {
+        "family": "semantic_fluent_false_evidence",
+        "intensity": 3,
+        "both_target": 101,
+        "dense_only_target": 3,
+        "rcd_only_target": 3,
+        "neither_target": 2,
+        "valid_constructions": 109,
+        "target_nomination_failures": 138,
+        "semantic_generation_failures": 653,
+        "dense_clean_correct_rcd_wrong": 6,
+        "rcd_clean_correct_dense_wrong": 1
+      }
+    ]
+  },
+  "purposive_review_sample": {
+    "case_rows": 131,
+    "distinct_query_ids": 102,
+    "valid_construction": 107,
+    "target_nomination_failure": 16,
+    "semantic_generation_failure": 8,
+    "valid_paired_outcomes": {
+      "both_target": 45,
+      "dense_only_target": 20,
+      "rcd_only_target": 19,
+      "neither_target": 23
+    },
+    "flag_counts": {
+      "clean_EM_disagreement": 30,
+      "country_question_target_is_city_or_person": 5,
+      "dense_target_present_before_poison": 6,
+      "generator_exposure_difference": 18,
+      "grandmother_target_appears_male_historical_person": 5,
+      "location_question_target_is_demonym": 4,
+      "missing_question_gold_in_review_packet": 24,
+      "rcd_target_match_without_visible_poison": 3,
+      "rcd_target_present_before_poison": 5,
+      "semantic_construction_retry_exhausted": 8,
+      "target_nomination_failure": 16,
+      "who_person_relation_target_is_location_nationality_or_other_nonperson": 19
+    },
+    "unique_type_role_flagged_rows": 33,
+    "unique_question_ids_among_type_role_flags": 28,
+    "semantic_valid_rows_with_type_role_flag": 21,
+    "selected_semantic_valid_rows": 51,
+    "selected_failed_semantic_attempt_outcomes": {
+      "unverified": 15,
+      "rejected_competing_gold_or_alias": 6,
+      "rejected_target_not_affirmed": 6,
+      "mention_only": 4,
+      "heuristically_accepted_partial": 1,
+      "total_attempts": 32
+    }
+  },
+  "limitations": [
+    "Deliberately stratified outcome-revealing sample; sample fractions are not full-population prevalence.",
+    "Three poison seeds reuse question IDs; query-seed observations are not independent.",
+    "No independent human factual/semantic adjudication or inter-rater reliability.",
+    "Automatic semantic validation does not certify that fabricated statements are factually false or question-aligned.",
+    "A target answer can match a pre-existing clean answer or appear without generator-visible poisoned evidence.",
+    "24 failed-construction packet rows lack full original question/gold context.",
+    "Original frozen experiment endpoints and recorded statistics are unchanged.",
+    "No source question text, gold/target answers, case IDs, query IDs, generated poison documents, prompts or model outputs are distributed here."
+  ],
+  "private_companion_not_published": "2Wiki_131_Case_Private_Triage_2026-11-09.json"
+}
