@@ -19,7 +19,7 @@ file "$PY"
 case "$cmd" in
   status)
     git status --short --branch
-    git branch -vv | head -18
+    git branch -vv | sed -n '1,18p'
     printf '\nHEAD: '; git rev-parse --short HEAD
     printf 'origin/main: '; git rev-parse --short origin/main
     if test -f tests/test_nov09_research_gates.py; then
