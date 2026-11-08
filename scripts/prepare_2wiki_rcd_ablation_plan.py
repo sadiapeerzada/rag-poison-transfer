@@ -119,7 +119,7 @@ def validate_variant_matrix(variants=VARIANTS):
         if any(cfg[k] < 0 for k in ("consistency_weight", "redundancy_weight",
                                   "conflict_weight", "base_rank_weight")):
             raise ValueError("Negative RCD weight")
-    if VARIANTS["full_k3"]["consistency_mode"] != "all":
+    if variants["full_k3"]["consistency_mode"] != "all":
         raise ValueError("Full baseline cannot remove agreement")
     return True
 
@@ -251,7 +251,7 @@ def prepare(restore_root, plan_file, plan_sha256, output, local_data=None, full_
         "generator_sampling": "explicit greedy; original pinned Qwen model",
         "expected_logical_clean_and_poison_QA_calls_without_cache": 2 * sum(len(case["query_ids"]) for case in cases.values()) * len(VARIANTS),
         "source_stage_inventory_validation": check_counts,
-        "conditions": list(CONDITIONS),
+        "conditions": sorted(CONDITIONS),
         "limitations": [
             "This is a plan, NOT an executed ablation.",
             "The original frozen results and case population remain unchanged.",
