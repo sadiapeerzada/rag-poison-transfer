@@ -241,6 +241,8 @@ def prepare(restore_root, plan_file, plan_sha256, output, local_data=None, full_
         "study_design": "post-hoc exploratory, valid-only, selected after original held-out results",
         "original_frozen_pins": ORIGINAL_PINS,
         "private_local_data_sha256": proto["replication"]["local_data_sha256"],
+        "original_clean_corpus_fingerprint": plan_binding["clean_corpus_fingerprint"],
+        "original_query_set_fingerprint": plan_binding["query_set_fingerprint"],
         "private_qwen_phi_plan_sha256": plan_sha256,
         "query_stratum_slots": sum(len(case["query_ids"]) for case in cases.values()),
         "distinct_query_ids": len(set.union(*(set(case["query_ids"]) for case in cases.values()))),
