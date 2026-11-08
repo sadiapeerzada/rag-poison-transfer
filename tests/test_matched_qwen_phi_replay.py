@@ -78,7 +78,10 @@ def test_real_shape_synthetic_matched_comparison(tmp_path, monkeypatch):
     result = comparison.analyze(plan, pin, evaluation, result_dir)
     assert result["status"] == "PASS_MATCHED_QWEN_PHI_OFFLINE_COMPARISON"
     assert result["n_paired_generator_observations"] == 16
-    assert result["n_distinct_selected_query_ids"] == 1
+    selected = json.loads(plan.read_text(encoding="utf-8"))["entries"]
+    expected_distinct_questions = len({item["query_id"] for item in selected})
+    assert expected_distinct_questions == 2  # Synthetic fixture has two candidate IDs.
+    assert result["n_distinct_selected_query_ids"] == expected_distinct_questions
     assert len(result["groups"]) == 16
     for key, row in result["groups"].items():
         assert row["n_matched_replay_items"] == 1
