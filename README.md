@@ -16,6 +16,56 @@ foundation doc (shared separately) for the full 12-week roadmap and plan.
 > the [Clean Baseline v1 results](#clean-baseline-v1-results) section below.
 > Approved per supervisor review, pre-Week-5 readiness assessment.
 
+## 2Wiki 300-query replication milestone — 8 November 2026
+
+**Current stage: sealed construction validated; paired Dense/RCD evaluation in progress (not complete).**
+This is the historically risk-disclosed 300-query 2Wiki replication, **not** an
+unexposed prospective test. The historical exposure and automatic semantic
+validation limitations remain; they are not resolved by successful file checks.
+
+- **Construction frozen:** 12/12 cells (lexical influential token and
+  semantic fluent false evidence × intensities 1/3 × seeds 42/43/44);
+  3,600 query-construction records, 300 per cell. The frozen runner returned
+  `all_construction_frozen_no_evaluation`.
+- **Integrity checks passed:** the construction seal digest matches the
+  independent SHA-256 check, all **15,081 sealed files** match the seal
+  manifest, and the frozen source/protocol/dataset, all 12 cell validators,
+  generation journals, and pinned local MLX model snapshot were checked.
+- **Construction outcomes (not attack success):**
+
+  | Family | Attempted | Mechanically valid | Target construction failed | Semantic construction failed |
+  |---|---:|---:|---:|---:|
+  | Lexical influential token | 1,800 | 1,524 | 276 | 0 |
+  | Semantic fluent false evidence | 1,800 | 276 | 276 | 1,248 |
+  | **Total** | **3,600** | **1,800** | **552** | **1,248** |
+
+  Mechanical coverage is 50.0% overall (84.7% lexical; 15.3% semantic).
+  Failed constructions stay in the full attempted denominator and are **not**
+  counted as defense successes; valid-only QA metrics must use a separately
+  identified denominator.
+- **Protected recovery copy:** an archive of the frozen construction and
+  protocol was uploaded to iCloud Drive, downloaded through the web interface
+  and verified against its original SHA-256
+  (`3be080600227839af4ee92b95fbccd2a2b3c70cd415f5b0bfd123782c88d9038`).
+  Raw checkpoints and model weights remain outside GitHub; subsequent
+  evaluation outputs need their own recoverable backup.
+- **Evaluation started:** the first bounded `--max-batches 1` invocation
+  loaded the model and returned the expected `Batch budget reached` pause.
+  No complete Dense/RCD matrix, final ASR/PRR, transfer result or statistical
+  conclusion is claimed at this point.
+
+Frozen source commit: `b1466db04c4f8f0314c7e537d8e7ec390c8c3b29`.
+Frozen protocol SHA-256: `40ed57afe9b923362a8c725d66f58d32fc2b8796ffe57696a481c34a4b8bfef4`.
+Construction seal SHA-256: `e8ab16b7820f42c6bf62fa69d68ba9d2a56bd4924ae11027f60ca689640cdd44`.
+The metadata-only construction/audit checkpoint is in
+[PR #117](https://github.com/sadiapeerzada/rag-poison-transfer/pull/117).
+The frozen checkout and historical text below are intentionally unchanged.
+
+**Next:** finish resumable paired Dense/RCD evaluation, independently verify
+the evaluation completion pin and journaling, aggregate failure-aware
+metrics, assess cross-pipeline transfer and robustness, then finalize
+statistical analysis and the paper after scientific review.
+
 ## What this repo demonstrates so far
 
 This isn't a single script that "ran once" -- it's a working, tested,
