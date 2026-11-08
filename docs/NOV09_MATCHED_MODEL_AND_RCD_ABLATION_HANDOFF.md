@@ -37,6 +37,33 @@ bash scripts/nov09_mac_research.sh model-compare
 
 The output file is **PRIVATE** under `~/Documents/rag-research-results/nov09-research-gates/`. Publish only aggregates after privacy/licensing review. In particular, do **not** compare the entire 300-query original Qwen study against 10-query selected Phi groups as if they were matched.
 
+## Optional Step A2 — matched output-cap Phi@64 control (NEW inference)
+
+The original Qwen QA budget was **64 tokens** and the completed exploratory Phi-4 replay used **128 tokens**. To remove that **one** generation-cap confound, run Phi-4 again with exactly the **same pinned 160-prompt private plan** and the **same pinned local Phi model** but write responses to a **fresh output directory**. This does not control for tokenizer, architecture, training set, parameter count, context capacity or chat template differences.
+
+The saved Phi@128 results are immutable and MUST NOT be overwritten.
+
+```bash
+cd "$HOME/Downloads/rag-poison-transfer"
+source .venv/bin/activate
+export TWOWIKI_EVAL_DIR="$HOME/Downloads/2wiki-restored-20261109/execution/evaluation"
+export MODEL_PLAN="$HOME/Documents/rag-research-results/nov09-research-gates/2wiki-second-model-plan-20261108T204440Z_PRIVATE.json"
+export MODEL_PLAN_SHA="9c47a64053c2d53bb016a2bad10503d906a9026e0b7092d55ddb0505bd3b199a"
+export MODEL_SNAPSHOT="$HOME/.cache/huggingface/hub/models--mlx-community--Phi-4-mini-instruct-4bit/snapshots/ac1c269cb4222a4e136a3d09edad301056c1f36a"
+export MODEL_SHA="d0797f104c502aca586559e7334ee3029b59e342831e2c2e5ae9bc3ceeb33d06"
+export MODEL_RUN_DIR="$HOME/Documents/rag-research-results/nov09-research-gates/2wiki-second-model-phi64-results_PRIVATE"
+export MODEL_MAX_TOKENS=64
+
+# Real, separately authorized 160-call new inference (not a replay cache hit)
+bash scripts/nov09_mac_research.sh model-run
+
+# Only after REPLAY_COMPLETE:
+bash scripts/nov09_mac_research.sh model-aggregate
+bash scripts/nov09_mac_research.sh model-compare
+```
+
+The new `model-compare` output is a same-64-token-budget **Qwen vs Phi@64** comparison, reported as a fresh private aggregate, leaving the existing Phi@128 analysis intact. The runner refuses to resume results under a different max-token manifest. If `MODEL_RUN_DIR` is not set, it defaults to the already-completed Phi@128 output, so **set and inspect it carefully** before running Phi@64. A `PASS` after matched cap establishes measurement alignment for this decoding limit only; it does not establish robustness generalization to an untouched model or validate semantic falsehood.
+
 ## Step B — last major experiment: explicitly scoped RCD ablation
 
 RCD is a **single composite Dense-primary defense with auxiliary BM25**, not four different wrappers. Its historical frozen configuration must **not** be retuned or retroactively modified. Treat all ablations as a *new, post-hoc development/method sensitivity study* with their own immutable protocol, source commit, fresh output directory and a clearly identified dataset/query subset.

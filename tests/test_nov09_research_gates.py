@@ -214,3 +214,13 @@ def test_transfer_public_intervals_and_accounting_fail_closed():
     pub["execution_accounting"]["actual_backend_calls"] = 100
     with pytest.raises(ValueError, match="execution_accounting mismatch"):
         raw.compare_public_aggregate_section(original, pub, "execution_accounting")
+
+
+def test_mac_runner_second_model_separates_token_budget_namespaces():
+    """A changed generation cap must never reuse the original Phi@128 folder."""
+    from pathlib import Path
+    script = (Path(__file__).resolve().parents[1] / "scripts/nov09_mac_research.sh").read_text()
+    assert 'run_dir="${MODEL_RUN_DIR:-$OUT/2wiki-second-model-results_PRIVATE}"' in script
+    assert '--output "$run_dir" --max-tokens "${MODEL_MAX_TOKENS:-128}"' in script
+    assert 'file "$run_dir/run_manifest.json"' in script
+    assert '--results "$run_dir"' in script

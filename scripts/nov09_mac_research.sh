@@ -129,19 +129,23 @@ PYTHON
     : "${MODEL_PLAN_SHA:?MODEL_PLAN_SHA missing}"
     : "${MODEL_SHA:?MODEL_SHA missing}"
     mkdir -p "$OUT"
+    # Explicit new output namespace is mandatory for a changed max-token budget.
+    # The Python runner already checks a manifest before allowing resume.
+    run_dir="${MODEL_RUN_DIR:-$OUT/2wiki-second-model-results_PRIVATE}"
     "$PY" scripts/second_model_prompt_replay.py run --execute \
       --plan "$MODEL_PLAN" --plan-sha256 "$MODEL_PLAN_SHA" \
       --model-snapshot "$MODEL_SNAPSHOT" --model-sha256 "$MODEL_SHA" \
-      --output "$OUT/2wiki-second-model-results_PRIVATE" --max-tokens 128
+      --output "$run_dir" --max-tokens "${MODEL_MAX_TOKENS:-128}"
     ;;
 
   model-aggregate)
     : "${MODEL_PLAN:?MODEL_PLAN missing}"
     : "${MODEL_PLAN_SHA:?MODEL_PLAN_SHA missing}"
-    file "$OUT/2wiki-second-model-results_PRIVATE/run_manifest.json"
+    run_dir="${MODEL_RUN_DIR:-$OUT/2wiki-second-model-results_PRIVATE}"
+    file "$run_dir/run_manifest.json"
     "$PY" scripts/second_model_prompt_replay.py aggregate \
       --plan "$MODEL_PLAN" --plan-sha256 "$MODEL_PLAN_SHA" \
-      --results "$OUT/2wiki-second-model-results_PRIVATE" \
+      --results "$run_dir" \
       --output "$OUT/2wiki-second-model-aggregate-$(date -u +%Y%m%dT%H%M%SZ)_PRIVATE.json"
     ;;
 
