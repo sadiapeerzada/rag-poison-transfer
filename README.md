@@ -103,9 +103,19 @@ iCloud.com; retain the operator's browser-download evidence for off-device
 custody. Model/dataset assets external to the archived run tree still require
 separate preservation. **Independent human semantic judgments remain pending.**
 
-**Next:** human/source-backed adjudication of the paired review packet;
-then seek the supervisor's decision on the separate source-crafted
-cross-pipeline transfer study versus narrower paper scope.
+**9 November preliminary qualitative review:** a deterministic, outcome-stratified
+packet of 131 cases (102 distinct query IDs) was structurally reviewed. The
+[public, aggregate-only qualitative audit](reports/2WIKI_QUALITATIVE_ERROR_AUDIT_PUBLIC_2026-11-09.md)
+and [machine-readable aggregate triage](reports/2wiki_qualitative_triage_aggregate_public_2026-11-09.json)
+document paired-outcome differences, answer-type mismatches and exposure
+confounders. Private case IDs, original questions, gold/target answers and model
+outputs are **not** committed. This is **not** independent human adjudication;
+frozen metrics and protocols remain unchanged.
+
+**Next:** obtain independent, source-backed adjudication of the private cases;
+validate original HotpotQA source-crafted transfer raw-artifact provenance
+(the aggregate-only transfer results are merged in PR #124); and plan approved
+RCD ablations and second-model validation.
 
 ## What this repo demonstrates so far
 
