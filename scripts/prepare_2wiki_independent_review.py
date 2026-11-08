@@ -16,7 +16,8 @@ import csv
 import hashlib
 import json
 from collections import Counter
-from datetime import date
+from datetime import datetime
+from zoneinfo import ZoneInfo
 from pathlib import Path
 
 FIELDS = [
@@ -125,7 +126,7 @@ def prepare(packet_path, triage_path, out_dir):
     csv_write(out_dir/'pending_original_context_PRIVATE.csv',list(recovery[0]),recovery)
     source={'review_packet_jsonl_sha256':digest_file(packet_path),'private_triage_sha256':digest_file(triage_path),
             'frozen_aggregate_sha256':triage.get('source_aggregate_sha256'),
-            'date_created':str(date.today()),'scope':'Private reviewer handoff; not public or independence proof',
+            'date_created':datetime.now(ZoneInfo('Asia/Kolkata')).date().isoformat(),'scope':'Private reviewer handoff; not public or independence proof',
             'status':'No reviewer judgment collected',
             'n_selected_cases':len(case_rows),'n_distinct_questions':len({r['query_id'] for r in case_rows}),
             'n_reviewable':len(valid),'n_requires_original_context':len(recovery),
