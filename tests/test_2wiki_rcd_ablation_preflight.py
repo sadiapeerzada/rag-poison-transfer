@@ -139,7 +139,7 @@ def test_prepares_original_hash_bound_six_variant_480_call_plan(tmp_path, monkey
     assert contents["distinct_query_ids"] == 10
     assert contents["study_design"].startswith("post-hoc exploratory")
     assert set(contents["variants"]) == set(stage.VARIANTS)
-    assert "No source-independent semantic falsehood verification" in contents["limitations"][-3]
+    assert any("No source-independent semantic falsehood verification" in s for s in contents["limitations"])
     with pytest.raises(ValueError, match="NEW private plan"):
         stage.prepare(root, plan, pin, out, data)
 
