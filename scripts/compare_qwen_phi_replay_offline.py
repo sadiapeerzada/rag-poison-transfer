@@ -206,7 +206,16 @@ def main():
     result = analyze(a.plan, a.plan_sha256, a.evaluation_dir, a.phi_results)
     report.write_text(json.dumps(result, indent=2) + "\n", encoding="utf-8")
     print(json.dumps({"status": result["status"], "n_matched": result["n_paired_generator_observations"],
+                      "n_distinct_selected_questions": result["n_distinct_selected_query_ids"],
                       "n_groups": len(result["groups"]), "report_out": str(report)}, indent=2))
+    print("AGGREGATE ONLY (not independent trials or factuality-certified):")
+    print("family|intensity|arm|condition ; n ; Qwen gold EM ; Phi gold EM ; Qwen target ; Phi target")
+    for key, group in sorted(result["groups"].items()):
+        print(
+            f"{key} ; {group['n_matched_replay_items']} ; "
+            f"{group['qwen_gold_em']['count']} ; {group['phi_gold_em']['count']} ; "
+            f"{group['qwen_target_match']['count']} ; {group['phi_target_match']['count']}"
+        )
 
 
 if __name__ == "__main__":
