@@ -14,6 +14,12 @@ import json
 import math
 from collections import defaultdict
 from pathlib import Path
+import sys
+
+# Support direct Python invocation from any working directory.
+REPO_ROOT = Path(__file__).resolve().parents[1]
+if str(REPO_ROOT) not in sys.path:
+    sys.path.insert(0, str(REPO_ROOT))
 
 from scripts.second_model_prompt_replay import (
     TWOWIKI_COMPLETION_SHA256, canonical, outside_repo, sha,
