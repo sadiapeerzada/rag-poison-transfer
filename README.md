@@ -86,11 +86,20 @@ source-crafted cross-pipeline transfer. Consult the [full results report](report
 before citing any percentage. The frozen checkout and historical text below
 are intentionally unchanged.
 
-**Next:** verify a **full** recoverable backup (including construction artifacts)
-from a separate destination; conduct predeclared paired error and semantic
-validity audits; compare with independently validated HotpotQA metrics; then
-seek the supervisor's decision on the still-pending source-crafted
-cross-pipeline transfer study versus narrower paper scope.
+**9 November local checkpoint:** the full 2Wiki run-tree archive was created
+and verified locally: **37,534 files**, **518,755,193 original bytes**, and
+archive SHA-256 `faecd723105465d80ff4de8c48795cbb983560ddaa06943840b3971d59deac82`.
+The read-only paired-case exporter passed its **3,600-record census** and
+selected **131 post hoc review cases (102 distinct query IDs)**. See the
+[local backup and review checkpoint](reports/2WIKI_LOCAL_RECOVERY_AND_AUDIT_CHECKPOINT_2026-11-09.md)
+and the [HotpotQA–2Wiki comparison](reports/HOTPOTQA_VS_2WIKI_PAIRED_COMPARISON_2026-11-09.md).
+**Neither remote iCloud restoration nor independent human semantic judgments
+have yet been verified.**
+
+**Next:** independently download and fully restore the entire run-tree archive;
+obtain human/source-backed adjudication of the paired review packet; then
+seek the supervisor's decision on the separate source-crafted cross-pipeline
+transfer study versus narrower paper scope.
 
 ## What this repo demonstrates so far
 
