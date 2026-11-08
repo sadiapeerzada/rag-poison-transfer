@@ -59,8 +59,12 @@ def verify_input_sources(private_plan, plan_pin, original_root, local_data):
     by_id = {q["query_id"]: q for q in data["queries"]}
     if proto["binding"]["query_ids"] != list(by_id):
         raise ValueError("Original query ordering differs from pinned cohort")
-    if seal["plan"]["clean_corpus_fingerprint"] != selected_plan.get("original_clean_corpus_fingerprint", seal["plan"]["clean_corpus_fingerprint"]):
-        raise ValueError("Original corpus binding differs from supplied preflight")
+    from src.experiments.protocol import corpus_fingerprint, query_set_fingerprint
+    if (seal["plan"]["clean_corpus_fingerprint"] != selected_plan["original_clean_corpus_fingerprint"] or
+        corpus_fingerprint(data["corpus"]) != selected_plan["original_clean_corpus_fingerprint"] or
+        seal["plan"]["query_set_fingerprint"] != selected_plan["original_query_set_fingerprint"] or
+        query_set_fingerprint(data["queries"]) != selected_plan["original_query_set_fingerprint"]):
+        raise ValueError("Original corpus/query bindings differ from sealed ablation preflight")
     if not isinstance(proto["replication"].get("retrieval_snapshots"), dict):
         raise ValueError("Original local retrieval model fingerprints missing")
     embedder = proto["replication"]["retrieval_snapshots"]["embedder"]
