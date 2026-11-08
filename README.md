@@ -112,10 +112,21 @@ confounders. Private case IDs, original questions, gold/target answers and model
 outputs are **not** committed. This is **not** independent human adjudication;
 frozen metrics and protocols remain unchanged.
 
-**Next:** obtain independent, source-backed adjudication of the private cases;
+**9 November reviewer handoff:** separate, outcome-blinded packets for two
+independent human reviewers have been prepared **privately** from the 131-case
+export: 107 mechanically valid cases (79 distinct questions) are reviewable,
+and 24 construction-failure cases still need their original question/gold
+context recovered from the frozen local run. The public repository now includes
+the [private-only packet generator](scripts/prepare_2wiki_independent_review.py),
+[synthetic tests](tests/test_2wiki_independent_review.py), and
+[human adjudication protocol](docs/2WIKI_INDEPENDENT_SEMANTIC_ADJUDICATION_2026-11-09.md),
+**not** any held-out reviewer sheets, original case IDs or model output text.
+No reviewer has independently adjudicated the cases yet.
+
+**Next:** obtain source-backed human judgments and resolve disagreements;
 validate original HotpotQA source-crafted transfer raw-artifact provenance
-(the aggregate-only transfer results are merged in PR #124); and plan approved
-RCD ablations and second-model validation.
+(the aggregate-only transfer results are merged in PR #124); then plan
+newly approved RCD ablations and second-model validation.
 
 ## What this repo demonstrates so far
 
