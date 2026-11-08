@@ -72,7 +72,7 @@ def test_no_agreement_keeps_same_retrieval_calls_candidates_but_changes_score_si
                for id_ in a["scores"])
 
 
-def test_no_rewrites_is_an_actual_zero-rewrite_retrieval():
+def test_no_rewrites_is_an_actual_zero_rewrite_retrieval():
     base, opts = build_pair(rewrites=0)
     retriever = RCDRetriever(base, **opts)
     retriever.retrieve("Who lived in Paris?", top_k=3)
