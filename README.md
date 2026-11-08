@@ -18,7 +18,7 @@ foundation doc (shared separately) for the full 12-week roadmap and plan.
 
 ## 2Wiki 300-query replication milestone — 8 November 2026
 
-**Current stage: sealed construction validated; paired Dense/RCD evaluation in progress (not complete).**
+**Current stage: all 288/288 paired Dense/RCD evaluation batches completed locally; independent evaluation-artifact audit and aggregate scientific results are pending.** See the [8 November completion checkpoint](reports/2wiki_300_evaluation_completion_2026-11-08.md).
 This is the historically risk-disclosed 300-query 2Wiki replication, **not** an
 unexposed prospective test. The historical exposure and automatic semantic
 validation limitations remain; they are not resolved by successful file checks.
@@ -49,22 +49,25 @@ validation limitations remain; they are not resolved by successful file checks.
   (`3be080600227839af4ee92b95fbccd2a2b3c70cd415f5b0bfd123782c88d9038`).
   Raw checkpoints and model weights remain outside GitHub; subsequent
   evaluation outputs need their own recoverable backup.
-- **Evaluation started:** the first bounded `--max-batches 1` invocation
-  loaded the model and returned the expected `Batch budget reached` pause.
-  No complete Dense/RCD matrix, final ASR/PRR, transfer result or statistical
-  conclusion is claimed at this point.
+- **Evaluation execution completed (local supervisor log):** 288/288 query-arm
+  batches and 12/12 paired cell summaries. The native completion manifest was
+  reported present with SHA-256 `db8c09aa8712a16a255298dc6afde83fe1bd3079b846f8cbee2244b946842519`.
+  Independent raw-artifact verification, recoverable evaluation backup and
+  failure-aware statistical aggregation are **still pending**. No final ASR/PRR,
+  RCD effectiveness result or cross-pipeline transfer conclusion is claimed.
 
 Frozen source commit: `b1466db04c4f8f0314c7e537d8e7ec390c8c3b29`.
 Frozen protocol SHA-256: `40ed57afe9b923362a8c725d66f58d32fc2b8796ffe57696a481c34a4b8bfef4`.
 Construction seal SHA-256: `e8ab16b7820f42c6bf62fa69d68ba9d2a56bd4924ae11027f60ca689640cdd44`.
+Evaluation completion SHA-256 (local log): `db8c09aa8712a16a255298dc6afde83fe1bd3079b846f8cbee2244b946842519`.
 The metadata-only construction/audit checkpoint is in
 [PR #117](https://github.com/sadiapeerzada/rag-poison-transfer/pull/117).
 The frozen checkout and historical text below are intentionally unchanged.
 
-**Next:** finish resumable paired Dense/RCD evaluation, independently verify
-the evaluation completion pin and journaling, aggregate failure-aware
-metrics, assess cross-pipeline transfer and robustness, then finalize
-statistical analysis and the paper after scientific review.
+**Next:** independently audit the completed evaluation and its journals; make a
+verified recoverable evaluation backup; aggregate failure-aware paired metrics;
+compare 2Wiki against HotpotQA; and discuss the still-pending source-crafted
+cross-pipeline transfer study and manuscript scope with the supervisor.
 
 ## What this repo demonstrates so far
 
@@ -884,12 +887,15 @@ impact unassessed:** Week 9–10 held-out HotpotQA clean dense and RCD baselines
 publication exports, and a two-query source-only transfer smoke (40 conditions,
 211 model calls; diagnostic only). Exact-input clean-QA caching, atomic checkpoints
 and complete-corpus batches are software-tested; new real-model execution remains
-gated. 2Wiki has frozen cohorts, local inputs and preflight, with unresolved
-historical 25-query pilot exposure.
-**Pending / NOT YET RUN:** full poisoned source-to-target transfer evaluation (including
-source-success-conditioned transfer reporting) and Week 9–10 held-out RCD /
-transfer evaluation on 2WikiMultiHopQA. Existing earlier 2Wiki baseline and
-attack-sweep artifacts do not establish completion of this held-out phase.
+gated. 2Wiki's historically risk-disclosed matched Dense/RCD evaluation has now
+completed locally (288/288 query-arm batches; aggregate audit pending), with
+unresolved historical 25-query pilot exposure.
+**Pending / NOT YET RUN:** full poisoned source-to-target transfer evaluation
+(including source-success-conditioned transfer reporting). The separate,
+historically risk-disclosed 2Wiki 300-query Dense/RCD run completed locally on
+8 November 2026, but its independent evaluation-artifact audit, backup and
+aggregated scientific results remain pending; older 2Wiki baseline/attack-sweep
+artifacts are distinct from this run.
 
 ## Corpus construction methodology (HotpotQA)
 
@@ -1078,7 +1084,7 @@ entry point and does not invoke `run_source_target_asr()`.
 - Historical frozen development run: `exp_023_hotpotqa_rcd_v1_mlx_frozen` (N=300, HotpotQA validation split; not held-out)
 - Historical `exp_023` results: EM=0.407, F1=0.508, Recall@3=0.7467, MRR@10=0.9411, nDCG@10=0.8565. Its score fields predate the correction and `exp_023` is not evidence for the corrective `exp_026` config; that run is evidenced by its own raw log and summary.
 - Week 9–10 clean held-out HotpotQA baselines: **ARTIFACTS INSPECTED; CORRECTION IMPACT UNASSESSED** (`exp_030` dense and `exp_031` RCD). Both archived runs contain 300 unique, identically ordered query IDs and matching query-set, held-out-ID, and corpus fingerprints; both summaries report `final_run=true` and `git_dirty=false`. Both are clean utility runs (`n_poison=0`), and their archived commit predates the query-rewrite correction. Assess the correction's impact before publication reuse. `exp_028b` remains an exploratory/recovery run (`git_dirty: null`), not the publication baseline.
-- Poisoned source-to-target evaluation and Week 9–10 held-out 2Wiki evaluation: PENDING.
+- Poisoned source-to-target evaluation: PENDING. Separate risk-disclosed 300-query 2Wiki Dense/RCD evaluation: execution complete locally on 8 November 2026; independent audit/aggregate pending.
 - Week 9–10 protocol-based matched Dense/RCD study: all 12 HotpotQA cells completed at `7a24a40`; sealed records, metrics and paired bootstrap comparisons were reverified. See the tables and caveats above.
 
 ## Testing
