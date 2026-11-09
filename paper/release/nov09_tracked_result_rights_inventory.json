@@ -1,0 +1,494 @@
+{
+  "schema": "rag-poison-transfer.tracked-result-review-inventory/v1",
+  "date": "2026-11-09",
+  "source_main_commit": "887a1b2f32ef58f1aee055497289848daee12c6a",
+  "scope": "Mechanical tracked-file inventory only, not a privacy clearance or legal opinion.",
+  "counts": {
+    "total": 57,
+    "jsonl": 28,
+    "json": 22,
+    "csv": 7,
+    "bytes": 37543064
+  },
+  "confirmed_sampled_fields": {
+    "examined_paths": [
+      "results/exp_001_real_generator.jsonl",
+      "results/exp_003_hotpotqa_pilot.jsonl",
+      "results/exp_009_hotpotqa_retrieval_eval_smoke.jsonl"
+    ],
+    "raw_text_fields_seen": [
+      "query_id",
+      "question",
+      "gold_answer",
+      "prompt",
+      "generated_text",
+      "retrieved_doc_ids"
+    ],
+    "note": "Observed in sampled files only; no claim that every file has these fields."
+  },
+  "release_decision": "HOLD_RAW_TRACKED_RESULTS_PENDING_INDIVIDUAL_REUSE_AND_PRIVACY_REVIEW",
+  "per_file_review": [
+    {
+      "path": "results/clean_baseline_v1_final_table.csv",
+      "git_blob_sha1": "0f4209d81adb9089c4b15fedd76d5c98d3a80315",
+      "size_bytes": 700,
+      "format": "csv",
+      "review_status": "UNREVIEWED_REUSE_RIGHTS_AND_PRIVACY",
+      "action": "Preserve unchanged; verify benchmark/content licenses, privacy and held-out access before approving redistribution"
+    },
+    {
+      "path": "results/exp_000_smoke_test.summary.json",
+      "git_blob_sha1": "858f44cbb6115f1a05135a469ad15c91c81e37f8",
+      "size_bytes": 1800,
+      "format": "json",
+      "review_status": "UNREVIEWED_REUSE_RIGHTS_AND_PRIVACY",
+      "action": "Preserve unchanged; verify benchmark/content licenses, privacy and held-out access before approving redistribution"
+    },
+    {
+      "path": "results/exp_001_real_generator.jsonl",
+      "git_blob_sha1": "f881dcf15eb4a45cea39f6ab1bece1cec2138acd",
+      "size_bytes": 5534,
+      "format": "jsonl",
+      "review_status": "UNREVIEWED_REUSE_RIGHTS_AND_PRIVACY",
+      "action": "Preserve unchanged; verify benchmark/content licenses, privacy and held-out access before approving redistribution"
+    },
+    {
+      "path": "results/exp_002_real_generator_fixed_prompt.jsonl",
+      "git_blob_sha1": "2300d117fdfd7126507a1feb387a193617f412b5",
+      "size_bytes": 4849,
+      "format": "jsonl",
+      "review_status": "UNREVIEWED_REUSE_RIGHTS_AND_PRIVACY",
+      "action": "Preserve unchanged; verify benchmark/content licenses, privacy and held-out access before approving redistribution"
+    },
+    {
+      "path": "results/exp_003_hotpotqa_pilot.jsonl",
+      "git_blob_sha1": "12bf1354e1722fcf084d0cae8d04a4373f67e220",
+      "size_bytes": 49998,
+      "format": "jsonl",
+      "review_status": "UNREVIEWED_REUSE_RIGHTS_AND_PRIVACY",
+      "action": "Preserve unchanged; verify benchmark/content licenses, privacy and held-out access before approving redistribution"
+    },
+    {
+      "path": "results/exp_004_hotpotqa_kaggle.jsonl",
+      "git_blob_sha1": "087d5e833d791eec1d106595d25dcb0d1c19c889",
+      "size_bytes": 124290,
+      "format": "jsonl",
+      "review_status": "UNREVIEWED_REUSE_RIGHTS_AND_PRIVACY",
+      "action": "Preserve unchanged; verify benchmark/content licenses, privacy and held-out access before approving redistribution"
+    },
+    {
+      "path": "results/exp_005_hotpotqa_dense.jsonl",
+      "git_blob_sha1": "b53eb6ae1b470a7a35eb007b62cb50cab6b96e94",
+      "size_bytes": 122326,
+      "format": "jsonl",
+      "review_status": "UNREVIEWED_REUSE_RIGHTS_AND_PRIVACY",
+      "action": "Preserve unchanged; verify benchmark/content licenses, privacy and held-out access before approving redistribution"
+    },
+    {
+      "path": "results/exp_006_hotpotqa_hybrid.jsonl",
+      "git_blob_sha1": "f2fbc8955d21c4c64f56499e0d8e9cba22f55d36",
+      "size_bytes": 120174,
+      "format": "jsonl",
+      "review_status": "UNREVIEWED_REUSE_RIGHTS_AND_PRIVACY",
+      "action": "Preserve unchanged; verify benchmark/content licenses, privacy and held-out access before approving redistribution"
+    },
+    {
+      "path": "results/exp_007_hotpotqa_reranker.jsonl",
+      "git_blob_sha1": "e57b348c52b99d53ff88357aa84c4036973ca88c",
+      "size_bytes": 123495,
+      "format": "jsonl",
+      "review_status": "UNREVIEWED_REUSE_RIGHTS_AND_PRIVACY",
+      "action": "Preserve unchanged; verify benchmark/content licenses, privacy and held-out access before approving redistribution"
+    },
+    {
+      "path": "results/exp_007_hotpotqa_reranker_mlx.jsonl",
+      "git_blob_sha1": "3c30143557f68d8a4f4975e8fd9d5357edb75c6f",
+      "size_bytes": 163585,
+      "format": "jsonl",
+      "review_status": "UNREVIEWED_REUSE_RIGHTS_AND_PRIVACY",
+      "action": "Preserve unchanged; verify benchmark/content licenses, privacy and held-out access before approving redistribution"
+    },
+    {
+      "path": "results/exp_008_hotpotqa_reranker_mlx.jsonl",
+      "git_blob_sha1": "f50ca6661bded384e801ed620f159835637fb20a",
+      "size_bytes": 59277,
+      "format": "jsonl",
+      "review_status": "UNREVIEWED_REUSE_RIGHTS_AND_PRIVACY",
+      "action": "Preserve unchanged; verify benchmark/content licenses, privacy and held-out access before approving redistribution"
+    },
+    {
+      "path": "results/exp_009_hotpotqa_retrieval_eval_smoke.jsonl",
+      "git_blob_sha1": "b540a1ebed36b73e4bf3daede7de21e199582690",
+      "size_bytes": 20721,
+      "format": "jsonl",
+      "review_status": "UNREVIEWED_REUSE_RIGHTS_AND_PRIVACY",
+      "action": "Preserve unchanged; verify benchmark/content licenses, privacy and held-out access before approving redistribution"
+    },
+    {
+      "path": "results/exp_009_hotpotqa_retrieval_eval_smoke.summary.json",
+      "git_blob_sha1": "aab3c007149cd9249733673130ae79c59ffeb8f9",
+      "size_bytes": 361,
+      "format": "json",
+      "review_status": "UNREVIEWED_REUSE_RIGHTS_AND_PRIVACY",
+      "action": "Preserve unchanged; verify benchmark/content licenses, privacy and held-out access before approving redistribution"
+    },
+    {
+      "path": "results/exp_010_hotpotqa_dense_metrics.jsonl",
+      "git_blob_sha1": "08d89f0fe9a21e4020f6c8454a3b50f3a2c9bcfb",
+      "size_bytes": 21084,
+      "format": "jsonl",
+      "review_status": "UNREVIEWED_REUSE_RIGHTS_AND_PRIVACY",
+      "action": "Preserve unchanged; verify benchmark/content licenses, privacy and held-out access before approving redistribution"
+    },
+    {
+      "path": "results/exp_010_hotpotqa_dense_metrics.summary.json",
+      "git_blob_sha1": "ef323c2f6f824f857efd0958701f618bd0b50db2",
+      "size_bytes": 339,
+      "format": "json",
+      "review_status": "UNREVIEWED_REUSE_RIGHTS_AND_PRIVACY",
+      "action": "Preserve unchanged; verify benchmark/content licenses, privacy and held-out access before approving redistribution"
+    },
+    {
+      "path": "results/exp_011_hotpotqa_hybrid_metrics.jsonl",
+      "git_blob_sha1": "eef28ad74baaeb873cc5105469b3e7d9a8c39ce7",
+      "size_bytes": 20451,
+      "format": "jsonl",
+      "review_status": "UNREVIEWED_REUSE_RIGHTS_AND_PRIVACY",
+      "action": "Preserve unchanged; verify benchmark/content licenses, privacy and held-out access before approving redistribution"
+    },
+    {
+      "path": "results/exp_011_hotpotqa_hybrid_metrics.summary.json",
+      "git_blob_sha1": "f321a2a5f7919228aa183732fa0f3f262a10eeb5",
+      "size_bytes": 342,
+      "format": "json",
+      "review_status": "UNREVIEWED_REUSE_RIGHTS_AND_PRIVACY",
+      "action": "Preserve unchanged; verify benchmark/content licenses, privacy and held-out access before approving redistribution"
+    },
+    {
+      "path": "results/exp_012_hotpotqa_reranker_metrics.jsonl",
+      "git_blob_sha1": "36c8e15010a575cf2a9ee874d2f00811f24c1d98",
+      "size_bytes": 19734,
+      "format": "jsonl",
+      "review_status": "UNREVIEWED_REUSE_RIGHTS_AND_PRIVACY",
+      "action": "Preserve unchanged; verify benchmark/content licenses, privacy and held-out access before approving redistribution"
+    },
+    {
+      "path": "results/exp_012_hotpotqa_reranker_metrics.summary.json",
+      "git_blob_sha1": "4879d2ef5ae127bfbd7f076667792bf074ea860a",
+      "size_bytes": 342,
+      "format": "json",
+      "review_status": "UNREVIEWED_REUSE_RIGHTS_AND_PRIVACY",
+      "action": "Preserve unchanged; verify benchmark/content licenses, privacy and held-out access before approving redistribution"
+    },
+    {
+      "path": "results/exp_013_hotpotqa_bm25_baseline_v1.jsonl",
+      "git_blob_sha1": "9e9961850da66569c9e150cdbcf784f07001ba93",
+      "size_bytes": 1263955,
+      "format": "jsonl",
+      "review_status": "UNREVIEWED_REUSE_RIGHTS_AND_PRIVACY",
+      "action": "Preserve unchanged; verify benchmark/content licenses, privacy and held-out access before approving redistribution"
+    },
+    {
+      "path": "results/exp_013_hotpotqa_bm25_baseline_v1.summary.json",
+      "git_blob_sha1": "46446bcf0321e9fbc4f3eba5657b357fe2e462f5",
+      "size_bytes": 676,
+      "format": "json",
+      "review_status": "UNREVIEWED_REUSE_RIGHTS_AND_PRIVACY",
+      "action": "Preserve unchanged; verify benchmark/content licenses, privacy and held-out access before approving redistribution"
+    },
+    {
+      "path": "results/exp_014_hotpotqa_dense_baseline_v1.jsonl",
+      "git_blob_sha1": "ff66508d0b96497a779eef7d53c20a4b2525a144",
+      "size_bytes": 1245068,
+      "format": "jsonl",
+      "review_status": "UNREVIEWED_REUSE_RIGHTS_AND_PRIVACY",
+      "action": "Preserve unchanged; verify benchmark/content licenses, privacy and held-out access before approving redistribution"
+    },
+    {
+      "path": "results/exp_014_hotpotqa_dense_baseline_v1.summary.json",
+      "git_blob_sha1": "4f4e49f3765f59660b0de7efaac476348a42fa68",
+      "size_bytes": 677,
+      "format": "json",
+      "review_status": "UNREVIEWED_REUSE_RIGHTS_AND_PRIVACY",
+      "action": "Preserve unchanged; verify benchmark/content licenses, privacy and held-out access before approving redistribution"
+    },
+    {
+      "path": "results/exp_015_hotpotqa_hybrid_baseline_v1.jsonl",
+      "git_blob_sha1": "21def215eb3cbdda795924a8133e1f6fd08f930b",
+      "size_bytes": 1252717,
+      "format": "jsonl",
+      "review_status": "UNREVIEWED_REUSE_RIGHTS_AND_PRIVACY",
+      "action": "Preserve unchanged; verify benchmark/content licenses, privacy and held-out access before approving redistribution"
+    },
+    {
+      "path": "results/exp_015_hotpotqa_hybrid_baseline_v1.summary.json",
+      "git_blob_sha1": "3317f43f64e1de8d0dbc5ab66886709f115fb958",
+      "size_bytes": 681,
+      "format": "json",
+      "review_status": "UNREVIEWED_REUSE_RIGHTS_AND_PRIVACY",
+      "action": "Preserve unchanged; verify benchmark/content licenses, privacy and held-out access before approving redistribution"
+    },
+    {
+      "path": "results/exp_016_hotpotqa_reranker_baseline_v1.jsonl",
+      "git_blob_sha1": "fc9866eb1e64122fb6e118b8e7b9df9ef588f026",
+      "size_bytes": 1255094,
+      "format": "jsonl",
+      "review_status": "UNREVIEWED_REUSE_RIGHTS_AND_PRIVACY",
+      "action": "Preserve unchanged; verify benchmark/content licenses, privacy and held-out access before approving redistribution"
+    },
+    {
+      "path": "results/exp_016_hotpotqa_reranker_baseline_v1.summary.json",
+      "git_blob_sha1": "42d484a6bc379ff0147add09aea0be7b787e692f",
+      "size_bytes": 637,
+      "format": "json",
+      "review_status": "UNREVIEWED_REUSE_RIGHTS_AND_PRIVACY",
+      "action": "Preserve unchanged; verify benchmark/content licenses, privacy and held-out access before approving redistribution"
+    },
+    {
+      "path": "results/exp_017_2wiki_bm25_baseline_v1.jsonl",
+      "git_blob_sha1": "9ce6e4ef7e51cb909a71d326008a0870ea4210da",
+      "size_bytes": 1322193,
+      "format": "jsonl",
+      "review_status": "UNREVIEWED_REUSE_RIGHTS_AND_PRIVACY",
+      "action": "Preserve unchanged; verify benchmark/content licenses, privacy and held-out access before approving redistribution"
+    },
+    {
+      "path": "results/exp_017_2wiki_bm25_baseline_v1.summary.json",
+      "git_blob_sha1": "e572e5972280ab80594b18911eeabfe4161552d2",
+      "size_bytes": 691,
+      "format": "json",
+      "review_status": "UNREVIEWED_REUSE_RIGHTS_AND_PRIVACY",
+      "action": "Preserve unchanged; verify benchmark/content licenses, privacy and held-out access before approving redistribution"
+    },
+    {
+      "path": "results/exp_018_2wiki_dense_baseline_v1.jsonl",
+      "git_blob_sha1": "2e1219d60cadb802e7ab590e76c4bda8384461c9",
+      "size_bytes": 1309375,
+      "format": "jsonl",
+      "review_status": "UNREVIEWED_REUSE_RIGHTS_AND_PRIVACY",
+      "action": "Preserve unchanged; verify benchmark/content licenses, privacy and held-out access before approving redistribution"
+    },
+    {
+      "path": "results/exp_018_2wiki_dense_baseline_v1.summary.json",
+      "git_blob_sha1": "9868cef37a6cc4a41a0494406749fb8d2350d9c9",
+      "size_bytes": 651,
+      "format": "json",
+      "review_status": "UNREVIEWED_REUSE_RIGHTS_AND_PRIVACY",
+      "action": "Preserve unchanged; verify benchmark/content licenses, privacy and held-out access before approving redistribution"
+    },
+    {
+      "path": "results/exp_019_2wiki_hybrid_baseline_v1.jsonl",
+      "git_blob_sha1": "067b2f1ebcade12b70b7af75f3ef3c65df6b55a5",
+      "size_bytes": 1393387,
+      "format": "jsonl",
+      "review_status": "UNREVIEWED_REUSE_RIGHTS_AND_PRIVACY",
+      "action": "Preserve unchanged; verify benchmark/content licenses, privacy and held-out access before approving redistribution"
+    },
+    {
+      "path": "results/exp_019_2wiki_hybrid_baseline_v1.summary.json",
+      "git_blob_sha1": "c7af2eab258881b884fb3e277b937915c3ee2859",
+      "size_bytes": 677,
+      "format": "json",
+      "review_status": "UNREVIEWED_REUSE_RIGHTS_AND_PRIVACY",
+      "action": "Preserve unchanged; verify benchmark/content licenses, privacy and held-out access before approving redistribution"
+    },
+    {
+      "path": "results/exp_020_2wiki_reranker_baseline_v1.jsonl",
+      "git_blob_sha1": "afac5e3eba34c10b941753af3ae5e14935966c0d",
+      "size_bytes": 1281181,
+      "format": "jsonl",
+      "review_status": "UNREVIEWED_REUSE_RIGHTS_AND_PRIVACY",
+      "action": "Preserve unchanged; verify benchmark/content licenses, privacy and held-out access before approving redistribution"
+    },
+    {
+      "path": "results/exp_020_2wiki_reranker_baseline_v1.summary.json",
+      "git_blob_sha1": "40f26fe4fdc7ac3e0dc0719a132badfd45405996",
+      "size_bytes": 693,
+      "format": "json",
+      "review_status": "UNREVIEWED_REUSE_RIGHTS_AND_PRIVACY",
+      "action": "Preserve unchanged; verify benchmark/content licenses, privacy and held-out access before approving redistribution"
+    },
+    {
+      "path": "results/exp_021_hotpotqa_rcd_v1_mlx_smoke4.jsonl",
+      "git_blob_sha1": "9aecd496b86be10b1d50117716f424517c9fc98b",
+      "size_bytes": 69969,
+      "format": "jsonl",
+      "review_status": "UNREVIEWED_REUSE_RIGHTS_AND_PRIVACY",
+      "action": "Preserve unchanged; verify benchmark/content licenses, privacy and held-out access before approving redistribution"
+    },
+    {
+      "path": "results/exp_021_hotpotqa_rcd_v1_mlx_smoke4.summary.json",
+      "git_blob_sha1": "1d45a38ebd3d6ec5a4a4512b57ae7720593fb6e3",
+      "size_bytes": 547,
+      "format": "json",
+      "review_status": "UNREVIEWED_REUSE_RIGHTS_AND_PRIVACY",
+      "action": "Preserve unchanged; verify benchmark/content licenses, privacy and held-out access before approving redistribution"
+    },
+    {
+      "path": "results/exp_022_hotpotqa_rcd_v1_mlx_dev300.jsonl",
+      "git_blob_sha1": "f320001b2be3003394a1f3760afed1b0f1438350",
+      "size_bytes": 4478743,
+      "format": "jsonl",
+      "review_status": "UNREVIEWED_REUSE_RIGHTS_AND_PRIVACY",
+      "action": "Preserve unchanged; verify benchmark/content licenses, privacy and held-out access before approving redistribution"
+    },
+    {
+      "path": "results/exp_022_hotpotqa_rcd_v1_mlx_dev300.summary.json",
+      "git_blob_sha1": "153258cc1eb548df68e26e5478655fd6428c5329",
+      "size_bytes": 662,
+      "format": "json",
+      "review_status": "UNREVIEWED_REUSE_RIGHTS_AND_PRIVACY",
+      "action": "Preserve unchanged; verify benchmark/content licenses, privacy and held-out access before approving redistribution"
+    },
+    {
+      "path": "results/exp_023_hotpotqa_rcd_v1_mlx_frozen.jsonl",
+      "git_blob_sha1": "90075f01e277714e6fb85bac85400f3bf1e31aa4",
+      "size_bytes": 4417288,
+      "format": "jsonl",
+      "review_status": "UNREVIEWED_REUSE_RIGHTS_AND_PRIVACY",
+      "action": "Preserve unchanged; verify benchmark/content licenses, privacy and held-out access before approving redistribution"
+    },
+    {
+      "path": "results/exp_023_hotpotqa_rcd_v1_mlx_frozen.summary.json",
+      "git_blob_sha1": "709724364ad4099832e6ec0bc596bf2eda29e382",
+      "size_bytes": 690,
+      "format": "json",
+      "review_status": "UNREVIEWED_REUSE_RIGHTS_AND_PRIVACY",
+      "action": "Preserve unchanged; verify benchmark/content licenses, privacy and held-out access before approving redistribution"
+    },
+    {
+      "path": "results/exp_024_hotpotqa_rcd_v1_mlx_dev300_current.jsonl",
+      "git_blob_sha1": "a01325dd3af3feb712826bd6eba36e4fc9cab337",
+      "size_bytes": 4357708,
+      "format": "jsonl",
+      "review_status": "UNREVIEWED_REUSE_RIGHTS_AND_PRIVACY",
+      "action": "Preserve unchanged; verify benchmark/content licenses, privacy and held-out access before approving redistribution"
+    },
+    {
+      "path": "results/exp_024_hotpotqa_rcd_v1_mlx_dev300_current.summary.json",
+      "git_blob_sha1": "d86ea531ecc243be19723d39ad7135ed588d66e8",
+      "size_bytes": 2148,
+      "format": "json",
+      "review_status": "UNREVIEWED_REUSE_RIGHTS_AND_PRIVACY",
+      "action": "Preserve unchanged; verify benchmark/content licenses, privacy and held-out access before approving redistribution"
+    },
+    {
+      "path": "results/exp_025_hotpotqa_rcd_v1_mlx_dev300_current_tuned.jsonl",
+      "git_blob_sha1": "47ed8f65d051d03e6815f942cd2591190de7d652",
+      "size_bytes": 4293871,
+      "format": "jsonl",
+      "review_status": "UNREVIEWED_REUSE_RIGHTS_AND_PRIVACY",
+      "action": "Preserve unchanged; verify benchmark/content licenses, privacy and held-out access before approving redistribution"
+    },
+    {
+      "path": "results/exp_025_hotpotqa_rcd_v1_mlx_dev300_current_tuned.summary.json",
+      "git_blob_sha1": "4329c24dac295e7a3cd9c473726ab83fceb520c0",
+      "size_bytes": 2184,
+      "format": "json",
+      "review_status": "UNREVIEWED_REUSE_RIGHTS_AND_PRIVACY",
+      "action": "Preserve unchanged; verify benchmark/content licenses, privacy and held-out access before approving redistribution"
+    },
+    {
+      "path": "results/exp_026_hotpotqa_rcd_v1_mlx_frozen_current.jsonl",
+      "git_blob_sha1": "474703ef2293766841c425482f1ea9f6c281fe84",
+      "size_bytes": 4340073,
+      "format": "jsonl",
+      "review_status": "UNREVIEWED_REUSE_RIGHTS_AND_PRIVACY",
+      "action": "Preserve unchanged; verify benchmark/content licenses, privacy and held-out access before approving redistribution"
+    },
+    {
+      "path": "results/exp_026_hotpotqa_rcd_v1_mlx_frozen_current.summary.json",
+      "git_blob_sha1": "eb19d5fe24658790e8665f9c7032145b231f9ad5",
+      "size_bytes": 2279,
+      "format": "json",
+      "review_status": "UNREVIEWED_REUSE_RIGHTS_AND_PRIVACY",
+      "action": "Preserve unchanged; verify benchmark/content licenses, privacy and held-out access before approving redistribution"
+    },
+    {
+      "path": "results/exp_028b_hotpotqa_rcd_v1_mlx_heldout_recovery.jsonl",
+      "git_blob_sha1": "23a783b223c0dbb7020c72342e6043079ea05a9b",
+      "size_bytes": 4290149,
+      "format": "jsonl",
+      "review_status": "UNREVIEWED_REUSE_RIGHTS_AND_PRIVACY",
+      "action": "Preserve unchanged; verify benchmark/content licenses, privacy and held-out access before approving redistribution"
+    },
+    {
+      "path": "results/exp_028b_hotpotqa_rcd_v1_mlx_heldout_recovery.summary.json",
+      "git_blob_sha1": "b32e24e5abc60f62bf453b3cf657d938b484477d",
+      "size_bytes": 2374,
+      "format": "json",
+      "review_status": "UNREVIEWED_REUSE_RIGHTS_AND_PRIVACY",
+      "action": "Preserve unchanged; verify benchmark/content licenses, privacy and held-out access before approving redistribution"
+    },
+    {
+      "path": "results/exp_029_rcd_poisoned_pilot_n10.json",
+      "git_blob_sha1": "a9ebe741b7c286349b410c0da8f7d6faa4b1da0a",
+      "size_bytes": 12808,
+      "format": "json",
+      "review_status": "UNREVIEWED_REUSE_RIGHTS_AND_PRIVACY",
+      "action": "Preserve unchanged; verify benchmark/content licenses, privacy and held-out access before approving redistribution"
+    },
+    {
+      "path": "results/week5_6_2wiki_sweep.csv",
+      "git_blob_sha1": "feb660bb70a578c9fea520776c57a0134369abf7",
+      "size_bytes": 813,
+      "format": "csv",
+      "review_status": "UNREVIEWED_REUSE_RIGHTS_AND_PRIVACY",
+      "action": "Preserve unchanged; verify benchmark/content licenses, privacy and held-out access before approving redistribution"
+    },
+    {
+      "path": "results/week5_6_intensity5_sweep.csv",
+      "git_blob_sha1": "46943a82adf0cfab5e0495447cc524110e181a1a",
+      "size_bytes": 437,
+      "format": "csv",
+      "review_status": "UNREVIEWED_REUSE_RIGHTS_AND_PRIVACY",
+      "action": "Preserve unchanged; verify benchmark/content licenses, privacy and held-out access before approving redistribution"
+    },
+    {
+      "path": "results/week5_6_low_rate_sweep.csv",
+      "git_blob_sha1": "c094d3f581a898b1482eac63def99b1bb8660a29",
+      "size_bytes": 431,
+      "format": "csv",
+      "review_status": "UNREVIEWED_REUSE_RIGHTS_AND_PRIVACY",
+      "action": "Preserve unchanged; verify benchmark/content licenses, privacy and held-out access before approving redistribution"
+    },
+    {
+      "path": "results/week5_6_nq_sweep.csv",
+      "git_blob_sha1": "e55feba0494eab7ef63f359bb761c24231eccbe8",
+      "size_bytes": 1529,
+      "format": "csv",
+      "review_status": "UNREVIEWED_REUSE_RIGHTS_AND_PRIVACY",
+      "action": "Preserve unchanged; verify benchmark/content licenses, privacy and held-out access before approving redistribution"
+    },
+    {
+      "path": "results/week5_attack_intensity_sweep.csv",
+      "git_blob_sha1": "39ff4ce3ed7399521f906b762905e0bec86ce542",
+      "size_bytes": 808,
+      "format": "csv",
+      "review_status": "UNREVIEWED_REUSE_RIGHTS_AND_PRIVACY",
+      "action": "Preserve unchanged; verify benchmark/content licenses, privacy and held-out access before approving redistribution"
+    },
+    {
+      "path": "results/week5_attack_intensity_sweep_full.csv",
+      "git_blob_sha1": "96b6f49db427cc2d7c62aa3cdcf7e65b3e80987b",
+      "size_bytes": 2795,
+      "format": "csv",
+      "review_status": "UNREVIEWED_REUSE_RIGHTS_AND_PRIVACY",
+      "action": "Preserve unchanged; verify benchmark/content licenses, privacy and held-out access before approving redistribution"
+    },
+    {
+      "path": "results/week7_rcd_v2_pilot_n10_seed42.json",
+      "git_blob_sha1": "5a48cf95f589ebeb61f1b29d9a7910d6a40cdddc",
+      "size_bytes": 77003,
+      "format": "json",
+      "review_status": "UNREVIEWED_REUSE_RIGHTS_AND_PRIVACY",
+      "action": "Preserve unchanged; verify benchmark/content licenses, privacy and held-out access before approving redistribution"
+    }
+  ],
+  "limitations": [
+    "Checks are based on tracked file path, blob SHA and size, not full semantic inspection of every underlying file.",
+    "Git blob SHA-1 identifies public tracked content, not its license, safe reuse, confidentiality or original private run.",
+    "Do not delete, rewrite or untrack files automatically; source-preserving decisions need user/rights-holder authorization.",
+    "Some raw answers and prompts already present in the public repository are not considered safe merely because they are public."
+  ]
+}
