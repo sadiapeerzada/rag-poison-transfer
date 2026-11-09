@@ -62,6 +62,7 @@ def make_plan(*, answered=True):
         "schema": it.PLAN_SCHEMA, "status": "PRIVATE_REAL_RETRIEVAL_PLAN_NO_NEW_QA",
         "original_pins": it.ORIGINAL_PINS,
         "qa_max_tokens": 64, "entries": entries,
+        "limitations": ["Synthetic-only private fixture; not a real research result."],
         "required_new_qa_calls": 80 if answered else 0
     }
 

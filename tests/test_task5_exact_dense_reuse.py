@@ -38,7 +38,7 @@ def test_optimized_plan_fails_closed_on_forged_reuse_flag():
     plan["required_new_qa_calls"] = 79
     for i,row in enumerate(plan["entries"]):
         row["reuse_frozen_dense_qa_for_iterative"] = i == 0
-    with pytest.raises(ValueError, match="exact prompt/evidence parity"):
+    with pytest.raises(ValueError, match="Exact prompt/evidence parity"):
         it.verify_plan(plan)
 
 
