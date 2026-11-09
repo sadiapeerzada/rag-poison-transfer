@@ -1,0 +1,72 @@
+{
+  "schema": "rag-poison-transfer.2wiki-rcd-detector-operator-console-aggregate-public/v1",
+  "date": "2026-11-09",
+  "evidence_origin": "Operator-shared Mac terminal output of scripts/evaluate_saved_2wiki_rcd_poison_detection.py at merged PR #155; private report not independently fetched by GitHub audit",
+  "source_script": "scripts/evaluate_saved_2wiki_rcd_poison_detection.py",
+  "private_report_basename": "task6-real-detector-20261109T123552Z_PRIVATE.json",
+  "source_run_status": "REAL_PINNED_2WIKI_EXPLORATORY_POISON_IDENTITY_DETECTION",
+  "local_tests": {
+    "passed": 17,
+    "duration_seconds": 0.16
+  },
+  "study_design": {
+    "source": "Previously executed 2Wiki RCD ablation full_k3 poisoned retrieval plan, original frozen construction cells; no new generator inference",
+    "selected_query_stratum_positions": 40,
+    "distinct_questions": 36,
+    "dev_unique_questions": 18,
+    "test_unique_questions": 18,
+    "shared_candidate_document_ids_across_splits": 54,
+    "candidate_doc_identity_label": "known inserted poison document identity in original sealed cell (not independently verified factual falsehood)",
+    "source_sample_type": "retrospective valid-only outcome-selected exploratory subset",
+    "document_disjoint": false,
+    "test_threshold_selected_from_dev_only": true
+  },
+  "test": {
+    "auroc": 0.5207890812129977,
+    "average_precision_auprc": 0.39322247587949133,
+    "f1": 0.517814726840855,
+    "false_positive_rate": 1,
+    "poison_candidate_prevalence": 0.34935897435897434,
+    "nominal_ci95": {
+      "auroc": [
+        0.4494166334264061,
+        0.5828051804904932
+      ],
+      "average_precision_auprc": [
+        0.2999726022651791,
+        0.5003169556045872
+      ],
+      "f1": [
+        0.44665012406947896,
+        0.5879732739420935
+      ],
+      "false_positive_rate": [
+        1,
+        1
+      ]
+    },
+    "bootstrap_replicates": 2000,
+    "nominal_unadjusted": true,
+    "bootstrap_defined_replicates_per_metric": 2000,
+    "resampling_unit": "whole questions with all candidate observations"
+  },
+  "interpretable_baselines": {
+    "auroc_random_ranking": 0.5,
+    "random_ranking_average_precision_reference_approx_test_prevalence": 0.34935897435897434,
+    "predict_all_positive_f1": 0.517814726840855,
+    "predict_all_positive_false_positive_rate": 1,
+    "f1_minus_predict_all_positive_f1": 0,
+    "auroc_minus_random_ranking": 0.020789081212997718,
+    "average_precision_minus_prevalence": 0.04386350152051699
+  },
+  "interpretation": "Observed AUROC near 0.5 and F1 exactly equal to all-positive baseline at FPR 1.0. The selected operating threshold does not distinguish clean candidates. Slight average-precision lift above test prevalence is descriptive, not validated generalization.",
+  "limitations": [
+    "The exact original private JSON report and per-candidate records were not supplied or independently fetched to generate this public operator-console receipt.",
+    "Development and test split are question-disjoint but share 54 candidate document identities; no document-disjoint generalization claim.",
+    "Only 36 unique original question IDs, retrospectively selected mechanically valid cases; not prospective held-out detector test.",
+    "Identity labels indicate injected documents, not actual factual falsehood or document intent.",
+    "Bootstrapped intervals are nominal, unadjusted, and preserve within-question candidate rows; small cluster count and shared document IDs limit inference.",
+    "Failure to outperform a naive all-positive baseline at chosen threshold is reported as a negative result; do not market as a working poison detector."
+  ],
+  "status": "EXPLORATORY_EVALUATION_EXECUTED_NEGATIVE_DETECTOR_RESULT_NOT_STRONG_VALIDATION"
+}
