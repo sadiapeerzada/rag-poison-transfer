@@ -45,6 +45,35 @@ Expected prerequisites: the prior private 2Wiki frozen 300-query run, its origin
 
 **Stop and send error text** if any of the **80 original Dense prompt/evidence parity checks** fail. Do not force a baseline mismatch through with synthetic data or changed retrieval configuration.
 
+## Stage 1b: REUSE identical original Dense answers before running Qwen
+
+**This new optimized stage reuses the verified real Stage 1 private plan.** It performs no retrieval, no model generation, and no change to the frozen research inputs. Because only **6 of the 80** original iterative retrievals invoked round two in the successful Mac preflight, most of the 80 prompts may be unchanged. The optimizer **does not assume** they are unchanged: it requires both an exact SHA-256 prompt match **and** the same ordered generator-visible evidence document IDs before reusing the original Dense Qwen answer. Cases with changed prompts retain their own true new Qwen call requirement.
+
+After the optimizer PR passes CI and merges:
+
+```bash
+cd "$HOME/Downloads/rag-poison-transfer"
+git fetch origin
+git switch main
+git pull --ff-only origin main
+python -m pytest -q tests/test_task5_exact_dense_reuse.py tests/test_run_2wiki_iterative_matched_qa.py
+
+ROOT="$HOME/Documents/rag-research-results"
+PREPARED_PLAN="$ROOT/nov09-research-gates/task5-iterative-plan-20261109T134503Z_PRIVATE.json"
+OPLAN="$ROOT/nov09-research-gates/task5-iterative-optimized-$(date -u +%Y%m%dT%H%M%SZ)_PRIVATE.json"
+
+python scripts/run_2wiki_iterative_matched_qa.py optimize \
+  --plan "$PREPARED_PLAN" \
+  --plan-sha256 5dacf18d8713018b2c89e567566257391518aea9db057655006f0a70f828c429 \
+  --out "$OPLAN"
+
+shasum -a 256 "$OPLAN"
+```
+
+The output reports `identical_iterative_prompts_reusing_the_same_frozen_dense_answer`, `new_real_qwen_inference_requests_required`, and `optimized_plan_sha256`. **Use `OPLAN` as the `PLAN` below**; the original unoptimized 80-request plan is deliberately rejected by the execution command as a waste-control and source-identity safeguard. If the shell session changes, set `PLAN` to the exact `private_optimized_plan_path` printed by `optimize`.
+
+**Scientific caveat:** Two arms with an identical prompt share the same single historical Qwen response; they are not independently resampled model outputs. They make exactly zero paired difference for that input. Reusing an existing response must be explicitly disclosed and is not evidence of additional new Qwen calls.
+
 ## Stage 2: limited real Qwen model calls with explicit authorization
 
 Stage 2 has real, potentially costly model calls. **Do not start it unless the user has explicitly authorized local inference and the Mac has enough disk, RAM/Metal memory and a recovery/backup plan.** The runner never schedules background work. Once resources are approved:
@@ -52,6 +81,7 @@ Stage 2 has real, potentially costly model calls. **Do not start it unless the u
 ```bash
 ROOT="$HOME/Documents/rag-research-results"
 RUN="$ROOT/twowiki-300-readiness-20261106/authorized-matrix"
+PLAN="$OPLAN"   # exact optimized private path from Stage 1b; reset to that path after a new shell
 PIN="$(shasum -a 256 "$PLAN" | awk '{print $1}')"
 
 SNAP="$(python - "$RUN/protocol.json" <<'PY'
@@ -75,7 +105,7 @@ python scripts/run_2wiki_iterative_matched_qa.py run \
   --max-new-requests 4 --execute
 ```
 
-First physical execution is capped at **4 new requests**. Inspect the receipt for `ITERATIVE_NEW_QWEN_PARTIAL`, `verified_real_qa_observations` and `remaining`. If all 4 newly recorded calls validate and the resource plan permits completion, resume the **same** `PLAN`, `PIN`, `SNAP` and `RUN_OUT` with `--execute` (omit `--max-new-requests`).
+First physical execution is capped at **4 genuine changed-prompt requests** (or fewer if the optimized plan requires fewer). Inspect the receipt for `ITERATIVE_NEW_QWEN_PARTIAL`, `verified_real_qa_observations` and `remaining`. If all 4 newly recorded calls validate and the resource plan permits completion, resume the **same** `PLAN`, `PIN`, `SNAP` and `RUN_OUT` with `--execute` (omit `--max-new-requests`).
 
 If the run stops after writing an intent and before a verified response, **do not delete or automatically retry the intent**. The script raises an unresolved-call error; manually inspect the private journal and clarify whether the model produced a response before deciding a separate recovery protocol.
 
@@ -92,7 +122,7 @@ python scripts/run_2wiki_iterative_matched_qa.py aggregate \
   --out "$ROOT/nov09-research-gates/task5-iterative-summary-$(date -u +%Y%m%dT%H%M%SZ)_PRIVATE.json"
 ```
 
-The aggregate requires every actual recorded response, reconciles raw Qwen text with extracted and scored answers, includes abstentions as answer failures, and reports:
+The aggregate requires every **changed-prompt** actual Qwen response, reuses source SHA-matched original Dense observations for exact unchanged prompts, reconciles raw Qwen text with extracted and scored answers, includes abstentions as answer failures, and reports:
 - paired *target-match rate* in poisoned inputs, iterative vs **reused exact original Dense**;
 - paired clean and poisoned gold correctness, poison exposure and actual one/two-round retrieval operations;
 - 2,000-replicate nominal **whole-original-question-cluster** bootstrap CIs preserving repeated query cells.

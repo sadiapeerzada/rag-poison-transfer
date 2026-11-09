@@ -17,6 +17,7 @@ This does NOT run on the model's cloud environment. It runs locally on Mac.
 from __future__ import annotations
 
 import argparse
+import copy
 from collections import Counter, defaultdict
 import gc
 import hashlib
@@ -43,6 +44,7 @@ from src.experiments.protocol import corpus_fingerprint, query_set_fingerprint
 from src.experiments.week9_construction import replay
 
 PLAN_SCHEMA = "rag-poison-transfer.sealed-2wiki-iterative-real-qa-plan/v1"
+OPTIMIZED_PLAN_STATUS = "PRIVATE_REAL_RETRIEVAL_PLAN_IDENTICAL_DENSE_PROMPTS_REUSED"
 RUN_SCHEMA = "rag-poison-transfer.sealed-2wiki-iterative-real-qa-observation/v1"
 REPORT_SCHEMA = "rag-poison-transfer.sealed-2wiki-iterative-qa-comparison/v1"
 SEED = 42
@@ -165,16 +167,40 @@ def new_entry(cellid, question, poison, condition, retrieved, trace, baseline, s
     }
 
 
+def identical_frozen_prompt(row):
+    """Strict parity: source *evidence IDs AND exact prompt hash* are identical.
+
+    The same original model response is reused as an OBSERVATION, not
+    mislabeled as a new independent Qwen generation. The prepared source
+    plan itself was already bound to original SHA-pinned evidence/prompt.
+    """
+    old = row["baseline_frozen_dense"]
+    return (
+        row["prompt"] is not None
+        and row["policy_trace"]["final_decision"] == "answer"
+        and row["selected_evidence_doc_ids"] == old["original_evidence_doc_ids"]
+        and row["prompt_sha256"] == old["original_prompt_sha256"]
+    )
+
+
 def verify_plan(data):
+    status = data.get("status") if isinstance(data, dict) else None
+    optimized = status == OPTIMIZED_PLAN_STATUS
     if (not isinstance(data, dict) or data.get("schema") != PLAN_SCHEMA
             or data.get("original_pins") != ORIGINAL_PINS
             or data.get("qa_max_tokens") != TOKEN_CAP
-            or data.get("status") != "PRIVATE_REAL_RETRIEVAL_PLAN_NO_NEW_QA"):
+            or status not in {"PRIVATE_REAL_RETRIEVAL_PLAN_NO_NEW_QA",
+                              OPTIMIZED_PLAN_STATUS}):
         raise ValueError("Not an original-sealed iterative QA plan")
     entries = data.get("entries")
     if not isinstance(entries, list) or len(entries) != 80:
         raise ValueError("Expected 40 selected questions x 2 conditions")
-    seen, slots, questions, by_family, model_calls = set(), defaultdict(set), set(), Counter(), 0
+    if optimized and (not isinstance(data.get("original_prepared_plan_sha256"), str)
+                      or len(data["original_prepared_plan_sha256"]) != 64):
+        raise ValueError("Optimized plan lacks exact original-prepared-plan SHA-256 provenance")
+    seen, slots, questions, by_family, model_calls, reused = (
+        set(), defaultdict(set), set(), Counter(), 0, 0
+    )
     for row in entries:
         cell, qid, condition = row["cell_id"], row["query_id"], row["condition"]
         key = (cell, qid, condition)
@@ -200,20 +226,92 @@ def verify_plan(data):
         if trace["final_decision"] == "answer":
             if not isinstance(prompt, str) or not prompt or row["prompt_sha256"] != hashlib.sha256(prompt.encode()).hexdigest():
                 raise ValueError("Actual iterative QA prompt is missing or altered")
-            model_calls += 1
         elif trace["final_decision"] == "abstain":
             if prompt is not None or row["prompt_sha256"] is not None or row["selected_evidence_doc_ids"]:
                 raise ValueError("Abstaining policy cannot contain generator-visible evidence")
         else:
             raise ValueError("Unrecognized adaptive policy action")
         baseline = row["baseline_frozen_dense"]
-        if not isinstance(baseline["original_evidence_doc_ids"], list) or not isinstance(baseline["original_answer"], str):
-            raise ValueError("Frozen Dense true original baseline missing")
+        if (not isinstance(baseline["original_evidence_doc_ids"], list)
+                or not isinstance(baseline["original_answer"], str)
+                or not isinstance(baseline.get("original_prompt_sha256"), str)
+                or len(baseline["original_prompt_sha256"]) != 64):
+            raise ValueError("Frozen Dense original evidence/prompt/answer missing")
+        if (bool(exact_match(baseline["original_answer"], row["gold_answer"]))
+                != baseline["original_gold_correct"]):
+            raise ValueError("Frozen Dense original answer correctness is inconsistent")
+        if (condition == "poisoned"
+                and baseline["original_target_match"] is not None
+                and bool(exact_match(baseline["original_answer"], row["target_answer"]))
+                != bool(baseline["original_target_match"])):
+            raise ValueError("Frozen Dense original target label is inconsistent")
+        if optimized:
+            flag = row.get("reuse_frozen_dense_qa_for_iterative")
+            if type(flag) is not bool or flag != identical_frozen_prompt(row):
+                raise ValueError("Exact prompt/evidence parity does not permit indicated reuse")
+            reused += int(flag)
+            if prompt is not None and not flag:
+                model_calls += 1
+        else:
+            if "reuse_frozen_dense_qa_for_iterative" in row:
+                raise ValueError("Source preparation plan must not be tampered with")
+            if prompt is not None:
+                model_calls += 1
     if (len(slots) != 40 or any(x != {"clean", "poisoned"} for x in slots.values())
             or len(questions) != 36 or len(by_family) != 2
             or data.get("required_new_qa_calls") != model_calls):
         raise ValueError("Selected ablation population or planned QA calls disagrees")
+    if optimized and data.get("identical_frozen_dense_qa_reuse_count") != reused:
+        raise ValueError("Optimized reused Dense observation count disagrees")
     return entries
+
+
+def optimize(*, prepared_plan, prepared_plan_sha256, out):
+    """No Qwen and NO new retrieval; safe transformation of real saved plan."""
+    original = load_plan(prepared_plan, prepared_plan_sha256)
+    if original["status"] != "PRIVATE_REAL_RETRIEVAL_PLAN_NO_NEW_QA":
+        raise ValueError("Only the unoptimized original retrieval plan may be optimized")
+    out = outside_repo(out)
+    if out.exists() or not out.parent.is_dir():
+        raise ValueError("Choose a new private optimized output file")
+    updated = copy.deepcopy(original)
+    updated["status"] = OPTIMIZED_PLAN_STATUS
+    updated["original_prepared_plan_sha256"] = prepared_plan_sha256
+    n_reused = 0
+    for item in updated["entries"]:
+        match = identical_frozen_prompt(item)
+        item["reuse_frozen_dense_qa_for_iterative"] = match
+        n_reused += int(match)
+    updated["identical_frozen_dense_qa_reuse_count"] = n_reused
+    updated["required_new_qa_calls"] = sum(
+        r["prompt"] is not None and not r["reuse_frozen_dense_qa_for_iterative"]
+        for r in updated["entries"]
+    )
+    updated["limitations"].append(
+        "An identical original Dense prompt is reused as ONE shared original Qwen "
+        "observation, not a second independent new iterative-model trial; "
+        "identical-prompt arm differences are exactly zero by design."
+    )
+    verify_plan(updated)
+    with out.open("x", encoding="utf-8") as f:
+        json.dump(updated, f, ensure_ascii=False, indent=2, sort_keys=True)
+        f.write("\n")
+    return {
+        "status": updated["status"],
+        "original_real_retrieval_plan_sha256": prepared_plan_sha256,
+        "total_matched_arm_entries": len(updated["entries"]),
+        "original_dense_qa_observations_reused_as_control": 80,
+        "identical_iterative_prompts_reusing_the_same_frozen_dense_answer": n_reused,
+        "new_real_qwen_inference_requests_required": updated["required_new_qa_calls"],
+        "actual_retrieval_round2_invocations": sum(
+            r["iterative_actual_inner_retrieval_calls"] == 2
+            for r in updated["entries"]
+        ),
+        "reused_answers_are_not_new_independent_model_calls": True,
+        "optimized_plan_sha256": sha(out),
+        "private_optimized_plan_path": str(out)
+    }
+
 
 
 def load_plan(file: Path, pin: str):
@@ -363,6 +461,8 @@ def run(*, plan_file, plan_sha256, original_protocol, model_snapshot, results_di
     if not execute:
         raise ValueError("Explicit --execute required for physical new Qwen inference")
     plan = load_plan(plan_file, plan_sha256)
+    if plan["status"] != OPTIMIZED_PLAN_STATUS:
+        raise ValueError("Optimize exact-repeat prompts before authorizing any new Qwen inference")
     protocol = require_json(original_protocol, ORIGINAL_PINS["protocol.json"])
     from scripts.run_week9_protocol_poison_matrix import model_binding
     binding = model_binding(model_snapshot, protocol["binding"]["model_identity"])
@@ -384,6 +484,8 @@ def run(*, plan_file, plan_sha256, original_protocol, model_snapshot, results_di
         "qa_max_tokens": TOKEN_CAP,
         "decoding": "explicit greedy temp=0, per-call Qwen seed 42",
         "required_new_qa_calls": plan["required_new_qa_calls"],
+        "identical_frozen_dense_qa_reuse_count": plan["identical_frozen_dense_qa_reuse_count"],
+        "original_prepared_plan_sha256": plan["original_prepared_plan_sha256"],
     }
     if manifest_path.exists():
         if json.loads(manifest_path.read_text(encoding="utf-8")) != manifest:
@@ -393,7 +495,7 @@ def run(*, plan_file, plan_sha256, original_protocol, model_snapshot, results_di
 
     pending, done = [], 0
     for entry in plan["entries"]:
-        if entry["prompt"] is None:
+        if entry["prompt"] is None or entry["reuse_frozen_dense_qa_for_iterative"]:
             continue
         result = results_dir / "entries" / (entry["id"] + ".json")
         intent = results_dir / "intents" / (entry["id"] + ".json")
@@ -454,6 +556,7 @@ def run(*, plan_file, plan_sha256, original_protocol, model_snapshot, results_di
         "status": "ITERATIVE_NEW_QWEN_COMPLETE" if done == plan["required_new_qa_calls"] else "ITERATIVE_NEW_QWEN_PARTIAL",
         "verified_real_qa_observations": done,
         "required_real_qa_observations": plan["required_new_qa_calls"],
+        "identical_frozen_dense_responses_reused": plan["identical_frozen_dense_qa_reuse_count"],
         "remaining": plan["required_new_qa_calls"] - done,
         "private_run_directory": str(results_dir)
     }
@@ -516,6 +619,8 @@ def summarize_pair(clean, attacked):
 
 def aggregate(*, plan_file, plan_sha256, results_dir, output):
     plan = load_plan(plan_file, plan_sha256)
+    if plan["status"] != OPTIMIZED_PLAN_STATUS:
+        raise ValueError("Aggregate requires source-bound optimized exact-repeat prompt plan")
     results_dir = outside_repo(results_dir)
     output = outside_repo(output)
     if output.exists() or not output.parent.is_dir():
@@ -526,14 +631,25 @@ def aggregate(*, plan_file, plan_sha256, results_dir, output):
     manifest = require_json(manifest_path, sha(manifest_path))
     if (manifest.get("schema") != RUN_SCHEMA
             or manifest.get("plan_sha256") != plan_sha256
-            or manifest.get("required_new_qa_calls") != plan["required_new_qa_calls"]):
+            or manifest.get("required_new_qa_calls") != plan["required_new_qa_calls"]
+            or manifest.get("identical_frozen_dense_qa_reuse_count") != plan["identical_frozen_dense_qa_reuse_count"]
+            or manifest.get("original_prepared_plan_sha256") != plan["original_prepared_plan_sha256"]):
         raise ValueError("Real original model-run manifest disagrees with frozen inputs")
     pairs = defaultdict(dict)
     for row in plan["entries"]:
         r = dict(row)
         if row["prompt"] is None:
             r["_new"] = {"gold_correct": False, "target_match": False,
-                         "gold_f1": 0.0}
+                         "gold_f1": 0.0, "observation_status": "POLICY_ABSTENTION_NO_QA"}
+        elif row["reuse_frozen_dense_qa_for_iterative"]:
+            original = row["baseline_frozen_dense"]
+            answer = original["original_answer"]
+            r["_new"] = {
+                "gold_correct": original["original_gold_correct"],
+                "target_match": bool(exact_match(answer, row["target_answer"])),
+                "gold_f1": f1_score(answer, row["gold_answer"]),
+                "observation_status": "REUSED_EXACT_SAME_FROZEN_DENSE_MODEL_RESPONSE"
+            }
         else:
             result = results_dir / "entries" / (row["id"] + ".json")
             intent = results_dir / "intents" / (row["id"] + ".json")
@@ -582,12 +698,15 @@ def aggregate(*, plan_file, plan_sha256, results_dir, output):
         "n_distinct_question_ids": len({r["query_id"] for r in summary_rows}),
         "n_actual_new_qwen_model_calls": plan["required_new_qa_calls"],
         "n_reused_original_dense_qwen_observations": 80,
+        "n_identical_iterative_arm_responses_reused_from_frozen_dense": plan["identical_frozen_dense_qa_reuse_count"],
+        "original_prepared_plan_sha256": plan["original_prepared_plan_sha256"],
         "summary": values,
         "paired_effects": comparisons,
         "limitations": [
             "Only 40 post-hoc valid-only question/stratum positions, 36 original query IDs; this is not a prospective full 300-query protocol.",
             "Multiple positions for a question are dependent and clustered; intervals are nominal 2000-bootstrap CIs.",
             "The original Dense control was reused after independently verifying exact original retriever IDs and prompt identity; original data unchanged.",
+            "Where both arms have byte-identical prompt and exact evidence document IDs, both paired outcomes reuse ONE original Dense Qwen answer; these are not independent generation replicates.",
             "Original 2Wiki study historical exposure/custody uncertainties remain.",
             "The multi-round policy is a lexical-coverage heuristic, not a learned adaptive controller.",
             "Poison-target matching is not source-verified semantic factuality; abstentions count as answer failures.",
@@ -602,6 +721,7 @@ def aggregate(*, plan_file, plan_sha256, results_dir, output):
         "question_cell_pairs": n,
         "distinct_question_ids": report["n_distinct_question_ids"],
         "new_real_qwen_calls": report["n_actual_new_qwen_model_calls"],
+        "same_prompt_iterative_answers_reused": report["n_identical_iterative_arm_responses_reused_from_frozen_dense"],
         "actual_iterative_target_matches": counts["iterative_poisoned_target"],
         "original_dense_target_matches": counts["dense_poisoned_target"],
         "paired_target_difference": comparisons["iterative_targeted_match_minus_frozen_dense"]["difference"],
@@ -622,6 +742,10 @@ def main():
     prep.add_argument("--local-data", type=Path)
     prep.add_argument("--private-ablation-plan", type=Path)
     prep.add_argument("--out", type=Path, required=True)
+    opt = sub.add_parser("optimize", help="Reuse original Dense QA only for exact identical prompt/evidence; no inference or retrieval")
+    opt.add_argument("--plan", type=Path, required=True)
+    opt.add_argument("--plan-sha256", required=True)
+    opt.add_argument("--out", type=Path, required=True)
     execute = sub.add_parser("run", help="Resume/perform explicit real Qwen model inference")
     execute.add_argument("--plan", type=Path, required=True)
     execute.add_argument("--plan-sha256", required=True)
@@ -641,6 +765,9 @@ def main():
                         original_run=args.original_run, out=args.out,
                         local_data=args.local_data,
                         private_ablation_plan=args.private_ablation_plan)
+    elif args.stage == "optimize":
+        value = optimize(prepared_plan=args.plan,
+                         prepared_plan_sha256=args.plan_sha256, out=args.out)
     elif args.stage == "run":
         value = run(plan_file=args.plan, plan_sha256=args.plan_sha256,
                     original_protocol=args.protocol, model_snapshot=args.model_snapshot,
