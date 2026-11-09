@@ -1,0 +1,1310 @@
+{
+  "schema": "rag-poison-transfer.real-development-retrieval-robustness-census/v1",
+  "date": "2026-11-09",
+  "status": "PASS_SOURCE_TABLE_RECONCILIATION_RETRIEVAL_ONLY_NOT_FULL_ROBUSTNESS",
+  "source_path": "results/week5_attack_intensity_sweep_full.csv",
+  "scope": "Historical small development retrieval probes only, not held-out generator outcomes",
+  "source_rows": 48,
+  "source_cell_keys_unique": true,
+  "source_positive_counts_integral": true,
+  "per_retriever_cells": [
+    {
+      "dataset": "hotpotqa",
+      "attack_family": "lexical",
+      "intensity": 1,
+      "global_poison_rate": 1,
+      "retriever": "bm25",
+      "n_attacked_query_positions": 25,
+      "prr_at_k": {
+        "1": 1,
+        "3": 1,
+        "5": 1,
+        "10": 1
+      },
+      "poison_retrieved_numerator_at_k": {
+        "1": 25,
+        "3": 25,
+        "5": 25,
+        "10": 25
+      }
+    },
+    {
+      "dataset": "hotpotqa",
+      "attack_family": "lexical",
+      "intensity": 1,
+      "global_poison_rate": 1,
+      "retriever": "dense",
+      "n_attacked_query_positions": 25,
+      "prr_at_k": {
+        "1": 0.52,
+        "3": 0.96,
+        "5": 1,
+        "10": 1
+      },
+      "poison_retrieved_numerator_at_k": {
+        "1": 13,
+        "3": 24,
+        "5": 25,
+        "10": 25
+      }
+    },
+    {
+      "dataset": "hotpotqa",
+      "attack_family": "lexical",
+      "intensity": 1,
+      "global_poison_rate": 1,
+      "retriever": "hybrid",
+      "n_attacked_query_positions": 25,
+      "prr_at_k": {
+        "1": 0.96,
+        "3": 1,
+        "5": 1,
+        "10": 1
+      },
+      "poison_retrieved_numerator_at_k": {
+        "1": 24,
+        "3": 25,
+        "5": 25,
+        "10": 25
+      }
+    },
+    {
+      "dataset": "hotpotqa",
+      "attack_family": "lexical",
+      "intensity": 1,
+      "global_poison_rate": 1,
+      "retriever": "reranker",
+      "n_attacked_query_positions": 25,
+      "prr_at_k": {
+        "1": 0.96,
+        "3": 1,
+        "5": 1,
+        "10": 1
+      },
+      "poison_retrieved_numerator_at_k": {
+        "1": 24,
+        "3": 25,
+        "5": 25,
+        "10": 25
+      }
+    },
+    {
+      "dataset": "hotpotqa",
+      "attack_family": "lexical",
+      "intensity": 3,
+      "global_poison_rate": 1,
+      "retriever": "bm25",
+      "n_attacked_query_positions": 25,
+      "prr_at_k": {
+        "1": 1,
+        "3": 1,
+        "5": 1,
+        "10": 1
+      },
+      "poison_retrieved_numerator_at_k": {
+        "1": 25,
+        "3": 25,
+        "5": 25,
+        "10": 25
+      }
+    },
+    {
+      "dataset": "hotpotqa",
+      "attack_family": "lexical",
+      "intensity": 3,
+      "global_poison_rate": 1,
+      "retriever": "dense",
+      "n_attacked_query_positions": 25,
+      "prr_at_k": {
+        "1": 0.6,
+        "3": 1,
+        "5": 1,
+        "10": 1
+      },
+      "poison_retrieved_numerator_at_k": {
+        "1": 15,
+        "3": 25,
+        "5": 25,
+        "10": 25
+      }
+    },
+    {
+      "dataset": "hotpotqa",
+      "attack_family": "lexical",
+      "intensity": 3,
+      "global_poison_rate": 1,
+      "retriever": "hybrid",
+      "n_attacked_query_positions": 25,
+      "prr_at_k": {
+        "1": 1,
+        "3": 1,
+        "5": 1,
+        "10": 1
+      },
+      "poison_retrieved_numerator_at_k": {
+        "1": 25,
+        "3": 25,
+        "5": 25,
+        "10": 25
+      }
+    },
+    {
+      "dataset": "hotpotqa",
+      "attack_family": "lexical",
+      "intensity": 3,
+      "global_poison_rate": 1,
+      "retriever": "reranker",
+      "n_attacked_query_positions": 25,
+      "prr_at_k": {
+        "1": 1,
+        "3": 1,
+        "5": 1,
+        "10": 1
+      },
+      "poison_retrieved_numerator_at_k": {
+        "1": 25,
+        "3": 25,
+        "5": 25,
+        "10": 25
+      }
+    },
+    {
+      "dataset": "hotpotqa",
+      "attack_family": "semantic_fluent",
+      "intensity": 1,
+      "global_poison_rate": 1,
+      "retriever": "bm25",
+      "n_attacked_query_positions": 25,
+      "prr_at_k": {
+        "1": 0.44,
+        "3": 0.84,
+        "5": 0.88,
+        "10": 0.96
+      },
+      "poison_retrieved_numerator_at_k": {
+        "1": 11,
+        "3": 21,
+        "5": 22,
+        "10": 24
+      }
+    },
+    {
+      "dataset": "hotpotqa",
+      "attack_family": "semantic_fluent",
+      "intensity": 1,
+      "global_poison_rate": 1,
+      "retriever": "dense",
+      "n_attacked_query_positions": 25,
+      "prr_at_k": {
+        "1": 0.68,
+        "3": 0.92,
+        "5": 0.96,
+        "10": 1
+      },
+      "poison_retrieved_numerator_at_k": {
+        "1": 17,
+        "3": 23,
+        "5": 24,
+        "10": 25
+      }
+    },
+    {
+      "dataset": "hotpotqa",
+      "attack_family": "semantic_fluent",
+      "intensity": 1,
+      "global_poison_rate": 1,
+      "retriever": "hybrid",
+      "n_attacked_query_positions": 25,
+      "prr_at_k": {
+        "1": 0.56,
+        "3": 0.92,
+        "5": 0.96,
+        "10": 0.96
+      },
+      "poison_retrieved_numerator_at_k": {
+        "1": 14,
+        "3": 23,
+        "5": 24,
+        "10": 24
+      }
+    },
+    {
+      "dataset": "hotpotqa",
+      "attack_family": "semantic_fluent",
+      "intensity": 1,
+      "global_poison_rate": 1,
+      "retriever": "reranker",
+      "n_attacked_query_positions": 25,
+      "prr_at_k": {
+        "1": 0.88,
+        "3": 0.96,
+        "5": 1,
+        "10": 1
+      },
+      "poison_retrieved_numerator_at_k": {
+        "1": 22,
+        "3": 24,
+        "5": 25,
+        "10": 25
+      }
+    },
+    {
+      "dataset": "hotpotqa",
+      "attack_family": "semantic_fluent",
+      "intensity": 3,
+      "global_poison_rate": 1,
+      "retriever": "bm25",
+      "n_attacked_query_positions": 25,
+      "prr_at_k": {
+        "1": 0.8,
+        "3": 0.92,
+        "5": 0.92,
+        "10": 0.96
+      },
+      "poison_retrieved_numerator_at_k": {
+        "1": 20,
+        "3": 23,
+        "5": 23,
+        "10": 24
+      }
+    },
+    {
+      "dataset": "hotpotqa",
+      "attack_family": "semantic_fluent",
+      "intensity": 3,
+      "global_poison_rate": 1,
+      "retriever": "dense",
+      "n_attacked_query_positions": 25,
+      "prr_at_k": {
+        "1": 0.76,
+        "3": 0.96,
+        "5": 1,
+        "10": 1
+      },
+      "poison_retrieved_numerator_at_k": {
+        "1": 19,
+        "3": 24,
+        "5": 25,
+        "10": 25
+      }
+    },
+    {
+      "dataset": "hotpotqa",
+      "attack_family": "semantic_fluent",
+      "intensity": 3,
+      "global_poison_rate": 1,
+      "retriever": "hybrid",
+      "n_attacked_query_positions": 25,
+      "prr_at_k": {
+        "1": 0.76,
+        "3": 0.92,
+        "5": 0.96,
+        "10": 1
+      },
+      "poison_retrieved_numerator_at_k": {
+        "1": 19,
+        "3": 23,
+        "5": 24,
+        "10": 25
+      }
+    },
+    {
+      "dataset": "hotpotqa",
+      "attack_family": "semantic_fluent",
+      "intensity": 3,
+      "global_poison_rate": 1,
+      "retriever": "reranker",
+      "n_attacked_query_positions": 25,
+      "prr_at_k": {
+        "1": 0.92,
+        "3": 1,
+        "5": 1,
+        "10": 1
+      },
+      "poison_retrieved_numerator_at_k": {
+        "1": 23,
+        "3": 25,
+        "5": 25,
+        "10": 25
+      }
+    },
+    {
+      "dataset": "hotpotqa",
+      "attack_family": "lexical",
+      "intensity": 5,
+      "global_poison_rate": 1,
+      "retriever": "bm25",
+      "n_attacked_query_positions": 25,
+      "prr_at_k": {
+        "1": 1,
+        "3": 1,
+        "5": 1,
+        "10": 1
+      },
+      "poison_retrieved_numerator_at_k": {
+        "1": 25,
+        "3": 25,
+        "5": 25,
+        "10": 25
+      }
+    },
+    {
+      "dataset": "hotpotqa",
+      "attack_family": "lexical",
+      "intensity": 5,
+      "global_poison_rate": 1,
+      "retriever": "dense",
+      "n_attacked_query_positions": 25,
+      "prr_at_k": {
+        "1": 0.68,
+        "3": 1,
+        "5": 1,
+        "10": 1
+      },
+      "poison_retrieved_numerator_at_k": {
+        "1": 17,
+        "3": 25,
+        "5": 25,
+        "10": 25
+      }
+    },
+    {
+      "dataset": "hotpotqa",
+      "attack_family": "lexical",
+      "intensity": 5,
+      "global_poison_rate": 1,
+      "retriever": "hybrid",
+      "n_attacked_query_positions": 25,
+      "prr_at_k": {
+        "1": 1,
+        "3": 1,
+        "5": 1,
+        "10": 1
+      },
+      "poison_retrieved_numerator_at_k": {
+        "1": 25,
+        "3": 25,
+        "5": 25,
+        "10": 25
+      }
+    },
+    {
+      "dataset": "hotpotqa",
+      "attack_family": "lexical",
+      "intensity": 5,
+      "global_poison_rate": 1,
+      "retriever": "reranker",
+      "n_attacked_query_positions": 25,
+      "prr_at_k": {
+        "1": 1,
+        "3": 1,
+        "5": 1,
+        "10": 1
+      },
+      "poison_retrieved_numerator_at_k": {
+        "1": 25,
+        "3": 25,
+        "5": 25,
+        "10": 25
+      }
+    },
+    {
+      "dataset": "hotpotqa",
+      "attack_family": "semantic_fluent",
+      "intensity": 5,
+      "global_poison_rate": 1,
+      "retriever": "bm25",
+      "n_attacked_query_positions": 25,
+      "prr_at_k": {
+        "1": 0.72,
+        "3": 0.92,
+        "5": 0.96,
+        "10": 1
+      },
+      "poison_retrieved_numerator_at_k": {
+        "1": 18,
+        "3": 23,
+        "5": 24,
+        "10": 25
+      }
+    },
+    {
+      "dataset": "hotpotqa",
+      "attack_family": "semantic_fluent",
+      "intensity": 5,
+      "global_poison_rate": 1,
+      "retriever": "dense",
+      "n_attacked_query_positions": 25,
+      "prr_at_k": {
+        "1": 0.8,
+        "3": 1,
+        "5": 1,
+        "10": 1
+      },
+      "poison_retrieved_numerator_at_k": {
+        "1": 20,
+        "3": 25,
+        "5": 25,
+        "10": 25
+      }
+    },
+    {
+      "dataset": "hotpotqa",
+      "attack_family": "semantic_fluent",
+      "intensity": 5,
+      "global_poison_rate": 1,
+      "retriever": "hybrid",
+      "n_attacked_query_positions": 25,
+      "prr_at_k": {
+        "1": 0.84,
+        "3": 1,
+        "5": 1,
+        "10": 1
+      },
+      "poison_retrieved_numerator_at_k": {
+        "1": 21,
+        "3": 25,
+        "5": 25,
+        "10": 25
+      }
+    },
+    {
+      "dataset": "hotpotqa",
+      "attack_family": "semantic_fluent",
+      "intensity": 5,
+      "global_poison_rate": 1,
+      "retriever": "reranker",
+      "n_attacked_query_positions": 25,
+      "prr_at_k": {
+        "1": 1,
+        "3": 1,
+        "5": 1,
+        "10": 1
+      },
+      "poison_retrieved_numerator_at_k": {
+        "1": 25,
+        "3": 25,
+        "5": 25,
+        "10": 25
+      }
+    },
+    {
+      "dataset": "hotpotqa",
+      "attack_family": "lexical",
+      "intensity": 1,
+      "global_poison_rate": 0.3,
+      "retriever": "bm25",
+      "n_attacked_query_positions": 8,
+      "prr_at_k": {
+        "1": 1,
+        "3": 1,
+        "5": 1,
+        "10": 1
+      },
+      "poison_retrieved_numerator_at_k": {
+        "1": 8,
+        "3": 8,
+        "5": 8,
+        "10": 8
+      }
+    },
+    {
+      "dataset": "hotpotqa",
+      "attack_family": "lexical",
+      "intensity": 1,
+      "global_poison_rate": 0.3,
+      "retriever": "dense",
+      "n_attacked_query_positions": 8,
+      "prr_at_k": {
+        "1": 0.75,
+        "3": 1,
+        "5": 1,
+        "10": 1
+      },
+      "poison_retrieved_numerator_at_k": {
+        "1": 6,
+        "3": 8,
+        "5": 8,
+        "10": 8
+      }
+    },
+    {
+      "dataset": "hotpotqa",
+      "attack_family": "lexical",
+      "intensity": 1,
+      "global_poison_rate": 0.3,
+      "retriever": "hybrid",
+      "n_attacked_query_positions": 8,
+      "prr_at_k": {
+        "1": 1,
+        "3": 1,
+        "5": 1,
+        "10": 1
+      },
+      "poison_retrieved_numerator_at_k": {
+        "1": 8,
+        "3": 8,
+        "5": 8,
+        "10": 8
+      }
+    },
+    {
+      "dataset": "hotpotqa",
+      "attack_family": "lexical",
+      "intensity": 1,
+      "global_poison_rate": 0.3,
+      "retriever": "reranker",
+      "n_attacked_query_positions": 8,
+      "prr_at_k": {
+        "1": 1,
+        "3": 1,
+        "5": 1,
+        "10": 1
+      },
+      "poison_retrieved_numerator_at_k": {
+        "1": 8,
+        "3": 8,
+        "5": 8,
+        "10": 8
+      }
+    },
+    {
+      "dataset": "hotpotqa",
+      "attack_family": "semantic_fluent",
+      "intensity": 1,
+      "global_poison_rate": 0.3,
+      "retriever": "bm25",
+      "n_attacked_query_positions": 8,
+      "prr_at_k": {
+        "1": 0.75,
+        "3": 1,
+        "5": 1,
+        "10": 1
+      },
+      "poison_retrieved_numerator_at_k": {
+        "1": 6,
+        "3": 8,
+        "5": 8,
+        "10": 8
+      }
+    },
+    {
+      "dataset": "hotpotqa",
+      "attack_family": "semantic_fluent",
+      "intensity": 1,
+      "global_poison_rate": 0.3,
+      "retriever": "dense",
+      "n_attacked_query_positions": 8,
+      "prr_at_k": {
+        "1": 0.75,
+        "3": 1,
+        "5": 1,
+        "10": 1
+      },
+      "poison_retrieved_numerator_at_k": {
+        "1": 6,
+        "3": 8,
+        "5": 8,
+        "10": 8
+      }
+    },
+    {
+      "dataset": "hotpotqa",
+      "attack_family": "semantic_fluent",
+      "intensity": 1,
+      "global_poison_rate": 0.3,
+      "retriever": "hybrid",
+      "n_attacked_query_positions": 8,
+      "prr_at_k": {
+        "1": 0.625,
+        "3": 1,
+        "5": 1,
+        "10": 1
+      },
+      "poison_retrieved_numerator_at_k": {
+        "1": 5,
+        "3": 8,
+        "5": 8,
+        "10": 8
+      }
+    },
+    {
+      "dataset": "hotpotqa",
+      "attack_family": "semantic_fluent",
+      "intensity": 1,
+      "global_poison_rate": 0.3,
+      "retriever": "reranker",
+      "n_attacked_query_positions": 8,
+      "prr_at_k": {
+        "1": 0.875,
+        "3": 1,
+        "5": 1,
+        "10": 1
+      },
+      "poison_retrieved_numerator_at_k": {
+        "1": 7,
+        "3": 8,
+        "5": 8,
+        "10": 8
+      }
+    },
+    {
+      "dataset": "2wikimultihopqa",
+      "attack_family": "lexical",
+      "intensity": 1,
+      "global_poison_rate": 1,
+      "retriever": "bm25",
+      "n_attacked_query_positions": 25,
+      "prr_at_k": {
+        "1": 0.96,
+        "3": 0.96,
+        "5": 0.96,
+        "10": 0.96
+      },
+      "poison_retrieved_numerator_at_k": {
+        "1": 24,
+        "3": 24,
+        "5": 24,
+        "10": 24
+      }
+    },
+    {
+      "dataset": "2wikimultihopqa",
+      "attack_family": "lexical",
+      "intensity": 1,
+      "global_poison_rate": 1,
+      "retriever": "dense",
+      "n_attacked_query_positions": 25,
+      "prr_at_k": {
+        "1": 0.64,
+        "3": 1,
+        "5": 1,
+        "10": 1
+      },
+      "poison_retrieved_numerator_at_k": {
+        "1": 16,
+        "3": 25,
+        "5": 25,
+        "10": 25
+      }
+    },
+    {
+      "dataset": "2wikimultihopqa",
+      "attack_family": "lexical",
+      "intensity": 1,
+      "global_poison_rate": 1,
+      "retriever": "hybrid",
+      "n_attacked_query_positions": 25,
+      "prr_at_k": {
+        "1": 0.96,
+        "3": 0.96,
+        "5": 1,
+        "10": 1
+      },
+      "poison_retrieved_numerator_at_k": {
+        "1": 24,
+        "3": 24,
+        "5": 25,
+        "10": 25
+      }
+    },
+    {
+      "dataset": "2wikimultihopqa",
+      "attack_family": "lexical",
+      "intensity": 1,
+      "global_poison_rate": 1,
+      "retriever": "reranker",
+      "n_attacked_query_positions": 25,
+      "prr_at_k": {
+        "1": 0.88,
+        "3": 1,
+        "5": 1,
+        "10": 1
+      },
+      "poison_retrieved_numerator_at_k": {
+        "1": 22,
+        "3": 25,
+        "5": 25,
+        "10": 25
+      }
+    },
+    {
+      "dataset": "2wikimultihopqa",
+      "attack_family": "lexical",
+      "intensity": 3,
+      "global_poison_rate": 1,
+      "retriever": "bm25",
+      "n_attacked_query_positions": 25,
+      "prr_at_k": {
+        "1": 0.96,
+        "3": 0.96,
+        "5": 0.96,
+        "10": 0.96
+      },
+      "poison_retrieved_numerator_at_k": {
+        "1": 24,
+        "3": 24,
+        "5": 24,
+        "10": 24
+      }
+    },
+    {
+      "dataset": "2wikimultihopqa",
+      "attack_family": "lexical",
+      "intensity": 3,
+      "global_poison_rate": 1,
+      "retriever": "dense",
+      "n_attacked_query_positions": 25,
+      "prr_at_k": {
+        "1": 0.68,
+        "3": 0.96,
+        "5": 1,
+        "10": 1
+      },
+      "poison_retrieved_numerator_at_k": {
+        "1": 17,
+        "3": 24,
+        "5": 25,
+        "10": 25
+      }
+    },
+    {
+      "dataset": "2wikimultihopqa",
+      "attack_family": "lexical",
+      "intensity": 3,
+      "global_poison_rate": 1,
+      "retriever": "hybrid",
+      "n_attacked_query_positions": 25,
+      "prr_at_k": {
+        "1": 0.96,
+        "3": 1,
+        "5": 1,
+        "10": 1
+      },
+      "poison_retrieved_numerator_at_k": {
+        "1": 24,
+        "3": 25,
+        "5": 25,
+        "10": 25
+      }
+    },
+    {
+      "dataset": "2wikimultihopqa",
+      "attack_family": "lexical",
+      "intensity": 3,
+      "global_poison_rate": 1,
+      "retriever": "reranker",
+      "n_attacked_query_positions": 25,
+      "prr_at_k": {
+        "1": 0.88,
+        "3": 1,
+        "5": 1,
+        "10": 1
+      },
+      "poison_retrieved_numerator_at_k": {
+        "1": 22,
+        "3": 25,
+        "5": 25,
+        "10": 25
+      }
+    },
+    {
+      "dataset": "2wikimultihopqa",
+      "attack_family": "semantic_fluent",
+      "intensity": 1,
+      "global_poison_rate": 1,
+      "retriever": "bm25",
+      "n_attacked_query_positions": 25,
+      "prr_at_k": {
+        "1": 0.76,
+        "3": 0.8,
+        "5": 0.88,
+        "10": 0.88
+      },
+      "poison_retrieved_numerator_at_k": {
+        "1": 19,
+        "3": 20,
+        "5": 22,
+        "10": 22
+      }
+    },
+    {
+      "dataset": "2wikimultihopqa",
+      "attack_family": "semantic_fluent",
+      "intensity": 1,
+      "global_poison_rate": 1,
+      "retriever": "dense",
+      "n_attacked_query_positions": 25,
+      "prr_at_k": {
+        "1": 0.84,
+        "3": 0.96,
+        "5": 1,
+        "10": 1
+      },
+      "poison_retrieved_numerator_at_k": {
+        "1": 21,
+        "3": 24,
+        "5": 25,
+        "10": 25
+      }
+    },
+    {
+      "dataset": "2wikimultihopqa",
+      "attack_family": "semantic_fluent",
+      "intensity": 1,
+      "global_poison_rate": 1,
+      "retriever": "hybrid",
+      "n_attacked_query_positions": 25,
+      "prr_at_k": {
+        "1": 0.84,
+        "3": 0.88,
+        "5": 0.96,
+        "10": 1
+      },
+      "poison_retrieved_numerator_at_k": {
+        "1": 21,
+        "3": 22,
+        "5": 24,
+        "10": 25
+      }
+    },
+    {
+      "dataset": "2wikimultihopqa",
+      "attack_family": "semantic_fluent",
+      "intensity": 1,
+      "global_poison_rate": 1,
+      "retriever": "reranker",
+      "n_attacked_query_positions": 25,
+      "prr_at_k": {
+        "1": 0.84,
+        "3": 1,
+        "5": 1,
+        "10": 1
+      },
+      "poison_retrieved_numerator_at_k": {
+        "1": 21,
+        "3": 25,
+        "5": 25,
+        "10": 25
+      }
+    },
+    {
+      "dataset": "2wikimultihopqa",
+      "attack_family": "semantic_fluent",
+      "intensity": 3,
+      "global_poison_rate": 1,
+      "retriever": "bm25",
+      "n_attacked_query_positions": 25,
+      "prr_at_k": {
+        "1": 0.84,
+        "3": 0.88,
+        "5": 0.96,
+        "10": 1
+      },
+      "poison_retrieved_numerator_at_k": {
+        "1": 21,
+        "3": 22,
+        "5": 24,
+        "10": 25
+      }
+    },
+    {
+      "dataset": "2wikimultihopqa",
+      "attack_family": "semantic_fluent",
+      "intensity": 3,
+      "global_poison_rate": 1,
+      "retriever": "dense",
+      "n_attacked_query_positions": 25,
+      "prr_at_k": {
+        "1": 0.96,
+        "3": 1,
+        "5": 1,
+        "10": 1
+      },
+      "poison_retrieved_numerator_at_k": {
+        "1": 24,
+        "3": 25,
+        "5": 25,
+        "10": 25
+      }
+    },
+    {
+      "dataset": "2wikimultihopqa",
+      "attack_family": "semantic_fluent",
+      "intensity": 3,
+      "global_poison_rate": 1,
+      "retriever": "hybrid",
+      "n_attacked_query_positions": 25,
+      "prr_at_k": {
+        "1": 0.84,
+        "3": 1,
+        "5": 1,
+        "10": 1
+      },
+      "poison_retrieved_numerator_at_k": {
+        "1": 21,
+        "3": 25,
+        "5": 25,
+        "10": 25
+      }
+    },
+    {
+      "dataset": "2wikimultihopqa",
+      "attack_family": "semantic_fluent",
+      "intensity": 3,
+      "global_poison_rate": 1,
+      "retriever": "reranker",
+      "n_attacked_query_positions": 25,
+      "prr_at_k": {
+        "1": 0.96,
+        "3": 1,
+        "5": 1,
+        "10": 1
+      },
+      "poison_retrieved_numerator_at_k": {
+        "1": 24,
+        "3": 25,
+        "5": 25,
+        "10": 25
+      }
+    }
+  ],
+  "semantic_fluent_development_note": "Semantic-false evidence in this source is a construction label, not independent demonstration of factual falsehood.",
+  "intensity5_hotpotqa_retrieval_rows": [
+    {
+      "dataset": "hotpotqa",
+      "attack_family": "lexical",
+      "intensity": 5,
+      "global_poison_rate": 1,
+      "retriever": "bm25",
+      "n_attacked_query_positions": 25,
+      "prr_at_k": {
+        "1": 1,
+        "3": 1,
+        "5": 1,
+        "10": 1
+      },
+      "poison_retrieved_numerator_at_k": {
+        "1": 25,
+        "3": 25,
+        "5": 25,
+        "10": 25
+      }
+    },
+    {
+      "dataset": "hotpotqa",
+      "attack_family": "lexical",
+      "intensity": 5,
+      "global_poison_rate": 1,
+      "retriever": "dense",
+      "n_attacked_query_positions": 25,
+      "prr_at_k": {
+        "1": 0.68,
+        "3": 1,
+        "5": 1,
+        "10": 1
+      },
+      "poison_retrieved_numerator_at_k": {
+        "1": 17,
+        "3": 25,
+        "5": 25,
+        "10": 25
+      }
+    },
+    {
+      "dataset": "hotpotqa",
+      "attack_family": "lexical",
+      "intensity": 5,
+      "global_poison_rate": 1,
+      "retriever": "hybrid",
+      "n_attacked_query_positions": 25,
+      "prr_at_k": {
+        "1": 1,
+        "3": 1,
+        "5": 1,
+        "10": 1
+      },
+      "poison_retrieved_numerator_at_k": {
+        "1": 25,
+        "3": 25,
+        "5": 25,
+        "10": 25
+      }
+    },
+    {
+      "dataset": "hotpotqa",
+      "attack_family": "lexical",
+      "intensity": 5,
+      "global_poison_rate": 1,
+      "retriever": "reranker",
+      "n_attacked_query_positions": 25,
+      "prr_at_k": {
+        "1": 1,
+        "3": 1,
+        "5": 1,
+        "10": 1
+      },
+      "poison_retrieved_numerator_at_k": {
+        "1": 25,
+        "3": 25,
+        "5": 25,
+        "10": 25
+      }
+    },
+    {
+      "dataset": "hotpotqa",
+      "attack_family": "semantic_fluent",
+      "intensity": 5,
+      "global_poison_rate": 1,
+      "retriever": "bm25",
+      "n_attacked_query_positions": 25,
+      "prr_at_k": {
+        "1": 0.72,
+        "3": 0.92,
+        "5": 0.96,
+        "10": 1
+      },
+      "poison_retrieved_numerator_at_k": {
+        "1": 18,
+        "3": 23,
+        "5": 24,
+        "10": 25
+      }
+    },
+    {
+      "dataset": "hotpotqa",
+      "attack_family": "semantic_fluent",
+      "intensity": 5,
+      "global_poison_rate": 1,
+      "retriever": "dense",
+      "n_attacked_query_positions": 25,
+      "prr_at_k": {
+        "1": 0.8,
+        "3": 1,
+        "5": 1,
+        "10": 1
+      },
+      "poison_retrieved_numerator_at_k": {
+        "1": 20,
+        "3": 25,
+        "5": 25,
+        "10": 25
+      }
+    },
+    {
+      "dataset": "hotpotqa",
+      "attack_family": "semantic_fluent",
+      "intensity": 5,
+      "global_poison_rate": 1,
+      "retriever": "hybrid",
+      "n_attacked_query_positions": 25,
+      "prr_at_k": {
+        "1": 0.84,
+        "3": 1,
+        "5": 1,
+        "10": 1
+      },
+      "poison_retrieved_numerator_at_k": {
+        "1": 21,
+        "3": 25,
+        "5": 25,
+        "10": 25
+      }
+    },
+    {
+      "dataset": "hotpotqa",
+      "attack_family": "semantic_fluent",
+      "intensity": 5,
+      "global_poison_rate": 1,
+      "retriever": "reranker",
+      "n_attacked_query_positions": 25,
+      "prr_at_k": {
+        "1": 1,
+        "3": 1,
+        "5": 1,
+        "10": 1
+      },
+      "poison_retrieved_numerator_at_k": {
+        "1": 25,
+        "3": 25,
+        "5": 25,
+        "10": 25
+      }
+    }
+  ],
+  "global_30pct_hotpotqa_retrieval_rows": [
+    {
+      "dataset": "hotpotqa",
+      "attack_family": "lexical",
+      "intensity": 1,
+      "global_poison_rate": 0.3,
+      "retriever": "bm25",
+      "n_attacked_query_positions": 8,
+      "prr_at_k": {
+        "1": 1,
+        "3": 1,
+        "5": 1,
+        "10": 1
+      },
+      "poison_retrieved_numerator_at_k": {
+        "1": 8,
+        "3": 8,
+        "5": 8,
+        "10": 8
+      }
+    },
+    {
+      "dataset": "hotpotqa",
+      "attack_family": "lexical",
+      "intensity": 1,
+      "global_poison_rate": 0.3,
+      "retriever": "dense",
+      "n_attacked_query_positions": 8,
+      "prr_at_k": {
+        "1": 0.75,
+        "3": 1,
+        "5": 1,
+        "10": 1
+      },
+      "poison_retrieved_numerator_at_k": {
+        "1": 6,
+        "3": 8,
+        "5": 8,
+        "10": 8
+      }
+    },
+    {
+      "dataset": "hotpotqa",
+      "attack_family": "lexical",
+      "intensity": 1,
+      "global_poison_rate": 0.3,
+      "retriever": "hybrid",
+      "n_attacked_query_positions": 8,
+      "prr_at_k": {
+        "1": 1,
+        "3": 1,
+        "5": 1,
+        "10": 1
+      },
+      "poison_retrieved_numerator_at_k": {
+        "1": 8,
+        "3": 8,
+        "5": 8,
+        "10": 8
+      }
+    },
+    {
+      "dataset": "hotpotqa",
+      "attack_family": "lexical",
+      "intensity": 1,
+      "global_poison_rate": 0.3,
+      "retriever": "reranker",
+      "n_attacked_query_positions": 8,
+      "prr_at_k": {
+        "1": 1,
+        "3": 1,
+        "5": 1,
+        "10": 1
+      },
+      "poison_retrieved_numerator_at_k": {
+        "1": 8,
+        "3": 8,
+        "5": 8,
+        "10": 8
+      }
+    },
+    {
+      "dataset": "hotpotqa",
+      "attack_family": "semantic_fluent",
+      "intensity": 1,
+      "global_poison_rate": 0.3,
+      "retriever": "bm25",
+      "n_attacked_query_positions": 8,
+      "prr_at_k": {
+        "1": 0.75,
+        "3": 1,
+        "5": 1,
+        "10": 1
+      },
+      "poison_retrieved_numerator_at_k": {
+        "1": 6,
+        "3": 8,
+        "5": 8,
+        "10": 8
+      }
+    },
+    {
+      "dataset": "hotpotqa",
+      "attack_family": "semantic_fluent",
+      "intensity": 1,
+      "global_poison_rate": 0.3,
+      "retriever": "dense",
+      "n_attacked_query_positions": 8,
+      "prr_at_k": {
+        "1": 0.75,
+        "3": 1,
+        "5": 1,
+        "10": 1
+      },
+      "poison_retrieved_numerator_at_k": {
+        "1": 6,
+        "3": 8,
+        "5": 8,
+        "10": 8
+      }
+    },
+    {
+      "dataset": "hotpotqa",
+      "attack_family": "semantic_fluent",
+      "intensity": 1,
+      "global_poison_rate": 0.3,
+      "retriever": "hybrid",
+      "n_attacked_query_positions": 8,
+      "prr_at_k": {
+        "1": 0.625,
+        "3": 1,
+        "5": 1,
+        "10": 1
+      },
+      "poison_retrieved_numerator_at_k": {
+        "1": 5,
+        "3": 8,
+        "5": 8,
+        "10": 8
+      }
+    },
+    {
+      "dataset": "hotpotqa",
+      "attack_family": "semantic_fluent",
+      "intensity": 1,
+      "global_poison_rate": 0.3,
+      "retriever": "reranker",
+      "n_attacked_query_positions": 8,
+      "prr_at_k": {
+        "1": 0.875,
+        "3": 1,
+        "5": 1,
+        "10": 1
+      },
+      "poison_retrieved_numerator_at_k": {
+        "1": 7,
+        "3": 8,
+        "5": 8,
+        "10": 8
+      }
+    }
+  ],
+  "conditions_unmeasured": {
+    "end_to_end_Qwen_poisoned_ASR_for_intensity5": true,
+    "end_to_end_Qwen_poisoned_ASR_for_30pct_rate": true,
+    "unseen_attack_family_heldout": true,
+    "replicated_seeds_for_dev_sweeps": true,
+    "same_query_matched_low_rate_vs_full_rate_causal_effect": true
+  },
+  "limitations": [
+    "PRR@k is poison-retrieval rate, not target-answer match, factual error or generated-answer ASR.",
+    "The source rows are aggregated; exact overlap of question IDs between cells is unavailable here.",
+    "HotpotQA low-rate rows use 8 attacked questions versus 25 full-rate queries; comparisons are not matched effects.",
+    "No multiple-seed confirmatory inference, generator QA, unseen-family testing or independent semantic truth certification."
+  ]
+}
