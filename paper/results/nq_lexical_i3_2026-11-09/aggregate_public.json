@@ -1,0 +1,82 @@
+{
+  "schema_version": "nq-lexical-i3-public-aggregate/v1",
+  "project": "Cross-Pipeline Transferability of Knowledge Poisoning in Adaptive RAG",
+  "date": "2026-11-09",
+  "status": "COMPLETE_EXPLORATORY_SEALED_NQ_LEXICAL_QA",
+  "provenance": {
+    "source": "Researcher-provided terminal completion and aggregation receipt; not independent access to private raw per-query artifacts",
+    "request_verification_status": "ALL_QA_REQUESTS_VERIFIED",
+    "verified_qa_calls_reported": 1200,
+    "plan_sha256_reported": "53aebbb47648727a664eeb012b591ed28cb33c65aad59f8a2b8f46d968a2e7b5",
+    "construction_sha256_reported": "4de1da06acd16486ac8c901475606b8d06a6795688e66064f048be8192936ae2",
+    "target_assignments_sha256_reported": "f6bd7dd19fab2093d6730f51cb55e8980ce4d6543d71e1514a7c876c888c54bc",
+    "frozen_nq_cohort_manifest_sha256_reported": "1b99fe49fff3b1224c6351fb20f58897e0e664a69c33a6400b4a56855c05f8c7",
+    "private_aggregate_sha256_reported": "146cb2749ab01bb5e5d70c06c2041f34dcf36db0fafa2443c3deb021f50e8dc5",
+    "private_aggregate_basename": "nq-stage3-lexical-I3-qa-aggregate-v1_PRIVATE.json",
+    "independent_verification_of_private_journals": false
+  },
+  "design": {
+    "benchmark": "Frozen 300-evaluation-question Natural Questions validation sample, drawn separately from 50 development questions",
+    "corpus_caveat": "Pooled Natural Questions long-answer candidate passages, not full open-domain Wikipedia retrieval",
+    "distinct_evaluation_questions": 300,
+    "attack_family": "lexical influential-token",
+    "attack_intensity": 3,
+    "retrievers": [
+      "Dense",
+      "RCD Dense-primary + BM25-auxiliary"
+    ],
+    "conditions": [
+      "clean",
+      "poisoned"
+    ],
+    "generator": "Qwen2.5-7B-Instruct-4bit MLX (frozen specification, greedy, 64-token cap)",
+    "observations_per_question": 4,
+    "total_qa_observations": 1200,
+    "independent_question_count": 300
+  },
+  "metrics": {
+    "dense": {
+      "n_pairs": 300,
+      "clean_em": 0.31333333333333335,
+      "clean_em_numerator": 94,
+      "poisoned_em": 0.18,
+      "poisoned_em_numerator": 54,
+      "clean_f1": 0.4355834565794657,
+      "poisoned_f1": 0.237870637007443,
+      "targeted_asr_reported": 0.42,
+      "target_answer_match_numerator": 126,
+      "poison_visible_top3": 0.89,
+      "poison_exposure_numerator": 267,
+      "clean_correct_to_poison_wrong_count": 49
+    },
+    "rcd": {
+      "n_pairs": 300,
+      "clean_em": 0.3233333333333333,
+      "clean_em_numerator": 97,
+      "poisoned_em": 0.17,
+      "poisoned_em_numerator": 51,
+      "clean_f1": 0.4327154836969417,
+      "poisoned_f1": 0.23094341894352,
+      "targeted_asr_reported": 0.43,
+      "target_answer_match_numerator": 129,
+      "poison_visible_top3": 0.8833333333333333,
+      "poison_exposure_numerator": 265,
+      "clean_correct_to_poison_wrong_count": 56
+    }
+  },
+  "descriptive_rcd_minus_dense_percentage_points": {
+    "clean_em": 1,
+    "poisoned_em": -1,
+    "targeted_asr_reported": 1,
+    "poison_visible_top3": -0.6666666666666667
+  },
+  "scientific_limits": {
+    "target_match_not_independent_falsehood_verification": true,
+    "question_level_paired_confidence_intervals": "pending",
+    "multiple_comparison_policy": "pending",
+    "exposure_history_certified": false,
+    "dataset_annotation_alias_review": "pending",
+    "raw_per_question_records_shared_or_published": false,
+    "stage3_paired_analysis_complete": false
+  }
+}
