@@ -367,7 +367,7 @@ def run(*, plan_file, plan_sha256, original_protocol, model_snapshot, results_di
     from scripts.run_week9_protocol_poison_matrix import model_binding
     binding = model_binding(model_snapshot, protocol["binding"]["model_identity"])
     if binding != plan["original_qwen_model"] or binding != protocol["model"]:
-        raise ValueError("Model snapshot does not match frozen original original Qwen identity")
+        raise ValueError("Model snapshot does not match frozen original Qwen identity")
     binding_sha = canonical_sha(binding)
     results_dir = outside_repo(results_dir)
     if results_dir.exists() and not results_dir.is_dir():
@@ -520,8 +520,10 @@ def aggregate(*, plan_file, plan_sha256, results_dir, output):
     output = outside_repo(output)
     if output.exists() or not output.parent.is_dir():
         raise ValueError("Aggregate must be a NEW private output in existing directory")
-    manifest = require_json(results_dir / "run_manifest.json",
-                            sha(results_dir / "run_manifest.json"))
+    manifest_path = results_dir / "run_manifest.json"
+    if not manifest_path.is_file() or manifest_path.is_symlink():
+        raise ValueError("Missing verified real Qwen run manifest")
+    manifest = require_json(manifest_path, sha(manifest_path))
     if (manifest.get("schema") != RUN_SCHEMA
             or manifest.get("plan_sha256") != plan_sha256
             or manifest.get("required_new_qa_calls") != plan["required_new_qa_calls"]):
