@@ -1,0 +1,273 @@
+{
+  "schema": "rag-poison-transfer.cross-study-observed-efficiency-v1",
+  "date": "2026-11-09",
+  "scope": "Retrospective descriptive account of source-reported local observations; components are NOT merged into one cross-dataset effect size",
+  "source_files": [
+    "paper/results/nq_lexical_i1_i3_paired_2026-11-09/full_comparisons_resource_public.json",
+    "paper/results/2wiki_rcd_ablation_v1_2026-11-09/question_cluster_audit_public.json",
+    "paper/results/hotpotqa_week9_2026-10-26/latency_and_calls.csv",
+    "paper/results/hotpotqa_transfer_43f3f652460a/aggregate_public.json"
+  ],
+  "nq_single_hop_i1_i3": {
+    "intensity_1": {
+      "dense": {
+        "condition_qa_records": 300,
+        "total_qa_records": 600,
+        "mean_of_clean_and_poisoned": {
+          "retrieval_seconds": 0.012307431048272217,
+          "generation_seconds": 3.263529832810115,
+          "inner_retrieval_calls": 1,
+          "prompt_tokens": 370.45500000000004,
+          "completion_tokens": 5.1
+        },
+        "poisoned_exact_match_rate": 0.27666666666666667,
+        "poisoned_target_answer_match_rate": 0.16
+      },
+      "rcd": {
+        "condition_qa_records": 300,
+        "total_qa_records": 600,
+        "mean_of_clean_and_poisoned": {
+          "retrieval_seconds": 0.10106070499190536,
+          "generation_seconds": 3.1759212259498355,
+          "inner_retrieval_calls": 5,
+          "prompt_tokens": 360.0816666666667,
+          "completion_tokens": 4.991666666666667
+        },
+        "poisoned_exact_match_rate": 0.27666666666666667,
+        "poisoned_target_answer_match_rate": 0.16666666666666666
+      }
+    },
+    "intensity_3": {
+      "dense": {
+        "condition_qa_records": 300,
+        "total_qa_records": 600,
+        "mean_of_clean_and_poisoned": {
+          "retrieval_seconds": 0.011928379163606829,
+          "generation_seconds": 3.07599413375506,
+          "inner_retrieval_calls": 1,
+          "prompt_tokens": 343.605,
+          "completion_tokens": 5.073333333333333
+        },
+        "poisoned_exact_match_rate": 0.18,
+        "poisoned_target_answer_match_rate": 0.42
+      },
+      "rcd": {
+        "condition_qa_records": 300,
+        "total_qa_records": 600,
+        "mean_of_clean_and_poisoned": {
+          "retrieval_seconds": 0.10057839930001744,
+          "generation_seconds": 2.9683143385348134,
+          "inner_retrieval_calls": 5,
+          "prompt_tokens": 332.65666666666664,
+          "completion_tokens": 5.025
+        },
+        "poisoned_exact_match_rate": 0.17,
+        "poisoned_target_answer_match_rate": 0.43
+      }
+    }
+  },
+  "two_wiki_rcd_valid_only_ablations": {
+    "full_k1": {
+      "qa_observations": 80,
+      "matched_clean_poisoned_pairs": 40,
+      "pooled_unique_ids_across_all_cells_and_variants": 36,
+      "mean_retrieval_seconds": 0.03514828802526608,
+      "mean_generation_seconds": 13.88083827495575,
+      "median_generation_seconds": 2.387145161628723,
+      "p95_generation_seconds": 5.1459641456604,
+      "max_generation_seconds": 902.9930639266968,
+      "reported_mean_inner_retrieval_operations": 4,
+      "poison_exposure_rate": 0.725,
+      "poison_target_match_rate": 0.675,
+      "poisoned_exact_match_rate": 0.025
+    },
+    "full_k3": {
+      "qa_observations": 80,
+      "matched_clean_poisoned_pairs": 40,
+      "pooled_unique_ids_across_all_cells_and_variants": 36,
+      "mean_retrieval_seconds": 0.03490183491321659,
+      "mean_generation_seconds": 3.5891841888427733,
+      "median_generation_seconds": 3.2863950729370117,
+      "p95_generation_seconds": 6.266662836074829,
+      "max_generation_seconds": 8.18367886543274,
+      "reported_mean_inner_retrieval_operations": 4,
+      "poison_exposure_rate": 0.95,
+      "poison_target_match_rate": 0.75,
+      "poisoned_exact_match_rate": 0.125
+    },
+    "full_k5": {
+      "qa_observations": 80,
+      "matched_clean_poisoned_pairs": 40,
+      "pooled_unique_ids_across_all_cells_and_variants": 36,
+      "mean_retrieval_seconds": 0.03535455519977404,
+      "mean_generation_seconds": 18.203256928920744,
+      "median_generation_seconds": 6.525186896324158,
+      "p95_generation_seconds": 13.78489899635315,
+      "max_generation_seconds": 913.7803928852081,
+      "reported_mean_inner_retrieval_operations": 4,
+      "poison_exposure_rate": 0.975,
+      "poison_target_match_rate": 0.75,
+      "poisoned_exact_match_rate": 0.15
+    },
+    "no_agreement_k3": {
+      "qa_observations": 80,
+      "matched_clean_poisoned_pairs": 40,
+      "pooled_unique_ids_across_all_cells_and_variants": 36,
+      "mean_retrieval_seconds": 0.036059457250485136,
+      "mean_generation_seconds": 4.0249052226543425,
+      "median_generation_seconds": 3.5089021921157837,
+      "p95_generation_seconds": 7.221065998077393,
+      "max_generation_seconds": 10.402281999588013,
+      "reported_mean_inner_retrieval_operations": 4,
+      "poison_exposure_rate": 0.925,
+      "poison_target_match_rate": 0.775,
+      "poisoned_exact_match_rate": 0.125
+    },
+    "no_conflict_k3": {
+      "qa_observations": 80,
+      "matched_clean_poisoned_pairs": 40,
+      "pooled_unique_ids_across_all_cells_and_variants": 36,
+      "mean_retrieval_seconds": 0.03597347498653107,
+      "mean_generation_seconds": 4.062781795859337,
+      "median_generation_seconds": 3.584064483642578,
+      "p95_generation_seconds": 7.091815233230591,
+      "max_generation_seconds": 9.954282999038696,
+      "reported_mean_inner_retrieval_operations": 4,
+      "poison_exposure_rate": 0.95,
+      "poison_target_match_rate": 0.775,
+      "poisoned_exact_match_rate": 0.1
+    },
+    "no_rewrites_k3": {
+      "qa_observations": 80,
+      "matched_clean_poisoned_pairs": 40,
+      "pooled_unique_ids_across_all_cells_and_variants": 36,
+      "mean_retrieval_seconds": 0.017422484337475907,
+      "mean_generation_seconds": 3.710163798928261,
+      "median_generation_seconds": 3.383358955383301,
+      "p95_generation_seconds": 6.483922004699707,
+      "max_generation_seconds": 8.200394868850708,
+      "reported_mean_inner_retrieval_operations": 2,
+      "poison_exposure_rate": 0.95,
+      "poison_target_match_rate": 0.775,
+      "poisoned_exact_match_rate": 0.1
+    }
+  },
+  "hotpotqa_week9_frozen_diagnostics": {
+    "note": "Weighted means across available valid question-seed positions, separately for normal clean and poisoned QA; diagnostic retrieval calls excluded. Separate 2026-10-26 checkpoint, not equal to the later held-out transfer experiment.",
+    "weighted_by_arm": {
+      "dense": {
+        "condition_rows": 12,
+        "normal_qa_records": 1910,
+        "valid_query_seed_positions": 955,
+        "mean_retrieval_seconds": 0.16000482204072458,
+        "mean_qa_wall_seconds": 3.6273001682617254,
+        "mean_normal_inner_retrieval_operations": 1,
+        "diagnostic_retrieval_calls": 955,
+        "diagnostic_inner_retrieval_operations": 955
+      },
+      "rcd": {
+        "condition_rows": 12,
+        "normal_qa_records": 1910,
+        "valid_query_seed_positions": 955,
+        "mean_retrieval_seconds": 0.20208252887425918,
+        "mean_qa_wall_seconds": 3.506047446795764,
+        "mean_normal_inner_retrieval_operations": 4.025130890052356,
+        "diagnostic_retrieval_calls": 955,
+        "diagnostic_inner_retrieval_operations": 3844
+      }
+    },
+    "weighted_by_attack_family_and_arm": {
+      "lexical_influential_token|dense": {
+        "condition_rows": 6,
+        "normal_qa_records": 1620,
+        "valid_query_seed_positions": 810,
+        "mean_retrieval_seconds": 0.12639788084246295,
+        "mean_qa_wall_seconds": 3.5658779289104627,
+        "mean_normal_inner_retrieval_operations": 1,
+        "diagnostic_retrieval_calls": 810,
+        "diagnostic_inner_retrieval_operations": 810
+      },
+      "lexical_influential_token|rcd": {
+        "condition_rows": 6,
+        "normal_qa_records": 1620,
+        "valid_query_seed_positions": 810,
+        "mean_retrieval_seconds": 0.09472033934136202,
+        "mean_qa_wall_seconds": 3.604123958797505,
+        "mean_normal_inner_retrieval_operations": 4.022222222222222,
+        "diagnostic_retrieval_calls": 810,
+        "diagnostic_inner_retrieval_operations": 3258
+      },
+      "semantic_fluent_false_evidence|dense": {
+        "condition_rows": 6,
+        "normal_qa_records": 290,
+        "valid_query_seed_positions": 145,
+        "mean_retrieval_seconds": 0.3477401487344619,
+        "mean_qa_wall_seconds": 3.9704175053274002,
+        "mean_normal_inner_retrieval_operations": 1,
+        "diagnostic_retrieval_calls": 145,
+        "diagnostic_inner_retrieval_operations": 145
+      },
+      "semantic_fluent_false_evidence|rcd": {
+        "condition_rows": 6,
+        "normal_qa_records": 290,
+        "valid_query_seed_positions": 145,
+        "mean_retrieval_seconds": 0.8018299324718225,
+        "mean_qa_wall_seconds": 2.958171759061902,
+        "mean_normal_inner_retrieval_operations": 4.041379310344827,
+        "diagnostic_retrieval_calls": 145,
+        "diagnostic_inner_retrieval_operations": 586
+      }
+    },
+    "model_reported_latency_inconsistent_with_qa_wall": [
+      {
+        "attack": "lexical_influential_token",
+        "intensity": 1,
+        "seed": 42,
+        "arm": "dense",
+        "condition": "clean"
+      },
+      {
+        "attack": "lexical_influential_token",
+        "intensity": 1,
+        "seed": 42,
+        "arm": "dense",
+        "condition": "poisoned"
+      },
+      {
+        "attack": "lexical_influential_token",
+        "intensity": 1,
+        "seed": 43,
+        "arm": "dense",
+        "condition": "clean"
+      },
+      {
+        "attack": "lexical_influential_token",
+        "intensity": 1,
+        "seed": 43,
+        "arm": "rcd",
+        "condition": "clean"
+      },
+      {
+        "attack": "semantic_fluent_false_evidence",
+        "intensity": 3,
+        "seed": 42,
+        "arm": "dense",
+        "condition": "clean"
+      }
+    ],
+    "source_row_count": 24
+  },
+  "hotpotqa_later_heldout_transfer_execution_accounting": {
+    "actual_backend_calls": 21175,
+    "clean_cache_hits": 19825,
+    "logical_generation_observations": 41000
+  },
+  "strict_claim_limits": [
+    "No single physically comparable cross-dataset Qwen latency number: hardware/model/token caps/cache/retrieval construction and query populations differ.",
+    "HotpotQA Week 9 model_reported_seconds_mean is inconsistent with QA wall time in some cells; excluded from weighted summary.",
+    "HotpotQA later transfer actual backend calls and cache hits are not a per-query cost or time benchmark.",
+    "TwoWiki original 300-query run was not supplied with a verified comparable per-request timing export on GitHub; only the separately executed valid-only 480-call RCD ablation has measured timing here.",
+    "No electricity, energy, cloud price, dollar cost, peak memory, cold-index construction, storage amortization or hardware-normalized throughput verified.",
+    "All exploratory/valid-only and historically exposure-risk-disclosed limitations remain, not rescued by descriptive efficiency analysis."
+  ]
+}
