@@ -1,3 +1,9 @@
+"""Synthetic tests for exact original-Qwen response reuse. No inference."""
+import json
+import pytest
+
+from scripts import run_2wiki_iterative_matched_qa as it
+from test_run_2wiki_iterative_matched_qa import make_plan
 
 
 def test_optimized_plan_reuses_exact_74_prompts_and_requests_only_six(tmp_path):
