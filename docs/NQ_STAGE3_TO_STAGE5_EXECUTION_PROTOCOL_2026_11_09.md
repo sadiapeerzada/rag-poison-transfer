@@ -20,7 +20,7 @@ The original real 25-query NQ retrieval sweep already exists in results/week5_6_
 | Generator | New Qwen2.5-7B-Instruct-4bit real inference, pinned snapshot, greedy 64-token QA |
 | QA arms | Matched Dense and one composite Dense-primary/BM25-auxiliary RCD, frozen historical weights |
 | PRR baselines | BM25, Dense, Hybrid and Dense+CrossEncoder; same sealed poisoned corpus |
-| Planned calls | 2 attack families × 2 intensities × 300 questions × 2 QA arms × 2 conditions = **2,400 logical QA observations** if all constructions valid |
+| Planned calls | 2 attack families × 2 intensities × 300 questions × 2 QA arms × 2 conditions = **4,800 logical QA observations** if all constructions valid |
 | Scientific status | New follow-up/exploratory unless all historical exposure and prospective design are independently certified before outcomes |
 
 The new standalone script scripts/nq_singlehop_v1_freeze.py downloads the exact pinned dataset via the existing NQ loader, verifies nonempty questions and gold labels, verifies gold candidate IDs against the pooled corpus, rejects duplicate IDs, compares train/validation query IDs, records exact source-data SHA-256 seals, git revision, cohort/corpus fingerprints, and writes private source JSON. It **does not run an attack, retrieval or a generator**. Fail-closed on dirty Git working tree. A JSON list of prior exposed IDs may be supplied by --exposure-exclusions; absence of that list **does not certify an uninspected cohort**.
@@ -47,7 +47,7 @@ python scripts/nq_singlehop_v1_freeze.py verify \
 
 Expected: NQ_COHORT_FROZEN_NO_RETRIEVAL_OR_INFERENCE and PASS_PRIVATE_NQ_COHORT_INTEGRITY_ONLY. **This only prepares the cohort, not the matched QA experiment.** Do not rerun/overwrite an existing private output tree; use a fresh directory for any intentional study version.
 
-### Gates before the new 2,400-call evaluation
+### Gates before the new 4,800-call evaluation
 
 1. Resolve NQ annotation disagreement (first short-answer annotated, possible aliases and yes/no) and disclose cohort sampling/candidate-corpus limitation. Exclude historically exposed IDs if recoverable; do not silently call cohort prospective.
 2. Seal immutable poison corpora for each family/intensity; full poisoned union is available to both pipelines, with same target and documents. Track attempted constructions, mechanically valid cases, semantic failures and ambiguous targets separately.
@@ -71,7 +71,7 @@ For poison detection, define **document identity** as the known injected-poison 
 | Phase | Code prepared? | Actual results? |
 | --- | --- | --- |
 | NQ private 50/300 cohort freeze | Yes, new script + offline synthetic tests | **Not run on Mac** |
-| NQ actual poison/retrieval/2,400-call QA | No new runner in this PR | **Pending** |
+| NQ actual poison/retrieval/4,800-call QA | No new runner in this PR | **Pending** |
 | Adaptive multi-round controller | No | **Pending** |
 | Robustness intensity5/low-rate/unseen | Historical small-N retrieval only | **Full validation pending** |
 | Labeled document poison detection | No verified classifier study | **Pending** |
