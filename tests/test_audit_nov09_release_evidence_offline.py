@@ -14,6 +14,10 @@ def test_credential_patterns_do_not_return_secret_text():
     assert found == ["github_classic_token"]
     assert secret.decode() not in str(found)
     assert gate.detect_credentials(b"OPENAI_API_KEY is merely documented.") == []
+    # The word "risk-disclosed" contains the substring "sk-" but is not a key.
+    assert gate.detect_credentials(b"twowiki-300-risk-disclosed-matrix-preflight/v1") == []
+    assert gate.detect_credentials(b"historically-risk-disclosed-existing-frozen-2wiki-300") == []
+    assert gate.detect_credentials(b"sk-proj-" + b"Z" * 40) == ["openai_looking_key"]
 
 
 def test_sha256_file(tmp_path):
