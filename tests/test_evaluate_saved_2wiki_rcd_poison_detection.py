@@ -139,3 +139,50 @@ def test_synthetic_sealed_census_must_include_other_query_poison_ids(monkeypatch
     records[1]["documents"][0]["doc_id"] = "clean_id"
     with pytest.raises(ValueError, match="collided"):
         actual.global_injection_sets(root, {cid})
+
+
+
+def test_failed_partial_construction_is_not_a_poison_injected_into_replay(monkeypatch, tmp_path):
+    root = tmp_path / "frozen"
+    (root / "execution" / "construction").mkdir(parents=True)
+    (root / "execution" / "evaluation").mkdir(parents=True)
+    cid = "semantic_fluent_false_evidence.intensity-1.seed-42"
+    records = [
+        {"query_id": f"q{i}", "status": "valid_construction" if i else "semantic_construction_failed",
+         "documents": [{"doc_id": f"attempt_{i}"}]}
+        for i in range(300)
+    ]
+    proto = {"binding": {"scope": "heldout"}, "replication": {
+        "local_data": str(tmp_path / "data.json"), "local_data_sha256": "input"}}
+    seal = {"protocol_sha256": actual.ORIGINAL_PINS["protocol.json"],
+            "cells": {cid: {"path": f"{cid}/construction.json", "sha256": "cell"}}}
+    complete = {
+        "protocol_sha256": actual.ORIGINAL_PINS["protocol.json"],
+        "construction_seal_sha256":
+            actual.ORIGINAL_PINS["execution/construction/construction.seal.json"],
+        "rows_sha256": {cid: "rows"}}
+    data = {"queries": [{"query_id": f"q{i}"} for i in range(300)],
+            "corpus": [{"doc_id": "clean"}]}
+    content = {"protocol.json": proto, "construction.seal.json": seal,
+               "evaluation.complete.json": complete,
+               "data.json": data, "construction.json": {"records": records, "intensity": 1}}
+    monkeypatch.setattr(actual, "require_json", lambda path, pin: content[Path(path).name])
+    global_ids, per_query, _ = actual.global_injection_sets(root, {cid})
+    assert len(global_ids[cid]) == 299
+    assert "attempt_0" not in global_ids[cid]
+    assert per_query[cid]["q0"] == set()
+
+
+def test_auto_restored_root_identifies_pinned_protocol_only(monkeypatch, tmp_path):
+    original = tmp_path / "archive" / "verified"
+    (original / "execution" / "construction").mkdir(parents=True)
+    (original / "execution" / "evaluation").mkdir(parents=True)
+    (original / "protocol.json").write_text('{"saved":"historical"}')
+    (original / "execution/construction/construction.seal.json").write_text("{}")
+    (original / "execution/evaluation/evaluation.complete.json").write_text("{}")
+    monkeypatch.setattr(actual, "digest",
+                        lambda p: actual.ORIGINAL_PINS["protocol.json"]
+                        if Path(p) == original / "protocol.json" else "unknown")
+    assert actual.locate_restored_original(tmp_path, downloads=tmp_path / "empty") == original
+    with pytest.raises(ValueError, match="not found"):
+        actual.locate_restored_original(tmp_path / "nonexistent", downloads=tmp_path / "nonexistent")
