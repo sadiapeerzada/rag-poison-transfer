@@ -1,5 +1,11 @@
 # Cross-Pipeline Transferability of Knowledge Poisoning in Adaptive RAG
 
+## November 9 scoped research handoff (draft release candidate)
+
+The [scoped evidence-backed research package](paper/release/SCOPED_RESEARCH_RELEASE_CANDIDATE_2026-11-09.md) consolidates the completed HotpotQA cross-pipeline transfer, HotpotQA/2Wiki matched Dense–RCD comparisons, Natural Questions I1/I3 analysis, 2Wiki RCD component ablations, efficiency/cost-proxy results and their validity limits. The [57-file tracked-results rights inventory](paper/release/nov09_tracked_result_rights_inventory.json) lists files requiring privacy/licensing review before an unrestricted raw-data release.
+
+**Scientific release status:** `DRAFT_SCOPED_RESEARCH_CANDIDATE` — five of twelve workstreams are complete at defined exploratory scope. Task 11's local mechanical integrity checks passed; data redistribution rights, historical exposure, semantic factuality and independent model/data custody remain unresolved. This is **not** a declaration that all twelve planned experiments or publication approvals are complete. No original experiment, raw evidence or frozen result was changed by the handoff.
+
 Undergraduate thesis project by Sadia Peerzada. The research question is how
 knowledge-poisoning attacks transfer across retrieval pipelines in adaptive
 Retrieval-Augmented Generation (RAG), and how this transfer is affected by the
