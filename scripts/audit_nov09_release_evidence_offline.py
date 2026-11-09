@@ -36,7 +36,7 @@ CREDENTIALS = [
     ("private_key_block", re.compile(rb"-----BEGIN (?:RSA |EC |OPENSSH )?PRIVATE KEY-----")),
     ("github_classic_token", re.compile(rb"ghp_[A-Za-z0-9]{30,}")),
     ("github_fine_grained_token", re.compile(rb"github_pat_[A-Za-z0-9_]{20,}")),
-    ("openai_looking_key", re.compile(rb"sk-[A-Za-z0-9_-]{20,}")),
+    ("openai_looking_key", re.compile(rb"(?<![A-Za-z0-9_-])sk-[A-Za-z0-9_-]{20,}")),
     ("google_api_key", re.compile(rb"AIza[A-Za-z0-9_-]{30,}")),
     ("assigned_sensitive_env_variable", re.compile(
         rb"(?im)^\s*(?:AWS_SECRET_ACCESS_KEY|HF_TOKEN|OPENAI_API_KEY|GITHUB_TOKEN)\s*[:=]\s*['\"]?[A-Za-z0-9_+./=-]{16,}"
