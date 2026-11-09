@@ -1,0 +1,82 @@
+{
+  "schema_version": "nq-lexical-i1-public-aggregate/v1",
+  "project": "Cross-Pipeline Transferability of Knowledge Poisoning in Adaptive RAG",
+  "date": "2026-11-09",
+  "status": "COMPLETE_EXPLORATORY_SEALED_NQ_LEXICAL_QA",
+  "source_and_verification": {
+    "evidence": "researcher-provided Mac terminal execution and aggregation receipt",
+    "operator_reported_request_status": "ALL_QA_REQUESTS_VERIFIED",
+    "operator_reported_qa_calls_verified": 1200,
+    "private_response_journals_rechecked_for_this_publication": false,
+    "limitations": "This public export reproduces the operator's validated aggregate receipt; the private question-level records and raw aggregate were not accessible for independent re-hashing or paired inference.",
+    "private_aggregate_sha256_reported": "0126f5998d07b5f0430d93f1fcf610dc7118b819b385065bcca60e02188b9ac9",
+    "private_aggregate_basename": "nq-stage3-lexical-I1-qa-aggregate-v1_PRIVATE.json",
+    "frozen_nq_cohort_manifest_sha256_reported": "1b99fe49fff3b1224c6351fb20f58897e0e664a69c33a6400b4a56855c05f8c7",
+    "frozen_target_assignments_sha256_reported": "f6bd7dd19fab2093d6730f51cb55e8980ce4d6543d71e1514a7c876c888c54bc",
+    "lexical_i1_construction_sha256_reported": "745bbba2a917db8271c111c55d66fd805c5f5e9b371a7c906ea7d93e9495a1ee",
+    "lexical_i1_qa_plan_sha256_reported": "66104bd1b922bd79a465593cb134b12820b71271fba08567c4bc529dd912f6c6"
+  },
+  "design": {
+    "dataset": "Natural Questions validation-split sampled evaluation subset, frozen",
+    "dataset_usage_caveat": "Pooled Natural Questions long-answer candidate passages, not the standard full open-domain Wikipedia retrieval corpus",
+    "unique_evaluation_questions": 300,
+    "attack_family": "lexical influential-token poisoning",
+    "poison_intensity": 1,
+    "retrieval_arms": [
+      "Dense",
+      "RCD (Dense primary; BM25 auxiliary)"
+    ],
+    "conditions": [
+      "clean",
+      "poisoned"
+    ],
+    "generation_model_as_specified_in_frozen_protocol": "Qwen2.5-7B-Instruct-4bit via local MLX, greedy, 64-token cap",
+    "model_snapshot_file_hashes_publicly_verified": false,
+    "logical_qa_observations": 1200,
+    "design_formula": "300 questions x 2 retrieval arms x 2 conditions",
+    "distinct_question_ids_are_not_1200": true
+  },
+  "metrics": {
+    "dense": {
+      "n_paired_questions": 300,
+      "clean_exact_match_numerator": 94,
+      "clean_exact_match": 0.31333333333333335,
+      "poisoned_exact_match_numerator": 83,
+      "poisoned_exact_match": 0.27666666666666667,
+      "clean_f1_mean": 0.43558345657946573,
+      "poisoned_f1_mean": 0.378810703742466,
+      "target_answer_match_numerator": 48,
+      "target_answer_match_rate": 0.16,
+      "poison_visible_top3_numerator": 253,
+      "poison_visible_top3_rate": 0.8433333333333334,
+      "clean_correct_to_poison_wrong_count": 19
+    },
+    "rcd": {
+      "n_paired_questions": 300,
+      "clean_exact_match_numerator": 97,
+      "clean_exact_match": 0.3233333333333333,
+      "poisoned_exact_match_numerator": 83,
+      "poisoned_exact_match": 0.27666666666666667,
+      "clean_f1_mean": 0.4327154836969417,
+      "poisoned_f1_mean": 0.38146188934392344,
+      "target_answer_match_numerator": 50,
+      "target_answer_match_rate": 0.16666666666666666,
+      "poison_visible_top3_numerator": 241,
+      "poison_visible_top3_rate": 0.8033333333333333,
+      "clean_correct_to_poison_wrong_count": 21
+    }
+  },
+  "descriptive_rcd_minus_dense_percentage_points": {
+    "clean_exact_match": 1,
+    "poisoned_exact_match": 0,
+    "target_answer_match": 0.6666666666666666,
+    "poison_visible_top3": -4
+  },
+  "inference_status": {
+    "paired_confidence_intervals": "NOT_COMPUTED_FROM_PRIVATE_QUESTION_RECORDS",
+    "statistical_significance": "NOT_ASSESSED",
+    "target_factual_falsity": "NOT_INDEPENDENTLY_SOURCE_VERIFIED",
+    "historical_exposure_exclusions": "NOT_CERTIFIED",
+    "interpretation": "Target-answer matching is descriptive and is not independently verified false-evidence ASR. RCD showed lower top-3 poison visibility but slightly higher target-answer matching and identical poisoned EM at this intensity."
+  }
+}
