@@ -1,0 +1,114 @@
+{
+  "schema": "rag-poison-transfer.public-release-evidence-inventory/v1",
+  "date": "2026-11-09",
+  "branch_snapshot": "main",
+  "checked_main_commit": "2c8b906eea77a244a8282d1ef41b1b3c00e598b4",
+  "source": "Connected public GitHub repo, independently fetched JSON representations",
+  "evidence_files": [
+    {
+      "path": "paper/results/nq_lexical_i1_2026-11-09/aggregate_public.json",
+      "git_blob_sha1": "bc8a6f1c45b9bca470bf3ef29fb5e71195a6e108",
+      "approx_utf8_characters": 4140,
+      "source_scope": "published public aggregate only"
+    },
+    {
+      "path": "paper/results/nq_lexical_i3_2026-11-09/aggregate_public.json",
+      "git_blob_sha1": "ad14a65dcfe20f68609387f79fbee697815c2891",
+      "approx_utf8_characters": 3438,
+      "source_scope": "published public aggregate only"
+    },
+    {
+      "path": "paper/results/nq_lexical_i1_i3_paired_2026-11-09/selected_statistics_public.json",
+      "git_blob_sha1": "7cfc523a58011627374e879cceea0c2cbea5f700",
+      "approx_utf8_characters": 4897,
+      "source_scope": "published public aggregate only"
+    },
+    {
+      "path": "paper/results/nq_lexical_i1_i3_paired_2026-11-09/full_comparisons_resource_public.json",
+      "git_blob_sha1": "af43d4de3237ebee89c8dbd116bf753d67bb7511",
+      "approx_utf8_characters": 21759,
+      "source_scope": "published public aggregate only"
+    },
+    {
+      "path": "paper/results/2wiki_rcd_ablation_v1_2026-11-09/aggregate_public.json",
+      "git_blob_sha1": "dc7888c1a19037ba42089419dbfe635fd1a92b7c",
+      "approx_utf8_characters": 24844,
+      "source_scope": "published public aggregate only"
+    },
+    {
+      "path": "paper/results/2wiki_rcd_ablation_v1_2026-11-09/question_cluster_audit_public.json",
+      "git_blob_sha1": "51ad2b2fe76bdd67e8cda56d2a22034a3764982e",
+      "approx_utf8_characters": 22441,
+      "source_scope": "published public aggregate only"
+    },
+    {
+      "path": "paper/results/cross_study_efficiency_2026-11-09/observed_efficiency_public.json",
+      "git_blob_sha1": "51c5d96f005ff997b46c35ef6239436e70501926",
+      "approx_utf8_characters": 11069,
+      "source_scope": "published public aggregate only"
+    },
+    {
+      "path": "paper/results/hotpotqa_transfer_43f3f652460a/aggregate_public.json",
+      "git_blob_sha1": "619bc3cac2443e6706316e0dcd0714ec6a105f6d",
+      "approx_utf8_characters": 132651,
+      "source_scope": "published public aggregate only"
+    }
+  ],
+  "checks": [
+    {
+      "name": "NQ both source cohorts 300 distinct questions",
+      "status": "PASS",
+      "detail": "Each public intensity report records 300 questions."
+    },
+    {
+      "name": "NQ 1200 logical observations per intensity",
+      "status": "PASS",
+      "detail": "2 retrievers × clean/poison × 300 questions per intensity."
+    },
+    {
+      "name": "NQ paired 2400 observations/35 comparisons",
+      "status": "PASS",
+      "detail": "A direct public-JSON structural/denominator check, not an independent raw replay."
+    },
+    {
+      "name": "NQ I1/I3 source-to-paired outcome values",
+      "status": "PASS",
+      "detail": "All 20 selected source group rates/counts match the later full paired aggregate."
+    },
+    {
+      "name": "2Wiki RCD source and audit hash consistent",
+      "status": "PASS",
+      "detail": "Original private aggregate SHA recorded consistently in independent public extracts."
+    },
+    {
+      "name": "2Wiki RCD 480 observations, 24 groups, 36 unique questions, 50 contrasts",
+      "status": "PASS",
+      "detail": "The later audit source checker reports 480/480 original locally, independently verified here for internal consistency only."
+    },
+    {
+      "name": "2Wiki ablation 24 source groups and 50 effects reconcile",
+      "status": "PASS",
+      "detail": "All pooled source means and matched point estimates are arithmetically consistent."
+    },
+    {
+      "name": "Hotpot transfer 240 cells + backend/cache accounting",
+      "status": "PASS",
+      "detail": "Covers 240 final source-target cells and 41,000 logical observations = 21,175 physical calls + 19,825 cache hits."
+    },
+    {
+      "name": "Cross-study ledger source dependencies present",
+      "status": "PASS",
+      "detail": "Ledger source list matches audited public records; historical Hotpot timing CSV is a separate explicitly named source."
+    }
+  ],
+  "status": "PASS_PUBLIC_AGGREGATE_STRUCTURAL_RECONCILIATION_ONLY",
+  "nonclaims": [
+    "Git blob SHA-1 identifiers identify immutable GitHub source file content; they do not authenticate private original experiment execution or replace independent SHA-256 inventory checks.",
+    "This inventory did not execute original inference, access private raw responses or audit original source dataset/model files.",
+    "External archive source custody, optional HotpotQA candidate inventory, full NQ original raw record replay and model/data-cache preservation remain unverified.",
+    "Original 2Wiki cohort is historically exposure-risk-disclosed; prospective V3 NO-GO must not be weakened.",
+    "Semantic target factual falsehood is not independently source-adjudicated; prior analysis is AI-assisted and post hoc.",
+    "No global repository-wide licensing/privacy certification has been performed by these checks.",
+    "CI was in progress at inspection time; do not infer a passing latest-main result."
+  ]
+}
