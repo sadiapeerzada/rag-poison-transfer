@@ -7,6 +7,7 @@ Do not interpret these labels as verified false statements.
 from __future__ import annotations
 
 import math
+import random
 from collections import defaultdict
 
 SCHEMA = "rag-poison-transfer.rcd-document-poison-detection/v1"
@@ -138,7 +139,62 @@ def summarize(records, threshold):
             "threshold": threshold, "at_threshold": confusion(records, threshold)}
 
 
-def evaluate(dev_rows, test_rows, *, forbid_shared_documents=False):
+
+def query_cluster_bootstrap(test_rows, threshold, *, reps=2000, seed=20261109):
+    """Nominal percentile CIs resampling whole question clusters, not candidate rows.
+
+    The dev-selected threshold stays fixed in every test resample. Some
+    resamples can lack a positive or negative, so the defined replicate count
+    is reported separately; no unobserved scores or labels are synthesized.
+    """
+    if type(reps) is not int or not 100 <= reps <= 100000:
+        raise ValueError("Bootstrap replicates must be an integer in [100,100000]")
+    if type(seed) is not int:
+        raise ValueError("Deterministic bootstrap integer seed required")
+    groups = []
+    seen = set()
+    for row in test_rows:
+        if row.get("query_id") in seen:
+            raise ValueError("Repeated question cluster in test set")
+        seen.add(row.get("query_id"))
+        items, _, _ = extract_labeled_candidates(row)
+        groups.append(items)
+    if not groups:
+        raise ValueError("Empty test clusters")
+    rng = random.Random(seed)
+    metrics = {name: [] for name in ("auroc", "average_precision", "f1", "false_positive_rate")}
+    for _ in range(reps):
+        sample = [item for _ in groups
+                  for item in groups[rng.randrange(len(groups))]]
+        try:
+            _validate_binary(sample)
+        except ValueError:
+            continue
+        cm = confusion(sample, threshold)
+        values = {"auroc": auroc(sample), "average_precision": average_precision(sample),
+                  "f1": cm["f1"], "false_positive_rate": cm["false_positive_rate"]}
+        for name, value in values.items():
+            if value is not None:
+                metrics[name].append(value)
+    output = {}
+    for key, values in metrics.items():
+        vals = sorted(values)
+        if not vals:
+            output[key] = {"ci95_percentile": None, "defined_replicates": 0}
+        else:
+            n = len(vals)
+            output[key] = {
+                "ci95_percentile": [vals[int((n - 1) * 0.025)],
+                                    vals[int((n - 1) * 0.975)]],
+                "defined_replicates": n,
+            }
+    return {"resampling_unit": "question_id with all candidate observations",
+            "bootstrap_replicates": reps, "seed": seed, "threshold_refit_on_test": False,
+            "nominal_unadjusted": True, "metrics": output}
+
+
+def evaluate(dev_rows, test_rows, *, forbid_shared_documents=False,
+             bootstrap_replicates=2000, bootstrap_seed=20261109):
     """Evaluate a new corpus-level identity detector. No per-item exports."""
     def build(rows):
         if not isinstance(rows, list) or not rows:
@@ -182,11 +238,15 @@ def evaluate(dev_rows, test_rows, *, forbid_shared_documents=False):
             "test_visible_injected_poison_query_sum":test_visible,
             "development":summarize(dev,threshold),
             "test":summarize(test,threshold),
+            "test_query_cluster_bootstrap_ci95": query_cluster_bootstrap(
+                test_rows, threshold, reps=bootstrap_replicates, seed=bootstrap_seed),
             "limitations":[
                 "Positive label = known injected poison document identity, NOT independently verified factual falsehood.",
                 "Score is a predeclared uncalibrated combination of rank-instability and year-conflict heuristics.",
                 "Candidate-only detection excludes injected documents absent from the retrieved candidate pool.",
                 "Candidate observations can repeat the same document; count is NOT number of independent documents.",
                 "Shared document IDs across cohorts risk leakage and are disclosed; require disjointness for stronger claims.",
+                "Test bootstrap resamples questions, keeping candidate rows together; it does not establish document-level independence or external label quality.",
+                "Bootstrap intervals are nominal and not multiplicity-adjusted; the dev threshold is held fixed.",
                 "No LLM inference or new poison construction is performed by this evaluation."
             ]}
