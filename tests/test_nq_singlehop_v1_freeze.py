@@ -31,7 +31,7 @@ def test_freeze_verify_and_private_seals(tmp_path, monkeypatch):
     out = tmp_path / "private_v1"
     receipt = nq.freeze(out, dev_n=2, eval_n=3, dev_source=a, eval_source=b)
     assert receipt["status"] == "NQ_COHORT_FROZEN_NO_RETRIEVAL_OR_INFERENCE"
-    assert receipt["eval_qa_budget_if_all_valid"] == 24
+    assert receipt["eval_qa_budget_if_all_valid"] == 48
     assert nq.verify(out, receipt["manifest_sha256"]) == {
         "status": "PASS_PRIVATE_NQ_COHORT_INTEGRITY_ONLY",
         "dev_queries": 2, "eval_queries": 3,
@@ -40,7 +40,7 @@ def test_freeze_verify_and_private_seals(tmp_path, monkeypatch):
     assert m["dataset"]["revision"] == nq.REVISION
     assert m["dataset"]["corpus_scope"] == "pooled_NQ_long_answer_candidates_not_full_Wikipedia"
     assert m["prior_exposure_certified"] is False
-    assert m["planned_new_experiment"]["expected_eval_qa_calls_if_all_constructions_valid"] == 24
+    assert m["planned_new_experiment"]["expected_eval_qa_calls_if_all_constructions_valid"] == 48
     with pytest.raises(ValueError, match="Output must be a new"):
         nq.freeze(out, dev_n=2, eval_n=3, dev_source=a, eval_source=b)
 
