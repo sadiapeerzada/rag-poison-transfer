@@ -1,0 +1,61 @@
+{
+  "schema": "rag-poison-transfer.task5-operator-console-exploratory-iterative-qa-aggregate/v1",
+  "run_date": "2026-11-09",
+  "evidence_status": "OPERATOR_MAC_CONSOLE_RECEIPT; PRIVATE_SOURCE_PLAN_JOURNAL_AND_AGGREGATE_NOT_UPLOADED",
+  "real_runner_status": "ITERATIVE_NEW_QWEN_COMPLETE",
+  "aggregation_status": "REAL_QWEN_ITERATIVE_MATCHED_QA_EXPLORATORY_COMPLETE",
+  "scope": "post-hoc valid-only original 2Wiki sample; 40 query-cell positions and 36 distinct question IDs",
+  "n_matched_query_cell_positions": 40,
+  "n_distinct_question_ids": 36,
+  "n_original_dense_source_prompt_parity_checks": 80,
+  "n_original_dense_control_qwen_responses": 80,
+  "n_iterative_responses_reused_exact_frozen_dense_prompt_and_evidence": 77,
+  "n_new_model_inference_requests": 3,
+  "n_verified_new_model_inference_observations": 3,
+  "n_actual_second_round_retrieval_invocations": 6,
+  "n_abstentions": 0,
+  "original_prepared_plan_sha256": "5dacf18d8713018b2c89e567566257391518aea9db057655006f0a70f828c429",
+  "optimized_private_plan_sha256": "9310139e642d92d0cc2e5fcdd20002c0f855cb6e641242068836359179cc0f90",
+  "original_frozen_dense": {
+    "poisoned_target_match_count": 33,
+    "poisoned_target_match_denominator": 40,
+    "poisoned_target_match_rate": 0.825,
+    "clean_gold_correct_count": 11,
+    "clean_gold_correct_denominator": 40,
+    "clean_gold_correct_rate": 0.275
+  },
+  "real_iterative_qa": {
+    "poisoned_target_match_count": 33,
+    "poisoned_target_match_denominator": 40,
+    "poisoned_target_match_rate": 0.825,
+    "clean_gold_correct_count": 13,
+    "clean_gold_correct_denominator": 40,
+    "clean_gold_correct_rate": 0.325
+  },
+  "paired_target_match_rate_difference": 0,
+  "reported_question_cluster_nominal_ci95_for_target_difference": [
+    0,
+    0
+  ],
+  "observed_clean_correct_rate_difference": 0.05,
+  "reported_clean_correct_difference_ci95": null,
+  "interpretation": "No observed reduction in targeted answer matching with this evidence-dependent two-round heuristic versus frozen Dense on this selected exploratory sample. Clean correctness differs by two positions; statistical significance is not established. Same-QA-input entries share an original Qwen answer rather than being independent generations.",
+  "limitations": [
+    "Source evidence is the researcher's Mac terminal receipt; this public JSON is transcribed from the receipt, not an independent validation of the private complete JSON report or raw response journal.",
+    "40 query-cell positions are post-hoc selected valid constructions from the historical 2Wiki pool, containing 36 distinct query IDs, not 40 independent test subjects or a fresh prospectively blinded full 300-query sample.",
+    "77 exact identical original Dense prompts/evidence doc IDs reuse one historical Qwen answer in the iterative arm; this is not 77 new independent generator calls.",
+    "Only 6 of 80 new iterative retrievals required a second round, and only 3 prompts required new Qwen calls.",
+    "An ASR target string match does not independently establish that the poison claim is factually false, source-supported, nor a causal attack effect.",
+    "Original dataset historical exposure/custody, source-verification, model/data backup and release-rights limitations remain unresolved.",
+    "The iterative method is a deterministic evidence-dependent lexical coverage heuristic, not a learned controller.",
+    "Targeted attack effect CI [0,0] in this selected subset is not a population-wide guarantee or a proof of equivalence.",
+    "Clean correctness differs by 2/40; no clean-effect confidence interval was supplied by the console receipt, and no statistical significance should be claimed.",
+    "Original Dense Qwen responses were generated historically and should not be used for matched new-vs-old inference latency comparison."
+  ],
+  "research_release_decision": "SCOPED_EXPLORATORY_TASK5_EVIDENCE_COMPLETE; ORIGINAL_FULL_SCOPE_HELDOUT_VALIDATION_OPEN",
+  "private_output_basenames": {
+    "optimized_plan": "task5-iterative-optimized-20261109T135735Z_PRIVATE.json",
+    "real_model_run_directory": "task5-iterative-real-qwen-20261109T140623Z_PRIVATE",
+    "aggregate_summary": "task5-iterative-summary-20261109T140652Z_PRIVATE.json"
+  }
+}
