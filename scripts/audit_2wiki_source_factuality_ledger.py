@@ -54,8 +54,9 @@ def verify_packet(path: Path, expected_sha256=PACKET_SHA256, require_frozen=True
     if len(ids) != len(set(ids)) or any(not isinstance(x, str) or not x for x in ids):
         raise ValueError("Missing or duplicate case IDs")
     for row in rows:
-        if (not row.get("query_id") or row.get("construction_status") not in
-                {"valid_construction", "target_nomination_failure", "semantic_generation_failure"}):
+        if (not isinstance(row.get("query_id"), str) or not row["query_id"] or
+                not isinstance(row.get("construction_status"), str) or
+                not row["construction_status"]):
             raise ValueError("Invalid source construction status or query ID")
     return rows
 
