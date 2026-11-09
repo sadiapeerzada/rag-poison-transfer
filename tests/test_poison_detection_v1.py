@@ -3,7 +3,7 @@ import pytest
 
 from src.evaluation.poison_detection import (
     auroc, average_precision, confusion, choose_threshold,
-    evaluate, extract_labeled_candidates,
+    evaluate, extract_labeled_candidates, query_cluster_bootstrap,
 )
 
 
@@ -92,3 +92,29 @@ def test_real_doc_id_overlap_disclosed_and_optional_fail():
     assert result["document_disjoint"] is False
     with pytest.raises(ValueError, match="candidate documents overlap"):
         evaluate([d], [t], forbid_shared_documents=True)
+
+
+
+def test_heldout_query_cluster_ci_has_fixed_dev_threshold_and_defined_replicates():
+    result = evaluate([synthetic_case("dev_a"), synthetic_case("dev_b")],
+                      [synthetic_case("test_a"), synthetic_case("test_b")],
+                      bootstrap_replicates=100, bootstrap_seed=123)
+    boot = result["test_query_cluster_bootstrap_ci95"]
+    assert boot["resampling_unit"] == "whole questions with all candidate observations"
+    assert boot["threshold_refit_on_test"] is False
+    assert boot["bootstrap_replicates"] == 100
+    assert boot["metrics"]["auroc"]["defined_replicates"] == 100
+    assert boot["metrics"]["auroc"]["ci95_percentile"] == [1.0, 1.0]
+    assert boot["metrics"]["false_positive_rate"]["ci95_percentile"] == [0.0, 0.0]
+
+
+def test_query_bootstrap_is_deterministic_and_rejects_duplicate_clusters():
+    rows = [synthetic_case("a"), synthetic_case("b", swap=True), synthetic_case("c")]
+    first = query_cluster_bootstrap(rows, threshold=.5, reps=100, seed=7)
+    second = query_cluster_bootstrap(rows, threshold=.5, reps=100, seed=7)
+    assert first == second
+    assert 0 <= first["metrics"]["f1"]["ci95_percentile"][0] <= 1
+    with pytest.raises(ValueError, match="Repeated question cluster"):
+        query_cluster_bootstrap([rows[0], rows[0]], threshold=.5, reps=100)
+    with pytest.raises(ValueError, match="replicates"):
+        query_cluster_bootstrap(rows, threshold=.5, reps=2)
