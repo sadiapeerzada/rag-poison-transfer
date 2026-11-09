@@ -17,6 +17,7 @@ from __future__ import annotations
 import argparse
 import hashlib
 import json
+import os
 from pathlib import Path
 import sys
 
@@ -34,6 +35,42 @@ from src.evaluation.poison_detection import evaluate
 SCHEMA = "rag-poison-transfer.pinned-2wiki-ablation-document-detection-offline/v1"
 SPLIT_VERSION = "unique-original-question-sha256-20261109-v1"
 MAX_QUESTIONS = 36
+
+
+
+def locate_restored_original(research_root: Path, *, downloads=None, max_dirs=25000):
+    """Locate a same-machine restored original root using its pinned protocol.
+
+    Scans directory names and only hashes protocol.json candidates. Does not
+    enter original 37k-file construction/evaluation trees or model caches.
+    """
+    roots = (Path(research_root), Path(downloads or Path.home() / "Downloads"))
+    excluded = {".git", ".venv", "venv", "node_modules", "execution",
+                "construction", "evaluation", "entries", "intents",
+                "calls", "responses", ".cache", "rag-poison-transfer"}
+    tested = 0
+    for root in roots:
+        if not root.is_dir():
+            continue
+        for current, dirs, names in os.walk(root, followlinks=False):
+            tested += 1
+            if tested > max_dirs:
+                raise ValueError("Restore search directory budget exceeded; pass --restored-root explicitly")
+            relative_depth = len(Path(current).relative_to(root).parts)
+            dirs[:] = sorted(d for d in dirs
+                             if d not in excluded and relative_depth < 6
+                             and not (Path(current) / d).is_symlink())
+            if "protocol.json" not in names:
+                continue
+            candidate = Path(current)
+            p = candidate / "protocol.json"
+            if (p.is_symlink() or not
+                (candidate / "execution/construction/construction.seal.json").is_file() or not
+                (candidate / "execution/evaluation/evaluation.complete.json").is_file()):
+                continue
+            if digest(p) == ORIGINAL_PINS["protocol.json"]:
+                return candidate.resolve(strict=True)
+    raise ValueError("Pinned original 2Wiki restored root not found under Documents or Downloads; pass --restored-root PATH")
 
 
 def global_injection_sets(original_root: Path, cell_ids: set[str], *, local_data=None):
@@ -276,8 +313,8 @@ def run(research_root: Path, original_root: Path, output: Path,
 def main():
     p = argparse.ArgumentParser(description=__doc__)
     p.add_argument("--research-root", type=Path, default=ROOT)
-    p.add_argument("--restored-root", type=Path, required=True,
-                   help="Original frozen 2Wiki run containing protocol.json and execution/")
+    p.add_argument("--restored-root", type=Path,
+                   help="Original frozen 2Wiki root; automatically discovered from pinned protocol if omitted")
     p.add_argument("--local-data", type=Path, help="Override original pinned input snapshot path")
     p.add_argument("--plan", type=Path, help="Optional original 480-item retrieval plan; SHA verified")
     p.add_argument("--out", type=Path, required=True, help="NEW private aggregate-only JSON path")
@@ -285,8 +322,9 @@ def main():
                    help="Exploratory same-corpus test: disclose overlapping candidate IDs; not independent-document holdout")
     p.add_argument("--bootstrap-replicates", type=int, default=2000)
     a = p.parse_args()
+    original_root = a.restored_root or locate_restored_original(a.research_root)
     print(json.dumps(run(
-        a.research_root, a.restored_root, a.out,
+        a.research_root, original_root, a.out,
         plan_path=a.plan, local_data=a.local_data,
         allow_shared_documents=a.allow_shared_document_ids,
         bootstrap_replicates=a.bootstrap_replicates,
