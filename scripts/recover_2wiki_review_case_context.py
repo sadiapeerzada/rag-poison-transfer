@@ -79,7 +79,7 @@ def sealed_inputs(run: Path, *, local_data: Path | None = None):
         or bound.get("clean_corpus_fingerprint") != corpus_fingerprint(data["corpus"])):
         raise ValueError("Pinned construction corpus/query fingerprints differ")
 
-    return run, {q["query_id"]: q for q in queries}, seal, evaluation, source
+    return run, {q["query_id"]: q for q in queries}, seal, evaluation, replication["local_data_sha256"]
 
 
 def source_cell(run: Path, seal: dict, evaluation: dict, cell_name: str):
@@ -107,7 +107,7 @@ def recover(packet: list[dict], run: Path, *, local_data: Path | None = None):
     if dict(counts) != EXPECTED:
         raise ValueError("Original selected 107 valid / 16 target / 8 semantic status counts differ")
 
-    run, queries, seal, evaluation, source = sealed_inputs(
+    run, queries, seal, evaluation, original_input_sha = sealed_inputs(
         run, local_data=local_data
     )
     cache = {}
@@ -149,8 +149,7 @@ def recover(packet: list[dict], run: Path, *, local_data: Path | None = None):
             "original_gold_answer": original_query["gold_answer"],
             "original_target_answer": original.get("target_answer"),
             "source_original_construction_sha256": cell_pin,
-            "source_original_local_input_sha256":
-                digest(source),
+            "source_original_local_input_sha256": original_input_sha,
             "factuality_verdict": "unreviewed",
             "answer_type_verdict": "unreviewed",
             "context_recovered_from_original_sealed_input": True,
@@ -182,8 +181,9 @@ def run(*, packet_file: Path, frozen_run: Path, output: Path,
     packet = verify_packet(packet_file, PACKET_SHA256)
     recovered, summary = recover(packet, frozen_run, local_data=local_data)
     dest = fresh_private(output)
-    if dest == packet_file or dest == Path(frozen_run).expanduser().resolve(strict=True):
-        raise ValueError("No source files may be overwritten")
+    original_root = Path(frozen_run).expanduser().resolve(strict=True)
+    if dest == packet_file or dest == original_root or original_root in dest.parents:
+        raise ValueError("New output must be outside the frozen source-run directory")
     with dest.open("x", encoding="utf-8") as stream:
         for record in recovered:
             stream.write(json.dumps(record, ensure_ascii=False) + "\n")
