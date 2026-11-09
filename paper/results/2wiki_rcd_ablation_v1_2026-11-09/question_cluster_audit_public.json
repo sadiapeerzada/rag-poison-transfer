@@ -1,0 +1,682 @@
+{
+  "schema": "rag-poison-transfer.2wiki-rcd-ablation-question-cluster-audit-public/v1",
+  "date": "2026-11-09",
+  "source_status": "ORIGINAL_480_ABLATION_OBSERVATIONS_PAIRED_AUDIT_PASSED_EXPLORATORY",
+  "publication_status": "EXPLORATORY_AGGREGATES_ONLY_NO_NEW_QA_INFERENCE",
+  "source_provenance": "The operator ran the immutable historical-ablation audit on the local private response and intent records; GitHub reviewer verified reported aggregate arithmetic, paired means and compatibility with the existing public 24-group aggregate, but did not independently rerun the original private raw-record audit.",
+  "source_original_aggregate_sha256": "9ae68bd2050bef08782d4bc96ba924ffa936d3e7f8d096aa550af964d2bb9466",
+  "source_prompt_plan_sha256": "28677dc6994c980b48abeed5423c3edf07aa06ed0993139d78701bf7286eac9c",
+  "source_run_manifest_sha256": "72639cfcd66758db3b36489d94cab41e327a008ef79d0bbc8646618b6134d15e",
+  "verified_response_and_intent_count": 480,
+  "matched_clean_poison_pairs": 240,
+  "n_cell_positions_per_variant": 40,
+  "n_unique_question_ids_across_four_cells": 36,
+  "bootstrap_replicates": 2000,
+  "bootstrap_seed": 20261109,
+  "bootstrap_unit": "distinct question ID shared across all selected attack-family/intensity cells; repeated positions retained in same cluster",
+  "comparison_convention": "All contrast estimates are full_k3 MINUS named ablation variant (not the reverse). 40 selected cell positions are not 40 distinct independent questions.",
+  "variant_pooled_means": {
+    "full_k1": {
+      "clean_correct_to_poisoned_wrong": 0.175,
+      "clean_em": 0.2,
+      "clean_f1": 0.36646825396825394,
+      "generation_seconds_per_qa": 13.88083827495575,
+      "inner_retrieval_calls_per_qa": 4,
+      "poison_exposed": 0.725,
+      "poisoned_em": 0.025,
+      "poisoned_f1": 0.10218253968253968,
+      "retrieval_seconds_per_qa": 0.03514828802526608,
+      "target_match": 0.675
+    },
+    "full_k3": {
+      "clean_correct_to_poisoned_wrong": 0.075,
+      "clean_em": 0.175,
+      "clean_f1": 0.3119660894660895,
+      "generation_seconds_per_qa": 3.5891841888427733,
+      "inner_retrieval_calls_per_qa": 4,
+      "poison_exposed": 0.95,
+      "poisoned_em": 0.125,
+      "poisoned_f1": 0.16325757575757577,
+      "retrieval_seconds_per_qa": 0.03490183491321659,
+      "target_match": 0.75
+    },
+    "full_k5": {
+      "clean_correct_to_poisoned_wrong": 0.15,
+      "clean_em": 0.25,
+      "clean_f1": 0.447779304029304,
+      "generation_seconds_per_qa": 18.203256928920744,
+      "inner_retrieval_calls_per_qa": 4,
+      "poison_exposed": 0.975,
+      "poisoned_em": 0.15,
+      "poisoned_f1": 0.19375,
+      "retrieval_seconds_per_qa": 0.03535455519977404,
+      "target_match": 0.75
+    },
+    "no_agreement_k3": {
+      "clean_correct_to_poisoned_wrong": 0.125,
+      "clean_em": 0.2,
+      "clean_f1": 0.3417135642135642,
+      "generation_seconds_per_qa": 4.0249052226543425,
+      "inner_retrieval_calls_per_qa": 4,
+      "poison_exposed": 0.925,
+      "poisoned_em": 0.125,
+      "poisoned_f1": 0.15075757575757576,
+      "retrieval_seconds_per_qa": 0.036059457250485136,
+      "target_match": 0.775
+    },
+    "no_conflict_k3": {
+      "clean_correct_to_poisoned_wrong": 0.1,
+      "clean_em": 0.175,
+      "clean_f1": 0.3119660894660895,
+      "generation_seconds_per_qa": 4.062781795859337,
+      "inner_retrieval_calls_per_qa": 4,
+      "poison_exposed": 0.95,
+      "poisoned_em": 0.1,
+      "poisoned_f1": 0.13825757575757575,
+      "retrieval_seconds_per_qa": 0.03597347498653107,
+      "target_match": 0.775
+    },
+    "no_rewrites_k3": {
+      "clean_correct_to_poisoned_wrong": 0.1,
+      "clean_em": 0.2,
+      "clean_f1": 0.33696608946608947,
+      "generation_seconds_per_qa": 3.710163798928261,
+      "inner_retrieval_calls_per_qa": 2,
+      "poison_exposed": 0.95,
+      "poisoned_em": 0.1,
+      "poisoned_f1": 0.13825757575757575,
+      "retrieval_seconds_per_qa": 0.017422484337475907,
+      "target_match": 0.775
+    }
+  },
+  "baseline_minus_variant_question_cluster_intervals": {
+    "full_k1": {
+      "clean_correct_to_poisoned_wrong": {
+        "bootstrap_replicates": 2000,
+        "estimate": -0.1,
+        "n_distinct_question_ids": 36,
+        "n_repeated_cell_positions": 40,
+        "nominal_95pct_question_cluster_CI": [
+          -0.2222222222222222,
+          0.023255813953488372
+        ]
+      },
+      "clean_em": {
+        "bootstrap_replicates": 2000,
+        "estimate": -0.025,
+        "n_distinct_question_ids": 36,
+        "n_repeated_cell_positions": 40,
+        "nominal_95pct_question_cluster_CI": [
+          -0.1111111111111111,
+          0.05263157894736842
+        ]
+      },
+      "clean_f1": {
+        "bootstrap_replicates": 2000,
+        "estimate": -0.05450216450216451,
+        "n_distinct_question_ids": 36,
+        "n_repeated_cell_positions": 40,
+        "nominal_95pct_question_cluster_CI": [
+          -0.1489069264069264,
+          0.04049906732833562
+        ]
+      },
+      "generation_seconds_per_qa": {
+        "bootstrap_replicates": 2000,
+        "estimate": -10.291654086112976,
+        "n_distinct_question_ids": 36,
+        "n_repeated_cell_positions": 40,
+        "nominal_95pct_question_cluster_CI": [
+          -35.31650447201084,
+          1.2404637085764032
+        ]
+      },
+      "inner_retrieval_calls_per_qa": {
+        "bootstrap_replicates": 2000,
+        "estimate": 0,
+        "n_distinct_question_ids": 36,
+        "n_repeated_cell_positions": 40,
+        "nominal_95pct_question_cluster_CI": [
+          0,
+          0
+        ]
+      },
+      "poison_exposed": {
+        "bootstrap_replicates": 2000,
+        "estimate": 0.225,
+        "n_distinct_question_ids": 36,
+        "n_repeated_cell_positions": 40,
+        "nominal_95pct_question_cluster_CI": [
+          0.10810810810810811,
+          0.3684210526315789
+        ]
+      },
+      "poisoned_em": {
+        "bootstrap_replicates": 2000,
+        "estimate": 0.1,
+        "n_distinct_question_ids": 36,
+        "n_repeated_cell_positions": 40,
+        "nominal_95pct_question_cluster_CI": [
+          0,
+          0.2222222222222222
+        ]
+      },
+      "poisoned_f1": {
+        "bootstrap_replicates": 2000,
+        "estimate": 0.061075036075036074,
+        "n_distinct_question_ids": 36,
+        "n_repeated_cell_positions": 40,
+        "nominal_95pct_question_cluster_CI": [
+          -0.09068124857598542,
+          0.20940170940170938
+        ]
+      },
+      "retrieval_seconds_per_qa": {
+        "bootstrap_replicates": 2000,
+        "estimate": -0.0002464531120494939,
+        "n_distinct_question_ids": 36,
+        "n_repeated_cell_positions": 40,
+        "nominal_95pct_question_cluster_CI": [
+          -0.001243782342115944,
+          0.0006529439048054407
+        ]
+      },
+      "target_match": {
+        "bootstrap_replicates": 2000,
+        "estimate": 0.075,
+        "n_distinct_question_ids": 36,
+        "n_repeated_cell_positions": 40,
+        "nominal_95pct_question_cluster_CI": [
+          -0.1111111111111111,
+          0.2702702702702703
+        ]
+      }
+    },
+    "full_k5": {
+      "clean_correct_to_poisoned_wrong": {
+        "bootstrap_replicates": 2000,
+        "estimate": -0.075,
+        "n_distinct_question_ids": 36,
+        "n_repeated_cell_positions": 40,
+        "nominal_95pct_question_cluster_CI": [
+          -0.20930232558139536,
+          0.04878048780487805
+        ]
+      },
+      "clean_em": {
+        "bootstrap_replicates": 2000,
+        "estimate": -0.075,
+        "n_distinct_question_ids": 36,
+        "n_repeated_cell_positions": 40,
+        "nominal_95pct_question_cluster_CI": [
+          -0.20930232558139536,
+          0.04878048780487805
+        ]
+      },
+      "clean_f1": {
+        "bootstrap_replicates": 2000,
+        "estimate": -0.13581321456321455,
+        "n_distinct_question_ids": 36,
+        "n_repeated_cell_positions": 40,
+        "nominal_95pct_question_cluster_CI": [
+          -0.27252886002886,
+          -0.0156963406963407
+        ]
+      },
+      "generation_seconds_per_qa": {
+        "bootstrap_replicates": 2000,
+        "estimate": -14.614072740077972,
+        "n_distinct_question_ids": 36,
+        "n_repeated_cell_positions": 40,
+        "nominal_95pct_question_cluster_CI": [
+          -39.94259990550376,
+          -2.971402150828664
+        ]
+      },
+      "inner_retrieval_calls_per_qa": {
+        "bootstrap_replicates": 2000,
+        "estimate": 0,
+        "n_distinct_question_ids": 36,
+        "n_repeated_cell_positions": 40,
+        "nominal_95pct_question_cluster_CI": [
+          0,
+          0
+        ]
+      },
+      "poison_exposed": {
+        "bootstrap_replicates": 2000,
+        "estimate": -0.025,
+        "n_distinct_question_ids": 36,
+        "n_repeated_cell_positions": 40,
+        "nominal_95pct_question_cluster_CI": [
+          -0.06976744186046512,
+          0
+        ]
+      },
+      "poisoned_em": {
+        "bootstrap_replicates": 2000,
+        "estimate": -0.025,
+        "n_distinct_question_ids": 36,
+        "n_repeated_cell_positions": 40,
+        "nominal_95pct_question_cluster_CI": [
+          -0.08108108108108109,
+          0
+        ]
+      },
+      "poisoned_f1": {
+        "bootstrap_replicates": 2000,
+        "estimate": -0.030492424242424244,
+        "n_distinct_question_ids": 36,
+        "n_repeated_cell_positions": 40,
+        "nominal_95pct_question_cluster_CI": [
+          -0.06578947368421052,
+          0
+        ]
+      },
+      "retrieval_seconds_per_qa": {
+        "bootstrap_replicates": 2000,
+        "estimate": -0.0004527202865574509,
+        "n_distinct_question_ids": 36,
+        "n_repeated_cell_positions": 40,
+        "nominal_95pct_question_cluster_CI": [
+          -0.0017389928763760709,
+          0.0008193033464421104
+        ]
+      },
+      "target_match": {
+        "bootstrap_replicates": 2000,
+        "estimate": 0,
+        "n_distinct_question_ids": 36,
+        "n_repeated_cell_positions": 40,
+        "nominal_95pct_question_cluster_CI": [
+          -0.06666666666666667,
+          0.07692307692307693
+        ]
+      }
+    },
+    "no_agreement_k3": {
+      "clean_correct_to_poisoned_wrong": {
+        "bootstrap_replicates": 2000,
+        "estimate": -0.05,
+        "n_distinct_question_ids": 36,
+        "n_repeated_cell_positions": 40,
+        "nominal_95pct_question_cluster_CI": [
+          -0.17073170731707318,
+          0.05263157894736842
+        ]
+      },
+      "clean_em": {
+        "bootstrap_replicates": 2000,
+        "estimate": -0.025,
+        "n_distinct_question_ids": 36,
+        "n_repeated_cell_positions": 40,
+        "nominal_95pct_question_cluster_CI": [
+          -0.14634146341463414,
+          0.075
+        ]
+      },
+      "clean_f1": {
+        "bootstrap_replicates": 2000,
+        "estimate": -0.029747474747474745,
+        "n_distinct_question_ids": 36,
+        "n_repeated_cell_positions": 40,
+        "nominal_95pct_question_cluster_CI": [
+          -0.14985754985754984,
+          0.061197339246119725
+        ]
+      },
+      "generation_seconds_per_qa": {
+        "bootstrap_replicates": 2000,
+        "estimate": -0.43572103381156924,
+        "n_distinct_question_ids": 36,
+        "n_repeated_cell_positions": 40,
+        "nominal_95pct_question_cluster_CI": [
+          -0.673255825584585,
+          -0.22327359624811122
+        ]
+      },
+      "inner_retrieval_calls_per_qa": {
+        "bootstrap_replicates": 2000,
+        "estimate": 0,
+        "n_distinct_question_ids": 36,
+        "n_repeated_cell_positions": 40,
+        "nominal_95pct_question_cluster_CI": [
+          0,
+          0
+        ]
+      },
+      "poison_exposed": {
+        "bootstrap_replicates": 2000,
+        "estimate": 0.025,
+        "n_distinct_question_ids": 36,
+        "n_repeated_cell_positions": 40,
+        "nominal_95pct_question_cluster_CI": [
+          0,
+          0.08108108108108109
+        ]
+      },
+      "poisoned_em": {
+        "bootstrap_replicates": 2000,
+        "estimate": 0,
+        "n_distinct_question_ids": 36,
+        "n_repeated_cell_positions": 40,
+        "nominal_95pct_question_cluster_CI": [
+          -0.07142857142857142,
+          0.07142857142857142
+        ]
+      },
+      "poisoned_f1": {
+        "bootstrap_replicates": 2000,
+        "estimate": 0.0125,
+        "n_distinct_question_ids": 36,
+        "n_repeated_cell_positions": 40,
+        "nominal_95pct_question_cluster_CI": [
+          -0.05555555555555555,
+          0.07954545454545454
+        ]
+      },
+      "retrieval_seconds_per_qa": {
+        "bootstrap_replicates": 2000,
+        "estimate": -0.001157622337268549,
+        "n_distinct_question_ids": 36,
+        "n_repeated_cell_positions": 40,
+        "nominal_95pct_question_cluster_CI": [
+          -0.0026514868554123063,
+          0.0002796400386171463
+        ]
+      },
+      "target_match": {
+        "bootstrap_replicates": 2000,
+        "estimate": -0.025,
+        "n_distinct_question_ids": 36,
+        "n_repeated_cell_positions": 40,
+        "nominal_95pct_question_cluster_CI": [
+          -0.10416666666666667,
+          0.05263157894736842
+        ]
+      }
+    },
+    "no_conflict_k3": {
+      "clean_correct_to_poisoned_wrong": {
+        "bootstrap_replicates": 2000,
+        "estimate": -0.025,
+        "n_distinct_question_ids": 36,
+        "n_repeated_cell_positions": 40,
+        "nominal_95pct_question_cluster_CI": [
+          -0.07894736842105263,
+          0
+        ]
+      },
+      "clean_em": {
+        "bootstrap_replicates": 2000,
+        "estimate": 0,
+        "n_distinct_question_ids": 36,
+        "n_repeated_cell_positions": 40,
+        "nominal_95pct_question_cluster_CI": [
+          0,
+          0
+        ]
+      },
+      "clean_f1": {
+        "bootstrap_replicates": 2000,
+        "estimate": 0,
+        "n_distinct_question_ids": 36,
+        "n_repeated_cell_positions": 40,
+        "nominal_95pct_question_cluster_CI": [
+          0,
+          0
+        ]
+      },
+      "generation_seconds_per_qa": {
+        "bootstrap_replicates": 2000,
+        "estimate": -0.4735976070165634,
+        "n_distinct_question_ids": 36,
+        "n_repeated_cell_positions": 40,
+        "nominal_95pct_question_cluster_CI": [
+          -0.7248065379949716,
+          -0.2555904231573406
+        ]
+      },
+      "inner_retrieval_calls_per_qa": {
+        "bootstrap_replicates": 2000,
+        "estimate": 0,
+        "n_distinct_question_ids": 36,
+        "n_repeated_cell_positions": 40,
+        "nominal_95pct_question_cluster_CI": [
+          0,
+          0
+        ]
+      },
+      "poison_exposed": {
+        "bootstrap_replicates": 2000,
+        "estimate": 0,
+        "n_distinct_question_ids": 36,
+        "n_repeated_cell_positions": 40,
+        "nominal_95pct_question_cluster_CI": [
+          0,
+          0
+        ]
+      },
+      "poisoned_em": {
+        "bootstrap_replicates": 2000,
+        "estimate": 0.025,
+        "n_distinct_question_ids": 36,
+        "n_repeated_cell_positions": 40,
+        "nominal_95pct_question_cluster_CI": [
+          0,
+          0.07894736842105263
+        ]
+      },
+      "poisoned_f1": {
+        "bootstrap_replicates": 2000,
+        "estimate": 0.025,
+        "n_distinct_question_ids": 36,
+        "n_repeated_cell_positions": 40,
+        "nominal_95pct_question_cluster_CI": [
+          0,
+          0.07894736842105263
+        ]
+      },
+      "retrieval_seconds_per_qa": {
+        "bootstrap_replicates": 2000,
+        "estimate": -0.0010716400733144838,
+        "n_distinct_question_ids": 36,
+        "n_repeated_cell_positions": 40,
+        "nominal_95pct_question_cluster_CI": [
+          -0.003156471631749499,
+          0.0007426541627864935
+        ]
+      },
+      "target_match": {
+        "bootstrap_replicates": 2000,
+        "estimate": -0.025,
+        "n_distinct_question_ids": 36,
+        "n_repeated_cell_positions": 40,
+        "nominal_95pct_question_cluster_CI": [
+          -0.07894736842105263,
+          0
+        ]
+      }
+    },
+    "no_rewrites_k3": {
+      "clean_correct_to_poisoned_wrong": {
+        "bootstrap_replicates": 2000,
+        "estimate": -0.025,
+        "n_distinct_question_ids": 36,
+        "n_repeated_cell_positions": 40,
+        "nominal_95pct_question_cluster_CI": [
+          -0.07894736842105263,
+          0
+        ]
+      },
+      "clean_em": {
+        "bootstrap_replicates": 2000,
+        "estimate": -0.025,
+        "n_distinct_question_ids": 36,
+        "n_repeated_cell_positions": 40,
+        "nominal_95pct_question_cluster_CI": [
+          -0.08108108108108109,
+          0
+        ]
+      },
+      "clean_f1": {
+        "bootstrap_replicates": 2000,
+        "estimate": -0.025,
+        "n_distinct_question_ids": 36,
+        "n_repeated_cell_positions": 40,
+        "nominal_95pct_question_cluster_CI": [
+          -0.08108108108108109,
+          0
+        ]
+      },
+      "generation_seconds_per_qa": {
+        "bootstrap_replicates": 2000,
+        "estimate": -0.12097961008548737,
+        "n_distinct_question_ids": 36,
+        "n_repeated_cell_positions": 40,
+        "nominal_95pct_question_cluster_CI": [
+          -0.23903988850744148,
+          -0.01995901159338049
+        ]
+      },
+      "inner_retrieval_calls_per_qa": {
+        "bootstrap_replicates": 2000,
+        "estimate": 2,
+        "n_distinct_question_ids": 36,
+        "n_repeated_cell_positions": 40,
+        "nominal_95pct_question_cluster_CI": [
+          2,
+          2
+        ]
+      },
+      "poison_exposed": {
+        "bootstrap_replicates": 2000,
+        "estimate": 0,
+        "n_distinct_question_ids": 36,
+        "n_repeated_cell_positions": 40,
+        "nominal_95pct_question_cluster_CI": [
+          0,
+          0
+        ]
+      },
+      "poisoned_em": {
+        "bootstrap_replicates": 2000,
+        "estimate": 0.025,
+        "n_distinct_question_ids": 36,
+        "n_repeated_cell_positions": 40,
+        "nominal_95pct_question_cluster_CI": [
+          0,
+          0.07894736842105263
+        ]
+      },
+      "poisoned_f1": {
+        "bootstrap_replicates": 2000,
+        "estimate": 0.025,
+        "n_distinct_question_ids": 36,
+        "n_repeated_cell_positions": 40,
+        "nominal_95pct_question_cluster_CI": [
+          0,
+          0.07894736842105263
+        ]
+      },
+      "retrieval_seconds_per_qa": {
+        "bootstrap_replicates": 2000,
+        "estimate": 0.017479350575740682,
+        "n_distinct_question_ids": 36,
+        "n_repeated_cell_positions": 40,
+        "nominal_95pct_question_cluster_CI": [
+          0.016273268052594714,
+          0.018758473207105077
+        ]
+      },
+      "target_match": {
+        "bootstrap_replicates": 2000,
+        "estimate": -0.025,
+        "n_distinct_question_ids": 36,
+        "n_repeated_cell_positions": 40,
+        "nominal_95pct_question_cluster_CI": [
+          -0.07894736842105263,
+          0
+        ]
+      }
+    }
+  },
+  "generator_latency_diagnostics": {
+    "full_k1": {
+      "max_seconds": 902.9930639266968,
+      "mean_seconds": 13.88083827495575,
+      "median_seconds": 2.387145161628723,
+      "n_over_10_seconds": 1,
+      "n_over_30_seconds": 1,
+      "n_over_5x_median": 1,
+      "n_responses": 80,
+      "p95_seconds_nearest_rank": 5.1459641456604
+    },
+    "full_k3": {
+      "max_seconds": 8.18367886543274,
+      "mean_seconds": 3.5891841888427733,
+      "median_seconds": 3.2863950729370117,
+      "n_over_10_seconds": 0,
+      "n_over_30_seconds": 0,
+      "n_over_5x_median": 0,
+      "n_responses": 80,
+      "p95_seconds_nearest_rank": 6.266662836074829
+    },
+    "full_k5": {
+      "max_seconds": 913.7803928852081,
+      "mean_seconds": 18.203256928920744,
+      "median_seconds": 6.525186896324158,
+      "n_over_10_seconds": 8,
+      "n_over_30_seconds": 1,
+      "n_over_5x_median": 1,
+      "n_responses": 80,
+      "p95_seconds_nearest_rank": 13.78489899635315
+    },
+    "no_agreement_k3": {
+      "max_seconds": 10.402281999588013,
+      "mean_seconds": 4.0249052226543425,
+      "median_seconds": 3.5089021921157837,
+      "n_over_10_seconds": 1,
+      "n_over_30_seconds": 0,
+      "n_over_5x_median": 0,
+      "n_responses": 80,
+      "p95_seconds_nearest_rank": 7.221065998077393
+    },
+    "no_conflict_k3": {
+      "max_seconds": 9.954282999038696,
+      "mean_seconds": 4.062781795859337,
+      "median_seconds": 3.584064483642578,
+      "n_over_10_seconds": 0,
+      "n_over_30_seconds": 0,
+      "n_over_5x_median": 0,
+      "n_responses": 80,
+      "p95_seconds_nearest_rank": 7.091815233230591
+    },
+    "no_rewrites_k3": {
+      "max_seconds": 8.200394868850708,
+      "mean_seconds": 3.710163798928261,
+      "median_seconds": 3.383358955383301,
+      "n_over_10_seconds": 0,
+      "n_over_30_seconds": 0,
+      "n_over_5x_median": 0,
+      "n_responses": 80,
+      "p95_seconds_nearest_rank": 6.483922004699707
+    }
+  },
+  "limitations": [
+    "Post-hoc selection of ten mechanically valid question slots per four attack/intensity cells; not untouched prospective population inference.",
+    "Question ID clustering preserves overlap across cells, but this single-seed selected set is small and not representative of the attempted population.",
+    "Nominal percentile bootstrap intervals unadjusted for multiple testing; variance may be degenerate for unchanged paired responses.",
+    "Target matching is not independently source-verified false-answer success; selection excluded invalid poison constructions.",
+    "Retrieval timings measured during prompt preparation, generation timings from original model runs; startup and cache conditions may vary.",
+    "This offline audit cannot certify original source-document truth, data independence, source licensing, or live deployment cost."
+  ],
+  "additional_publication_limits": [
+    "All 50 pooled CIs are nominal and not corrected for multiple comparisons.",
+    "No reliable improvement in poisoned-answer accuracy is demonstrated for any ablation.",
+    "Two >900-second generation outliers inflate mean generation times for k1 and k5; medians are better descriptors of typical observed latency.",
+    "Frozen selected mechanically valid subset only; does not estimate attempted-population ASR, nor certify poisoned target falsehoods.",
+    "Cross-dataset or real-world deployment cost claims are outside this isolated 2Wiki ablation analysis.",
+    "The public file contains no per-question IDs, prompts, answers, injected documents, raw model outputs or checkpoint entries."
+  ]
+}
