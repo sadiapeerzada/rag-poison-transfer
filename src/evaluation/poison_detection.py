@@ -188,7 +188,7 @@ def query_cluster_bootstrap(test_rows, threshold, *, reps=2000, seed=20261109):
                                     vals[int((n - 1) * 0.975)]],
                 "defined_replicates": n,
             }
-    return {"resampling_unit": "question_id with all candidate observations",
+    return {"resampling_unit": "whole questions with all candidate observations",
             "bootstrap_replicates": reps, "seed": seed, "threshold_refit_on_test": False,
             "nominal_unadjusted": True, "metrics": output}
 
