@@ -16,6 +16,12 @@ foundation doc (shared separately) for the full 12-week roadmap and plan.
 > the [Clean Baseline v1 results](#clean-baseline-v1-results) section below.
 > Approved per supervisor review, pre-Week-5 readiness assessment.
 
+## 2Wiki RCD six-variant ablation results — 9 November 2026
+
+**New exploratory results published:** **480/480 actual Qwen QA observations** across six RCD variants, 24 attack/intensity/variant groups and 20 nominal paired-bootstrap contrasts; the preceding retrieval replay reported **80/80** exact original baseline evidence matches. See the [scientific interpretation](reports/2wiki_rcd_ablation_v1_scientific_results_2026-11-09.md) and [aggregate-only JSON/CSV exports](paper/results/2wiki_rcd_ablation_v1_2026-11-09/). Original per-question prompts, replies, model checkpoints and private raw outputs are **not** published.
+
+In the 40 valid selected query-stratum positions per variant, full RCD k=3 had 30/40 poisoned target matches (75%) and 5/40 poisoned gold EM (12.5%). At k=1, target matches were 27/40 (67.5%), but poisoned gold EM fell to 1/40 (2.5%). Removing rewriting halved recorded internal retrieval calls (320 → 160) while yielding 31/40 target matches. These are **post-hoc, seed-42, valid-only descriptive** comparisons, not independent confirmatory ASR or demonstrated universal defense superiority. The nominal paired intervals are **not multiplicity-adjusted**.
+
 ## 2Wiki 300-query replication milestone — 8 November 2026
 
 **Current stage: 288/288 Dense/RCD query-arm evaluation batches completed; local 22,446-file audit passed; frozen aggregation validated.** See the [scientific results and limitations](reports/2wiki_300_dense_rcd_scientific_results_2026-11-08.md) and [earlier execution-completion checkpoint](reports/2wiki_300_evaluation_completion_2026-11-08.md).
