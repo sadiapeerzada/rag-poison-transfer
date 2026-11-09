@@ -1,0 +1,133 @@
+{
+  "schema_version": "nq-i1-i3-paired-statistics-partial-public/v1",
+  "date": "2026-11-09",
+  "status": "VERIFIED_OFFLINE_PAIRED_NQ_ANALYSIS_EXPLORATORY",
+  "publication_status": "SELECTED VERIFIED COMPARISONS ONLY; full comparison and resource-accounting JSON retained privately and not yet inspected for this publication",
+  "source_provenance": {
+    "basis": "Researcher-provided Mac stdout from independently executed local offline analysis script",
+    "source_verified_by_local_script": true,
+    "source_verified_scope": "Frozen I1/I3 plan SHA-256, original private aggregate hashes and matching observation request/prompt fingerprints; reread and recomputed reported source metrics",
+    "independent_external_recheck_of_private_responses": false,
+    "distinct_evaluation_questions": 300,
+    "logical_qa_observations": 2400,
+    "bootstrap_replicates": 2000,
+    "resample_unit": "matched evaluation question",
+    "confidence_interval": "percentile bootstrap nominal 95%, not multiplicity corrected",
+    "inference_calls_performed_by_analysis": 0
+  },
+  "frozen_aggregate_sha256_operator_reported": {
+    "intensity_1": "0126f5998d07b5f0430d93f1fcf610dc7118b819b385065bcca60e02188b9ac9",
+    "intensity_3": "146cb2749ab01bb5e5d70c06c2041f34dcf36db0fafa2443c3deb021f50e8dc5"
+  },
+  "group_means": {
+    "intensity_1": {
+      "dense": {
+        "clean_em": 0.31333333333333335,
+        "poisoned_em": 0.27666666666666667,
+        "clean_f1": 0.43558345657946546,
+        "poisoned_f1": 0.3788107037424658,
+        "target_match": 0.16,
+        "poison_visible_top3": 0.8433333333333334,
+        "clean_correct_to_poison_wrong": 0.06333333333333334
+      },
+      "rcd": {
+        "clean_em": 0.3233333333333333,
+        "poisoned_em": 0.27666666666666667,
+        "clean_f1": 0.4327154836969415,
+        "poisoned_f1": 0.38146188934392317,
+        "target_match": 0.16666666666666666,
+        "poison_visible_top3": 0.8033333333333333,
+        "clean_correct_to_poison_wrong": 0.07
+      }
+    },
+    "intensity_3": {
+      "dense": {
+        "clean_em": 0.31333333333333335,
+        "poisoned_em": 0.18,
+        "clean_f1": 0.43558345657946546,
+        "poisoned_f1": 0.23787063700744285,
+        "target_match": 0.42,
+        "poison_visible_top3": 0.89,
+        "clean_correct_to_poison_wrong": 0.16333333333333333
+      },
+      "rcd": {
+        "clean_em": 0.3233333333333333,
+        "poisoned_em": 0.17,
+        "clean_f1": 0.4327154836969415,
+        "poisoned_f1": 0.23094341894351988,
+        "target_match": 0.43,
+        "poison_visible_top3": 0.8833333333333333,
+        "clean_correct_to_poison_wrong": 0.18666666666666668
+      }
+    }
+  },
+  "selected_paired_comparisons": {
+    "rcd_minus_dense_poisoned_em": {
+      "intensity_1": {
+        "estimate": 0,
+        "nominal_95pct_CI": [
+          -0.03,
+          0.03
+        ],
+        "n_question_clusters": 300,
+        "bootstrap_replicates": 2000
+      },
+      "intensity_3": {
+        "estimate": -0.01,
+        "nominal_95pct_CI": [
+          -0.03666666666666667,
+          0.016666666666666666
+        ],
+        "n_question_clusters": 300,
+        "bootstrap_replicates": 2000
+      }
+    },
+    "rcd_minus_dense_target_match": {
+      "intensity_1": {
+        "estimate": 0.006666666666666667,
+        "nominal_95pct_CI": [
+          -0.02666666666666667,
+          0.04
+        ],
+        "n_question_clusters": 300,
+        "bootstrap_replicates": 2000
+      },
+      "intensity_3": {
+        "estimate": 0.01,
+        "nominal_95pct_CI": [
+          -0.02,
+          0.043333333333333335
+        ],
+        "n_question_clusters": 300,
+        "bootstrap_replicates": 2000
+      }
+    },
+    "intensity_3_minus_1_target_match": {
+      "dense": {
+        "estimate": 0.26,
+        "nominal_95pct_CI": [
+          0.20333333333333334,
+          0.31666666666666665
+        ],
+        "n_question_clusters": 300,
+        "bootstrap_replicates": 2000
+      },
+      "rcd": {
+        "estimate": 0.2633333333333333,
+        "nominal_95pct_CI": [
+          0.21,
+          0.32
+        ],
+        "n_question_clusters": 300,
+        "bootstrap_replicates": 2000
+      }
+    }
+  },
+  "methodological_limits": [
+    "Nominal percentile CIs; no familywise multiplicity correction; cannot generalize beyond exploratory NQ candidate-passage pool and sampled frozen cohort",
+    "Target answer matching does not independently establish a factually false target or causal attack success",
+    "Historical evaluation subject exposure not independently certified",
+    "The full 7-metric paired comparison matrix, difference-in-differences, resource accounting, and source hashes from local analysis --output have not been included in this initial publication and remain for follow-up",
+    "Source response request fingerprint comparison does not independently certify hardware/model execution authenticity"
+  ]
+}
