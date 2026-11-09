@@ -91,7 +91,7 @@ def test_abstentions_never_create_qwen_prompts_or_poison_claims():
     assert all(e["policy_trace"]["final_decision"] == "abstain" for e in plan["entries"])
     a = plan["entries"][0]
     a["selected_evidence_doc_ids"] = ["poison_doc"]
-    with pytest.raises(ValueError, match="trace selected IDs"):
+    with pytest.raises(ValueError, match="Iterative retrieval trace"):
         it.verify_plan(plan)
 
 
