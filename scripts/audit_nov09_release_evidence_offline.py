@@ -24,10 +24,36 @@ NQ_PINS = {
     "nq-stage3-lexical-I1-qa-aggregate-v1_PRIVATE.json":
         "0126f5998d07b5f0430d93f1fcf610dc7118b819b385065bcca60e02188b9ac9",
     "nq-stage3-lexical-I3-qa-plan-v1_PRIVATE.json":
-        "53aebbb47648727a664eeb012b591ed28cb33c65aad59f8a2e7b5",
+        "53aebbb47648727a664eeb012b591ed28cb33c65aad59f8a2b8f46d968a2e7b5",
     "nq-stage3-lexical-I3-qa-aggregate-v1_PRIVATE.json":
         "146cb2749ab01bb5e5d70c06c2041f34dcf36db0fafa2443c3deb021f50e8dc5",
 }
+NQ_PUBLIC_FROZEN_PIN_PATH = (
+    "paper/results/nq_lexical_i1_i3_paired_2026-11-09/"
+    "full_comparisons_resource_public.json"
+)
+
+
+def validate_nq_pins(repo: Path) -> None:
+    """Fail closed on malformed or source-disagreeing expected SHA-256 values."""
+    reference = json.loads((repo / NQ_PUBLIC_FROZEN_PIN_PATH).read_text(encoding="utf-8"))
+    source = reference["source_frozen_sha256"]
+    mapping = {
+        "nq-stage3-lexical-I1-qa-plan-v1_PRIVATE.json": source["intensity_1"]["plan"],
+        "nq-stage3-lexical-I1-qa-aggregate-v1_PRIVATE.json": source["intensity_1"]["aggregate"],
+        "nq-stage3-lexical-I3-qa-plan-v1_PRIVATE.json": source["intensity_3"]["plan"],
+        "nq-stage3-lexical-I3-qa-aggregate-v1_PRIVATE.json": source["intensity_3"]["aggregate"],
+    }
+    if set(NQ_PINS) != set(mapping):
+        raise ValueError("Pinned NQ source inventory differs from the public paired study")
+    for name, expected in mapping.items():
+        actual = NQ_PINS[name]
+        if not re.fullmatch(r"[0-9a-f]{64}", actual):
+            raise ValueError(f"Malformed SHA-256 research pin for {name}")
+        if actual != expected:
+            raise ValueError(f"NQ research pin disagrees with published frozen provenance for {name}")
+
+
 ARCHIVE_NAME = "2wiki-full-run-20261109.tar.gz"
 ARCHIVE_SHA256 = "faecd723105465d80ff4de8c48795cbb983560ddaa06943840b3971d59deac82"
 
@@ -155,6 +181,7 @@ def audit(repo: Path, root: Path, downloads: Path) -> dict:
     git_root = Path(command(repo, "rev-parse", "--show-toplevel").decode().strip()).resolve()
     if repo != git_root:
         raise ValueError("Repository path is not the actual Git worktree root")
+    validate_nq_pins(repo)
     tracked = tracked_inventory(repo)
     published = public_evidence(repo)
     private = private_artifacts(root, downloads.expanduser())

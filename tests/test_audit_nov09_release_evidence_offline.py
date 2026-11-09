@@ -5,6 +5,8 @@ import hashlib
 import json
 import subprocess
 
+import pytest
+
 from scripts import audit_nov09_release_evidence_offline as gate
 
 
@@ -72,3 +74,19 @@ def test_public_manifest_detects_changes(tmp_path, monkeypatch):
     changed = gate.public_evidence(tmp_path)
     assert changed["state"] == "CHANGED_OR_MISSING"
     assert changed["changed_or_missing_relative_paths"] == ["data/result_2.json"]
+
+
+def test_all_nq_release_pins_match_published_frozen_provenance():
+    gate.validate_nq_pins(gate.REPO)
+    assert len(gate.NQ_PINS) == 4
+    assert all(len(value) == 64 for value in gate.NQ_PINS.values())
+
+
+def test_stale_short_nq_i3_hash_fails_closed(monkeypatch):
+    changed = dict(gate.NQ_PINS)
+    changed["nq-stage3-lexical-I3-qa-plan-v1_PRIVATE.json"] = (
+        "53aebbb47648727a664eeb012b591ed28cb33c65aad59f8a2e7b5"
+    )
+    monkeypatch.setattr(gate, "NQ_PINS", changed)
+    with pytest.raises(ValueError, match="Malformed SHA-256 research pin"):
+        gate.validate_nq_pins(gate.REPO)
