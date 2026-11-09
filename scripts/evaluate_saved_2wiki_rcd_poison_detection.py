@@ -79,9 +79,11 @@ def global_injection_sets(original_root: Path, cell_ids: set[str], *, local_data
         for row in rows:
             valid = row["status"] == "valid_construction"
             docs = row.get("documents", [])
-            if not isinstance(docs, list) or (not valid and docs):
-                raise ValueError("Invalid failed-construction poison documents")
-            local_ids = [doc["doc_id"] for doc in docs]
+            if not isinstance(docs, list):
+                raise ValueError("Invalid original poison document list")
+            # The frozen replay excludes *every* invalid construction, even
+            # when its source record contains partial, non-injected documents.
+            local_ids = [doc["doc_id"] for doc in docs] if valid else []
             if len(local_ids) != len(set(local_ids)):
                 raise ValueError("Repeated injected document ID within one query")
             if valid:
