@@ -1,0 +1,49 @@
+{
+  "flags": {
+    "absence_not_disproof": 1,
+    "answer_type_mismatch": 1,
+    "approximate_date": 1,
+    "historical_scope": 1,
+    "nonexclusive_question": 2,
+    "question_defect": 1,
+    "question_taxonomic_wording": 1,
+    "referent_drift": 2,
+    "rounded_gold": 1,
+    "target_not_false": 1,
+    "time_sensitive": 2,
+    "title_disambiguation": 1,
+    "unsupported_authority_claim": 1
+  },
+  "gold_assessments": {
+    "insufficient_evidence": 1,
+    "nonexclusive_gold": 1,
+    "question_defect": 1,
+    "supported_in_native_context": 7,
+    "supported_with_external_corroboration": 4,
+    "supported_with_qualification": 4,
+    "time_sensitive": 2
+  },
+  "independently_adjudicated": 0,
+  "limitations": [
+    "Qualitative outcome-stratified sample; no prevalence estimate.",
+    "Benchmark context is source-assisted evidence, not independent ground truth.",
+    "External primary citations corroborate only the stated proposition, not every hop or poison detail.",
+    "No independent human review; no reliability statistic or corrected attack-success estimate."
+  ],
+  "new_model_calls": 0,
+  "packet_sha256": "8e0a4d54977dc44d4a4259d359e11f5228827ef15bd1496cc073eb98497b1f12",
+  "review_ledger_sha256": "e45a969d98bf30ad561060eab5340a754a5644d9327ee4a1bc56a39afa450a6a",
+  "reviewed": 20,
+  "schema": "e4-source-assisted-review-summary/v1",
+  "selected": 100,
+  "tiers": {
+    "external_primary_source_assisted": 5,
+    "native_source_assisted": 15
+  },
+  "unreviewed": 80,
+  "verdicts": {
+    "ambiguous": 4,
+    "source_contradicts_target": 15,
+    "source_supports_target": 1
+  }
+}
