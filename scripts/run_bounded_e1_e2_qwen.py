@@ -88,6 +88,8 @@ def execute(root,snapshot,experiment='E1'):
         ep=read(root/'e2.prepare.complete.json')
         if sha(root/'e2.plan.private.json')!=ep['plan_sha256'] or ep['pilot_sha256']!=prep['pilot_sha256']:
             raise ValueError('E2 input seal changed')
+        if sha(root/'e2.freeze.json')!=ep['e2_freeze_sha256']:raise ValueError('E2 defense freeze changed')
+        if sha(ROOT/'scripts/run_e2_matched_defense_pilot.py')!=read(root/'e2.freeze.json')['code_sha256']:raise ValueError('E2 control implementation changed')
         plan=read(root/'e2.plan.private.json')
     history=read(root/'history.private.json')
     receipt=compare(plan,history)
