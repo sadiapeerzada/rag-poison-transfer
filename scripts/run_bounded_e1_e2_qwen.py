@@ -161,6 +161,13 @@ def execute(root,snapshot,experiment='E1'):
         backend=MLXGenerator(str(snapshot));original=backend._generate_fn
         backend._generate_fn=lambda *a,**kw:original(*a,**kw,sampler=make_sampler(temp=0.0))
         guard.check()
+        from scripts.bounded_pilot_resources import HEALTH
+        atomic(resource_directory/'model.initialized.json',{'status':'REAL_PINNED_QWEN_INITIALIZED',
+               'rss_bytes':guard.max_rss,'metal_bytes':guard.max_metal,'health':getattr(HEALTH,'snapshot',None),
+               'elapsed_seconds':time.monotonic()-started,'model_snapshot':freeze['model']['revision'],
+               'max_tokens':64,'sampler':'explicit greedy','qa_seed':42})
+        print(json.dumps({'status':'QWEN_INITIALIZED','rss_GiB':guard.max_rss/2**30,
+                          'metal_GiB':guard.max_metal/2**30}),flush=True)
         for row in pending:
             if result['completed_new_calls']>=available:result['status']='PHYSICAL_CALL_CAP';break
             guard.check();key=binding_key(row)

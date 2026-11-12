@@ -19,7 +19,7 @@ def test_pressure_or_thermal_warning_stops_before_model_load(monkeypatch,pressur
         if cmd[0]=='vm_stat':return 'Swapins: 0.\nSwapouts: 0.\nPageouts: 0.\n'
         return thermal
     monkeypatch.setattr(resources.subprocess,'check_output',output)
-    with pytest.raises(RuntimeError,match='pressure or thermal'):resources.mac_health()
+    with pytest.raises(RuntimeError,match='pressure|Thermal'):resources.mac_health()
 
 
 def test_normal_health_records_swap_baseline(monkeypatch):
@@ -96,3 +96,22 @@ def test_e2_dispatch_clean_controls_precede_poison_blocks():
     logical=[{'cell':c,'query_id':'q','condition':condition,'input':str(i)} for i,(c,condition) in enumerate([('lex','poisoned'),('lex','clean'),('semantic','poisoned')])]
     blocks=balanced_blocks(plan,logical,'E2',['q'])
     assert [b[0]['observation_id'] for b in blocks]==['1','0','2']
+
+
+def test_diagnostic_records_identify_pressure_disjunct_exactly(monkeypatch):
+    def output(cmd,**kwargs):
+        if cmd[0]=='sysctl':return '2'
+        if cmd[0]=='vm_stat':return 'Swapins: 10.\nSwapouts: 12.\nPageouts: 100.\n'
+        return 'No thermal warning level has been recorded'
+    monkeypatch.setattr(resources.subprocess,'check_output',output)
+    with pytest.raises(RuntimeError,match='Memory pressure level=2'):resources.mac_health()
+    assert resources.HEALTH.snapshot['memory_pressure_level']==2
+    assert resources.HEALTH.snapshot['swapouts']==12
+    assert resources.HEALTH.snapshot['cpu_speed_scheduler_limits']==[]
+
+
+def test_single_initialization_marker_forbids_automatic_retry(tmp_path):
+    from scripts.run_one_monitored_qwen_initialization import run
+    (tmp_path/'operator-authorized-single-initialization.json').write_text('{}')
+    with pytest.raises(RuntimeError,match='already reserved'):
+        run(tmp_path,tmp_path/'model-must-not-load')

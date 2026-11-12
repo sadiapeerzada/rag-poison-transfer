@@ -171,7 +171,7 @@ def aggregate(root,out):
             'historical_physical_responses_verified':adapter['verified_historical_physical_calls'],
             'screening':seal['screening'],'new_call_estimate':read(root/'prepare.complete.json')['reuse']['new_call_estimate'] if (root/'prepare.complete.json').exists() else 'UNKNOWN',
             'resource_blocked':any((root/name).exists() for name in ('PREPARATION_RESOURCE_STOP.json','RESOURCE_STOP.json')) or bool(session_results and session_results[-1]['status'] in ('RESOURCE_STOP_DURING_MODEL_INITIALIZATION','UNRESOLVED_SESSION','STOPPED')),
-            'resource_stop':read(root/'RESOURCE_STOP.json') if (root/'RESOURCE_STOP.json').exists() else (read(root/'PREPARATION_RESOURCE_STOP.json') if (root/'PREPARATION_RESOURCE_STOP.json').exists() else None),
+            'resource_stop':read(root/'RESOURCE_STOP.json') if (root/'RESOURCE_STOP.json').exists() else (read(root/'PREPARATION_RESOURCE_STOP.json') if (root/'PREPARATION_RESOURCE_STOP.json').exists() else (read(sorted(model_resource_stops,key=lambda p:p.stat().st_mtime)[-1]) if model_resource_stops else None)),
             'new_retrieval_checkpoints':len(list((root/'retrieval-checkpoints').glob('*.json'))),
             'pilot_sha256':sha(root/'pilot.freeze.json'),'selection_sha256':sha(root/'selection.seal.json'),
             'native_history_sha256':sha(root/'history.private.json'),

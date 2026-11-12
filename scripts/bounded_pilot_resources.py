@@ -1,4 +1,5 @@
 """Fail-closed Mac resource guards for an explicitly authorized private pilot."""
+import hashlib
 import json
 import os
 from pathlib import Path
@@ -10,6 +11,9 @@ import threading
 import time
 
 
+HEALTH=threading.local()
+
+
 def mac_health():
     pressure=int(subprocess.check_output(['sysctl','-n','kern.memorystatus_vm_pressure_level'],text=True).strip())
     vm=subprocess.check_output(['vm_stat'],text=True)
@@ -19,8 +23,13 @@ def mac_health():
     thermal=subprocess.check_output(['pmset','-g','therm'],text=True)
     # CPU_Available_CPUs is a count, not a percentage.
     speed=[int(v) for v in re.findall(r'(?:CPU_Speed_Limit|CPU_Scheduler_Limit)\s*=\s*(\d+)',thermal)]
-    if pressure!=1 or any(v<100 for v in speed) or 'Thermal_Level = ' in thermal and 'Thermal_Level = 0' not in thermal:
-        raise RuntimeError('Memory pressure or thermal instability')
+    thermal_warning=('Thermal_Level = ' in thermal and 'Thermal_Level = 0' not in thermal)
+    HEALTH.snapshot={'memory_pressure_level':pressure,'swapouts':swapping,
+                     'cpu_speed_scheduler_limits':speed,'thermal_warning':thermal_warning,
+                     'thermal_raw':thermal}
+    if pressure!=1:raise RuntimeError(f'Memory pressure level={pressure}')
+    if any(v<100 for v in speed) or thermal_warning:
+        raise RuntimeError('Thermal/performance limit: '+json.dumps(HEALTH.snapshot,sort_keys=True))
     return swapping
 
 
@@ -53,7 +62,10 @@ class Guard:
                     # indeterminate, counted against the cap and never retried.
                     try:
                         with (self.directory/'RESOURCE_STOP.json').open('x') as f:
-                            json.dump({'reason':self.error,'max_rss':self.max_rss,'max_metal':self.max_metal},f)
+                            json.dump({'reason':self.error,'max_rss':self.max_rss,'max_metal':self.max_metal,
+                                       'health':getattr(HEALTH,'snapshot',None),'baseline_swapouts':self.swaps,
+                                       'elapsed_seconds':time.monotonic()-self.started,
+                                       'guard_sha256':hashlib.sha256(Path(__file__).read_bytes()).hexdigest()},f)
                             f.flush();os.fsync(f.fileno())
                     finally:os._exit(75)
         self.thread=threading.Thread(target=monitor,daemon=True);self.thread.start()
