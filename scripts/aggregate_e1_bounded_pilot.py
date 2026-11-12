@@ -138,7 +138,17 @@ def aggregate(root,out):
                                clean_em=exact_match(ca,gold),poison_em=exact_match(pa,gold),clean_f1=f1_score(ca,gold),poison_f1=f1_score(pa,gold),
                                poison_exposure=bool(set(d['doc_id'] for d in choice['documents']) & set(d['doc_id'] for d in evidence)))
                 rows.append(row)
-    calls=list((root/'qwen/calls').glob('*.intent.json'))
+    all_calls=list((root/'qwen/calls').glob('*.intent.json'))
+    calls=[p for p in all_calls if read(p).get('experiment')=='E1']
+    session_results=[]
+    sessions=root.parent/'e1-e2-20261112-authorized-session/sessions'
+    for intent in sorted(sessions.glob('*.intent.json')):
+        request=read(intent)
+        if request.get('pilot_sha256')!=sha(root/'pilot.freeze.json') or request.get('experiment')!='E1':continue
+        end=intent.with_name(intent.name.replace('.intent.','.complete.'))
+        session_results.append(read(end) if end.exists() else {'status':'UNRESOLVED_SESSION','elapsed_seconds':None})
+    failed_init=sum(s.get('failed_initializations',0) for s in session_results)
+    model_resource_stops=list((root/'qwen').rglob('RESOURCE_STOP.json'))
     completed=failed=indeterminate=0
     for p in calls:
         r=p.with_name(p.name.replace('.intent.','.response.'))
@@ -152,11 +162,15 @@ def aggregate(root,out):
             'metrics':grouped,'paired_policy_contrasts':paired_contrasts(rows,ids),'logical_assigned_target_positions':len(rows),
             'valid_target_positions':sum(r['status']==old.VALID for r in rows),
             'completed_valid_target_positions':sum(r['complete'] for r in rows),
-            'new_physical_qwen_attempts':len(calls),'new_completed_calls':completed,'failed_calls':failed,
+            'new_physical_qwen_attempts':len(calls),'combined_root_physical_attempts':len(all_calls),
+            'model_initialization_attempts':len(session_results),'failed_initializations':failed_init,
+            'inference_execution_seconds_charged':sum(s['elapsed_seconds'] for s in session_results if s.get('elapsed_seconds') is not None),
+            'session_states':[s['status'] for s in session_results],
+            'model_resource_stop_receipts':len(model_resource_stops),'new_completed_calls':completed,'failed_calls':failed,
             'indeterminate_calls':indeterminate,'retries':0,
             'historical_physical_responses_verified':adapter['verified_historical_physical_calls'],
             'screening':seal['screening'],'new_call_estimate':read(root/'prepare.complete.json')['reuse']['new_call_estimate'] if (root/'prepare.complete.json').exists() else 'UNKNOWN',
-            'resource_blocked':any((root/name).exists() for name in ('PREPARATION_RESOURCE_STOP.json','RESOURCE_STOP.json')),
+            'resource_blocked':any((root/name).exists() for name in ('PREPARATION_RESOURCE_STOP.json','RESOURCE_STOP.json')) or bool(session_results and session_results[-1]['status'] in ('RESOURCE_STOP_DURING_MODEL_INITIALIZATION','UNRESOLVED_SESSION','STOPPED')),
             'resource_stop':read(root/'RESOURCE_STOP.json') if (root/'RESOURCE_STOP.json').exists() else (read(root/'PREPARATION_RESOURCE_STOP.json') if (root/'PREPARATION_RESOURCE_STOP.json').exists() else None),
             'new_retrieval_checkpoints':len(list((root/'retrieval-checkpoints').glob('*.json'))),
             'pilot_sha256':sha(root/'pilot.freeze.json'),'selection_sha256':sha(root/'selection.seal.json'),

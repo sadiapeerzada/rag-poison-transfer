@@ -24,7 +24,8 @@ from src.evaluation.metrics import exact_match
 
 FAMILIES=old.ATTACKS
 LIMITS={'new_physical_calls':200,'inference_seconds':14400,'rss_bytes':12*2**30,
-        'metal_bytes':10*2**30,'min_free_disk_bytes':5*2**30,'concurrency':1}
+        'metal_bytes':10*2**30,'min_free_disk_bytes':5*2**30,'concurrency':1,
+        'swap_policy':'operator-approved: swap-ins allowed; stop on any new swap-out'}
 
 
 def private_root(path):

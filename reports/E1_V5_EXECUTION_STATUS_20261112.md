@@ -1,0 +1,17 @@
+# E1 v5 — complete input verification; actual Qwen initialization resource-stopped
+
+The operator explicitly revised the resource rule to **allow swap-ins, stop on any new swap-out**. Normal-pressure, thermal, RSS, Metal, time, disk and combined 200-generation-call limits remain unchanged. Earlier strict-policy runs/receipts are preserved; this revision is pinned in a new private v5 pilot freeze.
+
+**EXECUTED / VERIFIED input preparation:** all frozen native manifests, model/retrieval snapshot bytes, source-only selections, 25-question exploratory manifest and five-question smoke were verified. Real M1/M2 retrieval completed under live guards. Peak preparation RSS was **1,592,737,792 bytes (1.483 GiB)**; Metal **1,162,379,264 bytes (1.083 GiB)**.
+
+The exact five-question E1 smoke requires **432 distinct complete bindings**: **212** have verified historical physical responses and **220** need new generator calls. This estimate is for the five-question smoke, not the full 25-question pilot or main study. There are zero unverified input bindings. [The verified dispatch manifest](E1_V5_VERIFIED_DISPATCH_20261112.json) records all hashes and limits.
+
+Before any new target response, an immutable outcome-blind dispatch was frozen: complete question/policy blocks, round-robin across strata, with all failed constructions retained. Its E1 allocation is **156** new calls under the 160-call subcap, leaving **44** of the combined 200-call cap for E2 if that allocation finishes. Remaining conditions stay pending; no new outcome determines the order. Model parameters, greedy sampler, seed 42 and output limit 64 are unchanged. Free allocator caching is disabled to reduce transient memory without changing those experimental settings.
+
+**Actual real-model attempt:** the pinned Qwen initialization started, then the live guard terminated it before the first generation dispatch. The immutable receipt records `Memory pressure or thermal instability`, RSS **1,537,802,240 bytes (1.432 GiB)** and Metal **4,287,507,464 bytes (3.993 GiB)**. The stop must not be relabelled as a completed generation or silently retried.
+
+There are **zero per-generation intents**, **zero shared attempt reservations**, **zero responses**, **zero failed/retried/indeterminate generation calls**, and **one resource-stopped model initialization**. Its unfinished session was reconciled only after proving those zero counts; the conservative initialization wall-time charge is **8.38143 seconds** (stop-minus-intent timestamps plus one second). No interrupted answer was reconstructed. Each future initialization gets a separate resource checkpoint directory, preserving previous stop records.
+
+Stop receipt SHA-256: `35ea3f778eae5a942a4b832bd0844d7542a97d365c656387b50589ef1c3bbb29`. The 16 GiB Mac returned to normal pressure after termination; no thermal warning was reported by the subsequent check. That later normal reading does not erase the live stop condition. More resource headroom is needed before another Qwen initialization.
+
+[The v5 aggregate](E1_V5_INITIALIZATION_STOP_AGGREGATE_20261112.json) reports the real historical subset and the initialization stop separately. **The E1 pilot remains incomplete.** Exact additional smoke input requirements are now known (220), unlike the earlier blocked versions, but no new Qwen answer has yet been generated. The 100–150-question main studies remain unapproved and unstarted. E2 retrieval/input preparation can proceed independently under the same live resource gates; no second Qwen process is launched.
