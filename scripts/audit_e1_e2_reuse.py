@@ -57,37 +57,72 @@ def classify(required, historical):
     return 'REUSABLE'
 
 
+def binding_key(row):
+    """Fingerprint the complete contract, keeping observation IDs as provenance only."""
+    return digest({k: row[k] for k in FIELDS})
+
+
 def compare(required, history):
     for rows in (required, history):
-        if not isinstance(rows, list) or any(not isinstance(r, dict) or not r.get('observation_id') for r in rows):
+        if not isinstance(rows, list) or any(
+                not isinstance(r, dict) or not isinstance(r.get('observation_id'), str)
+                or not r['observation_id'] for r in rows):
             raise ValueError('Invalid observation schema')
         if len({r['observation_id'] for r in rows}) != len(rows):
             raise ValueError('Duplicate observation keys')
-    index = {r['observation_id']: r for r in history}
-    counts = Counter({k: 0 for k in ('REUSABLE', 'MISSING', 'INCOMPATIBLE', 'UNVERIFIED')})
-    physical, missing, reused_inputs = set(), set(), set()
-    for row in required:
-        old = index.get(row['observation_id'])
-        status = classify(row, old)
-        counts[status] += 1
-        if status == 'REUSABLE':
-            physical.add(old['physical_call_id'])
-            reused_inputs.add(digest({k: row[k] for k in FIELDS}))
-        elif complete(row):
-            missing.add(digest({k: row[k] for k in FIELDS}))
-    # A physical call identifier cannot legitimately denote two different inputs.
-    bindings = {}
+
+    by_id, by_binding, physical_records = {}, {}, {}
     for row in history:
+        by_id[row['observation_id']] = row
+        if complete(row):
+            by_binding.setdefault(binding_key(row), []).append(row)
         call = row.get('physical_call_id')
-        if call and complete(row):
-            binding = digest({k: row[k] for k in FIELDS})
-            if call in bindings and bindings[call] != binding:
-                raise ValueError('Conflicting physical call provenance')
-            bindings[call] = binding
-    missing -= reused_inputs
+        if call is not None:
+            if not isinstance(call, str) or not call:
+                raise ValueError('Invalid physical call identity')
+            # Even incomplete records cannot contradict known input fields or
+            # the preserved response for the same physical invocation.
+            known = physical_records.setdefault(call, {})
+            for field in (*FIELDS, 'raw_response'):
+                if field in row and row[field] is not None:
+                    if field in known and digest(known[field]) != digest(row[field]):
+                        raise ValueError('Conflicting physical call provenance')
+                    known[field] = row[field]
+
+    counts = Counter({k: 0 for k in ('REUSABLE', 'MISSING', 'INCOMPATIBLE', 'UNVERIFIED')})
+    physical, missing = set(), set()
+    for row in required:
+        matches = by_binding.get(binding_key(row), []) if complete(row) else []
+        verified = [old for old in matches if classify(row, old) == 'REUSABLE']
+        if verified:
+            # Stable representative when independent historical invocations have
+            # identical inputs. Keep every original observation ID unchanged.
+            old = min(verified, key=lambda r: (r['physical_call_id'], r['observation_id']))
+            status = 'REUSABLE'
+            physical.add(old['physical_call_id'])
+        elif not complete(row) or matches:
+            status = 'UNVERIFIED'
+        else:
+            old = by_id.get(row['observation_id'])
+            status = classify(row, old)
+            # An incomplete historical record with compatible known fields may
+            # be a match; absence of metadata must not become a new-call budget.
+            if status == 'MISSING' and any(
+                    not complete(h) and all(
+                        h.get(k) is None or digest(h[k]) == digest(row[k])
+                        for k in FIELDS) for h in history):
+                status = 'UNVERIFIED'
+        counts[status] += 1
+        if status != 'REUSABLE' and complete(row):
+            missing.add(binding_key(row))
+
+    # A pinned export alone cannot validate incomplete/uncertified provenance.
+    # Be conservative even when that historical row did not supply a match.
+    uncertain = (counts['UNVERIFIED'] > 0
+                 or any(classify(h, h) != 'REUSABLE' for h in history))
     return {'classification_counts': dict(counts), 'verified_reusable_physical_calls': len(physical),
             'nonreusable_distinct_complete_inputs': len(missing),
-            'new_call_estimate': 'UNKNOWN' if any(not complete(r) for r in required) else len(missing),
+            'new_call_estimate': 'UNKNOWN' if uncertain else len(missing),
             'reused_responses_are_new_independent_inference': False}
 
 
