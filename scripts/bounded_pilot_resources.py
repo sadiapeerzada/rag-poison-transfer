@@ -13,8 +13,9 @@ import time
 def mac_health():
     pressure=int(subprocess.check_output(['sysctl','-n','kern.memorystatus_vm_pressure_level'],text=True).strip())
     vm=subprocess.check_output(['vm_stat'],text=True)
-    # Use actual compressor swap counters, not general file-backed page-outs.
-    swapping=sum(int(re.search(r'^'+k+r':\s+(\d+)',vm,re.M).group(1)) for k in ('Swapins','Swapouts'))
+    # Operator explicitly permits restoration from existing swap. Any NEW
+    # swap-out still stops the run. General page-outs are not swap-out events.
+    swapping=int(re.search(r'^Swapouts:\s+(\d+)',vm,re.M).group(1))
     thermal=subprocess.check_output(['pmset','-g','therm'],text=True)
     # CPU_Available_CPUs is a count, not a percentage.
     speed=[int(v) for v in re.findall(r'(?:CPU_Speed_Limit|CPU_Scheduler_Limit)\s*=\s*(\d+)',thermal)]
@@ -41,7 +42,7 @@ class Guard:
             raise RuntimeError('Insufficient free disk')
         if time.monotonic()-self.started>self.limits['inference_seconds']:
             raise RuntimeError('Wall-clock limit reached')
-        if mac_health()>self.swaps:raise RuntimeError('Active swapping detected')
+        if mac_health()>self.swaps:raise RuntimeError('New swap-out detected')
     def start(self):
         def monitor():
             while not self.stop_event.wait(.5):

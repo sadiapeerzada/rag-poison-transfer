@@ -28,7 +28,7 @@ def test_normal_health_records_swap_baseline(monkeypatch):
         if cmd[0]=='vm_stat':return 'Swapins: 3.\nSwapouts: 12.\nPageouts: 1000.\n'
         return 'No thermal warning level has been recorded'
     monkeypatch.setattr(resources.subprocess,'check_output',output)
-    assert resources.mac_health()==15
+    assert resources.mac_health()==12
 
 
 def test_incomplete_outcomes_never_become_defense_successes_or_numeric_rates():
@@ -66,14 +66,33 @@ def test_shared_session_cap_survives_new_pilot_versions(tmp_path):
 
 
 def test_general_pageouts_are_not_misclassified_as_swap(monkeypatch):
-    state={'pageouts':1,'swapins':3}
+    state={'pageouts':1,'swapins':3,'swapouts':12}
     def output(cmd,**kwargs):
         if cmd[0]=='sysctl':return '1'
-        if cmd[0]=='vm_stat':return f"Swapins: {state['swapins']}.\nSwapouts: 12.\nPageouts: {state['pageouts']}.\n"
+        if cmd[0]=='vm_stat':return f"Swapins: {state['swapins']}.\nSwapouts: {state['swapouts']}.\nPageouts: {state['pageouts']}.\n"
         return 'No thermal warning level has been recorded'
     monkeypatch.setattr(resources.subprocess,'check_output',output)
-    assert resources.mac_health()==15
+    assert resources.mac_health()==12
     state['pageouts']=1000
-    assert resources.mac_health()==15
+    assert resources.mac_health()==12
     state['swapins']=4
-    assert resources.mac_health()==16
+    assert resources.mac_health()==12
+    state['swapouts']=13
+    assert resources.mac_health()==13
+
+
+def test_dispatch_balances_strata_and_keeps_question_pairs_together():
+    from scripts.run_bounded_e1_e2_qwen import balanced_blocks
+    plan=[{'observation_id':str(i),'query_id':q} for i,q in enumerate(['q1','q1','q2','q2','q1','q1','q2','q2'])]
+    logical=[{'cell':cell,'query_id':qid,'poisoned_input':str(i)} for i,(cell,qid) in enumerate([
+        ('lex','q1'),('lex','q1'),('lex','q2'),('lex','q2'),('semantic','q1'),('semantic','q1'),('semantic','q2'),('semantic','q2')])]
+    blocks=balanced_blocks(plan,logical,'E1',['q1','q2'])
+    assert [[r['observation_id'] for r in b] for b in blocks]==[['0','1'],['4','5'],['2','3'],['6','7']]
+
+
+def test_e2_dispatch_clean_controls_precede_poison_blocks():
+    from scripts.run_bounded_e1_e2_qwen import balanced_blocks
+    plan=[{'observation_id':str(i),'query_id':'q'} for i in range(3)]
+    logical=[{'cell':c,'query_id':'q','condition':condition,'input':str(i)} for i,(c,condition) in enumerate([('lex','poisoned'),('lex','clean'),('semantic','poisoned')])]
+    blocks=balanced_blocks(plan,logical,'E2',['q'])
+    assert [b[0]['observation_id'] for b in blocks]==['1','0','2']

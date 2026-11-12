@@ -16,7 +16,7 @@ ROOT=Path(__file__).resolve().parents[1]
 if str(ROOT) not in sys.path:sys.path.insert(0,str(ROOT))
 from scripts.audit_e1_e2_reuse import digest,sha,binding_key,classify,compare
 from scripts.hotpotqa_native_reuse import read
-from src.experiments.execution_reliability import atomic,acquire_model_lease
+from src.experiments.execution_reliability import atomic,once,acquire_model_lease
 from scripts.bounded_pilot_resources import Guard
 from src.evaluation.qa_records import capture_generation,validate_qa
 
@@ -30,6 +30,34 @@ def available_calls(attempts,limits,e1_max,experiment):
     total=limits['new_physical_calls']-len(records)
     e1=e1_max-sum(r['experiment']=='E1' for r in records)
     return max(0,min(total,e1 if experiment=='E1' else total))
+
+
+def balanced_blocks(plan,logical,experiment,question_order):
+    """Prespecified outcome-blind dispatch: matched question blocks, round-robin strata.
+
+    E2 clean controls go first. IDs schedule work only; they never authorize reuse.
+    """
+    aliases={}
+    for r in logical:
+        if experiment=='E1':
+            entries=[(r.get(c+'_input'),c) for c in ('clean','poisoned')]
+        else:entries=[(r.get('input'),r.get('condition'))]
+        for key,condition in entries:
+            if key:aliases.setdefault(key,[]).append((r['cell'],r['query_id'],condition))
+    groups={};clean=[]
+    for row in plan:
+        key=row['observation_id'];links=aliases.get(key)
+        if not links:raise ValueError('Input missing logical dispatch provenance')
+        cell,qid,condition=min(links)
+        if experiment=='E2' and condition=='clean':clean.append(row);continue
+        groups.setdefault(cell,{}).setdefault(qid,[]).append(row)
+    order={qid:i for i,qid in enumerate(question_order)}
+    queues={cell:[rows for qid,rows in sorted(by_q.items(),key=lambda x:order[x[0]])] for cell,by_q in groups.items()}
+    blocks=[[r] for r in sorted(clean,key=lambda r:order[r['query_id']])]
+    for i in range(max((len(q) for q in queues.values()),default=0)):
+        for cell in sorted(queues):
+            if i<len(queues[cell]):blocks.append(queues[cell][i])
+    return blocks
 
 
 def validate_journals(root):
@@ -86,16 +114,30 @@ def execute(root,snapshot,experiment='E1'):
         elapsed+=read(end)['elapsed_seconds']
     validate_journals(root)
     already={p.stem.split('.')[0] for p in (directory/'calls').glob('*.response.json')}
-    pending=[r for r in plan if binding_key(r) not in historical and binding_key(r) not in already]
+    logical=read(root/('logical.private.json' if experiment=='E1' else 'e2.logical.private.json'))
+    blocks=balanced_blocks(plan,logical,experiment,freeze['active_smoke_ids'])
+    once(root/(experiment+'.dispatch.freeze.json'),{'rule':'question-block round-robin strata/v1; E2 clean first',
+        'plan_sha256':digest(plan),'logical_sha256':digest(logical),'blocks':[[r['observation_id'] for r in b] for b in blocks]})
+    pending_blocks=[[r for r in b if binding_key(r) not in historical and binding_key(r) not in already] for b in blocks]
+    pending=[r for b in pending_blocks for r in b]
     available=available_calls(attempts,limits,freeze['E1_max_new_calls'],experiment)
+    # Stop before a partially funded matched question block; no outcome-dependent
+    # rescheduling. Any unused E1 allocation remains available to E2 globally.
+    selected=[];funded=0
+    for block in pending_blocks:
+        if funded+len(block)>available:break
+        selected.extend(block);funded+=len(block)
+    pending_total=len(pending);pending=selected
     if not pending or available<=0:
         print(json.dumps({'status':'NO_NEW_CALLS_OR_BUDGET_EXHAUSTED','pending':len(pending),'physical_attempts':count_attempts(root)}));return
     if elapsed>=limits['inference_seconds']:raise RuntimeError('Combined initialization/inference wall budget exhausted')
     started=time.monotonic()
     sid=datetime.now(timezone.utc).strftime('%Y%m%dT%H%M%S.%fZ')
     session={'experiment':experiment,'limits':limits,'prior_inference_seconds':elapsed,
-             'expected_distinct_new_inputs':len(pending),'available_physical_attempts':available,
-             'runner_sha256':sha(__file__),'pilot_sha256':prep['pilot_sha256']}
+             'expected_distinct_new_inputs':pending_total,'prespecified_funded_inputs':len(pending),'available_physical_attempts':available,
+             'dispatch_sha256':sha(root/(experiment+'.dispatch.freeze.json')),
+             'runner_sha256':sha(__file__),'pilot_sha256':prep['pilot_sha256'],
+             'allocator_cache_bytes':0,'model_configuration_changed':False}
     atomic(sessions/(sid+'.intent.json'),session)
     result={'status':'STOPPED_BEFORE_MODEL_LOAD','completed_new_calls':0,'retries':0}
     guard=None
@@ -106,10 +148,12 @@ def execute(root,snapshot,experiment='E1'):
         if sys.version!=env['python'] or any(importlib.metadata.version(k)!=v for k,v in env.items() if k!='python'):
             raise ValueError('Frozen backend runtime differs')
         import mlx.core as mx
-        guard=Guard({**limits,'inference_seconds':limits['inference_seconds']-elapsed},directory,metal=mx)
+        resource_directory=directory/'resources'/sid;resource_directory.mkdir(parents=True,exist_ok=False)
+        guard=Guard({**limits,'inference_seconds':limits['inference_seconds']-elapsed},resource_directory,metal=mx)
         guard.started=started;guard.start()
         # Bound cached Metal allocations without changing model parameters.
-        mx.set_cache_limit(2*2**30)
+        mx.set_cache_limit(0)
+        mx.set_memory_limit(limits['metal_bytes'])
         from src.pipelines.generator import MLXGenerator
         from mlx_lm.sample_utils import make_sampler
         backend=MLXGenerator(str(snapshot));original=backend._generate_fn
@@ -141,7 +185,7 @@ def execute(root,snapshot,experiment='E1'):
                 response=calls/(key+'.response.json')
                 if not response.exists():atomic(response,{'request_sha256':digest(request),'error_type':type(exc).__name__})
                 raise
-        else:result['status']='ALL_PREPARED_INPUTS_COMPLETED'
+        else:result['status']='ALL_PREPARED_INPUTS_COMPLETED' if len(pending)==pending_total else 'STOPPED_BEFORE_UNFUNDED_MATCHED_BLOCK'
     except Exception as exc:
         result['status']='STOPPED';result['reason']=str(exc)
         raise

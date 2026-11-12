@@ -1,0 +1,41 @@
+{
+  "status": "INPUTS_VERIFIED_DISPATCH_FROZEN_NOT_COMPLETED_RESULT",
+  "date": "2026-11-12",
+  "development_questions": 25,
+  "active_smoke_questions": 5,
+  "historically_exposed": true,
+  "exact_unique_inputs": 432,
+  "verified_historical_physical_responses": 212,
+  "exact_missing_distinct_inputs": 220,
+  "frozen_E1_dispatch_new_call_allocation": 156,
+  "combined_session_new_call_cap": 200,
+  "E2_remaining_if_E1_completes": 44,
+  "pilot_sha256": "05d48e1de3ce3fe496efa2e919e2957dc104244d6f6e3f9a9608f164c4ac4ee5",
+  "selection_sha256": "1f6ea82bdfd705c3c54156aacb094c3789e32a5709f4e2bd5fef7e8278ed9ff2",
+  "plan_sha256": "b1c41c4c2ba10b951f28bd3f340e1cb8aa7a41b6376fdead301a8adfff125e84",
+  "history_sha256": "5b5729d3750fec98d3dab478984d69186d5423e6593ddbc7c8532c30d9f52298",
+  "dispatch_sha256": "7d0a20d0514db4a08bd0561815262da87e1716bfa9fce82c3101fb5117612c18",
+  "limits": {
+    "concurrency": 1,
+    "inference_seconds": 14400,
+    "metal_bytes": 10737418240,
+    "min_free_disk_bytes": 5368709120,
+    "new_physical_calls": 200,
+    "rss_bytes": 12884901888,
+    "swap_policy": "operator-approved: swap-ins allowed; stop on any new swap-out"
+  },
+  "output_tokens": 64,
+  "sampler": "explicit greedy",
+  "qa_seed": 42,
+  "allocator_cache_bytes": 0,
+  "frozen_model_configuration_changed": false,
+  "preparation_resource_peaks": {
+    "rss_bytes": 1592737792,
+    "metal_bytes": 1162379264
+  },
+  "notes": [
+    "Operator explicitly permits swap-ins, with immediate stop on any new swap-out.",
+    "No final experiment or full 25-question completion is implied.",
+    "Run results and actual physical attempts are reported separately."
+  ]
+}
