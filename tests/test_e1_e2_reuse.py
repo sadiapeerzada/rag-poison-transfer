@@ -79,3 +79,111 @@ def test_cli_rejects_unpinned_history_without_private_diagnostics(tmp_path):
                             capture_output=True, text=True)
     assert result.returncode == 2
     assert str(private) not in result.stderr
+
+
+def test_complete_binding_matches_across_record_ids_without_mutation():
+    required = {**observation(), 'observation_id': 'new-method-slot'}
+    historical = {**observation(), 'observation_id': 'historical-slot'}
+    before = copy.deepcopy((required, historical))
+    result = compare([required], [historical])
+    assert result['classification_counts']['REUSABLE'] == 1
+    assert result['verified_reusable_physical_calls'] == 1
+    assert result['new_call_estimate'] == 0
+    assert (required, historical) == before
+
+
+@pytest.mark.parametrize('field', FIELDS)
+def test_same_question_different_binding_never_matches_across_record_ids(field):
+    required = {**observation(), 'observation_id': 'new-slot'}
+    historical = {**observation(), 'observation_id': 'old-slot', field: 'changed'}
+    result = compare([required], [historical])
+    assert result['classification_counts']['REUSABLE'] == 0
+    assert result['verified_reusable_physical_calls'] == 0
+    assert result['nonreusable_distinct_complete_inputs'] == 1
+
+
+def test_matching_binding_wins_over_mismatched_record_id_and_unverified_duplicate():
+    required = observation()
+    stale = {**required, 'prompt': 'old prompt', 'physical_call_id': 'other-call'}
+    unverified = {**required, 'observation_id': 'unverified', 'provenance': 'cached'}
+    exact = {**required, 'observation_id': 'exact'}
+    result = compare([required], [stale, unverified, exact])
+    assert result['classification_counts']['REUSABLE'] == 1
+    assert result['verified_reusable_physical_calls'] == 1
+    assert result['new_call_estimate'] == 'UNKNOWN'
+
+
+def test_duplicate_logical_observations_reuse_one_physical_call():
+    required = [{**observation(), 'observation_id': f'new-{i}'} for i in range(3)]
+    history = [{**observation(), 'observation_id': f'old-{i}'} for i in range(2)]
+    result = compare(required, history)
+    assert result['classification_counts']['REUSABLE'] == 3
+    assert result['verified_reusable_physical_calls'] == 1
+    assert result['nonreusable_distinct_complete_inputs'] == 0
+    assert result['new_call_estimate'] == 0
+
+
+def test_multiple_physical_calls_choose_stable_representative():
+    history = [{**observation(), 'observation_id': f'old-{i}', 'physical_call_id': f'call-{i}'}
+               for i in range(2)]
+    required = [{**observation(), 'observation_id': f'new-{i}'} for i in range(2)]
+    assert compare(required, history) == compare(required, list(reversed(history)))
+    assert compare(required, history)['verified_reusable_physical_calls'] == 1
+
+
+@pytest.mark.parametrize('field', ['prompt', 'poison_corpus_sha256', 'backend_environment', 'raw_response'])
+def test_conflicting_physical_identity_rejected_even_for_unrequested_records(field):
+    original = observation()
+    changed = {**original, 'observation_id': 'other-logical-record', field: 'changed'}
+    with pytest.raises(ValueError, match='Conflicting physical call provenance'):
+        compare([], [original, changed])
+
+
+def test_incomplete_record_cannot_hide_physical_identity_conflict():
+    original = observation()
+    changed = {**original, 'observation_id': 'partial', 'prompt': 'changed'}
+    del changed['decoding']
+    with pytest.raises(ValueError, match='Conflicting physical call provenance'):
+        compare([], [original, changed])
+
+
+@pytest.mark.parametrize('change', [
+    {'provenance': 'cached'}, {'physical_call_id': None}, {'raw_response': None},
+    {'backend_environment': None}, {'decoding': None},
+])
+def test_unverified_history_never_yields_numeric_budget(change):
+    historical = {**observation(), 'observation_id': 'old', **change}
+    result = compare([observation()], [historical])
+    assert result['classification_counts']['UNVERIFIED'] == 1
+    assert result['new_call_estimate'] == 'UNKNOWN'
+
+
+def test_incomplete_required_input_never_yields_numeric_budget():
+    required = observation(); del required['prompt']
+    assert compare([required], [])['new_call_estimate'] == 'UNKNOWN'
+
+
+def test_distinct_missing_inputs_are_deduplicated_across_logical_ids():
+    required = [{**observation(), 'observation_id': f'new-{i}'} for i in range(3)]
+    result = compare(required, [])
+    assert result['classification_counts']['MISSING'] == 3
+    assert result['nonreusable_distinct_complete_inputs'] == 1
+    assert result['new_call_estimate'] == 1
+
+
+def test_structured_bindings_match_independent_of_object_key_order():
+    required = {**observation(), 'observation_id': 'new',
+                'decoding': {'seed': 42, 'temperature': 0},
+                'retrieval_evidence': [{'id': 'synthetic-doc', 'text': 'synthetic text'}]}
+    historical = {**required, 'observation_id': 'old',
+                  'decoding': {'temperature': 0, 'seed': 42}}
+    assert compare([required], [historical])['classification_counts']['REUSABLE'] == 1
+    historical['decoding']['temperature'] = 1
+    assert compare([required], [historical])['classification_counts']['REUSABLE'] == 0
+
+
+def test_unverified_different_binding_still_blocks_numeric_budget():
+    historical = {**observation(), 'prompt': 'old', 'provenance': 'indeterminate'}
+    result = compare([observation()], [historical])
+    assert result['classification_counts']['INCOMPATIBLE'] == 1
+    assert result['new_call_estimate'] == 'UNKNOWN'
