@@ -1,0 +1,65 @@
+{
+  "status": "DRAFT_PREPARATION_ONLY",
+  "date": "2026-11-12",
+  "new_inference_calls_executed": 0,
+  "inventory_verified_files": {
+    "candidates": 24546,
+    "selection": 61601,
+    "evaluation": 158037
+  },
+  "E1": {
+    "verified_reusable_physical_qwen_calls": 0,
+    "total_genuinely_reusable_physical_qwen_calls": "UNKNOWN",
+    "missing_distinct_generator_inputs": "UNKNOWN",
+    "expected_new_calls_min": "UNKNOWN",
+    "expected_new_calls_max": "UNKNOWN",
+    "zero_verified_is_not_zero_available": true,
+    "dependencies": [
+      "approved cohort and exposure ledger",
+      "new selection and union-corpus identities",
+      "complete desired prompt/backend bindings",
+      "reviewed private normalized export and physical-call provenance"
+    ]
+  },
+  "E2": {
+    "verified_reusable_physical_qwen_calls": 0,
+    "total_genuinely_reusable_physical_qwen_calls": "UNKNOWN",
+    "missing_distinct_generator_inputs": "UNKNOWN",
+    "expected_new_calls_min": "UNKNOWN",
+    "expected_new_calls_max": "UNKNOWN",
+    "zero_verified_is_not_zero_available": true,
+    "dependencies": [
+      "approved cohort and exposure ledger",
+      "new selection and union-corpus identities",
+      "complete desired prompt/backend bindings",
+      "reviewed private normalized export and physical-call provenance"
+    ]
+  },
+  "accounting": {
+    "historical_published_backend_calls": 21175,
+    "historical_count_is_not_reusable_count": true,
+    "new_distinct_inputs": "Count unique full effective generator input + backend bindings lacking a verified physical completed response; share exact matches across roles and experiments once.",
+    "physical_calls": "Count attempts, retries, failures and indeterminate invocations separately. Reuse contributes zero new independent inference."
+  },
+  "conditional_planning_formulas": {
+    "assumptions": "N questions, 12 family/intensity/seed strata, 3 candidate slots, all valid; no retries, one QA call per observation; distinct clean controls shared across strata. These are logical-call ceilings before deduplication, not expected physical-call estimates or authorization.",
+    "E1_final_poison_QA": "252*N = 12*N*3 methods*(4 roles for BM25 source + 3 roles for Dense source, sharing Dense source/target)",
+    "E1_clean_QA": "4*N for BM25, Dense, Reranker, RCD",
+    "E1_source_screen_QA": "at most 72*N = 12*N*2 sources*3 candidates; zero incremental calls if all exact historical screens qualify",
+    "E1_semantic_construction": "at most 72*N = 3 seeds*sum(1,3) documents*3 slots*2 attempts; lexical construction zero Qwen calls; zero construction calls when frozen library qualifies",
+    "E1_combined_logical_ceiling": "400*N including construction, screens, clean and final QA; deduplication/reuse/failures reduce this; retry/interruption overhead excluded",
+    "E2_final_QA": "For one fixed selection/source block: at most 48*N poisoned + 4*N clean; B blocks: at most 48*N*B + 4*N if clean inputs identical across blocks.",
+    "E2_D2_rewrite_calls": 0,
+    "E2_construction_and_screening": "Shared with E1 if same library/selection; do not double-count. Otherwise UNKNOWN pending approved attack plan."
+  },
+  "retrieval_only_work": {
+    "E1": "Derive final corpora for M1/M2/M3; retrieve four pipeline roles as needed (Dense source/target shared when identical), all valid-candidate source screens lacking verified evidence, and clean controls. Exact operation count UNKNOWN.",
+    "E2": "D2 retrieval/evidence missing; Dense/Reranker/RCD retrieval for any changed corpus or unverifiable evidence. Reranker cross-encoder pair operations and RCD inner searches counted separately; latency replay optional after review. Count UNKNOWN."
+  },
+  "limits": [
+    "No approved input plan, so no actual numeric min/max expected new physical calls is derivable.",
+    "No aggregate is used to reconstruct query-level matches.",
+    "Historical runtime/model names alone do not certify reuse.",
+    "The interruption caveat prevents equating journal entries with completed physical calls."
+  ]
+}
