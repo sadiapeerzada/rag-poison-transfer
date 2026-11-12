@@ -16,7 +16,7 @@ def test_failed_and_indeterminate_intents_consume_call_cap(tmp_path):
 def test_pressure_or_thermal_warning_stops_before_model_load(monkeypatch,pressure,thermal):
     def output(cmd,**kwargs):
         if cmd[0]=='sysctl':return str(pressure)
-        if cmd[0]=='vm_stat':return 'Swapouts: 0.\nPageouts: 0.\n'
+        if cmd[0]=='vm_stat':return 'Swapins: 0.\nSwapouts: 0.\nPageouts: 0.\n'
         return thermal
     monkeypatch.setattr(resources.subprocess,'check_output',output)
     with pytest.raises(RuntimeError,match='pressure or thermal'):resources.mac_health()
@@ -25,7 +25,7 @@ def test_pressure_or_thermal_warning_stops_before_model_load(monkeypatch,pressur
 def test_normal_health_records_swap_baseline(monkeypatch):
     def output(cmd,**kwargs):
         if cmd[0]=='sysctl':return '1'
-        if cmd[0]=='vm_stat':return 'Swapouts: 12.\nPageouts: 3.\n'
+        if cmd[0]=='vm_stat':return 'Swapins: 3.\nSwapouts: 12.\nPageouts: 1000.\n'
         return 'No thermal warning level has been recorded'
     monkeypatch.setattr(resources.subprocess,'check_output',output)
     assert resources.mac_health()==15
@@ -63,3 +63,17 @@ def test_shared_session_cap_survives_new_pilot_versions(tmp_path):
     for i in range(200):(attempts/f'{i}.json').write_text(json.dumps({'experiment':'E1' if i<160 else 'E2','pilot_root':f'version-{i%3}'}))
     assert available_calls(attempts,{'new_physical_calls':200},160,'E1')==0
     assert available_calls(attempts,{'new_physical_calls':200},160,'E2')==0
+
+
+def test_general_pageouts_are_not_misclassified_as_swap(monkeypatch):
+    state={'pageouts':1,'swapins':3}
+    def output(cmd,**kwargs):
+        if cmd[0]=='sysctl':return '1'
+        if cmd[0]=='vm_stat':return f"Swapins: {state['swapins']}.\nSwapouts: 12.\nPageouts: {state['pageouts']}.\n"
+        return 'No thermal warning level has been recorded'
+    monkeypatch.setattr(resources.subprocess,'check_output',output)
+    assert resources.mac_health()==15
+    state['pageouts']=1000
+    assert resources.mac_health()==15
+    state['swapins']=4
+    assert resources.mac_health()==16

@@ -99,6 +99,9 @@ def prepare(root,snapshot,out):
     from src.attacks.asr import build_prompt
     from run import build_retriever
     if base.environment()!=spec['environment']:raise ValueError('Current backend environment differs')
+    for entry in spec['retrieval_snapshots'].values():
+        if base.model_binding(entry['path'],entry['binding']['repository'])!=entry['binding']:
+            raise ValueError('Pinned retrieval model bytes differ')
     ids=spec['binding']['query_ids']
     dev=sorted(ids,key=lambda q:digest('E1-dev25-v1:'+q))[:25]
     # Fixed prefix, never selected by target outcomes; retain invalid questions.
@@ -114,7 +117,7 @@ def prepare(root,snapshot,out):
             'corpus_scope':'full original clean 300-query corpus plus all full-300 selected poisons; evaluate fixed smoke prefix only',
             'selection_seed_rule':'first 16 hex SHA256 canonical [E1-M2-v1,seed,query_id,family,intensity]',
             'model':spec['model'],'native_protocol_sha256':sha(root/'protocol.json'),
-            'source_files_sha256':{name:sha(ROOT/'scripts'/name) for name in ('hotpotqa_native_reuse.py','prepare_e1_native_pilot.py')}}
+            'source_files_sha256':{name:sha(ROOT/'scripts'/name) for name in ('hotpotqa_native_reuse.py','prepare_e1_native_pilot.py','bounded_pilot_resources.py')}}
     atomic(out/'pilot.freeze.json',config)
     atomic(out/'selection.seal.json',{'pilot_sha256':sha(out/'pilot.freeze.json'),
            'selections':{'|'.join(k):v for k,v in selections.items()},'screening':screening})
@@ -157,6 +160,16 @@ def prepare(root,snapshot,out):
             'pending':'new retrieval inputs and exact distinct-call estimate; no Qwen initialized'})
         print(json.dumps({'stage':'RESOURCE_BLOCKED_BEFORE_NEW_RETRIEVAL','new_qwen_calls':0}),flush=True)
         return
+    # Guard actual retrieval-model allocations too; Qwen is a separate process.
+    from scripts.bounded_pilot_resources import Guard
+    from src.experiments.execution_reliability import acquire_model_lease
+    acquire_model_lease()
+    import mlx.core as mx
+    import torch
+    class MetalUsage:
+        def get_active_memory(self):return mx.get_active_memory()+(torch.mps.driver_allocated_memory() if torch.backends.mps.is_available() else 0)
+        def get_cache_memory(self):return mx.get_cache_memory()
+    guard=Guard(LIMITS,out,metal=MetalUsage());guard.start()
     required={};logical=[];retrieval=[];corpora_cache={};retrieval_cache={}
     embedder=None;scorer=None
     def retrieve(corpus,config,query):
@@ -199,6 +212,7 @@ def prepare(root,snapshot,out):
         meta={'pipeline':config['retriever'],'corpus_sha256':cfp,'build_seconds':build_time,
               'retrieve_seconds':elapsed,'wrapper_calls':1,'inner_operations':getattr(r,'last_diagnostics',{}),
               'cross_encoder_pairs':min(20,len(corpus)) if config['retriever']=='reranker' else 0}
+        atomic(out/'retrieval-checkpoints'/(key+'.json'),{'evidence':evidence,'metadata':meta})
         retrieval.append(meta);retrieval_cache[key]=(evidence,meta)
         return evidence,meta
     for (cid,source,method),records in selections.items():
@@ -242,7 +256,8 @@ def prepare(root,snapshot,out):
         'history_sha256':sha(out/'history.private.json'),'logical_sha256':sha(out/'logical.private.json'),
         'reuse':reuse,'screening':screening,'native_verification':receipt,
         'full_25_pilot':'NOT_EXECUTED','smoke_questions':len(smoke)})
-    print(json.dumps({'stage':'PREPARED_NO_QWEN','reuse':reuse}),flush=True)
+    guard.close()
+    print(json.dumps({'stage':'PREPARED_NO_QWEN','reuse':reuse,'max_rss':guard.max_rss,'max_metal':guard.max_metal}),flush=True)
 
 
 if __name__=='__main__':
