@@ -1,0 +1,28 @@
+{
+  "status": "VERIFIED_ACTUAL_INPUTS_NO_NEW_GENERATION",
+  "E2_logical_inputs_checked": 112,
+  "E2_distinct_bindings": 60,
+  "E2_conditions": {
+    "clean": 56,
+    "poisoned": 56
+  },
+  "combined_reuse": {
+    "classification_counts": {
+      "REUSABLE": 212,
+      "MISSING": 280,
+      "INCOMPATIBLE": 0,
+      "UNVERIFIED": 0
+    },
+    "verified_reusable_physical_calls": 212,
+    "nonreusable_distinct_complete_inputs": 280,
+    "new_call_estimate": 280,
+    "reused_responses_are_new_independent_inference": false
+  },
+  "E1_plan_sha256": "b1c41c4c2ba10b951f28bd3f340e1cb8aa7a41b6376fdead301a8adfff125e84",
+  "E2_plan_sha256": "6a769dc60373ea616e52c04fed4fee1febcd4fea465d9cd08b8a03febf4ef91e",
+  "E2_freeze_sha256": "83c51a7e36c2647f5d7642ed447644b7aa919ab3fb6874134112ba0c707455eb",
+  "native_history_sha256": "5b5729d3750fec98d3dab478984d69186d5423e6593ddbc7c8532c30d9f52298",
+  "original_question_preserved": true,
+  "corpus_target_evidence_topk_backend_limits_verified": true,
+  "new_Qwen_generation_calls": 0
+}
