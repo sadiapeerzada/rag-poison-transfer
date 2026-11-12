@@ -156,7 +156,9 @@ def aggregate(root,out):
             'indeterminate_calls':indeterminate,'retries':0,
             'historical_physical_responses_verified':adapter['verified_historical_physical_calls'],
             'screening':seal['screening'],'new_call_estimate':read(root/'prepare.complete.json')['reuse']['new_call_estimate'] if (root/'prepare.complete.json').exists() else 'UNKNOWN',
-            'resource_blocked':(root/'PREPARATION_RESOURCE_STOP.json').exists(),
+            'resource_blocked':any((root/name).exists() for name in ('PREPARATION_RESOURCE_STOP.json','RESOURCE_STOP.json')),
+            'resource_stop':read(root/'RESOURCE_STOP.json') if (root/'RESOURCE_STOP.json').exists() else (read(root/'PREPARATION_RESOURCE_STOP.json') if (root/'PREPARATION_RESOURCE_STOP.json').exists() else None),
+            'new_retrieval_checkpoints':len(list((root/'retrieval-checkpoints').glob('*.json'))),
             'pilot_sha256':sha(root/'pilot.freeze.json'),'selection_sha256':sha(root/'selection.seal.json'),
             'native_history_sha256':sha(root/'history.private.json'),
             'policy_comparison':'INCOMPLETE until all matched valid M1/M2/M3 observations resolve; no incomplete-case superiority claim'}

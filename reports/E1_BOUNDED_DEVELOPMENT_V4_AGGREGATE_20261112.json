@@ -1,0 +1,7405 @@
+{
+  "status": "PARTIAL_EXPLORATORY_HISTORICAL_REUSE",
+  "development_manifest_questions": 25,
+  "active_smoke_questions": 5,
+  "historically_exposed": true,
+  "full_25_pilot_complete": false,
+  "metrics": [
+    {
+      "family": "lexical_influential_token",
+      "intensity": 1,
+      "method": "M1",
+      "source": "bm25",
+      "pipeline": "dense",
+      "assigned": 15,
+      "valid": 12,
+      "pending": 12,
+      "construction_failures": {
+        "target_construction_failed": 3
+      },
+      "metrics": {
+        "coverage": {
+          "numerator": 12.0,
+          "denominator": 15.0,
+          "estimate": 0.8,
+          "ci95_question_cluster": {
+            "lower": 0.4,
+            "upper": 1.0,
+            "undefined_replicates": 0
+          }
+        },
+        "end_to_end_target_match": {
+          "status": "INCOMPLETE",
+          "estimate": null
+        },
+        "valid_target_match": {
+          "status": "INCOMPLETE",
+          "estimate": null
+        },
+        "source_success": {
+          "status": "INCOMPLETE",
+          "estimate": null
+        },
+        "atr": {
+          "status": "INCOMPLETE",
+          "estimate": null
+        },
+        "clean_correct_to_wrong": {
+          "status": "INCOMPLETE",
+          "estimate": null
+        },
+        "clean_em": {
+          "status": "INCOMPLETE",
+          "estimate": null
+        },
+        "poison_em": {
+          "status": "INCOMPLETE",
+          "estimate": null
+        },
+        "clean_f1": {
+          "status": "INCOMPLETE",
+          "estimate": null
+        },
+        "poison_f1": {
+          "status": "INCOMPLETE",
+          "estimate": null
+        },
+        "poison_exposure": {
+          "status": "INCOMPLETE",
+          "estimate": null
+        }
+      }
+    },
+    {
+      "family": "lexical_influential_token",
+      "intensity": 1,
+      "method": "M1",
+      "source": "bm25",
+      "pipeline": "reranker",
+      "assigned": 15,
+      "valid": 12,
+      "pending": 12,
+      "construction_failures": {
+        "target_construction_failed": 3
+      },
+      "metrics": {
+        "coverage": {
+          "numerator": 12.0,
+          "denominator": 15.0,
+          "estimate": 0.8,
+          "ci95_question_cluster": {
+            "lower": 0.4,
+            "upper": 1.0,
+            "undefined_replicates": 0
+          }
+        },
+        "end_to_end_target_match": {
+          "status": "INCOMPLETE",
+          "estimate": null
+        },
+        "valid_target_match": {
+          "status": "INCOMPLETE",
+          "estimate": null
+        },
+        "source_success": {
+          "status": "INCOMPLETE",
+          "estimate": null
+        },
+        "atr": {
+          "status": "INCOMPLETE",
+          "estimate": null
+        },
+        "clean_correct_to_wrong": {
+          "status": "INCOMPLETE",
+          "estimate": null
+        },
+        "clean_em": {
+          "status": "INCOMPLETE",
+          "estimate": null
+        },
+        "poison_em": {
+          "status": "INCOMPLETE",
+          "estimate": null
+        },
+        "clean_f1": {
+          "status": "INCOMPLETE",
+          "estimate": null
+        },
+        "poison_f1": {
+          "status": "INCOMPLETE",
+          "estimate": null
+        },
+        "poison_exposure": {
+          "status": "INCOMPLETE",
+          "estimate": null
+        }
+      }
+    },
+    {
+      "family": "lexical_influential_token",
+      "intensity": 1,
+      "method": "M1",
+      "source": "bm25",
+      "pipeline": "rcd",
+      "assigned": 15,
+      "valid": 12,
+      "pending": 12,
+      "construction_failures": {
+        "target_construction_failed": 3
+      },
+      "metrics": {
+        "coverage": {
+          "numerator": 12.0,
+          "denominator": 15.0,
+          "estimate": 0.8,
+          "ci95_question_cluster": {
+            "lower": 0.4,
+            "upper": 1.0,
+            "undefined_replicates": 0
+          }
+        },
+        "end_to_end_target_match": {
+          "status": "INCOMPLETE",
+          "estimate": null
+        },
+        "valid_target_match": {
+          "status": "INCOMPLETE",
+          "estimate": null
+        },
+        "source_success": {
+          "status": "INCOMPLETE",
+          "estimate": null
+        },
+        "atr": {
+          "status": "INCOMPLETE",
+          "estimate": null
+        },
+        "clean_correct_to_wrong": {
+          "status": "INCOMPLETE",
+          "estimate": null
+        },
+        "clean_em": {
+          "status": "INCOMPLETE",
+          "estimate": null
+        },
+        "poison_em": {
+          "status": "INCOMPLETE",
+          "estimate": null
+        },
+        "clean_f1": {
+          "status": "INCOMPLETE",
+          "estimate": null
+        },
+        "poison_f1": {
+          "status": "INCOMPLETE",
+          "estimate": null
+        },
+        "poison_exposure": {
+          "status": "INCOMPLETE",
+          "estimate": null
+        }
+      }
+    },
+    {
+      "family": "lexical_influential_token",
+      "intensity": 1,
+      "method": "M2",
+      "source": "bm25",
+      "pipeline": "dense",
+      "assigned": 15,
+      "valid": 12,
+      "pending": 12,
+      "construction_failures": {
+        "target_construction_failed": 3
+      },
+      "metrics": {
+        "coverage": {
+          "numerator": 12.0,
+          "denominator": 15.0,
+          "estimate": 0.8,
+          "ci95_question_cluster": {
+            "lower": 0.4,
+            "upper": 1.0,
+            "undefined_replicates": 0
+          }
+        },
+        "end_to_end_target_match": {
+          "status": "INCOMPLETE",
+          "estimate": null
+        },
+        "valid_target_match": {
+          "status": "INCOMPLETE",
+          "estimate": null
+        },
+        "source_success": {
+          "status": "INCOMPLETE",
+          "estimate": null
+        },
+        "atr": {
+          "status": "INCOMPLETE",
+          "estimate": null
+        },
+        "clean_correct_to_wrong": {
+          "status": "INCOMPLETE",
+          "estimate": null
+        },
+        "clean_em": {
+          "status": "INCOMPLETE",
+          "estimate": null
+        },
+        "poison_em": {
+          "status": "INCOMPLETE",
+          "estimate": null
+        },
+        "clean_f1": {
+          "status": "INCOMPLETE",
+          "estimate": null
+        },
+        "poison_f1": {
+          "status": "INCOMPLETE",
+          "estimate": null
+        },
+        "poison_exposure": {
+          "status": "INCOMPLETE",
+          "estimate": null
+        }
+      }
+    },
+    {
+      "family": "lexical_influential_token",
+      "intensity": 1,
+      "method": "M2",
+      "source": "bm25",
+      "pipeline": "reranker",
+      "assigned": 15,
+      "valid": 12,
+      "pending": 12,
+      "construction_failures": {
+        "target_construction_failed": 3
+      },
+      "metrics": {
+        "coverage": {
+          "numerator": 12.0,
+          "denominator": 15.0,
+          "estimate": 0.8,
+          "ci95_question_cluster": {
+            "lower": 0.4,
+            "upper": 1.0,
+            "undefined_replicates": 0
+          }
+        },
+        "end_to_end_target_match": {
+          "status": "INCOMPLETE",
+          "estimate": null
+        },
+        "valid_target_match": {
+          "status": "INCOMPLETE",
+          "estimate": null
+        },
+        "source_success": {
+          "status": "INCOMPLETE",
+          "estimate": null
+        },
+        "atr": {
+          "status": "INCOMPLETE",
+          "estimate": null
+        },
+        "clean_correct_to_wrong": {
+          "status": "INCOMPLETE",
+          "estimate": null
+        },
+        "clean_em": {
+          "status": "INCOMPLETE",
+          "estimate": null
+        },
+        "poison_em": {
+          "status": "INCOMPLETE",
+          "estimate": null
+        },
+        "clean_f1": {
+          "status": "INCOMPLETE",
+          "estimate": null
+        },
+        "poison_f1": {
+          "status": "INCOMPLETE",
+          "estimate": null
+        },
+        "poison_exposure": {
+          "status": "INCOMPLETE",
+          "estimate": null
+        }
+      }
+    },
+    {
+      "family": "lexical_influential_token",
+      "intensity": 1,
+      "method": "M2",
+      "source": "bm25",
+      "pipeline": "rcd",
+      "assigned": 15,
+      "valid": 12,
+      "pending": 12,
+      "construction_failures": {
+        "target_construction_failed": 3
+      },
+      "metrics": {
+        "coverage": {
+          "numerator": 12.0,
+          "denominator": 15.0,
+          "estimate": 0.8,
+          "ci95_question_cluster": {
+            "lower": 0.4,
+            "upper": 1.0,
+            "undefined_replicates": 0
+          }
+        },
+        "end_to_end_target_match": {
+          "status": "INCOMPLETE",
+          "estimate": null
+        },
+        "valid_target_match": {
+          "status": "INCOMPLETE",
+          "estimate": null
+        },
+        "source_success": {
+          "status": "INCOMPLETE",
+          "estimate": null
+        },
+        "atr": {
+          "status": "INCOMPLETE",
+          "estimate": null
+        },
+        "clean_correct_to_wrong": {
+          "status": "INCOMPLETE",
+          "estimate": null
+        },
+        "clean_em": {
+          "status": "INCOMPLETE",
+          "estimate": null
+        },
+        "poison_em": {
+          "status": "INCOMPLETE",
+          "estimate": null
+        },
+        "clean_f1": {
+          "status": "INCOMPLETE",
+          "estimate": null
+        },
+        "poison_f1": {
+          "status": "INCOMPLETE",
+          "estimate": null
+        },
+        "poison_exposure": {
+          "status": "INCOMPLETE",
+          "estimate": null
+        }
+      }
+    },
+    {
+      "family": "lexical_influential_token",
+      "intensity": 1,
+      "method": "M3",
+      "source": "bm25",
+      "pipeline": "dense",
+      "assigned": 15,
+      "valid": 12,
+      "pending": 0,
+      "construction_failures": {
+        "target_construction_failed": 3
+      },
+      "metrics": {
+        "coverage": {
+          "numerator": 12.0,
+          "denominator": 15.0,
+          "estimate": 0.8,
+          "ci95_question_cluster": {
+            "lower": 0.4,
+            "upper": 1.0,
+            "undefined_replicates": 0
+          }
+        },
+        "end_to_end_target_match": {
+          "numerator": 0.0,
+          "denominator": 15.0,
+          "estimate": 0.0,
+          "ci95_question_cluster": {
+            "lower": 0.0,
+            "upper": 0.0,
+            "undefined_replicates": 0
+          }
+        },
+        "valid_target_match": {
+          "numerator": 0.0,
+          "denominator": 12.0,
+          "estimate": 0.0,
+          "ci95_question_cluster": {
+            "lower": 0.0,
+            "upper": 0.0,
+            "undefined_replicates": 1
+          }
+        },
+        "source_success": {
+          "numerator": 0.0,
+          "denominator": 12.0,
+          "estimate": 0.0,
+          "ci95_question_cluster": {
+            "lower": 0.0,
+            "upper": 0.0,
+            "undefined_replicates": 1
+          }
+        },
+        "atr": {
+          "numerator": 0.0,
+          "denominator": 0.0,
+          "estimate": null,
+          "ci95_question_cluster": {
+            "lower": null,
+            "upper": null,
+            "undefined_replicates": 2000
+          }
+        },
+        "clean_correct_to_wrong": {
+          "numerator": 0.0,
+          "denominator": 6.0,
+          "estimate": 0.0,
+          "ci95_question_cluster": {
+            "lower": 0.0,
+            "upper": 0.0,
+            "undefined_replicates": 140
+          }
+        },
+        "clean_em": {
+          "numerator": 6.0,
+          "denominator": 12.0,
+          "estimate": 0.5,
+          "ci95_question_cluster": {
+            "lower": 0.0,
+            "upper": 1.0,
+            "undefined_replicates": 1
+          }
+        },
+        "poison_em": {
+          "numerator": 6.0,
+          "denominator": 12.0,
+          "estimate": 0.5,
+          "ci95_question_cluster": {
+            "lower": 0.0,
+            "upper": 1.0,
+            "undefined_replicates": 1
+          }
+        },
+        "clean_f1": {
+          "numerator": 6.0,
+          "denominator": 12.0,
+          "estimate": 0.5,
+          "ci95_question_cluster": {
+            "lower": 0.0,
+            "upper": 1.0,
+            "undefined_replicates": 1
+          }
+        },
+        "poison_f1": {
+          "numerator": 7.0,
+          "denominator": 12.0,
+          "estimate": 0.5833333333333334,
+          "ci95_question_cluster": {
+            "lower": 0.16666666666666666,
+            "upper": 1.0,
+            "undefined_replicates": 1
+          }
+        },
+        "poison_exposure": {
+          "numerator": 12.0,
+          "denominator": 12.0,
+          "estimate": 1.0,
+          "ci95_question_cluster": {
+            "lower": 1.0,
+            "upper": 1.0,
+            "undefined_replicates": 1
+          }
+        }
+      }
+    },
+    {
+      "family": "lexical_influential_token",
+      "intensity": 1,
+      "method": "M3",
+      "source": "bm25",
+      "pipeline": "reranker",
+      "assigned": 15,
+      "valid": 12,
+      "pending": 0,
+      "construction_failures": {
+        "target_construction_failed": 3
+      },
+      "metrics": {
+        "coverage": {
+          "numerator": 12.0,
+          "denominator": 15.0,
+          "estimate": 0.8,
+          "ci95_question_cluster": {
+            "lower": 0.4,
+            "upper": 1.0,
+            "undefined_replicates": 0
+          }
+        },
+        "end_to_end_target_match": {
+          "numerator": 0.0,
+          "denominator": 15.0,
+          "estimate": 0.0,
+          "ci95_question_cluster": {
+            "lower": 0.0,
+            "upper": 0.0,
+            "undefined_replicates": 0
+          }
+        },
+        "valid_target_match": {
+          "numerator": 0.0,
+          "denominator": 12.0,
+          "estimate": 0.0,
+          "ci95_question_cluster": {
+            "lower": 0.0,
+            "upper": 0.0,
+            "undefined_replicates": 1
+          }
+        },
+        "source_success": {
+          "numerator": 0.0,
+          "denominator": 12.0,
+          "estimate": 0.0,
+          "ci95_question_cluster": {
+            "lower": 0.0,
+            "upper": 0.0,
+            "undefined_replicates": 1
+          }
+        },
+        "atr": {
+          "numerator": 0.0,
+          "denominator": 0.0,
+          "estimate": null,
+          "ci95_question_cluster": {
+            "lower": null,
+            "upper": null,
+            "undefined_replicates": 2000
+          }
+        },
+        "clean_correct_to_wrong": {
+          "numerator": 0.0,
+          "denominator": 6.0,
+          "estimate": 0.0,
+          "ci95_question_cluster": {
+            "lower": 0.0,
+            "upper": 0.0,
+            "undefined_replicates": 140
+          }
+        },
+        "clean_em": {
+          "numerator": 6.0,
+          "denominator": 12.0,
+          "estimate": 0.5,
+          "ci95_question_cluster": {
+            "lower": 0.0,
+            "upper": 1.0,
+            "undefined_replicates": 1
+          }
+        },
+        "poison_em": {
+          "numerator": 6.0,
+          "denominator": 12.0,
+          "estimate": 0.5,
+          "ci95_question_cluster": {
+            "lower": 0.0,
+            "upper": 1.0,
+            "undefined_replicates": 1
+          }
+        },
+        "clean_f1": {
+          "numerator": 6.0,
+          "denominator": 12.0,
+          "estimate": 0.5,
+          "ci95_question_cluster": {
+            "lower": 0.0,
+            "upper": 1.0,
+            "undefined_replicates": 1
+          }
+        },
+        "poison_f1": {
+          "numerator": 7.0,
+          "denominator": 12.0,
+          "estimate": 0.5833333333333334,
+          "ci95_question_cluster": {
+            "lower": 0.16666666666666666,
+            "upper": 1.0,
+            "undefined_replicates": 1
+          }
+        },
+        "poison_exposure": {
+          "numerator": 12.0,
+          "denominator": 12.0,
+          "estimate": 1.0,
+          "ci95_question_cluster": {
+            "lower": 1.0,
+            "upper": 1.0,
+            "undefined_replicates": 1
+          }
+        }
+      }
+    },
+    {
+      "family": "lexical_influential_token",
+      "intensity": 1,
+      "method": "M3",
+      "source": "bm25",
+      "pipeline": "rcd",
+      "assigned": 15,
+      "valid": 12,
+      "pending": 0,
+      "construction_failures": {
+        "target_construction_failed": 3
+      },
+      "metrics": {
+        "coverage": {
+          "numerator": 12.0,
+          "denominator": 15.0,
+          "estimate": 0.8,
+          "ci95_question_cluster": {
+            "lower": 0.4,
+            "upper": 1.0,
+            "undefined_replicates": 0
+          }
+        },
+        "end_to_end_target_match": {
+          "numerator": 0.0,
+          "denominator": 15.0,
+          "estimate": 0.0,
+          "ci95_question_cluster": {
+            "lower": 0.0,
+            "upper": 0.0,
+            "undefined_replicates": 0
+          }
+        },
+        "valid_target_match": {
+          "numerator": 0.0,
+          "denominator": 12.0,
+          "estimate": 0.0,
+          "ci95_question_cluster": {
+            "lower": 0.0,
+            "upper": 0.0,
+            "undefined_replicates": 1
+          }
+        },
+        "source_success": {
+          "numerator": 0.0,
+          "denominator": 12.0,
+          "estimate": 0.0,
+          "ci95_question_cluster": {
+            "lower": 0.0,
+            "upper": 0.0,
+            "undefined_replicates": 1
+          }
+        },
+        "atr": {
+          "numerator": 0.0,
+          "denominator": 0.0,
+          "estimate": null,
+          "ci95_question_cluster": {
+            "lower": null,
+            "upper": null,
+            "undefined_replicates": 2000
+          }
+        },
+        "clean_correct_to_wrong": {
+          "numerator": 0.0,
+          "denominator": 6.0,
+          "estimate": 0.0,
+          "ci95_question_cluster": {
+            "lower": 0.0,
+            "upper": 0.0,
+            "undefined_replicates": 140
+          }
+        },
+        "clean_em": {
+          "numerator": 6.0,
+          "denominator": 12.0,
+          "estimate": 0.5,
+          "ci95_question_cluster": {
+            "lower": 0.0,
+            "upper": 1.0,
+            "undefined_replicates": 1
+          }
+        },
+        "poison_em": {
+          "numerator": 6.0,
+          "denominator": 12.0,
+          "estimate": 0.5,
+          "ci95_question_cluster": {
+            "lower": 0.0,
+            "upper": 1.0,
+            "undefined_replicates": 1
+          }
+        },
+        "clean_f1": {
+          "numerator": 6.0,
+          "denominator": 12.0,
+          "estimate": 0.5,
+          "ci95_question_cluster": {
+            "lower": 0.0,
+            "upper": 1.0,
+            "undefined_replicates": 1
+          }
+        },
+        "poison_f1": {
+          "numerator": 7.5,
+          "denominator": 12.0,
+          "estimate": 0.625,
+          "ci95_question_cluster": {
+            "lower": 0.2,
+            "upper": 1.0,
+            "undefined_replicates": 1
+          }
+        },
+        "poison_exposure": {
+          "numerator": 12.0,
+          "denominator": 12.0,
+          "estimate": 1.0,
+          "ci95_question_cluster": {
+            "lower": 1.0,
+            "upper": 1.0,
+            "undefined_replicates": 1
+          }
+        }
+      }
+    },
+    {
+      "family": "lexical_influential_token",
+      "intensity": 1,
+      "method": "M1",
+      "source": "dense",
+      "pipeline": "dense",
+      "assigned": 15,
+      "valid": 12,
+      "pending": 12,
+      "construction_failures": {
+        "target_construction_failed": 3
+      },
+      "metrics": {
+        "coverage": {
+          "numerator": 12.0,
+          "denominator": 15.0,
+          "estimate": 0.8,
+          "ci95_question_cluster": {
+            "lower": 0.4,
+            "upper": 1.0,
+            "undefined_replicates": 0
+          }
+        },
+        "end_to_end_target_match": {
+          "status": "INCOMPLETE",
+          "estimate": null
+        },
+        "valid_target_match": {
+          "status": "INCOMPLETE",
+          "estimate": null
+        },
+        "source_success": {
+          "status": "INCOMPLETE",
+          "estimate": null
+        },
+        "atr": {
+          "status": "INCOMPLETE",
+          "estimate": null
+        },
+        "clean_correct_to_wrong": {
+          "status": "INCOMPLETE",
+          "estimate": null
+        },
+        "clean_em": {
+          "status": "INCOMPLETE",
+          "estimate": null
+        },
+        "poison_em": {
+          "status": "INCOMPLETE",
+          "estimate": null
+        },
+        "clean_f1": {
+          "status": "INCOMPLETE",
+          "estimate": null
+        },
+        "poison_f1": {
+          "status": "INCOMPLETE",
+          "estimate": null
+        },
+        "poison_exposure": {
+          "status": "INCOMPLETE",
+          "estimate": null
+        }
+      }
+    },
+    {
+      "family": "lexical_influential_token",
+      "intensity": 1,
+      "method": "M1",
+      "source": "dense",
+      "pipeline": "reranker",
+      "assigned": 15,
+      "valid": 12,
+      "pending": 12,
+      "construction_failures": {
+        "target_construction_failed": 3
+      },
+      "metrics": {
+        "coverage": {
+          "numerator": 12.0,
+          "denominator": 15.0,
+          "estimate": 0.8,
+          "ci95_question_cluster": {
+            "lower": 0.4,
+            "upper": 1.0,
+            "undefined_replicates": 0
+          }
+        },
+        "end_to_end_target_match": {
+          "status": "INCOMPLETE",
+          "estimate": null
+        },
+        "valid_target_match": {
+          "status": "INCOMPLETE",
+          "estimate": null
+        },
+        "source_success": {
+          "status": "INCOMPLETE",
+          "estimate": null
+        },
+        "atr": {
+          "status": "INCOMPLETE",
+          "estimate": null
+        },
+        "clean_correct_to_wrong": {
+          "status": "INCOMPLETE",
+          "estimate": null
+        },
+        "clean_em": {
+          "status": "INCOMPLETE",
+          "estimate": null
+        },
+        "poison_em": {
+          "status": "INCOMPLETE",
+          "estimate": null
+        },
+        "clean_f1": {
+          "status": "INCOMPLETE",
+          "estimate": null
+        },
+        "poison_f1": {
+          "status": "INCOMPLETE",
+          "estimate": null
+        },
+        "poison_exposure": {
+          "status": "INCOMPLETE",
+          "estimate": null
+        }
+      }
+    },
+    {
+      "family": "lexical_influential_token",
+      "intensity": 1,
+      "method": "M1",
+      "source": "dense",
+      "pipeline": "rcd",
+      "assigned": 15,
+      "valid": 12,
+      "pending": 12,
+      "construction_failures": {
+        "target_construction_failed": 3
+      },
+      "metrics": {
+        "coverage": {
+          "numerator": 12.0,
+          "denominator": 15.0,
+          "estimate": 0.8,
+          "ci95_question_cluster": {
+            "lower": 0.4,
+            "upper": 1.0,
+            "undefined_replicates": 0
+          }
+        },
+        "end_to_end_target_match": {
+          "status": "INCOMPLETE",
+          "estimate": null
+        },
+        "valid_target_match": {
+          "status": "INCOMPLETE",
+          "estimate": null
+        },
+        "source_success": {
+          "status": "INCOMPLETE",
+          "estimate": null
+        },
+        "atr": {
+          "status": "INCOMPLETE",
+          "estimate": null
+        },
+        "clean_correct_to_wrong": {
+          "status": "INCOMPLETE",
+          "estimate": null
+        },
+        "clean_em": {
+          "status": "INCOMPLETE",
+          "estimate": null
+        },
+        "poison_em": {
+          "status": "INCOMPLETE",
+          "estimate": null
+        },
+        "clean_f1": {
+          "status": "INCOMPLETE",
+          "estimate": null
+        },
+        "poison_f1": {
+          "status": "INCOMPLETE",
+          "estimate": null
+        },
+        "poison_exposure": {
+          "status": "INCOMPLETE",
+          "estimate": null
+        }
+      }
+    },
+    {
+      "family": "lexical_influential_token",
+      "intensity": 1,
+      "method": "M2",
+      "source": "dense",
+      "pipeline": "dense",
+      "assigned": 15,
+      "valid": 12,
+      "pending": 12,
+      "construction_failures": {
+        "target_construction_failed": 3
+      },
+      "metrics": {
+        "coverage": {
+          "numerator": 12.0,
+          "denominator": 15.0,
+          "estimate": 0.8,
+          "ci95_question_cluster": {
+            "lower": 0.4,
+            "upper": 1.0,
+            "undefined_replicates": 0
+          }
+        },
+        "end_to_end_target_match": {
+          "status": "INCOMPLETE",
+          "estimate": null
+        },
+        "valid_target_match": {
+          "status": "INCOMPLETE",
+          "estimate": null
+        },
+        "source_success": {
+          "status": "INCOMPLETE",
+          "estimate": null
+        },
+        "atr": {
+          "status": "INCOMPLETE",
+          "estimate": null
+        },
+        "clean_correct_to_wrong": {
+          "status": "INCOMPLETE",
+          "estimate": null
+        },
+        "clean_em": {
+          "status": "INCOMPLETE",
+          "estimate": null
+        },
+        "poison_em": {
+          "status": "INCOMPLETE",
+          "estimate": null
+        },
+        "clean_f1": {
+          "status": "INCOMPLETE",
+          "estimate": null
+        },
+        "poison_f1": {
+          "status": "INCOMPLETE",
+          "estimate": null
+        },
+        "poison_exposure": {
+          "status": "INCOMPLETE",
+          "estimate": null
+        }
+      }
+    },
+    {
+      "family": "lexical_influential_token",
+      "intensity": 1,
+      "method": "M2",
+      "source": "dense",
+      "pipeline": "reranker",
+      "assigned": 15,
+      "valid": 12,
+      "pending": 12,
+      "construction_failures": {
+        "target_construction_failed": 3
+      },
+      "metrics": {
+        "coverage": {
+          "numerator": 12.0,
+          "denominator": 15.0,
+          "estimate": 0.8,
+          "ci95_question_cluster": {
+            "lower": 0.4,
+            "upper": 1.0,
+            "undefined_replicates": 0
+          }
+        },
+        "end_to_end_target_match": {
+          "status": "INCOMPLETE",
+          "estimate": null
+        },
+        "valid_target_match": {
+          "status": "INCOMPLETE",
+          "estimate": null
+        },
+        "source_success": {
+          "status": "INCOMPLETE",
+          "estimate": null
+        },
+        "atr": {
+          "status": "INCOMPLETE",
+          "estimate": null
+        },
+        "clean_correct_to_wrong": {
+          "status": "INCOMPLETE",
+          "estimate": null
+        },
+        "clean_em": {
+          "status": "INCOMPLETE",
+          "estimate": null
+        },
+        "poison_em": {
+          "status": "INCOMPLETE",
+          "estimate": null
+        },
+        "clean_f1": {
+          "status": "INCOMPLETE",
+          "estimate": null
+        },
+        "poison_f1": {
+          "status": "INCOMPLETE",
+          "estimate": null
+        },
+        "poison_exposure": {
+          "status": "INCOMPLETE",
+          "estimate": null
+        }
+      }
+    },
+    {
+      "family": "lexical_influential_token",
+      "intensity": 1,
+      "method": "M2",
+      "source": "dense",
+      "pipeline": "rcd",
+      "assigned": 15,
+      "valid": 12,
+      "pending": 12,
+      "construction_failures": {
+        "target_construction_failed": 3
+      },
+      "metrics": {
+        "coverage": {
+          "numerator": 12.0,
+          "denominator": 15.0,
+          "estimate": 0.8,
+          "ci95_question_cluster": {
+            "lower": 0.4,
+            "upper": 1.0,
+            "undefined_replicates": 0
+          }
+        },
+        "end_to_end_target_match": {
+          "status": "INCOMPLETE",
+          "estimate": null
+        },
+        "valid_target_match": {
+          "status": "INCOMPLETE",
+          "estimate": null
+        },
+        "source_success": {
+          "status": "INCOMPLETE",
+          "estimate": null
+        },
+        "atr": {
+          "status": "INCOMPLETE",
+          "estimate": null
+        },
+        "clean_correct_to_wrong": {
+          "status": "INCOMPLETE",
+          "estimate": null
+        },
+        "clean_em": {
+          "status": "INCOMPLETE",
+          "estimate": null
+        },
+        "poison_em": {
+          "status": "INCOMPLETE",
+          "estimate": null
+        },
+        "clean_f1": {
+          "status": "INCOMPLETE",
+          "estimate": null
+        },
+        "poison_f1": {
+          "status": "INCOMPLETE",
+          "estimate": null
+        },
+        "poison_exposure": {
+          "status": "INCOMPLETE",
+          "estimate": null
+        }
+      }
+    },
+    {
+      "family": "lexical_influential_token",
+      "intensity": 1,
+      "method": "M3",
+      "source": "dense",
+      "pipeline": "dense",
+      "assigned": 15,
+      "valid": 12,
+      "pending": 0,
+      "construction_failures": {
+        "target_construction_failed": 3
+      },
+      "metrics": {
+        "coverage": {
+          "numerator": 12.0,
+          "denominator": 15.0,
+          "estimate": 0.8,
+          "ci95_question_cluster": {
+            "lower": 0.4,
+            "upper": 1.0,
+            "undefined_replicates": 0
+          }
+        },
+        "end_to_end_target_match": {
+          "numerator": 0.0,
+          "denominator": 15.0,
+          "estimate": 0.0,
+          "ci95_question_cluster": {
+            "lower": 0.0,
+            "upper": 0.0,
+            "undefined_replicates": 0
+          }
+        },
+        "valid_target_match": {
+          "numerator": 0.0,
+          "denominator": 12.0,
+          "estimate": 0.0,
+          "ci95_question_cluster": {
+            "lower": 0.0,
+            "upper": 0.0,
+            "undefined_replicates": 1
+          }
+        },
+        "source_success": {
+          "numerator": 0.0,
+          "denominator": 12.0,
+          "estimate": 0.0,
+          "ci95_question_cluster": {
+            "lower": 0.0,
+            "upper": 0.0,
+            "undefined_replicates": 1
+          }
+        },
+        "atr": {
+          "numerator": 0.0,
+          "denominator": 0.0,
+          "estimate": null,
+          "ci95_question_cluster": {
+            "lower": null,
+            "upper": null,
+            "undefined_replicates": 2000
+          }
+        },
+        "clean_correct_to_wrong": {
+          "numerator": 0.0,
+          "denominator": 6.0,
+          "estimate": 0.0,
+          "ci95_question_cluster": {
+            "lower": 0.0,
+            "upper": 0.0,
+            "undefined_replicates": 140
+          }
+        },
+        "clean_em": {
+          "numerator": 6.0,
+          "denominator": 12.0,
+          "estimate": 0.5,
+          "ci95_question_cluster": {
+            "lower": 0.0,
+            "upper": 1.0,
+            "undefined_replicates": 1
+          }
+        },
+        "poison_em": {
+          "numerator": 6.0,
+          "denominator": 12.0,
+          "estimate": 0.5,
+          "ci95_question_cluster": {
+            "lower": 0.0,
+            "upper": 1.0,
+            "undefined_replicates": 1
+          }
+        },
+        "clean_f1": {
+          "numerator": 6.0,
+          "denominator": 12.0,
+          "estimate": 0.5,
+          "ci95_question_cluster": {
+            "lower": 0.0,
+            "upper": 1.0,
+            "undefined_replicates": 1
+          }
+        },
+        "poison_f1": {
+          "numerator": 7.0,
+          "denominator": 12.0,
+          "estimate": 0.5833333333333334,
+          "ci95_question_cluster": {
+            "lower": 0.16666666666666666,
+            "upper": 1.0,
+            "undefined_replicates": 1
+          }
+        },
+        "poison_exposure": {
+          "numerator": 12.0,
+          "denominator": 12.0,
+          "estimate": 1.0,
+          "ci95_question_cluster": {
+            "lower": 1.0,
+            "upper": 1.0,
+            "undefined_replicates": 1
+          }
+        }
+      }
+    },
+    {
+      "family": "lexical_influential_token",
+      "intensity": 1,
+      "method": "M3",
+      "source": "dense",
+      "pipeline": "reranker",
+      "assigned": 15,
+      "valid": 12,
+      "pending": 0,
+      "construction_failures": {
+        "target_construction_failed": 3
+      },
+      "metrics": {
+        "coverage": {
+          "numerator": 12.0,
+          "denominator": 15.0,
+          "estimate": 0.8,
+          "ci95_question_cluster": {
+            "lower": 0.4,
+            "upper": 1.0,
+            "undefined_replicates": 0
+          }
+        },
+        "end_to_end_target_match": {
+          "numerator": 0.0,
+          "denominator": 15.0,
+          "estimate": 0.0,
+          "ci95_question_cluster": {
+            "lower": 0.0,
+            "upper": 0.0,
+            "undefined_replicates": 0
+          }
+        },
+        "valid_target_match": {
+          "numerator": 0.0,
+          "denominator": 12.0,
+          "estimate": 0.0,
+          "ci95_question_cluster": {
+            "lower": 0.0,
+            "upper": 0.0,
+            "undefined_replicates": 1
+          }
+        },
+        "source_success": {
+          "numerator": 0.0,
+          "denominator": 12.0,
+          "estimate": 0.0,
+          "ci95_question_cluster": {
+            "lower": 0.0,
+            "upper": 0.0,
+            "undefined_replicates": 1
+          }
+        },
+        "atr": {
+          "numerator": 0.0,
+          "denominator": 0.0,
+          "estimate": null,
+          "ci95_question_cluster": {
+            "lower": null,
+            "upper": null,
+            "undefined_replicates": 2000
+          }
+        },
+        "clean_correct_to_wrong": {
+          "numerator": 0.0,
+          "denominator": 6.0,
+          "estimate": 0.0,
+          "ci95_question_cluster": {
+            "lower": 0.0,
+            "upper": 0.0,
+            "undefined_replicates": 140
+          }
+        },
+        "clean_em": {
+          "numerator": 6.0,
+          "denominator": 12.0,
+          "estimate": 0.5,
+          "ci95_question_cluster": {
+            "lower": 0.0,
+            "upper": 1.0,
+            "undefined_replicates": 1
+          }
+        },
+        "poison_em": {
+          "numerator": 6.0,
+          "denominator": 12.0,
+          "estimate": 0.5,
+          "ci95_question_cluster": {
+            "lower": 0.0,
+            "upper": 1.0,
+            "undefined_replicates": 1
+          }
+        },
+        "clean_f1": {
+          "numerator": 6.0,
+          "denominator": 12.0,
+          "estimate": 0.5,
+          "ci95_question_cluster": {
+            "lower": 0.0,
+            "upper": 1.0,
+            "undefined_replicates": 1
+          }
+        },
+        "poison_f1": {
+          "numerator": 7.0,
+          "denominator": 12.0,
+          "estimate": 0.5833333333333334,
+          "ci95_question_cluster": {
+            "lower": 0.16666666666666666,
+            "upper": 1.0,
+            "undefined_replicates": 1
+          }
+        },
+        "poison_exposure": {
+          "numerator": 12.0,
+          "denominator": 12.0,
+          "estimate": 1.0,
+          "ci95_question_cluster": {
+            "lower": 1.0,
+            "upper": 1.0,
+            "undefined_replicates": 1
+          }
+        }
+      }
+    },
+    {
+      "family": "lexical_influential_token",
+      "intensity": 1,
+      "method": "M3",
+      "source": "dense",
+      "pipeline": "rcd",
+      "assigned": 15,
+      "valid": 12,
+      "pending": 0,
+      "construction_failures": {
+        "target_construction_failed": 3
+      },
+      "metrics": {
+        "coverage": {
+          "numerator": 12.0,
+          "denominator": 15.0,
+          "estimate": 0.8,
+          "ci95_question_cluster": {
+            "lower": 0.4,
+            "upper": 1.0,
+            "undefined_replicates": 0
+          }
+        },
+        "end_to_end_target_match": {
+          "numerator": 0.0,
+          "denominator": 15.0,
+          "estimate": 0.0,
+          "ci95_question_cluster": {
+            "lower": 0.0,
+            "upper": 0.0,
+            "undefined_replicates": 0
+          }
+        },
+        "valid_target_match": {
+          "numerator": 0.0,
+          "denominator": 12.0,
+          "estimate": 0.0,
+          "ci95_question_cluster": {
+            "lower": 0.0,
+            "upper": 0.0,
+            "undefined_replicates": 1
+          }
+        },
+        "source_success": {
+          "numerator": 0.0,
+          "denominator": 12.0,
+          "estimate": 0.0,
+          "ci95_question_cluster": {
+            "lower": 0.0,
+            "upper": 0.0,
+            "undefined_replicates": 1
+          }
+        },
+        "atr": {
+          "numerator": 0.0,
+          "denominator": 0.0,
+          "estimate": null,
+          "ci95_question_cluster": {
+            "lower": null,
+            "upper": null,
+            "undefined_replicates": 2000
+          }
+        },
+        "clean_correct_to_wrong": {
+          "numerator": 0.0,
+          "denominator": 6.0,
+          "estimate": 0.0,
+          "ci95_question_cluster": {
+            "lower": 0.0,
+            "upper": 0.0,
+            "undefined_replicates": 140
+          }
+        },
+        "clean_em": {
+          "numerator": 6.0,
+          "denominator": 12.0,
+          "estimate": 0.5,
+          "ci95_question_cluster": {
+            "lower": 0.0,
+            "upper": 1.0,
+            "undefined_replicates": 1
+          }
+        },
+        "poison_em": {
+          "numerator": 6.0,
+          "denominator": 12.0,
+          "estimate": 0.5,
+          "ci95_question_cluster": {
+            "lower": 0.0,
+            "upper": 1.0,
+            "undefined_replicates": 1
+          }
+        },
+        "clean_f1": {
+          "numerator": 6.0,
+          "denominator": 12.0,
+          "estimate": 0.5,
+          "ci95_question_cluster": {
+            "lower": 0.0,
+            "upper": 1.0,
+            "undefined_replicates": 1
+          }
+        },
+        "poison_f1": {
+          "numerator": 7.5,
+          "denominator": 12.0,
+          "estimate": 0.625,
+          "ci95_question_cluster": {
+            "lower": 0.2,
+            "upper": 1.0,
+            "undefined_replicates": 1
+          }
+        },
+        "poison_exposure": {
+          "numerator": 12.0,
+          "denominator": 12.0,
+          "estimate": 1.0,
+          "ci95_question_cluster": {
+            "lower": 1.0,
+            "upper": 1.0,
+            "undefined_replicates": 1
+          }
+        }
+      }
+    },
+    {
+      "family": "lexical_influential_token",
+      "intensity": 3,
+      "method": "M1",
+      "source": "bm25",
+      "pipeline": "dense",
+      "assigned": 15,
+      "valid": 12,
+      "pending": 12,
+      "construction_failures": {
+        "target_construction_failed": 3
+      },
+      "metrics": {
+        "coverage": {
+          "numerator": 12.0,
+          "denominator": 15.0,
+          "estimate": 0.8,
+          "ci95_question_cluster": {
+            "lower": 0.4,
+            "upper": 1.0,
+            "undefined_replicates": 0
+          }
+        },
+        "end_to_end_target_match": {
+          "status": "INCOMPLETE",
+          "estimate": null
+        },
+        "valid_target_match": {
+          "status": "INCOMPLETE",
+          "estimate": null
+        },
+        "source_success": {
+          "status": "INCOMPLETE",
+          "estimate": null
+        },
+        "atr": {
+          "status": "INCOMPLETE",
+          "estimate": null
+        },
+        "clean_correct_to_wrong": {
+          "status": "INCOMPLETE",
+          "estimate": null
+        },
+        "clean_em": {
+          "status": "INCOMPLETE",
+          "estimate": null
+        },
+        "poison_em": {
+          "status": "INCOMPLETE",
+          "estimate": null
+        },
+        "clean_f1": {
+          "status": "INCOMPLETE",
+          "estimate": null
+        },
+        "poison_f1": {
+          "status": "INCOMPLETE",
+          "estimate": null
+        },
+        "poison_exposure": {
+          "status": "INCOMPLETE",
+          "estimate": null
+        }
+      }
+    },
+    {
+      "family": "lexical_influential_token",
+      "intensity": 3,
+      "method": "M1",
+      "source": "bm25",
+      "pipeline": "reranker",
+      "assigned": 15,
+      "valid": 12,
+      "pending": 12,
+      "construction_failures": {
+        "target_construction_failed": 3
+      },
+      "metrics": {
+        "coverage": {
+          "numerator": 12.0,
+          "denominator": 15.0,
+          "estimate": 0.8,
+          "ci95_question_cluster": {
+            "lower": 0.4,
+            "upper": 1.0,
+            "undefined_replicates": 0
+          }
+        },
+        "end_to_end_target_match": {
+          "status": "INCOMPLETE",
+          "estimate": null
+        },
+        "valid_target_match": {
+          "status": "INCOMPLETE",
+          "estimate": null
+        },
+        "source_success": {
+          "status": "INCOMPLETE",
+          "estimate": null
+        },
+        "atr": {
+          "status": "INCOMPLETE",
+          "estimate": null
+        },
+        "clean_correct_to_wrong": {
+          "status": "INCOMPLETE",
+          "estimate": null
+        },
+        "clean_em": {
+          "status": "INCOMPLETE",
+          "estimate": null
+        },
+        "poison_em": {
+          "status": "INCOMPLETE",
+          "estimate": null
+        },
+        "clean_f1": {
+          "status": "INCOMPLETE",
+          "estimate": null
+        },
+        "poison_f1": {
+          "status": "INCOMPLETE",
+          "estimate": null
+        },
+        "poison_exposure": {
+          "status": "INCOMPLETE",
+          "estimate": null
+        }
+      }
+    },
+    {
+      "family": "lexical_influential_token",
+      "intensity": 3,
+      "method": "M1",
+      "source": "bm25",
+      "pipeline": "rcd",
+      "assigned": 15,
+      "valid": 12,
+      "pending": 12,
+      "construction_failures": {
+        "target_construction_failed": 3
+      },
+      "metrics": {
+        "coverage": {
+          "numerator": 12.0,
+          "denominator": 15.0,
+          "estimate": 0.8,
+          "ci95_question_cluster": {
+            "lower": 0.4,
+            "upper": 1.0,
+            "undefined_replicates": 0
+          }
+        },
+        "end_to_end_target_match": {
+          "status": "INCOMPLETE",
+          "estimate": null
+        },
+        "valid_target_match": {
+          "status": "INCOMPLETE",
+          "estimate": null
+        },
+        "source_success": {
+          "status": "INCOMPLETE",
+          "estimate": null
+        },
+        "atr": {
+          "status": "INCOMPLETE",
+          "estimate": null
+        },
+        "clean_correct_to_wrong": {
+          "status": "INCOMPLETE",
+          "estimate": null
+        },
+        "clean_em": {
+          "status": "INCOMPLETE",
+          "estimate": null
+        },
+        "poison_em": {
+          "status": "INCOMPLETE",
+          "estimate": null
+        },
+        "clean_f1": {
+          "status": "INCOMPLETE",
+          "estimate": null
+        },
+        "poison_f1": {
+          "status": "INCOMPLETE",
+          "estimate": null
+        },
+        "poison_exposure": {
+          "status": "INCOMPLETE",
+          "estimate": null
+        }
+      }
+    },
+    {
+      "family": "lexical_influential_token",
+      "intensity": 3,
+      "method": "M2",
+      "source": "bm25",
+      "pipeline": "dense",
+      "assigned": 15,
+      "valid": 12,
+      "pending": 12,
+      "construction_failures": {
+        "target_construction_failed": 3
+      },
+      "metrics": {
+        "coverage": {
+          "numerator": 12.0,
+          "denominator": 15.0,
+          "estimate": 0.8,
+          "ci95_question_cluster": {
+            "lower": 0.4,
+            "upper": 1.0,
+            "undefined_replicates": 0
+          }
+        },
+        "end_to_end_target_match": {
+          "status": "INCOMPLETE",
+          "estimate": null
+        },
+        "valid_target_match": {
+          "status": "INCOMPLETE",
+          "estimate": null
+        },
+        "source_success": {
+          "status": "INCOMPLETE",
+          "estimate": null
+        },
+        "atr": {
+          "status": "INCOMPLETE",
+          "estimate": null
+        },
+        "clean_correct_to_wrong": {
+          "status": "INCOMPLETE",
+          "estimate": null
+        },
+        "clean_em": {
+          "status": "INCOMPLETE",
+          "estimate": null
+        },
+        "poison_em": {
+          "status": "INCOMPLETE",
+          "estimate": null
+        },
+        "clean_f1": {
+          "status": "INCOMPLETE",
+          "estimate": null
+        },
+        "poison_f1": {
+          "status": "INCOMPLETE",
+          "estimate": null
+        },
+        "poison_exposure": {
+          "status": "INCOMPLETE",
+          "estimate": null
+        }
+      }
+    },
+    {
+      "family": "lexical_influential_token",
+      "intensity": 3,
+      "method": "M2",
+      "source": "bm25",
+      "pipeline": "reranker",
+      "assigned": 15,
+      "valid": 12,
+      "pending": 12,
+      "construction_failures": {
+        "target_construction_failed": 3
+      },
+      "metrics": {
+        "coverage": {
+          "numerator": 12.0,
+          "denominator": 15.0,
+          "estimate": 0.8,
+          "ci95_question_cluster": {
+            "lower": 0.4,
+            "upper": 1.0,
+            "undefined_replicates": 0
+          }
+        },
+        "end_to_end_target_match": {
+          "status": "INCOMPLETE",
+          "estimate": null
+        },
+        "valid_target_match": {
+          "status": "INCOMPLETE",
+          "estimate": null
+        },
+        "source_success": {
+          "status": "INCOMPLETE",
+          "estimate": null
+        },
+        "atr": {
+          "status": "INCOMPLETE",
+          "estimate": null
+        },
+        "clean_correct_to_wrong": {
+          "status": "INCOMPLETE",
+          "estimate": null
+        },
+        "clean_em": {
+          "status": "INCOMPLETE",
+          "estimate": null
+        },
+        "poison_em": {
+          "status": "INCOMPLETE",
+          "estimate": null
+        },
+        "clean_f1": {
+          "status": "INCOMPLETE",
+          "estimate": null
+        },
+        "poison_f1": {
+          "status": "INCOMPLETE",
+          "estimate": null
+        },
+        "poison_exposure": {
+          "status": "INCOMPLETE",
+          "estimate": null
+        }
+      }
+    },
+    {
+      "family": "lexical_influential_token",
+      "intensity": 3,
+      "method": "M2",
+      "source": "bm25",
+      "pipeline": "rcd",
+      "assigned": 15,
+      "valid": 12,
+      "pending": 12,
+      "construction_failures": {
+        "target_construction_failed": 3
+      },
+      "metrics": {
+        "coverage": {
+          "numerator": 12.0,
+          "denominator": 15.0,
+          "estimate": 0.8,
+          "ci95_question_cluster": {
+            "lower": 0.4,
+            "upper": 1.0,
+            "undefined_replicates": 0
+          }
+        },
+        "end_to_end_target_match": {
+          "status": "INCOMPLETE",
+          "estimate": null
+        },
+        "valid_target_match": {
+          "status": "INCOMPLETE",
+          "estimate": null
+        },
+        "source_success": {
+          "status": "INCOMPLETE",
+          "estimate": null
+        },
+        "atr": {
+          "status": "INCOMPLETE",
+          "estimate": null
+        },
+        "clean_correct_to_wrong": {
+          "status": "INCOMPLETE",
+          "estimate": null
+        },
+        "clean_em": {
+          "status": "INCOMPLETE",
+          "estimate": null
+        },
+        "poison_em": {
+          "status": "INCOMPLETE",
+          "estimate": null
+        },
+        "clean_f1": {
+          "status": "INCOMPLETE",
+          "estimate": null
+        },
+        "poison_f1": {
+          "status": "INCOMPLETE",
+          "estimate": null
+        },
+        "poison_exposure": {
+          "status": "INCOMPLETE",
+          "estimate": null
+        }
+      }
+    },
+    {
+      "family": "lexical_influential_token",
+      "intensity": 3,
+      "method": "M3",
+      "source": "bm25",
+      "pipeline": "dense",
+      "assigned": 15,
+      "valid": 12,
+      "pending": 0,
+      "construction_failures": {
+        "target_construction_failed": 3
+      },
+      "metrics": {
+        "coverage": {
+          "numerator": 12.0,
+          "denominator": 15.0,
+          "estimate": 0.8,
+          "ci95_question_cluster": {
+            "lower": 0.4,
+            "upper": 1.0,
+            "undefined_replicates": 0
+          }
+        },
+        "end_to_end_target_match": {
+          "numerator": 3.0,
+          "denominator": 15.0,
+          "estimate": 0.2,
+          "ci95_question_cluster": {
+            "lower": 0.0,
+            "upper": 0.4666666666666667,
+            "undefined_replicates": 0
+          }
+        },
+        "valid_target_match": {
+          "numerator": 3.0,
+          "denominator": 12.0,
+          "estimate": 0.25,
+          "ci95_question_cluster": {
+            "lower": 0.0,
+            "upper": 0.5344444444444434,
+            "undefined_replicates": 1
+          }
+        },
+        "source_success": {
+          "numerator": 12.0,
+          "denominator": 12.0,
+          "estimate": 1.0,
+          "ci95_question_cluster": {
+            "lower": 1.0,
+            "upper": 1.0,
+            "undefined_replicates": 1
+          }
+        },
+        "atr": {
+          "numerator": 3.0,
+          "denominator": 12.0,
+          "estimate": 0.25,
+          "ci95_question_cluster": {
+            "lower": 0.0,
+            "upper": 0.5344444444444434,
+            "undefined_replicates": 1
+          }
+        },
+        "clean_correct_to_wrong": {
+          "numerator": 1.0,
+          "denominator": 6.0,
+          "estimate": 0.16666666666666666,
+          "ci95_question_cluster": {
+            "lower": 0.0,
+            "upper": 0.3333333333333333,
+            "undefined_replicates": 140
+          }
+        },
+        "clean_em": {
+          "numerator": 6.0,
+          "denominator": 12.0,
+          "estimate": 0.5,
+          "ci95_question_cluster": {
+            "lower": 0.0,
+            "upper": 1.0,
+            "undefined_replicates": 1
+          }
+        },
+        "poison_em": {
+          "numerator": 5.0,
+          "denominator": 12.0,
+          "estimate": 0.4166666666666667,
+          "ci95_question_cluster": {
+            "lower": 0.0,
+            "upper": 0.8888888888888888,
+            "undefined_replicates": 1
+          }
+        },
+        "clean_f1": {
+          "numerator": 6.0,
+          "denominator": 12.0,
+          "estimate": 0.5,
+          "ci95_question_cluster": {
+            "lower": 0.0,
+            "upper": 1.0,
+            "undefined_replicates": 1
+          }
+        },
+        "poison_f1": {
+          "numerator": 7.5,
+          "denominator": 12.0,
+          "estimate": 0.625,
+          "ci95_question_cluster": {
+            "lower": 0.4166666666666667,
+            "upper": 0.8888888888888888,
+            "undefined_replicates": 1
+          }
+        },
+        "poison_exposure": {
+          "numerator": 12.0,
+          "denominator": 12.0,
+          "estimate": 1.0,
+          "ci95_question_cluster": {
+            "lower": 1.0,
+            "upper": 1.0,
+            "undefined_replicates": 1
+          }
+        }
+      }
+    },
+    {
+      "family": "lexical_influential_token",
+      "intensity": 3,
+      "method": "M3",
+      "source": "bm25",
+      "pipeline": "reranker",
+      "assigned": 15,
+      "valid": 12,
+      "pending": 0,
+      "construction_failures": {
+        "target_construction_failed": 3
+      },
+      "metrics": {
+        "coverage": {
+          "numerator": 12.0,
+          "denominator": 15.0,
+          "estimate": 0.8,
+          "ci95_question_cluster": {
+            "lower": 0.4,
+            "upper": 1.0,
+            "undefined_replicates": 0
+          }
+        },
+        "end_to_end_target_match": {
+          "numerator": 10.0,
+          "denominator": 15.0,
+          "estimate": 0.6666666666666666,
+          "ci95_question_cluster": {
+            "lower": 0.26666666666666666,
+            "upper": 1.0,
+            "undefined_replicates": 0
+          }
+        },
+        "valid_target_match": {
+          "numerator": 10.0,
+          "denominator": 12.0,
+          "estimate": 0.8333333333333334,
+          "ci95_question_cluster": {
+            "lower": 0.5,
+            "upper": 1.0,
+            "undefined_replicates": 1
+          }
+        },
+        "source_success": {
+          "numerator": 12.0,
+          "denominator": 12.0,
+          "estimate": 1.0,
+          "ci95_question_cluster": {
+            "lower": 1.0,
+            "upper": 1.0,
+            "undefined_replicates": 1
+          }
+        },
+        "atr": {
+          "numerator": 10.0,
+          "denominator": 12.0,
+          "estimate": 0.8333333333333334,
+          "ci95_question_cluster": {
+            "lower": 0.5,
+            "upper": 1.0,
+            "undefined_replicates": 1
+          }
+        },
+        "clean_correct_to_wrong": {
+          "numerator": 4.0,
+          "denominator": 6.0,
+          "estimate": 0.6666666666666666,
+          "ci95_question_cluster": {
+            "lower": 0.3333333333333333,
+            "upper": 1.0,
+            "undefined_replicates": 140
+          }
+        },
+        "clean_em": {
+          "numerator": 6.0,
+          "denominator": 12.0,
+          "estimate": 0.5,
+          "ci95_question_cluster": {
+            "lower": 0.0,
+            "upper": 1.0,
+            "undefined_replicates": 1
+          }
+        },
+        "poison_em": {
+          "numerator": 2.0,
+          "denominator": 12.0,
+          "estimate": 0.16666666666666666,
+          "ci95_question_cluster": {
+            "lower": 0.0,
+            "upper": 0.5,
+            "undefined_replicates": 1
+          }
+        },
+        "clean_f1": {
+          "numerator": 6.0,
+          "denominator": 12.0,
+          "estimate": 0.5,
+          "ci95_question_cluster": {
+            "lower": 0.0,
+            "upper": 1.0,
+            "undefined_replicates": 1
+          }
+        },
+        "poison_f1": {
+          "numerator": 3.2857142857142856,
+          "denominator": 12.0,
+          "estimate": 0.2738095238095238,
+          "ci95_question_cluster": {
+            "lower": 0.03174603174603175,
+            "upper": 0.5555555555555556,
+            "undefined_replicates": 1
+          }
+        },
+        "poison_exposure": {
+          "numerator": 12.0,
+          "denominator": 12.0,
+          "estimate": 1.0,
+          "ci95_question_cluster": {
+            "lower": 1.0,
+            "upper": 1.0,
+            "undefined_replicates": 1
+          }
+        }
+      }
+    },
+    {
+      "family": "lexical_influential_token",
+      "intensity": 3,
+      "method": "M3",
+      "source": "bm25",
+      "pipeline": "rcd",
+      "assigned": 15,
+      "valid": 12,
+      "pending": 0,
+      "construction_failures": {
+        "target_construction_failed": 3
+      },
+      "metrics": {
+        "coverage": {
+          "numerator": 12.0,
+          "denominator": 15.0,
+          "estimate": 0.8,
+          "ci95_question_cluster": {
+            "lower": 0.4,
+            "upper": 1.0,
+            "undefined_replicates": 0
+          }
+        },
+        "end_to_end_target_match": {
+          "numerator": 6.0,
+          "denominator": 15.0,
+          "estimate": 0.4,
+          "ci95_question_cluster": {
+            "lower": 0.06666666666666667,
+            "upper": 0.7333333333333333,
+            "undefined_replicates": 0
+          }
+        },
+        "valid_target_match": {
+          "numerator": 6.0,
+          "denominator": 12.0,
+          "estimate": 0.5,
+          "ci95_question_cluster": {
+            "lower": 0.1111111111111111,
+            "upper": 0.8666666666666667,
+            "undefined_replicates": 1
+          }
+        },
+        "source_success": {
+          "numerator": 12.0,
+          "denominator": 12.0,
+          "estimate": 1.0,
+          "ci95_question_cluster": {
+            "lower": 1.0,
+            "upper": 1.0,
+            "undefined_replicates": 1
+          }
+        },
+        "atr": {
+          "numerator": 6.0,
+          "denominator": 12.0,
+          "estimate": 0.5,
+          "ci95_question_cluster": {
+            "lower": 0.1111111111111111,
+            "upper": 0.8666666666666667,
+            "undefined_replicates": 1
+          }
+        },
+        "clean_correct_to_wrong": {
+          "numerator": 1.0,
+          "denominator": 6.0,
+          "estimate": 0.16666666666666666,
+          "ci95_question_cluster": {
+            "lower": 0.0,
+            "upper": 0.3333333333333333,
+            "undefined_replicates": 140
+          }
+        },
+        "clean_em": {
+          "numerator": 6.0,
+          "denominator": 12.0,
+          "estimate": 0.5,
+          "ci95_question_cluster": {
+            "lower": 0.0,
+            "upper": 1.0,
+            "undefined_replicates": 1
+          }
+        },
+        "poison_em": {
+          "numerator": 5.0,
+          "denominator": 12.0,
+          "estimate": 0.4166666666666667,
+          "ci95_question_cluster": {
+            "lower": 0.0,
+            "upper": 0.8888888888888888,
+            "undefined_replicates": 1
+          }
+        },
+        "clean_f1": {
+          "numerator": 6.0,
+          "denominator": 12.0,
+          "estimate": 0.5,
+          "ci95_question_cluster": {
+            "lower": 0.0,
+            "upper": 1.0,
+            "undefined_replicates": 1
+          }
+        },
+        "poison_f1": {
+          "numerator": 6.333333333333333,
+          "denominator": 12.0,
+          "estimate": 0.5277777777777778,
+          "ci95_question_cluster": {
+            "lower": 0.18518518518518517,
+            "upper": 0.8888888888888888,
+            "undefined_replicates": 1
+          }
+        },
+        "poison_exposure": {
+          "numerator": 12.0,
+          "denominator": 12.0,
+          "estimate": 1.0,
+          "ci95_question_cluster": {
+            "lower": 1.0,
+            "upper": 1.0,
+            "undefined_replicates": 1
+          }
+        }
+      }
+    },
+    {
+      "family": "lexical_influential_token",
+      "intensity": 3,
+      "method": "M1",
+      "source": "dense",
+      "pipeline": "dense",
+      "assigned": 15,
+      "valid": 12,
+      "pending": 12,
+      "construction_failures": {
+        "target_construction_failed": 3
+      },
+      "metrics": {
+        "coverage": {
+          "numerator": 12.0,
+          "denominator": 15.0,
+          "estimate": 0.8,
+          "ci95_question_cluster": {
+            "lower": 0.4,
+            "upper": 1.0,
+            "undefined_replicates": 0
+          }
+        },
+        "end_to_end_target_match": {
+          "status": "INCOMPLETE",
+          "estimate": null
+        },
+        "valid_target_match": {
+          "status": "INCOMPLETE",
+          "estimate": null
+        },
+        "source_success": {
+          "status": "INCOMPLETE",
+          "estimate": null
+        },
+        "atr": {
+          "status": "INCOMPLETE",
+          "estimate": null
+        },
+        "clean_correct_to_wrong": {
+          "status": "INCOMPLETE",
+          "estimate": null
+        },
+        "clean_em": {
+          "status": "INCOMPLETE",
+          "estimate": null
+        },
+        "poison_em": {
+          "status": "INCOMPLETE",
+          "estimate": null
+        },
+        "clean_f1": {
+          "status": "INCOMPLETE",
+          "estimate": null
+        },
+        "poison_f1": {
+          "status": "INCOMPLETE",
+          "estimate": null
+        },
+        "poison_exposure": {
+          "status": "INCOMPLETE",
+          "estimate": null
+        }
+      }
+    },
+    {
+      "family": "lexical_influential_token",
+      "intensity": 3,
+      "method": "M1",
+      "source": "dense",
+      "pipeline": "reranker",
+      "assigned": 15,
+      "valid": 12,
+      "pending": 12,
+      "construction_failures": {
+        "target_construction_failed": 3
+      },
+      "metrics": {
+        "coverage": {
+          "numerator": 12.0,
+          "denominator": 15.0,
+          "estimate": 0.8,
+          "ci95_question_cluster": {
+            "lower": 0.4,
+            "upper": 1.0,
+            "undefined_replicates": 0
+          }
+        },
+        "end_to_end_target_match": {
+          "status": "INCOMPLETE",
+          "estimate": null
+        },
+        "valid_target_match": {
+          "status": "INCOMPLETE",
+          "estimate": null
+        },
+        "source_success": {
+          "status": "INCOMPLETE",
+          "estimate": null
+        },
+        "atr": {
+          "status": "INCOMPLETE",
+          "estimate": null
+        },
+        "clean_correct_to_wrong": {
+          "status": "INCOMPLETE",
+          "estimate": null
+        },
+        "clean_em": {
+          "status": "INCOMPLETE",
+          "estimate": null
+        },
+        "poison_em": {
+          "status": "INCOMPLETE",
+          "estimate": null
+        },
+        "clean_f1": {
+          "status": "INCOMPLETE",
+          "estimate": null
+        },
+        "poison_f1": {
+          "status": "INCOMPLETE",
+          "estimate": null
+        },
+        "poison_exposure": {
+          "status": "INCOMPLETE",
+          "estimate": null
+        }
+      }
+    },
+    {
+      "family": "lexical_influential_token",
+      "intensity": 3,
+      "method": "M1",
+      "source": "dense",
+      "pipeline": "rcd",
+      "assigned": 15,
+      "valid": 12,
+      "pending": 12,
+      "construction_failures": {
+        "target_construction_failed": 3
+      },
+      "metrics": {
+        "coverage": {
+          "numerator": 12.0,
+          "denominator": 15.0,
+          "estimate": 0.8,
+          "ci95_question_cluster": {
+            "lower": 0.4,
+            "upper": 1.0,
+            "undefined_replicates": 0
+          }
+        },
+        "end_to_end_target_match": {
+          "status": "INCOMPLETE",
+          "estimate": null
+        },
+        "valid_target_match": {
+          "status": "INCOMPLETE",
+          "estimate": null
+        },
+        "source_success": {
+          "status": "INCOMPLETE",
+          "estimate": null
+        },
+        "atr": {
+          "status": "INCOMPLETE",
+          "estimate": null
+        },
+        "clean_correct_to_wrong": {
+          "status": "INCOMPLETE",
+          "estimate": null
+        },
+        "clean_em": {
+          "status": "INCOMPLETE",
+          "estimate": null
+        },
+        "poison_em": {
+          "status": "INCOMPLETE",
+          "estimate": null
+        },
+        "clean_f1": {
+          "status": "INCOMPLETE",
+          "estimate": null
+        },
+        "poison_f1": {
+          "status": "INCOMPLETE",
+          "estimate": null
+        },
+        "poison_exposure": {
+          "status": "INCOMPLETE",
+          "estimate": null
+        }
+      }
+    },
+    {
+      "family": "lexical_influential_token",
+      "intensity": 3,
+      "method": "M2",
+      "source": "dense",
+      "pipeline": "dense",
+      "assigned": 15,
+      "valid": 12,
+      "pending": 12,
+      "construction_failures": {
+        "target_construction_failed": 3
+      },
+      "metrics": {
+        "coverage": {
+          "numerator": 12.0,
+          "denominator": 15.0,
+          "estimate": 0.8,
+          "ci95_question_cluster": {
+            "lower": 0.4,
+            "upper": 1.0,
+            "undefined_replicates": 0
+          }
+        },
+        "end_to_end_target_match": {
+          "status": "INCOMPLETE",
+          "estimate": null
+        },
+        "valid_target_match": {
+          "status": "INCOMPLETE",
+          "estimate": null
+        },
+        "source_success": {
+          "status": "INCOMPLETE",
+          "estimate": null
+        },
+        "atr": {
+          "status": "INCOMPLETE",
+          "estimate": null
+        },
+        "clean_correct_to_wrong": {
+          "status": "INCOMPLETE",
+          "estimate": null
+        },
+        "clean_em": {
+          "status": "INCOMPLETE",
+          "estimate": null
+        },
+        "poison_em": {
+          "status": "INCOMPLETE",
+          "estimate": null
+        },
+        "clean_f1": {
+          "status": "INCOMPLETE",
+          "estimate": null
+        },
+        "poison_f1": {
+          "status": "INCOMPLETE",
+          "estimate": null
+        },
+        "poison_exposure": {
+          "status": "INCOMPLETE",
+          "estimate": null
+        }
+      }
+    },
+    {
+      "family": "lexical_influential_token",
+      "intensity": 3,
+      "method": "M2",
+      "source": "dense",
+      "pipeline": "reranker",
+      "assigned": 15,
+      "valid": 12,
+      "pending": 12,
+      "construction_failures": {
+        "target_construction_failed": 3
+      },
+      "metrics": {
+        "coverage": {
+          "numerator": 12.0,
+          "denominator": 15.0,
+          "estimate": 0.8,
+          "ci95_question_cluster": {
+            "lower": 0.4,
+            "upper": 1.0,
+            "undefined_replicates": 0
+          }
+        },
+        "end_to_end_target_match": {
+          "status": "INCOMPLETE",
+          "estimate": null
+        },
+        "valid_target_match": {
+          "status": "INCOMPLETE",
+          "estimate": null
+        },
+        "source_success": {
+          "status": "INCOMPLETE",
+          "estimate": null
+        },
+        "atr": {
+          "status": "INCOMPLETE",
+          "estimate": null
+        },
+        "clean_correct_to_wrong": {
+          "status": "INCOMPLETE",
+          "estimate": null
+        },
+        "clean_em": {
+          "status": "INCOMPLETE",
+          "estimate": null
+        },
+        "poison_em": {
+          "status": "INCOMPLETE",
+          "estimate": null
+        },
+        "clean_f1": {
+          "status": "INCOMPLETE",
+          "estimate": null
+        },
+        "poison_f1": {
+          "status": "INCOMPLETE",
+          "estimate": null
+        },
+        "poison_exposure": {
+          "status": "INCOMPLETE",
+          "estimate": null
+        }
+      }
+    },
+    {
+      "family": "lexical_influential_token",
+      "intensity": 3,
+      "method": "M2",
+      "source": "dense",
+      "pipeline": "rcd",
+      "assigned": 15,
+      "valid": 12,
+      "pending": 12,
+      "construction_failures": {
+        "target_construction_failed": 3
+      },
+      "metrics": {
+        "coverage": {
+          "numerator": 12.0,
+          "denominator": 15.0,
+          "estimate": 0.8,
+          "ci95_question_cluster": {
+            "lower": 0.4,
+            "upper": 1.0,
+            "undefined_replicates": 0
+          }
+        },
+        "end_to_end_target_match": {
+          "status": "INCOMPLETE",
+          "estimate": null
+        },
+        "valid_target_match": {
+          "status": "INCOMPLETE",
+          "estimate": null
+        },
+        "source_success": {
+          "status": "INCOMPLETE",
+          "estimate": null
+        },
+        "atr": {
+          "status": "INCOMPLETE",
+          "estimate": null
+        },
+        "clean_correct_to_wrong": {
+          "status": "INCOMPLETE",
+          "estimate": null
+        },
+        "clean_em": {
+          "status": "INCOMPLETE",
+          "estimate": null
+        },
+        "poison_em": {
+          "status": "INCOMPLETE",
+          "estimate": null
+        },
+        "clean_f1": {
+          "status": "INCOMPLETE",
+          "estimate": null
+        },
+        "poison_f1": {
+          "status": "INCOMPLETE",
+          "estimate": null
+        },
+        "poison_exposure": {
+          "status": "INCOMPLETE",
+          "estimate": null
+        }
+      }
+    },
+    {
+      "family": "lexical_influential_token",
+      "intensity": 3,
+      "method": "M3",
+      "source": "dense",
+      "pipeline": "dense",
+      "assigned": 15,
+      "valid": 12,
+      "pending": 0,
+      "construction_failures": {
+        "target_construction_failed": 3
+      },
+      "metrics": {
+        "coverage": {
+          "numerator": 12.0,
+          "denominator": 15.0,
+          "estimate": 0.8,
+          "ci95_question_cluster": {
+            "lower": 0.4,
+            "upper": 1.0,
+            "undefined_replicates": 0
+          }
+        },
+        "end_to_end_target_match": {
+          "numerator": 5.0,
+          "denominator": 15.0,
+          "estimate": 0.3333333333333333,
+          "ci95_question_cluster": {
+            "lower": 0.06666666666666667,
+            "upper": 0.6666666666666666,
+            "undefined_replicates": 0
+          }
+        },
+        "valid_target_match": {
+          "numerator": 5.0,
+          "denominator": 12.0,
+          "estimate": 0.4166666666666667,
+          "ci95_question_cluster": {
+            "lower": 0.08333333333333333,
+            "upper": 0.7777777777777778,
+            "undefined_replicates": 1
+          }
+        },
+        "source_success": {
+          "numerator": 5.0,
+          "denominator": 12.0,
+          "estimate": 0.4166666666666667,
+          "ci95_question_cluster": {
+            "lower": 0.08333333333333333,
+            "upper": 0.7777777777777778,
+            "undefined_replicates": 1
+          }
+        },
+        "atr": {
+          "numerator": 5.0,
+          "denominator": 5.0,
+          "estimate": 1.0,
+          "ci95_question_cluster": {
+            "lower": 1.0,
+            "upper": 1.0,
+            "undefined_replicates": 22
+          }
+        },
+        "clean_correct_to_wrong": {
+          "numerator": 2.0,
+          "denominator": 6.0,
+          "estimate": 0.3333333333333333,
+          "ci95_question_cluster": {
+            "lower": 0.3333333333333333,
+            "upper": 0.3333333333333333,
+            "undefined_replicates": 140
+          }
+        },
+        "clean_em": {
+          "numerator": 6.0,
+          "denominator": 12.0,
+          "estimate": 0.5,
+          "ci95_question_cluster": {
+            "lower": 0.0,
+            "upper": 1.0,
+            "undefined_replicates": 1
+          }
+        },
+        "poison_em": {
+          "numerator": 4.0,
+          "denominator": 12.0,
+          "estimate": 0.3333333333333333,
+          "ci95_question_cluster": {
+            "lower": 0.0,
+            "upper": 0.6666666666666666,
+            "undefined_replicates": 1
+          }
+        },
+        "clean_f1": {
+          "numerator": 6.0,
+          "denominator": 12.0,
+          "estimate": 0.5,
+          "ci95_question_cluster": {
+            "lower": 0.0,
+            "upper": 1.0,
+            "undefined_replicates": 1
+          }
+        },
+        "poison_f1": {
+          "numerator": 7.0,
+          "denominator": 12.0,
+          "estimate": 0.5833333333333334,
+          "ci95_question_cluster": {
+            "lower": 0.5,
+            "upper": 0.6666666666666666,
+            "undefined_replicates": 1
+          }
+        },
+        "poison_exposure": {
+          "numerator": 12.0,
+          "denominator": 12.0,
+          "estimate": 1.0,
+          "ci95_question_cluster": {
+            "lower": 1.0,
+            "upper": 1.0,
+            "undefined_replicates": 1
+          }
+        }
+      }
+    },
+    {
+      "family": "lexical_influential_token",
+      "intensity": 3,
+      "method": "M3",
+      "source": "dense",
+      "pipeline": "reranker",
+      "assigned": 15,
+      "valid": 12,
+      "pending": 0,
+      "construction_failures": {
+        "target_construction_failed": 3
+      },
+      "metrics": {
+        "coverage": {
+          "numerator": 12.0,
+          "denominator": 15.0,
+          "estimate": 0.8,
+          "ci95_question_cluster": {
+            "lower": 0.4,
+            "upper": 1.0,
+            "undefined_replicates": 0
+          }
+        },
+        "end_to_end_target_match": {
+          "numerator": 10.0,
+          "denominator": 15.0,
+          "estimate": 0.6666666666666666,
+          "ci95_question_cluster": {
+            "lower": 0.26666666666666666,
+            "upper": 1.0,
+            "undefined_replicates": 0
+          }
+        },
+        "valid_target_match": {
+          "numerator": 10.0,
+          "denominator": 12.0,
+          "estimate": 0.8333333333333334,
+          "ci95_question_cluster": {
+            "lower": 0.5,
+            "upper": 1.0,
+            "undefined_replicates": 1
+          }
+        },
+        "source_success": {
+          "numerator": 5.0,
+          "denominator": 12.0,
+          "estimate": 0.4166666666666667,
+          "ci95_question_cluster": {
+            "lower": 0.08333333333333333,
+            "upper": 0.7777777777777778,
+            "undefined_replicates": 1
+          }
+        },
+        "atr": {
+          "numerator": 5.0,
+          "denominator": 5.0,
+          "estimate": 1.0,
+          "ci95_question_cluster": {
+            "lower": 1.0,
+            "upper": 1.0,
+            "undefined_replicates": 22
+          }
+        },
+        "clean_correct_to_wrong": {
+          "numerator": 4.0,
+          "denominator": 6.0,
+          "estimate": 0.6666666666666666,
+          "ci95_question_cluster": {
+            "lower": 0.3333333333333333,
+            "upper": 1.0,
+            "undefined_replicates": 140
+          }
+        },
+        "clean_em": {
+          "numerator": 6.0,
+          "denominator": 12.0,
+          "estimate": 0.5,
+          "ci95_question_cluster": {
+            "lower": 0.0,
+            "upper": 1.0,
+            "undefined_replicates": 1
+          }
+        },
+        "poison_em": {
+          "numerator": 2.0,
+          "denominator": 12.0,
+          "estimate": 0.16666666666666666,
+          "ci95_question_cluster": {
+            "lower": 0.0,
+            "upper": 0.5,
+            "undefined_replicates": 1
+          }
+        },
+        "clean_f1": {
+          "numerator": 6.0,
+          "denominator": 12.0,
+          "estimate": 0.5,
+          "ci95_question_cluster": {
+            "lower": 0.0,
+            "upper": 1.0,
+            "undefined_replicates": 1
+          }
+        },
+        "poison_f1": {
+          "numerator": 3.7857142857142856,
+          "denominator": 12.0,
+          "estimate": 0.31547619047619047,
+          "ci95_question_cluster": {
+            "lower": 0.03174603174603175,
+            "upper": 0.6111111111111112,
+            "undefined_replicates": 1
+          }
+        },
+        "poison_exposure": {
+          "numerator": 12.0,
+          "denominator": 12.0,
+          "estimate": 1.0,
+          "ci95_question_cluster": {
+            "lower": 1.0,
+            "upper": 1.0,
+            "undefined_replicates": 1
+          }
+        }
+      }
+    },
+    {
+      "family": "lexical_influential_token",
+      "intensity": 3,
+      "method": "M3",
+      "source": "dense",
+      "pipeline": "rcd",
+      "assigned": 15,
+      "valid": 12,
+      "pending": 0,
+      "construction_failures": {
+        "target_construction_failed": 3
+      },
+      "metrics": {
+        "coverage": {
+          "numerator": 12.0,
+          "denominator": 15.0,
+          "estimate": 0.8,
+          "ci95_question_cluster": {
+            "lower": 0.4,
+            "upper": 1.0,
+            "undefined_replicates": 0
+          }
+        },
+        "end_to_end_target_match": {
+          "numerator": 6.0,
+          "denominator": 15.0,
+          "estimate": 0.4,
+          "ci95_question_cluster": {
+            "lower": 0.06666666666666667,
+            "upper": 0.7333333333333333,
+            "undefined_replicates": 0
+          }
+        },
+        "valid_target_match": {
+          "numerator": 6.0,
+          "denominator": 12.0,
+          "estimate": 0.5,
+          "ci95_question_cluster": {
+            "lower": 0.1111111111111111,
+            "upper": 0.8666666666666667,
+            "undefined_replicates": 1
+          }
+        },
+        "source_success": {
+          "numerator": 5.0,
+          "denominator": 12.0,
+          "estimate": 0.4166666666666667,
+          "ci95_question_cluster": {
+            "lower": 0.08333333333333333,
+            "upper": 0.7777777777777778,
+            "undefined_replicates": 1
+          }
+        },
+        "atr": {
+          "numerator": 4.0,
+          "denominator": 5.0,
+          "estimate": 0.8,
+          "ci95_question_cluster": {
+            "lower": 0.0,
+            "upper": 1.0,
+            "undefined_replicates": 22
+          }
+        },
+        "clean_correct_to_wrong": {
+          "numerator": 1.0,
+          "denominator": 6.0,
+          "estimate": 0.16666666666666666,
+          "ci95_question_cluster": {
+            "lower": 0.0,
+            "upper": 0.3333333333333333,
+            "undefined_replicates": 140
+          }
+        },
+        "clean_em": {
+          "numerator": 6.0,
+          "denominator": 12.0,
+          "estimate": 0.5,
+          "ci95_question_cluster": {
+            "lower": 0.0,
+            "upper": 1.0,
+            "undefined_replicates": 1
+          }
+        },
+        "poison_em": {
+          "numerator": 5.0,
+          "denominator": 12.0,
+          "estimate": 0.4166666666666667,
+          "ci95_question_cluster": {
+            "lower": 0.0,
+            "upper": 0.8888888888888888,
+            "undefined_replicates": 1
+          }
+        },
+        "clean_f1": {
+          "numerator": 6.0,
+          "denominator": 12.0,
+          "estimate": 0.5,
+          "ci95_question_cluster": {
+            "lower": 0.0,
+            "upper": 1.0,
+            "undefined_replicates": 1
+          }
+        },
+        "poison_f1": {
+          "numerator": 6.833333333333333,
+          "denominator": 12.0,
+          "estimate": 0.5694444444444444,
+          "ci95_question_cluster": {
+            "lower": 0.24074074074074073,
+            "upper": 0.8888888888888888,
+            "undefined_replicates": 1
+          }
+        },
+        "poison_exposure": {
+          "numerator": 12.0,
+          "denominator": 12.0,
+          "estimate": 1.0,
+          "ci95_question_cluster": {
+            "lower": 1.0,
+            "upper": 1.0,
+            "undefined_replicates": 1
+          }
+        }
+      }
+    },
+    {
+      "family": "semantic_fluent_false_evidence",
+      "intensity": 1,
+      "method": "M1",
+      "source": "bm25",
+      "pipeline": "dense",
+      "assigned": 15,
+      "valid": 4,
+      "pending": 3,
+      "construction_failures": {
+        "semantic_construction_failed": 8,
+        "target_construction_failed": 3
+      },
+      "metrics": {
+        "coverage": {
+          "numerator": 4.0,
+          "denominator": 15.0,
+          "estimate": 0.26666666666666666,
+          "ci95_question_cluster": {
+            "lower": 0.0,
+            "upper": 0.6666666666666666,
+            "undefined_replicates": 0
+          }
+        },
+        "end_to_end_target_match": {
+          "status": "INCOMPLETE",
+          "estimate": null
+        },
+        "valid_target_match": {
+          "status": "INCOMPLETE",
+          "estimate": null
+        },
+        "source_success": {
+          "status": "INCOMPLETE",
+          "estimate": null
+        },
+        "atr": {
+          "status": "INCOMPLETE",
+          "estimate": null
+        },
+        "clean_correct_to_wrong": {
+          "status": "INCOMPLETE",
+          "estimate": null
+        },
+        "clean_em": {
+          "status": "INCOMPLETE",
+          "estimate": null
+        },
+        "poison_em": {
+          "status": "INCOMPLETE",
+          "estimate": null
+        },
+        "clean_f1": {
+          "status": "INCOMPLETE",
+          "estimate": null
+        },
+        "poison_f1": {
+          "status": "INCOMPLETE",
+          "estimate": null
+        },
+        "poison_exposure": {
+          "status": "INCOMPLETE",
+          "estimate": null
+        }
+      }
+    },
+    {
+      "family": "semantic_fluent_false_evidence",
+      "intensity": 1,
+      "method": "M1",
+      "source": "bm25",
+      "pipeline": "reranker",
+      "assigned": 15,
+      "valid": 4,
+      "pending": 3,
+      "construction_failures": {
+        "semantic_construction_failed": 8,
+        "target_construction_failed": 3
+      },
+      "metrics": {
+        "coverage": {
+          "numerator": 4.0,
+          "denominator": 15.0,
+          "estimate": 0.26666666666666666,
+          "ci95_question_cluster": {
+            "lower": 0.0,
+            "upper": 0.6666666666666666,
+            "undefined_replicates": 0
+          }
+        },
+        "end_to_end_target_match": {
+          "status": "INCOMPLETE",
+          "estimate": null
+        },
+        "valid_target_match": {
+          "status": "INCOMPLETE",
+          "estimate": null
+        },
+        "source_success": {
+          "status": "INCOMPLETE",
+          "estimate": null
+        },
+        "atr": {
+          "status": "INCOMPLETE",
+          "estimate": null
+        },
+        "clean_correct_to_wrong": {
+          "status": "INCOMPLETE",
+          "estimate": null
+        },
+        "clean_em": {
+          "status": "INCOMPLETE",
+          "estimate": null
+        },
+        "poison_em": {
+          "status": "INCOMPLETE",
+          "estimate": null
+        },
+        "clean_f1": {
+          "status": "INCOMPLETE",
+          "estimate": null
+        },
+        "poison_f1": {
+          "status": "INCOMPLETE",
+          "estimate": null
+        },
+        "poison_exposure": {
+          "status": "INCOMPLETE",
+          "estimate": null
+        }
+      }
+    },
+    {
+      "family": "semantic_fluent_false_evidence",
+      "intensity": 1,
+      "method": "M1",
+      "source": "bm25",
+      "pipeline": "rcd",
+      "assigned": 15,
+      "valid": 4,
+      "pending": 3,
+      "construction_failures": {
+        "semantic_construction_failed": 8,
+        "target_construction_failed": 3
+      },
+      "metrics": {
+        "coverage": {
+          "numerator": 4.0,
+          "denominator": 15.0,
+          "estimate": 0.26666666666666666,
+          "ci95_question_cluster": {
+            "lower": 0.0,
+            "upper": 0.6666666666666666,
+            "undefined_replicates": 0
+          }
+        },
+        "end_to_end_target_match": {
+          "status": "INCOMPLETE",
+          "estimate": null
+        },
+        "valid_target_match": {
+          "status": "INCOMPLETE",
+          "estimate": null
+        },
+        "source_success": {
+          "status": "INCOMPLETE",
+          "estimate": null
+        },
+        "atr": {
+          "status": "INCOMPLETE",
+          "estimate": null
+        },
+        "clean_correct_to_wrong": {
+          "status": "INCOMPLETE",
+          "estimate": null
+        },
+        "clean_em": {
+          "status": "INCOMPLETE",
+          "estimate": null
+        },
+        "poison_em": {
+          "status": "INCOMPLETE",
+          "estimate": null
+        },
+        "clean_f1": {
+          "status": "INCOMPLETE",
+          "estimate": null
+        },
+        "poison_f1": {
+          "status": "INCOMPLETE",
+          "estimate": null
+        },
+        "poison_exposure": {
+          "status": "INCOMPLETE",
+          "estimate": null
+        }
+      }
+    },
+    {
+      "family": "semantic_fluent_false_evidence",
+      "intensity": 1,
+      "method": "M2",
+      "source": "bm25",
+      "pipeline": "dense",
+      "assigned": 15,
+      "valid": 4,
+      "pending": 4,
+      "construction_failures": {
+        "semantic_construction_failed": 8,
+        "target_construction_failed": 3
+      },
+      "metrics": {
+        "coverage": {
+          "numerator": 4.0,
+          "denominator": 15.0,
+          "estimate": 0.26666666666666666,
+          "ci95_question_cluster": {
+            "lower": 0.0,
+            "upper": 0.6666666666666666,
+            "undefined_replicates": 0
+          }
+        },
+        "end_to_end_target_match": {
+          "status": "INCOMPLETE",
+          "estimate": null
+        },
+        "valid_target_match": {
+          "status": "INCOMPLETE",
+          "estimate": null
+        },
+        "source_success": {
+          "status": "INCOMPLETE",
+          "estimate": null
+        },
+        "atr": {
+          "status": "INCOMPLETE",
+          "estimate": null
+        },
+        "clean_correct_to_wrong": {
+          "status": "INCOMPLETE",
+          "estimate": null
+        },
+        "clean_em": {
+          "status": "INCOMPLETE",
+          "estimate": null
+        },
+        "poison_em": {
+          "status": "INCOMPLETE",
+          "estimate": null
+        },
+        "clean_f1": {
+          "status": "INCOMPLETE",
+          "estimate": null
+        },
+        "poison_f1": {
+          "status": "INCOMPLETE",
+          "estimate": null
+        },
+        "poison_exposure": {
+          "status": "INCOMPLETE",
+          "estimate": null
+        }
+      }
+    },
+    {
+      "family": "semantic_fluent_false_evidence",
+      "intensity": 1,
+      "method": "M2",
+      "source": "bm25",
+      "pipeline": "reranker",
+      "assigned": 15,
+      "valid": 4,
+      "pending": 4,
+      "construction_failures": {
+        "semantic_construction_failed": 8,
+        "target_construction_failed": 3
+      },
+      "metrics": {
+        "coverage": {
+          "numerator": 4.0,
+          "denominator": 15.0,
+          "estimate": 0.26666666666666666,
+          "ci95_question_cluster": {
+            "lower": 0.0,
+            "upper": 0.6666666666666666,
+            "undefined_replicates": 0
+          }
+        },
+        "end_to_end_target_match": {
+          "status": "INCOMPLETE",
+          "estimate": null
+        },
+        "valid_target_match": {
+          "status": "INCOMPLETE",
+          "estimate": null
+        },
+        "source_success": {
+          "status": "INCOMPLETE",
+          "estimate": null
+        },
+        "atr": {
+          "status": "INCOMPLETE",
+          "estimate": null
+        },
+        "clean_correct_to_wrong": {
+          "status": "INCOMPLETE",
+          "estimate": null
+        },
+        "clean_em": {
+          "status": "INCOMPLETE",
+          "estimate": null
+        },
+        "poison_em": {
+          "status": "INCOMPLETE",
+          "estimate": null
+        },
+        "clean_f1": {
+          "status": "INCOMPLETE",
+          "estimate": null
+        },
+        "poison_f1": {
+          "status": "INCOMPLETE",
+          "estimate": null
+        },
+        "poison_exposure": {
+          "status": "INCOMPLETE",
+          "estimate": null
+        }
+      }
+    },
+    {
+      "family": "semantic_fluent_false_evidence",
+      "intensity": 1,
+      "method": "M2",
+      "source": "bm25",
+      "pipeline": "rcd",
+      "assigned": 15,
+      "valid": 4,
+      "pending": 4,
+      "construction_failures": {
+        "semantic_construction_failed": 8,
+        "target_construction_failed": 3
+      },
+      "metrics": {
+        "coverage": {
+          "numerator": 4.0,
+          "denominator": 15.0,
+          "estimate": 0.26666666666666666,
+          "ci95_question_cluster": {
+            "lower": 0.0,
+            "upper": 0.6666666666666666,
+            "undefined_replicates": 0
+          }
+        },
+        "end_to_end_target_match": {
+          "status": "INCOMPLETE",
+          "estimate": null
+        },
+        "valid_target_match": {
+          "status": "INCOMPLETE",
+          "estimate": null
+        },
+        "source_success": {
+          "status": "INCOMPLETE",
+          "estimate": null
+        },
+        "atr": {
+          "status": "INCOMPLETE",
+          "estimate": null
+        },
+        "clean_correct_to_wrong": {
+          "status": "INCOMPLETE",
+          "estimate": null
+        },
+        "clean_em": {
+          "status": "INCOMPLETE",
+          "estimate": null
+        },
+        "poison_em": {
+          "status": "INCOMPLETE",
+          "estimate": null
+        },
+        "clean_f1": {
+          "status": "INCOMPLETE",
+          "estimate": null
+        },
+        "poison_f1": {
+          "status": "INCOMPLETE",
+          "estimate": null
+        },
+        "poison_exposure": {
+          "status": "INCOMPLETE",
+          "estimate": null
+        }
+      }
+    },
+    {
+      "family": "semantic_fluent_false_evidence",
+      "intensity": 1,
+      "method": "M3",
+      "source": "bm25",
+      "pipeline": "dense",
+      "assigned": 15,
+      "valid": 4,
+      "pending": 0,
+      "construction_failures": {
+        "semantic_construction_failed": 8,
+        "target_construction_failed": 3
+      },
+      "metrics": {
+        "coverage": {
+          "numerator": 4.0,
+          "denominator": 15.0,
+          "estimate": 0.26666666666666666,
+          "ci95_question_cluster": {
+            "lower": 0.0,
+            "upper": 0.6666666666666666,
+            "undefined_replicates": 0
+          }
+        },
+        "end_to_end_target_match": {
+          "numerator": 0.0,
+          "denominator": 15.0,
+          "estimate": 0.0,
+          "ci95_question_cluster": {
+            "lower": 0.0,
+            "upper": 0.0,
+            "undefined_replicates": 0
+          }
+        },
+        "valid_target_match": {
+          "numerator": 0.0,
+          "denominator": 4.0,
+          "estimate": 0.0,
+          "ci95_question_cluster": {
+            "lower": 0.0,
+            "upper": 0.0,
+            "undefined_replicates": 161
+          }
+        },
+        "source_success": {
+          "numerator": 0.0,
+          "denominator": 4.0,
+          "estimate": 0.0,
+          "ci95_question_cluster": {
+            "lower": 0.0,
+            "upper": 0.0,
+            "undefined_replicates": 161
+          }
+        },
+        "atr": {
+          "numerator": 0.0,
+          "denominator": 0.0,
+          "estimate": null,
+          "ci95_question_cluster": {
+            "lower": null,
+            "upper": null,
+            "undefined_replicates": 2000
+          }
+        },
+        "clean_correct_to_wrong": {
+          "numerator": 0.0,
+          "denominator": 1.0,
+          "estimate": 0.0,
+          "ci95_question_cluster": {
+            "lower": 0.0,
+            "upper": 0.0,
+            "undefined_replicates": 631
+          }
+        },
+        "clean_em": {
+          "numerator": 1.0,
+          "denominator": 4.0,
+          "estimate": 0.25,
+          "ci95_question_cluster": {
+            "lower": 0.0,
+            "upper": 1.0,
+            "undefined_replicates": 161
+          }
+        },
+        "poison_em": {
+          "numerator": 1.0,
+          "denominator": 4.0,
+          "estimate": 0.25,
+          "ci95_question_cluster": {
+            "lower": 0.0,
+            "upper": 1.0,
+            "undefined_replicates": 161
+          }
+        },
+        "clean_f1": {
+          "numerator": 1.0,
+          "denominator": 4.0,
+          "estimate": 0.25,
+          "ci95_question_cluster": {
+            "lower": 0.0,
+            "upper": 1.0,
+            "undefined_replicates": 161
+          }
+        },
+        "poison_f1": {
+          "numerator": 2.5,
+          "denominator": 4.0,
+          "estimate": 0.625,
+          "ci95_question_cluster": {
+            "lower": 0.5,
+            "upper": 1.0,
+            "undefined_replicates": 161
+          }
+        },
+        "poison_exposure": {
+          "numerator": 4.0,
+          "denominator": 4.0,
+          "estimate": 1.0,
+          "ci95_question_cluster": {
+            "lower": 1.0,
+            "upper": 1.0,
+            "undefined_replicates": 161
+          }
+        }
+      }
+    },
+    {
+      "family": "semantic_fluent_false_evidence",
+      "intensity": 1,
+      "method": "M3",
+      "source": "bm25",
+      "pipeline": "reranker",
+      "assigned": 15,
+      "valid": 4,
+      "pending": 0,
+      "construction_failures": {
+        "semantic_construction_failed": 8,
+        "target_construction_failed": 3
+      },
+      "metrics": {
+        "coverage": {
+          "numerator": 4.0,
+          "denominator": 15.0,
+          "estimate": 0.26666666666666666,
+          "ci95_question_cluster": {
+            "lower": 0.0,
+            "upper": 0.6666666666666666,
+            "undefined_replicates": 0
+          }
+        },
+        "end_to_end_target_match": {
+          "numerator": 0.0,
+          "denominator": 15.0,
+          "estimate": 0.0,
+          "ci95_question_cluster": {
+            "lower": 0.0,
+            "upper": 0.0,
+            "undefined_replicates": 0
+          }
+        },
+        "valid_target_match": {
+          "numerator": 0.0,
+          "denominator": 4.0,
+          "estimate": 0.0,
+          "ci95_question_cluster": {
+            "lower": 0.0,
+            "upper": 0.0,
+            "undefined_replicates": 161
+          }
+        },
+        "source_success": {
+          "numerator": 0.0,
+          "denominator": 4.0,
+          "estimate": 0.0,
+          "ci95_question_cluster": {
+            "lower": 0.0,
+            "upper": 0.0,
+            "undefined_replicates": 161
+          }
+        },
+        "atr": {
+          "numerator": 0.0,
+          "denominator": 0.0,
+          "estimate": null,
+          "ci95_question_cluster": {
+            "lower": null,
+            "upper": null,
+            "undefined_replicates": 2000
+          }
+        },
+        "clean_correct_to_wrong": {
+          "numerator": 0.0,
+          "denominator": 1.0,
+          "estimate": 0.0,
+          "ci95_question_cluster": {
+            "lower": 0.0,
+            "upper": 0.0,
+            "undefined_replicates": 631
+          }
+        },
+        "clean_em": {
+          "numerator": 1.0,
+          "denominator": 4.0,
+          "estimate": 0.25,
+          "ci95_question_cluster": {
+            "lower": 0.0,
+            "upper": 1.0,
+            "undefined_replicates": 161
+          }
+        },
+        "poison_em": {
+          "numerator": 1.0,
+          "denominator": 4.0,
+          "estimate": 0.25,
+          "ci95_question_cluster": {
+            "lower": 0.0,
+            "upper": 1.0,
+            "undefined_replicates": 161
+          }
+        },
+        "clean_f1": {
+          "numerator": 1.0,
+          "denominator": 4.0,
+          "estimate": 0.25,
+          "ci95_question_cluster": {
+            "lower": 0.0,
+            "upper": 1.0,
+            "undefined_replicates": 161
+          }
+        },
+        "poison_f1": {
+          "numerator": 2.5,
+          "denominator": 4.0,
+          "estimate": 0.625,
+          "ci95_question_cluster": {
+            "lower": 0.5,
+            "upper": 1.0,
+            "undefined_replicates": 161
+          }
+        },
+        "poison_exposure": {
+          "numerator": 4.0,
+          "denominator": 4.0,
+          "estimate": 1.0,
+          "ci95_question_cluster": {
+            "lower": 1.0,
+            "upper": 1.0,
+            "undefined_replicates": 161
+          }
+        }
+      }
+    },
+    {
+      "family": "semantic_fluent_false_evidence",
+      "intensity": 1,
+      "method": "M3",
+      "source": "bm25",
+      "pipeline": "rcd",
+      "assigned": 15,
+      "valid": 4,
+      "pending": 0,
+      "construction_failures": {
+        "semantic_construction_failed": 8,
+        "target_construction_failed": 3
+      },
+      "metrics": {
+        "coverage": {
+          "numerator": 4.0,
+          "denominator": 15.0,
+          "estimate": 0.26666666666666666,
+          "ci95_question_cluster": {
+            "lower": 0.0,
+            "upper": 0.6666666666666666,
+            "undefined_replicates": 0
+          }
+        },
+        "end_to_end_target_match": {
+          "numerator": 0.0,
+          "denominator": 15.0,
+          "estimate": 0.0,
+          "ci95_question_cluster": {
+            "lower": 0.0,
+            "upper": 0.0,
+            "undefined_replicates": 0
+          }
+        },
+        "valid_target_match": {
+          "numerator": 0.0,
+          "denominator": 4.0,
+          "estimate": 0.0,
+          "ci95_question_cluster": {
+            "lower": 0.0,
+            "upper": 0.0,
+            "undefined_replicates": 161
+          }
+        },
+        "source_success": {
+          "numerator": 0.0,
+          "denominator": 4.0,
+          "estimate": 0.0,
+          "ci95_question_cluster": {
+            "lower": 0.0,
+            "upper": 0.0,
+            "undefined_replicates": 161
+          }
+        },
+        "atr": {
+          "numerator": 0.0,
+          "denominator": 0.0,
+          "estimate": null,
+          "ci95_question_cluster": {
+            "lower": null,
+            "upper": null,
+            "undefined_replicates": 2000
+          }
+        },
+        "clean_correct_to_wrong": {
+          "numerator": 0.0,
+          "denominator": 1.0,
+          "estimate": 0.0,
+          "ci95_question_cluster": {
+            "lower": 0.0,
+            "upper": 0.0,
+            "undefined_replicates": 631
+          }
+        },
+        "clean_em": {
+          "numerator": 1.0,
+          "denominator": 4.0,
+          "estimate": 0.25,
+          "ci95_question_cluster": {
+            "lower": 0.0,
+            "upper": 1.0,
+            "undefined_replicates": 161
+          }
+        },
+        "poison_em": {
+          "numerator": 1.0,
+          "denominator": 4.0,
+          "estimate": 0.25,
+          "ci95_question_cluster": {
+            "lower": 0.0,
+            "upper": 1.0,
+            "undefined_replicates": 161
+          }
+        },
+        "clean_f1": {
+          "numerator": 1.0,
+          "denominator": 4.0,
+          "estimate": 0.25,
+          "ci95_question_cluster": {
+            "lower": 0.0,
+            "upper": 1.0,
+            "undefined_replicates": 161
+          }
+        },
+        "poison_f1": {
+          "numerator": 2.5,
+          "denominator": 4.0,
+          "estimate": 0.625,
+          "ci95_question_cluster": {
+            "lower": 0.5,
+            "upper": 1.0,
+            "undefined_replicates": 161
+          }
+        },
+        "poison_exposure": {
+          "numerator": 4.0,
+          "denominator": 4.0,
+          "estimate": 1.0,
+          "ci95_question_cluster": {
+            "lower": 1.0,
+            "upper": 1.0,
+            "undefined_replicates": 161
+          }
+        }
+      }
+    },
+    {
+      "family": "semantic_fluent_false_evidence",
+      "intensity": 1,
+      "method": "M1",
+      "source": "dense",
+      "pipeline": "dense",
+      "assigned": 15,
+      "valid": 4,
+      "pending": 4,
+      "construction_failures": {
+        "semantic_construction_failed": 8,
+        "target_construction_failed": 3
+      },
+      "metrics": {
+        "coverage": {
+          "numerator": 4.0,
+          "denominator": 15.0,
+          "estimate": 0.26666666666666666,
+          "ci95_question_cluster": {
+            "lower": 0.0,
+            "upper": 0.6666666666666666,
+            "undefined_replicates": 0
+          }
+        },
+        "end_to_end_target_match": {
+          "status": "INCOMPLETE",
+          "estimate": null
+        },
+        "valid_target_match": {
+          "status": "INCOMPLETE",
+          "estimate": null
+        },
+        "source_success": {
+          "status": "INCOMPLETE",
+          "estimate": null
+        },
+        "atr": {
+          "status": "INCOMPLETE",
+          "estimate": null
+        },
+        "clean_correct_to_wrong": {
+          "status": "INCOMPLETE",
+          "estimate": null
+        },
+        "clean_em": {
+          "status": "INCOMPLETE",
+          "estimate": null
+        },
+        "poison_em": {
+          "status": "INCOMPLETE",
+          "estimate": null
+        },
+        "clean_f1": {
+          "status": "INCOMPLETE",
+          "estimate": null
+        },
+        "poison_f1": {
+          "status": "INCOMPLETE",
+          "estimate": null
+        },
+        "poison_exposure": {
+          "status": "INCOMPLETE",
+          "estimate": null
+        }
+      }
+    },
+    {
+      "family": "semantic_fluent_false_evidence",
+      "intensity": 1,
+      "method": "M1",
+      "source": "dense",
+      "pipeline": "reranker",
+      "assigned": 15,
+      "valid": 4,
+      "pending": 4,
+      "construction_failures": {
+        "semantic_construction_failed": 8,
+        "target_construction_failed": 3
+      },
+      "metrics": {
+        "coverage": {
+          "numerator": 4.0,
+          "denominator": 15.0,
+          "estimate": 0.26666666666666666,
+          "ci95_question_cluster": {
+            "lower": 0.0,
+            "upper": 0.6666666666666666,
+            "undefined_replicates": 0
+          }
+        },
+        "end_to_end_target_match": {
+          "status": "INCOMPLETE",
+          "estimate": null
+        },
+        "valid_target_match": {
+          "status": "INCOMPLETE",
+          "estimate": null
+        },
+        "source_success": {
+          "status": "INCOMPLETE",
+          "estimate": null
+        },
+        "atr": {
+          "status": "INCOMPLETE",
+          "estimate": null
+        },
+        "clean_correct_to_wrong": {
+          "status": "INCOMPLETE",
+          "estimate": null
+        },
+        "clean_em": {
+          "status": "INCOMPLETE",
+          "estimate": null
+        },
+        "poison_em": {
+          "status": "INCOMPLETE",
+          "estimate": null
+        },
+        "clean_f1": {
+          "status": "INCOMPLETE",
+          "estimate": null
+        },
+        "poison_f1": {
+          "status": "INCOMPLETE",
+          "estimate": null
+        },
+        "poison_exposure": {
+          "status": "INCOMPLETE",
+          "estimate": null
+        }
+      }
+    },
+    {
+      "family": "semantic_fluent_false_evidence",
+      "intensity": 1,
+      "method": "M1",
+      "source": "dense",
+      "pipeline": "rcd",
+      "assigned": 15,
+      "valid": 4,
+      "pending": 4,
+      "construction_failures": {
+        "semantic_construction_failed": 8,
+        "target_construction_failed": 3
+      },
+      "metrics": {
+        "coverage": {
+          "numerator": 4.0,
+          "denominator": 15.0,
+          "estimate": 0.26666666666666666,
+          "ci95_question_cluster": {
+            "lower": 0.0,
+            "upper": 0.6666666666666666,
+            "undefined_replicates": 0
+          }
+        },
+        "end_to_end_target_match": {
+          "status": "INCOMPLETE",
+          "estimate": null
+        },
+        "valid_target_match": {
+          "status": "INCOMPLETE",
+          "estimate": null
+        },
+        "source_success": {
+          "status": "INCOMPLETE",
+          "estimate": null
+        },
+        "atr": {
+          "status": "INCOMPLETE",
+          "estimate": null
+        },
+        "clean_correct_to_wrong": {
+          "status": "INCOMPLETE",
+          "estimate": null
+        },
+        "clean_em": {
+          "status": "INCOMPLETE",
+          "estimate": null
+        },
+        "poison_em": {
+          "status": "INCOMPLETE",
+          "estimate": null
+        },
+        "clean_f1": {
+          "status": "INCOMPLETE",
+          "estimate": null
+        },
+        "poison_f1": {
+          "status": "INCOMPLETE",
+          "estimate": null
+        },
+        "poison_exposure": {
+          "status": "INCOMPLETE",
+          "estimate": null
+        }
+      }
+    },
+    {
+      "family": "semantic_fluent_false_evidence",
+      "intensity": 1,
+      "method": "M2",
+      "source": "dense",
+      "pipeline": "dense",
+      "assigned": 15,
+      "valid": 4,
+      "pending": 4,
+      "construction_failures": {
+        "semantic_construction_failed": 8,
+        "target_construction_failed": 3
+      },
+      "metrics": {
+        "coverage": {
+          "numerator": 4.0,
+          "denominator": 15.0,
+          "estimate": 0.26666666666666666,
+          "ci95_question_cluster": {
+            "lower": 0.0,
+            "upper": 0.6666666666666666,
+            "undefined_replicates": 0
+          }
+        },
+        "end_to_end_target_match": {
+          "status": "INCOMPLETE",
+          "estimate": null
+        },
+        "valid_target_match": {
+          "status": "INCOMPLETE",
+          "estimate": null
+        },
+        "source_success": {
+          "status": "INCOMPLETE",
+          "estimate": null
+        },
+        "atr": {
+          "status": "INCOMPLETE",
+          "estimate": null
+        },
+        "clean_correct_to_wrong": {
+          "status": "INCOMPLETE",
+          "estimate": null
+        },
+        "clean_em": {
+          "status": "INCOMPLETE",
+          "estimate": null
+        },
+        "poison_em": {
+          "status": "INCOMPLETE",
+          "estimate": null
+        },
+        "clean_f1": {
+          "status": "INCOMPLETE",
+          "estimate": null
+        },
+        "poison_f1": {
+          "status": "INCOMPLETE",
+          "estimate": null
+        },
+        "poison_exposure": {
+          "status": "INCOMPLETE",
+          "estimate": null
+        }
+      }
+    },
+    {
+      "family": "semantic_fluent_false_evidence",
+      "intensity": 1,
+      "method": "M2",
+      "source": "dense",
+      "pipeline": "reranker",
+      "assigned": 15,
+      "valid": 4,
+      "pending": 4,
+      "construction_failures": {
+        "semantic_construction_failed": 8,
+        "target_construction_failed": 3
+      },
+      "metrics": {
+        "coverage": {
+          "numerator": 4.0,
+          "denominator": 15.0,
+          "estimate": 0.26666666666666666,
+          "ci95_question_cluster": {
+            "lower": 0.0,
+            "upper": 0.6666666666666666,
+            "undefined_replicates": 0
+          }
+        },
+        "end_to_end_target_match": {
+          "status": "INCOMPLETE",
+          "estimate": null
+        },
+        "valid_target_match": {
+          "status": "INCOMPLETE",
+          "estimate": null
+        },
+        "source_success": {
+          "status": "INCOMPLETE",
+          "estimate": null
+        },
+        "atr": {
+          "status": "INCOMPLETE",
+          "estimate": null
+        },
+        "clean_correct_to_wrong": {
+          "status": "INCOMPLETE",
+          "estimate": null
+        },
+        "clean_em": {
+          "status": "INCOMPLETE",
+          "estimate": null
+        },
+        "poison_em": {
+          "status": "INCOMPLETE",
+          "estimate": null
+        },
+        "clean_f1": {
+          "status": "INCOMPLETE",
+          "estimate": null
+        },
+        "poison_f1": {
+          "status": "INCOMPLETE",
+          "estimate": null
+        },
+        "poison_exposure": {
+          "status": "INCOMPLETE",
+          "estimate": null
+        }
+      }
+    },
+    {
+      "family": "semantic_fluent_false_evidence",
+      "intensity": 1,
+      "method": "M2",
+      "source": "dense",
+      "pipeline": "rcd",
+      "assigned": 15,
+      "valid": 4,
+      "pending": 4,
+      "construction_failures": {
+        "semantic_construction_failed": 8,
+        "target_construction_failed": 3
+      },
+      "metrics": {
+        "coverage": {
+          "numerator": 4.0,
+          "denominator": 15.0,
+          "estimate": 0.26666666666666666,
+          "ci95_question_cluster": {
+            "lower": 0.0,
+            "upper": 0.6666666666666666,
+            "undefined_replicates": 0
+          }
+        },
+        "end_to_end_target_match": {
+          "status": "INCOMPLETE",
+          "estimate": null
+        },
+        "valid_target_match": {
+          "status": "INCOMPLETE",
+          "estimate": null
+        },
+        "source_success": {
+          "status": "INCOMPLETE",
+          "estimate": null
+        },
+        "atr": {
+          "status": "INCOMPLETE",
+          "estimate": null
+        },
+        "clean_correct_to_wrong": {
+          "status": "INCOMPLETE",
+          "estimate": null
+        },
+        "clean_em": {
+          "status": "INCOMPLETE",
+          "estimate": null
+        },
+        "poison_em": {
+          "status": "INCOMPLETE",
+          "estimate": null
+        },
+        "clean_f1": {
+          "status": "INCOMPLETE",
+          "estimate": null
+        },
+        "poison_f1": {
+          "status": "INCOMPLETE",
+          "estimate": null
+        },
+        "poison_exposure": {
+          "status": "INCOMPLETE",
+          "estimate": null
+        }
+      }
+    },
+    {
+      "family": "semantic_fluent_false_evidence",
+      "intensity": 1,
+      "method": "M3",
+      "source": "dense",
+      "pipeline": "dense",
+      "assigned": 15,
+      "valid": 4,
+      "pending": 0,
+      "construction_failures": {
+        "semantic_construction_failed": 8,
+        "target_construction_failed": 3
+      },
+      "metrics": {
+        "coverage": {
+          "numerator": 4.0,
+          "denominator": 15.0,
+          "estimate": 0.26666666666666666,
+          "ci95_question_cluster": {
+            "lower": 0.0,
+            "upper": 0.6666666666666666,
+            "undefined_replicates": 0
+          }
+        },
+        "end_to_end_target_match": {
+          "numerator": 0.0,
+          "denominator": 15.0,
+          "estimate": 0.0,
+          "ci95_question_cluster": {
+            "lower": 0.0,
+            "upper": 0.0,
+            "undefined_replicates": 0
+          }
+        },
+        "valid_target_match": {
+          "numerator": 0.0,
+          "denominator": 4.0,
+          "estimate": 0.0,
+          "ci95_question_cluster": {
+            "lower": 0.0,
+            "upper": 0.0,
+            "undefined_replicates": 161
+          }
+        },
+        "source_success": {
+          "numerator": 0.0,
+          "denominator": 4.0,
+          "estimate": 0.0,
+          "ci95_question_cluster": {
+            "lower": 0.0,
+            "upper": 0.0,
+            "undefined_replicates": 161
+          }
+        },
+        "atr": {
+          "numerator": 0.0,
+          "denominator": 0.0,
+          "estimate": null,
+          "ci95_question_cluster": {
+            "lower": null,
+            "upper": null,
+            "undefined_replicates": 2000
+          }
+        },
+        "clean_correct_to_wrong": {
+          "numerator": 0.0,
+          "denominator": 1.0,
+          "estimate": 0.0,
+          "ci95_question_cluster": {
+            "lower": 0.0,
+            "upper": 0.0,
+            "undefined_replicates": 631
+          }
+        },
+        "clean_em": {
+          "numerator": 1.0,
+          "denominator": 4.0,
+          "estimate": 0.25,
+          "ci95_question_cluster": {
+            "lower": 0.0,
+            "upper": 1.0,
+            "undefined_replicates": 161
+          }
+        },
+        "poison_em": {
+          "numerator": 1.0,
+          "denominator": 4.0,
+          "estimate": 0.25,
+          "ci95_question_cluster": {
+            "lower": 0.0,
+            "upper": 1.0,
+            "undefined_replicates": 161
+          }
+        },
+        "clean_f1": {
+          "numerator": 1.0,
+          "denominator": 4.0,
+          "estimate": 0.25,
+          "ci95_question_cluster": {
+            "lower": 0.0,
+            "upper": 1.0,
+            "undefined_replicates": 161
+          }
+        },
+        "poison_f1": {
+          "numerator": 2.5,
+          "denominator": 4.0,
+          "estimate": 0.625,
+          "ci95_question_cluster": {
+            "lower": 0.5,
+            "upper": 1.0,
+            "undefined_replicates": 161
+          }
+        },
+        "poison_exposure": {
+          "numerator": 4.0,
+          "denominator": 4.0,
+          "estimate": 1.0,
+          "ci95_question_cluster": {
+            "lower": 1.0,
+            "upper": 1.0,
+            "undefined_replicates": 161
+          }
+        }
+      }
+    },
+    {
+      "family": "semantic_fluent_false_evidence",
+      "intensity": 1,
+      "method": "M3",
+      "source": "dense",
+      "pipeline": "reranker",
+      "assigned": 15,
+      "valid": 4,
+      "pending": 0,
+      "construction_failures": {
+        "semantic_construction_failed": 8,
+        "target_construction_failed": 3
+      },
+      "metrics": {
+        "coverage": {
+          "numerator": 4.0,
+          "denominator": 15.0,
+          "estimate": 0.26666666666666666,
+          "ci95_question_cluster": {
+            "lower": 0.0,
+            "upper": 0.6666666666666666,
+            "undefined_replicates": 0
+          }
+        },
+        "end_to_end_target_match": {
+          "numerator": 0.0,
+          "denominator": 15.0,
+          "estimate": 0.0,
+          "ci95_question_cluster": {
+            "lower": 0.0,
+            "upper": 0.0,
+            "undefined_replicates": 0
+          }
+        },
+        "valid_target_match": {
+          "numerator": 0.0,
+          "denominator": 4.0,
+          "estimate": 0.0,
+          "ci95_question_cluster": {
+            "lower": 0.0,
+            "upper": 0.0,
+            "undefined_replicates": 161
+          }
+        },
+        "source_success": {
+          "numerator": 0.0,
+          "denominator": 4.0,
+          "estimate": 0.0,
+          "ci95_question_cluster": {
+            "lower": 0.0,
+            "upper": 0.0,
+            "undefined_replicates": 161
+          }
+        },
+        "atr": {
+          "numerator": 0.0,
+          "denominator": 0.0,
+          "estimate": null,
+          "ci95_question_cluster": {
+            "lower": null,
+            "upper": null,
+            "undefined_replicates": 2000
+          }
+        },
+        "clean_correct_to_wrong": {
+          "numerator": 0.0,
+          "denominator": 1.0,
+          "estimate": 0.0,
+          "ci95_question_cluster": {
+            "lower": 0.0,
+            "upper": 0.0,
+            "undefined_replicates": 631
+          }
+        },
+        "clean_em": {
+          "numerator": 1.0,
+          "denominator": 4.0,
+          "estimate": 0.25,
+          "ci95_question_cluster": {
+            "lower": 0.0,
+            "upper": 1.0,
+            "undefined_replicates": 161
+          }
+        },
+        "poison_em": {
+          "numerator": 1.0,
+          "denominator": 4.0,
+          "estimate": 0.25,
+          "ci95_question_cluster": {
+            "lower": 0.0,
+            "upper": 1.0,
+            "undefined_replicates": 161
+          }
+        },
+        "clean_f1": {
+          "numerator": 1.0,
+          "denominator": 4.0,
+          "estimate": 0.25,
+          "ci95_question_cluster": {
+            "lower": 0.0,
+            "upper": 1.0,
+            "undefined_replicates": 161
+          }
+        },
+        "poison_f1": {
+          "numerator": 2.5,
+          "denominator": 4.0,
+          "estimate": 0.625,
+          "ci95_question_cluster": {
+            "lower": 0.5,
+            "upper": 1.0,
+            "undefined_replicates": 161
+          }
+        },
+        "poison_exposure": {
+          "numerator": 4.0,
+          "denominator": 4.0,
+          "estimate": 1.0,
+          "ci95_question_cluster": {
+            "lower": 1.0,
+            "upper": 1.0,
+            "undefined_replicates": 161
+          }
+        }
+      }
+    },
+    {
+      "family": "semantic_fluent_false_evidence",
+      "intensity": 1,
+      "method": "M3",
+      "source": "dense",
+      "pipeline": "rcd",
+      "assigned": 15,
+      "valid": 4,
+      "pending": 0,
+      "construction_failures": {
+        "semantic_construction_failed": 8,
+        "target_construction_failed": 3
+      },
+      "metrics": {
+        "coverage": {
+          "numerator": 4.0,
+          "denominator": 15.0,
+          "estimate": 0.26666666666666666,
+          "ci95_question_cluster": {
+            "lower": 0.0,
+            "upper": 0.6666666666666666,
+            "undefined_replicates": 0
+          }
+        },
+        "end_to_end_target_match": {
+          "numerator": 0.0,
+          "denominator": 15.0,
+          "estimate": 0.0,
+          "ci95_question_cluster": {
+            "lower": 0.0,
+            "upper": 0.0,
+            "undefined_replicates": 0
+          }
+        },
+        "valid_target_match": {
+          "numerator": 0.0,
+          "denominator": 4.0,
+          "estimate": 0.0,
+          "ci95_question_cluster": {
+            "lower": 0.0,
+            "upper": 0.0,
+            "undefined_replicates": 161
+          }
+        },
+        "source_success": {
+          "numerator": 0.0,
+          "denominator": 4.0,
+          "estimate": 0.0,
+          "ci95_question_cluster": {
+            "lower": 0.0,
+            "upper": 0.0,
+            "undefined_replicates": 161
+          }
+        },
+        "atr": {
+          "numerator": 0.0,
+          "denominator": 0.0,
+          "estimate": null,
+          "ci95_question_cluster": {
+            "lower": null,
+            "upper": null,
+            "undefined_replicates": 2000
+          }
+        },
+        "clean_correct_to_wrong": {
+          "numerator": 0.0,
+          "denominator": 1.0,
+          "estimate": 0.0,
+          "ci95_question_cluster": {
+            "lower": 0.0,
+            "upper": 0.0,
+            "undefined_replicates": 631
+          }
+        },
+        "clean_em": {
+          "numerator": 1.0,
+          "denominator": 4.0,
+          "estimate": 0.25,
+          "ci95_question_cluster": {
+            "lower": 0.0,
+            "upper": 1.0,
+            "undefined_replicates": 161
+          }
+        },
+        "poison_em": {
+          "numerator": 1.0,
+          "denominator": 4.0,
+          "estimate": 0.25,
+          "ci95_question_cluster": {
+            "lower": 0.0,
+            "upper": 1.0,
+            "undefined_replicates": 161
+          }
+        },
+        "clean_f1": {
+          "numerator": 1.0,
+          "denominator": 4.0,
+          "estimate": 0.25,
+          "ci95_question_cluster": {
+            "lower": 0.0,
+            "upper": 1.0,
+            "undefined_replicates": 161
+          }
+        },
+        "poison_f1": {
+          "numerator": 2.5,
+          "denominator": 4.0,
+          "estimate": 0.625,
+          "ci95_question_cluster": {
+            "lower": 0.5,
+            "upper": 1.0,
+            "undefined_replicates": 161
+          }
+        },
+        "poison_exposure": {
+          "numerator": 4.0,
+          "denominator": 4.0,
+          "estimate": 1.0,
+          "ci95_question_cluster": {
+            "lower": 1.0,
+            "upper": 1.0,
+            "undefined_replicates": 161
+          }
+        }
+      }
+    },
+    {
+      "family": "semantic_fluent_false_evidence",
+      "intensity": 3,
+      "method": "M1",
+      "source": "bm25",
+      "pipeline": "dense",
+      "assigned": 15,
+      "valid": 0,
+      "pending": 0,
+      "construction_failures": {
+        "semantic_construction_failed": 12,
+        "target_construction_failed": 3
+      },
+      "metrics": {
+        "coverage": {
+          "numerator": 0.0,
+          "denominator": 15.0,
+          "estimate": 0.0,
+          "ci95_question_cluster": {
+            "lower": 0.0,
+            "upper": 0.0,
+            "undefined_replicates": 0
+          }
+        },
+        "end_to_end_target_match": {
+          "numerator": 0.0,
+          "denominator": 15.0,
+          "estimate": 0.0,
+          "ci95_question_cluster": {
+            "lower": 0.0,
+            "upper": 0.0,
+            "undefined_replicates": 0
+          }
+        },
+        "valid_target_match": {
+          "numerator": 0.0,
+          "denominator": 0.0,
+          "estimate": null,
+          "ci95_question_cluster": {
+            "lower": null,
+            "upper": null,
+            "undefined_replicates": 2000
+          }
+        },
+        "source_success": {
+          "numerator": 0.0,
+          "denominator": 0.0,
+          "estimate": null,
+          "ci95_question_cluster": {
+            "lower": null,
+            "upper": null,
+            "undefined_replicates": 2000
+          }
+        },
+        "atr": {
+          "numerator": 0.0,
+          "denominator": 0.0,
+          "estimate": null,
+          "ci95_question_cluster": {
+            "lower": null,
+            "upper": null,
+            "undefined_replicates": 2000
+          }
+        },
+        "clean_correct_to_wrong": {
+          "numerator": 0.0,
+          "denominator": 0.0,
+          "estimate": null,
+          "ci95_question_cluster": {
+            "lower": null,
+            "upper": null,
+            "undefined_replicates": 2000
+          }
+        },
+        "clean_em": {
+          "numerator": 0.0,
+          "denominator": 0.0,
+          "estimate": null,
+          "ci95_question_cluster": {
+            "lower": null,
+            "upper": null,
+            "undefined_replicates": 2000
+          }
+        },
+        "poison_em": {
+          "numerator": 0.0,
+          "denominator": 0.0,
+          "estimate": null,
+          "ci95_question_cluster": {
+            "lower": null,
+            "upper": null,
+            "undefined_replicates": 2000
+          }
+        },
+        "clean_f1": {
+          "numerator": 0.0,
+          "denominator": 0.0,
+          "estimate": null,
+          "ci95_question_cluster": {
+            "lower": null,
+            "upper": null,
+            "undefined_replicates": 2000
+          }
+        },
+        "poison_f1": {
+          "numerator": 0.0,
+          "denominator": 0.0,
+          "estimate": null,
+          "ci95_question_cluster": {
+            "lower": null,
+            "upper": null,
+            "undefined_replicates": 2000
+          }
+        },
+        "poison_exposure": {
+          "numerator": 0.0,
+          "denominator": 0.0,
+          "estimate": null,
+          "ci95_question_cluster": {
+            "lower": null,
+            "upper": null,
+            "undefined_replicates": 2000
+          }
+        }
+      }
+    },
+    {
+      "family": "semantic_fluent_false_evidence",
+      "intensity": 3,
+      "method": "M1",
+      "source": "bm25",
+      "pipeline": "reranker",
+      "assigned": 15,
+      "valid": 0,
+      "pending": 0,
+      "construction_failures": {
+        "semantic_construction_failed": 12,
+        "target_construction_failed": 3
+      },
+      "metrics": {
+        "coverage": {
+          "numerator": 0.0,
+          "denominator": 15.0,
+          "estimate": 0.0,
+          "ci95_question_cluster": {
+            "lower": 0.0,
+            "upper": 0.0,
+            "undefined_replicates": 0
+          }
+        },
+        "end_to_end_target_match": {
+          "numerator": 0.0,
+          "denominator": 15.0,
+          "estimate": 0.0,
+          "ci95_question_cluster": {
+            "lower": 0.0,
+            "upper": 0.0,
+            "undefined_replicates": 0
+          }
+        },
+        "valid_target_match": {
+          "numerator": 0.0,
+          "denominator": 0.0,
+          "estimate": null,
+          "ci95_question_cluster": {
+            "lower": null,
+            "upper": null,
+            "undefined_replicates": 2000
+          }
+        },
+        "source_success": {
+          "numerator": 0.0,
+          "denominator": 0.0,
+          "estimate": null,
+          "ci95_question_cluster": {
+            "lower": null,
+            "upper": null,
+            "undefined_replicates": 2000
+          }
+        },
+        "atr": {
+          "numerator": 0.0,
+          "denominator": 0.0,
+          "estimate": null,
+          "ci95_question_cluster": {
+            "lower": null,
+            "upper": null,
+            "undefined_replicates": 2000
+          }
+        },
+        "clean_correct_to_wrong": {
+          "numerator": 0.0,
+          "denominator": 0.0,
+          "estimate": null,
+          "ci95_question_cluster": {
+            "lower": null,
+            "upper": null,
+            "undefined_replicates": 2000
+          }
+        },
+        "clean_em": {
+          "numerator": 0.0,
+          "denominator": 0.0,
+          "estimate": null,
+          "ci95_question_cluster": {
+            "lower": null,
+            "upper": null,
+            "undefined_replicates": 2000
+          }
+        },
+        "poison_em": {
+          "numerator": 0.0,
+          "denominator": 0.0,
+          "estimate": null,
+          "ci95_question_cluster": {
+            "lower": null,
+            "upper": null,
+            "undefined_replicates": 2000
+          }
+        },
+        "clean_f1": {
+          "numerator": 0.0,
+          "denominator": 0.0,
+          "estimate": null,
+          "ci95_question_cluster": {
+            "lower": null,
+            "upper": null,
+            "undefined_replicates": 2000
+          }
+        },
+        "poison_f1": {
+          "numerator": 0.0,
+          "denominator": 0.0,
+          "estimate": null,
+          "ci95_question_cluster": {
+            "lower": null,
+            "upper": null,
+            "undefined_replicates": 2000
+          }
+        },
+        "poison_exposure": {
+          "numerator": 0.0,
+          "denominator": 0.0,
+          "estimate": null,
+          "ci95_question_cluster": {
+            "lower": null,
+            "upper": null,
+            "undefined_replicates": 2000
+          }
+        }
+      }
+    },
+    {
+      "family": "semantic_fluent_false_evidence",
+      "intensity": 3,
+      "method": "M1",
+      "source": "bm25",
+      "pipeline": "rcd",
+      "assigned": 15,
+      "valid": 0,
+      "pending": 0,
+      "construction_failures": {
+        "semantic_construction_failed": 12,
+        "target_construction_failed": 3
+      },
+      "metrics": {
+        "coverage": {
+          "numerator": 0.0,
+          "denominator": 15.0,
+          "estimate": 0.0,
+          "ci95_question_cluster": {
+            "lower": 0.0,
+            "upper": 0.0,
+            "undefined_replicates": 0
+          }
+        },
+        "end_to_end_target_match": {
+          "numerator": 0.0,
+          "denominator": 15.0,
+          "estimate": 0.0,
+          "ci95_question_cluster": {
+            "lower": 0.0,
+            "upper": 0.0,
+            "undefined_replicates": 0
+          }
+        },
+        "valid_target_match": {
+          "numerator": 0.0,
+          "denominator": 0.0,
+          "estimate": null,
+          "ci95_question_cluster": {
+            "lower": null,
+            "upper": null,
+            "undefined_replicates": 2000
+          }
+        },
+        "source_success": {
+          "numerator": 0.0,
+          "denominator": 0.0,
+          "estimate": null,
+          "ci95_question_cluster": {
+            "lower": null,
+            "upper": null,
+            "undefined_replicates": 2000
+          }
+        },
+        "atr": {
+          "numerator": 0.0,
+          "denominator": 0.0,
+          "estimate": null,
+          "ci95_question_cluster": {
+            "lower": null,
+            "upper": null,
+            "undefined_replicates": 2000
+          }
+        },
+        "clean_correct_to_wrong": {
+          "numerator": 0.0,
+          "denominator": 0.0,
+          "estimate": null,
+          "ci95_question_cluster": {
+            "lower": null,
+            "upper": null,
+            "undefined_replicates": 2000
+          }
+        },
+        "clean_em": {
+          "numerator": 0.0,
+          "denominator": 0.0,
+          "estimate": null,
+          "ci95_question_cluster": {
+            "lower": null,
+            "upper": null,
+            "undefined_replicates": 2000
+          }
+        },
+        "poison_em": {
+          "numerator": 0.0,
+          "denominator": 0.0,
+          "estimate": null,
+          "ci95_question_cluster": {
+            "lower": null,
+            "upper": null,
+            "undefined_replicates": 2000
+          }
+        },
+        "clean_f1": {
+          "numerator": 0.0,
+          "denominator": 0.0,
+          "estimate": null,
+          "ci95_question_cluster": {
+            "lower": null,
+            "upper": null,
+            "undefined_replicates": 2000
+          }
+        },
+        "poison_f1": {
+          "numerator": 0.0,
+          "denominator": 0.0,
+          "estimate": null,
+          "ci95_question_cluster": {
+            "lower": null,
+            "upper": null,
+            "undefined_replicates": 2000
+          }
+        },
+        "poison_exposure": {
+          "numerator": 0.0,
+          "denominator": 0.0,
+          "estimate": null,
+          "ci95_question_cluster": {
+            "lower": null,
+            "upper": null,
+            "undefined_replicates": 2000
+          }
+        }
+      }
+    },
+    {
+      "family": "semantic_fluent_false_evidence",
+      "intensity": 3,
+      "method": "M2",
+      "source": "bm25",
+      "pipeline": "dense",
+      "assigned": 15,
+      "valid": 0,
+      "pending": 0,
+      "construction_failures": {
+        "semantic_construction_failed": 12,
+        "target_construction_failed": 3
+      },
+      "metrics": {
+        "coverage": {
+          "numerator": 0.0,
+          "denominator": 15.0,
+          "estimate": 0.0,
+          "ci95_question_cluster": {
+            "lower": 0.0,
+            "upper": 0.0,
+            "undefined_replicates": 0
+          }
+        },
+        "end_to_end_target_match": {
+          "numerator": 0.0,
+          "denominator": 15.0,
+          "estimate": 0.0,
+          "ci95_question_cluster": {
+            "lower": 0.0,
+            "upper": 0.0,
+            "undefined_replicates": 0
+          }
+        },
+        "valid_target_match": {
+          "numerator": 0.0,
+          "denominator": 0.0,
+          "estimate": null,
+          "ci95_question_cluster": {
+            "lower": null,
+            "upper": null,
+            "undefined_replicates": 2000
+          }
+        },
+        "source_success": {
+          "numerator": 0.0,
+          "denominator": 0.0,
+          "estimate": null,
+          "ci95_question_cluster": {
+            "lower": null,
+            "upper": null,
+            "undefined_replicates": 2000
+          }
+        },
+        "atr": {
+          "numerator": 0.0,
+          "denominator": 0.0,
+          "estimate": null,
+          "ci95_question_cluster": {
+            "lower": null,
+            "upper": null,
+            "undefined_replicates": 2000
+          }
+        },
+        "clean_correct_to_wrong": {
+          "numerator": 0.0,
+          "denominator": 0.0,
+          "estimate": null,
+          "ci95_question_cluster": {
+            "lower": null,
+            "upper": null,
+            "undefined_replicates": 2000
+          }
+        },
+        "clean_em": {
+          "numerator": 0.0,
+          "denominator": 0.0,
+          "estimate": null,
+          "ci95_question_cluster": {
+            "lower": null,
+            "upper": null,
+            "undefined_replicates": 2000
+          }
+        },
+        "poison_em": {
+          "numerator": 0.0,
+          "denominator": 0.0,
+          "estimate": null,
+          "ci95_question_cluster": {
+            "lower": null,
+            "upper": null,
+            "undefined_replicates": 2000
+          }
+        },
+        "clean_f1": {
+          "numerator": 0.0,
+          "denominator": 0.0,
+          "estimate": null,
+          "ci95_question_cluster": {
+            "lower": null,
+            "upper": null,
+            "undefined_replicates": 2000
+          }
+        },
+        "poison_f1": {
+          "numerator": 0.0,
+          "denominator": 0.0,
+          "estimate": null,
+          "ci95_question_cluster": {
+            "lower": null,
+            "upper": null,
+            "undefined_replicates": 2000
+          }
+        },
+        "poison_exposure": {
+          "numerator": 0.0,
+          "denominator": 0.0,
+          "estimate": null,
+          "ci95_question_cluster": {
+            "lower": null,
+            "upper": null,
+            "undefined_replicates": 2000
+          }
+        }
+      }
+    },
+    {
+      "family": "semantic_fluent_false_evidence",
+      "intensity": 3,
+      "method": "M2",
+      "source": "bm25",
+      "pipeline": "reranker",
+      "assigned": 15,
+      "valid": 0,
+      "pending": 0,
+      "construction_failures": {
+        "semantic_construction_failed": 12,
+        "target_construction_failed": 3
+      },
+      "metrics": {
+        "coverage": {
+          "numerator": 0.0,
+          "denominator": 15.0,
+          "estimate": 0.0,
+          "ci95_question_cluster": {
+            "lower": 0.0,
+            "upper": 0.0,
+            "undefined_replicates": 0
+          }
+        },
+        "end_to_end_target_match": {
+          "numerator": 0.0,
+          "denominator": 15.0,
+          "estimate": 0.0,
+          "ci95_question_cluster": {
+            "lower": 0.0,
+            "upper": 0.0,
+            "undefined_replicates": 0
+          }
+        },
+        "valid_target_match": {
+          "numerator": 0.0,
+          "denominator": 0.0,
+          "estimate": null,
+          "ci95_question_cluster": {
+            "lower": null,
+            "upper": null,
+            "undefined_replicates": 2000
+          }
+        },
+        "source_success": {
+          "numerator": 0.0,
+          "denominator": 0.0,
+          "estimate": null,
+          "ci95_question_cluster": {
+            "lower": null,
+            "upper": null,
+            "undefined_replicates": 2000
+          }
+        },
+        "atr": {
+          "numerator": 0.0,
+          "denominator": 0.0,
+          "estimate": null,
+          "ci95_question_cluster": {
+            "lower": null,
+            "upper": null,
+            "undefined_replicates": 2000
+          }
+        },
+        "clean_correct_to_wrong": {
+          "numerator": 0.0,
+          "denominator": 0.0,
+          "estimate": null,
+          "ci95_question_cluster": {
+            "lower": null,
+            "upper": null,
+            "undefined_replicates": 2000
+          }
+        },
+        "clean_em": {
+          "numerator": 0.0,
+          "denominator": 0.0,
+          "estimate": null,
+          "ci95_question_cluster": {
+            "lower": null,
+            "upper": null,
+            "undefined_replicates": 2000
+          }
+        },
+        "poison_em": {
+          "numerator": 0.0,
+          "denominator": 0.0,
+          "estimate": null,
+          "ci95_question_cluster": {
+            "lower": null,
+            "upper": null,
+            "undefined_replicates": 2000
+          }
+        },
+        "clean_f1": {
+          "numerator": 0.0,
+          "denominator": 0.0,
+          "estimate": null,
+          "ci95_question_cluster": {
+            "lower": null,
+            "upper": null,
+            "undefined_replicates": 2000
+          }
+        },
+        "poison_f1": {
+          "numerator": 0.0,
+          "denominator": 0.0,
+          "estimate": null,
+          "ci95_question_cluster": {
+            "lower": null,
+            "upper": null,
+            "undefined_replicates": 2000
+          }
+        },
+        "poison_exposure": {
+          "numerator": 0.0,
+          "denominator": 0.0,
+          "estimate": null,
+          "ci95_question_cluster": {
+            "lower": null,
+            "upper": null,
+            "undefined_replicates": 2000
+          }
+        }
+      }
+    },
+    {
+      "family": "semantic_fluent_false_evidence",
+      "intensity": 3,
+      "method": "M2",
+      "source": "bm25",
+      "pipeline": "rcd",
+      "assigned": 15,
+      "valid": 0,
+      "pending": 0,
+      "construction_failures": {
+        "semantic_construction_failed": 12,
+        "target_construction_failed": 3
+      },
+      "metrics": {
+        "coverage": {
+          "numerator": 0.0,
+          "denominator": 15.0,
+          "estimate": 0.0,
+          "ci95_question_cluster": {
+            "lower": 0.0,
+            "upper": 0.0,
+            "undefined_replicates": 0
+          }
+        },
+        "end_to_end_target_match": {
+          "numerator": 0.0,
+          "denominator": 15.0,
+          "estimate": 0.0,
+          "ci95_question_cluster": {
+            "lower": 0.0,
+            "upper": 0.0,
+            "undefined_replicates": 0
+          }
+        },
+        "valid_target_match": {
+          "numerator": 0.0,
+          "denominator": 0.0,
+          "estimate": null,
+          "ci95_question_cluster": {
+            "lower": null,
+            "upper": null,
+            "undefined_replicates": 2000
+          }
+        },
+        "source_success": {
+          "numerator": 0.0,
+          "denominator": 0.0,
+          "estimate": null,
+          "ci95_question_cluster": {
+            "lower": null,
+            "upper": null,
+            "undefined_replicates": 2000
+          }
+        },
+        "atr": {
+          "numerator": 0.0,
+          "denominator": 0.0,
+          "estimate": null,
+          "ci95_question_cluster": {
+            "lower": null,
+            "upper": null,
+            "undefined_replicates": 2000
+          }
+        },
+        "clean_correct_to_wrong": {
+          "numerator": 0.0,
+          "denominator": 0.0,
+          "estimate": null,
+          "ci95_question_cluster": {
+            "lower": null,
+            "upper": null,
+            "undefined_replicates": 2000
+          }
+        },
+        "clean_em": {
+          "numerator": 0.0,
+          "denominator": 0.0,
+          "estimate": null,
+          "ci95_question_cluster": {
+            "lower": null,
+            "upper": null,
+            "undefined_replicates": 2000
+          }
+        },
+        "poison_em": {
+          "numerator": 0.0,
+          "denominator": 0.0,
+          "estimate": null,
+          "ci95_question_cluster": {
+            "lower": null,
+            "upper": null,
+            "undefined_replicates": 2000
+          }
+        },
+        "clean_f1": {
+          "numerator": 0.0,
+          "denominator": 0.0,
+          "estimate": null,
+          "ci95_question_cluster": {
+            "lower": null,
+            "upper": null,
+            "undefined_replicates": 2000
+          }
+        },
+        "poison_f1": {
+          "numerator": 0.0,
+          "denominator": 0.0,
+          "estimate": null,
+          "ci95_question_cluster": {
+            "lower": null,
+            "upper": null,
+            "undefined_replicates": 2000
+          }
+        },
+        "poison_exposure": {
+          "numerator": 0.0,
+          "denominator": 0.0,
+          "estimate": null,
+          "ci95_question_cluster": {
+            "lower": null,
+            "upper": null,
+            "undefined_replicates": 2000
+          }
+        }
+      }
+    },
+    {
+      "family": "semantic_fluent_false_evidence",
+      "intensity": 3,
+      "method": "M3",
+      "source": "bm25",
+      "pipeline": "dense",
+      "assigned": 15,
+      "valid": 0,
+      "pending": 0,
+      "construction_failures": {
+        "semantic_construction_failed": 12,
+        "target_construction_failed": 3
+      },
+      "metrics": {
+        "coverage": {
+          "numerator": 0.0,
+          "denominator": 15.0,
+          "estimate": 0.0,
+          "ci95_question_cluster": {
+            "lower": 0.0,
+            "upper": 0.0,
+            "undefined_replicates": 0
+          }
+        },
+        "end_to_end_target_match": {
+          "numerator": 0.0,
+          "denominator": 15.0,
+          "estimate": 0.0,
+          "ci95_question_cluster": {
+            "lower": 0.0,
+            "upper": 0.0,
+            "undefined_replicates": 0
+          }
+        },
+        "valid_target_match": {
+          "numerator": 0.0,
+          "denominator": 0.0,
+          "estimate": null,
+          "ci95_question_cluster": {
+            "lower": null,
+            "upper": null,
+            "undefined_replicates": 2000
+          }
+        },
+        "source_success": {
+          "numerator": 0.0,
+          "denominator": 0.0,
+          "estimate": null,
+          "ci95_question_cluster": {
+            "lower": null,
+            "upper": null,
+            "undefined_replicates": 2000
+          }
+        },
+        "atr": {
+          "numerator": 0.0,
+          "denominator": 0.0,
+          "estimate": null,
+          "ci95_question_cluster": {
+            "lower": null,
+            "upper": null,
+            "undefined_replicates": 2000
+          }
+        },
+        "clean_correct_to_wrong": {
+          "numerator": 0.0,
+          "denominator": 0.0,
+          "estimate": null,
+          "ci95_question_cluster": {
+            "lower": null,
+            "upper": null,
+            "undefined_replicates": 2000
+          }
+        },
+        "clean_em": {
+          "numerator": 0.0,
+          "denominator": 0.0,
+          "estimate": null,
+          "ci95_question_cluster": {
+            "lower": null,
+            "upper": null,
+            "undefined_replicates": 2000
+          }
+        },
+        "poison_em": {
+          "numerator": 0.0,
+          "denominator": 0.0,
+          "estimate": null,
+          "ci95_question_cluster": {
+            "lower": null,
+            "upper": null,
+            "undefined_replicates": 2000
+          }
+        },
+        "clean_f1": {
+          "numerator": 0.0,
+          "denominator": 0.0,
+          "estimate": null,
+          "ci95_question_cluster": {
+            "lower": null,
+            "upper": null,
+            "undefined_replicates": 2000
+          }
+        },
+        "poison_f1": {
+          "numerator": 0.0,
+          "denominator": 0.0,
+          "estimate": null,
+          "ci95_question_cluster": {
+            "lower": null,
+            "upper": null,
+            "undefined_replicates": 2000
+          }
+        },
+        "poison_exposure": {
+          "numerator": 0.0,
+          "denominator": 0.0,
+          "estimate": null,
+          "ci95_question_cluster": {
+            "lower": null,
+            "upper": null,
+            "undefined_replicates": 2000
+          }
+        }
+      }
+    },
+    {
+      "family": "semantic_fluent_false_evidence",
+      "intensity": 3,
+      "method": "M3",
+      "source": "bm25",
+      "pipeline": "reranker",
+      "assigned": 15,
+      "valid": 0,
+      "pending": 0,
+      "construction_failures": {
+        "semantic_construction_failed": 12,
+        "target_construction_failed": 3
+      },
+      "metrics": {
+        "coverage": {
+          "numerator": 0.0,
+          "denominator": 15.0,
+          "estimate": 0.0,
+          "ci95_question_cluster": {
+            "lower": 0.0,
+            "upper": 0.0,
+            "undefined_replicates": 0
+          }
+        },
+        "end_to_end_target_match": {
+          "numerator": 0.0,
+          "denominator": 15.0,
+          "estimate": 0.0,
+          "ci95_question_cluster": {
+            "lower": 0.0,
+            "upper": 0.0,
+            "undefined_replicates": 0
+          }
+        },
+        "valid_target_match": {
+          "numerator": 0.0,
+          "denominator": 0.0,
+          "estimate": null,
+          "ci95_question_cluster": {
+            "lower": null,
+            "upper": null,
+            "undefined_replicates": 2000
+          }
+        },
+        "source_success": {
+          "numerator": 0.0,
+          "denominator": 0.0,
+          "estimate": null,
+          "ci95_question_cluster": {
+            "lower": null,
+            "upper": null,
+            "undefined_replicates": 2000
+          }
+        },
+        "atr": {
+          "numerator": 0.0,
+          "denominator": 0.0,
+          "estimate": null,
+          "ci95_question_cluster": {
+            "lower": null,
+            "upper": null,
+            "undefined_replicates": 2000
+          }
+        },
+        "clean_correct_to_wrong": {
+          "numerator": 0.0,
+          "denominator": 0.0,
+          "estimate": null,
+          "ci95_question_cluster": {
+            "lower": null,
+            "upper": null,
+            "undefined_replicates": 2000
+          }
+        },
+        "clean_em": {
+          "numerator": 0.0,
+          "denominator": 0.0,
+          "estimate": null,
+          "ci95_question_cluster": {
+            "lower": null,
+            "upper": null,
+            "undefined_replicates": 2000
+          }
+        },
+        "poison_em": {
+          "numerator": 0.0,
+          "denominator": 0.0,
+          "estimate": null,
+          "ci95_question_cluster": {
+            "lower": null,
+            "upper": null,
+            "undefined_replicates": 2000
+          }
+        },
+        "clean_f1": {
+          "numerator": 0.0,
+          "denominator": 0.0,
+          "estimate": null,
+          "ci95_question_cluster": {
+            "lower": null,
+            "upper": null,
+            "undefined_replicates": 2000
+          }
+        },
+        "poison_f1": {
+          "numerator": 0.0,
+          "denominator": 0.0,
+          "estimate": null,
+          "ci95_question_cluster": {
+            "lower": null,
+            "upper": null,
+            "undefined_replicates": 2000
+          }
+        },
+        "poison_exposure": {
+          "numerator": 0.0,
+          "denominator": 0.0,
+          "estimate": null,
+          "ci95_question_cluster": {
+            "lower": null,
+            "upper": null,
+            "undefined_replicates": 2000
+          }
+        }
+      }
+    },
+    {
+      "family": "semantic_fluent_false_evidence",
+      "intensity": 3,
+      "method": "M3",
+      "source": "bm25",
+      "pipeline": "rcd",
+      "assigned": 15,
+      "valid": 0,
+      "pending": 0,
+      "construction_failures": {
+        "semantic_construction_failed": 12,
+        "target_construction_failed": 3
+      },
+      "metrics": {
+        "coverage": {
+          "numerator": 0.0,
+          "denominator": 15.0,
+          "estimate": 0.0,
+          "ci95_question_cluster": {
+            "lower": 0.0,
+            "upper": 0.0,
+            "undefined_replicates": 0
+          }
+        },
+        "end_to_end_target_match": {
+          "numerator": 0.0,
+          "denominator": 15.0,
+          "estimate": 0.0,
+          "ci95_question_cluster": {
+            "lower": 0.0,
+            "upper": 0.0,
+            "undefined_replicates": 0
+          }
+        },
+        "valid_target_match": {
+          "numerator": 0.0,
+          "denominator": 0.0,
+          "estimate": null,
+          "ci95_question_cluster": {
+            "lower": null,
+            "upper": null,
+            "undefined_replicates": 2000
+          }
+        },
+        "source_success": {
+          "numerator": 0.0,
+          "denominator": 0.0,
+          "estimate": null,
+          "ci95_question_cluster": {
+            "lower": null,
+            "upper": null,
+            "undefined_replicates": 2000
+          }
+        },
+        "atr": {
+          "numerator": 0.0,
+          "denominator": 0.0,
+          "estimate": null,
+          "ci95_question_cluster": {
+            "lower": null,
+            "upper": null,
+            "undefined_replicates": 2000
+          }
+        },
+        "clean_correct_to_wrong": {
+          "numerator": 0.0,
+          "denominator": 0.0,
+          "estimate": null,
+          "ci95_question_cluster": {
+            "lower": null,
+            "upper": null,
+            "undefined_replicates": 2000
+          }
+        },
+        "clean_em": {
+          "numerator": 0.0,
+          "denominator": 0.0,
+          "estimate": null,
+          "ci95_question_cluster": {
+            "lower": null,
+            "upper": null,
+            "undefined_replicates": 2000
+          }
+        },
+        "poison_em": {
+          "numerator": 0.0,
+          "denominator": 0.0,
+          "estimate": null,
+          "ci95_question_cluster": {
+            "lower": null,
+            "upper": null,
+            "undefined_replicates": 2000
+          }
+        },
+        "clean_f1": {
+          "numerator": 0.0,
+          "denominator": 0.0,
+          "estimate": null,
+          "ci95_question_cluster": {
+            "lower": null,
+            "upper": null,
+            "undefined_replicates": 2000
+          }
+        },
+        "poison_f1": {
+          "numerator": 0.0,
+          "denominator": 0.0,
+          "estimate": null,
+          "ci95_question_cluster": {
+            "lower": null,
+            "upper": null,
+            "undefined_replicates": 2000
+          }
+        },
+        "poison_exposure": {
+          "numerator": 0.0,
+          "denominator": 0.0,
+          "estimate": null,
+          "ci95_question_cluster": {
+            "lower": null,
+            "upper": null,
+            "undefined_replicates": 2000
+          }
+        }
+      }
+    },
+    {
+      "family": "semantic_fluent_false_evidence",
+      "intensity": 3,
+      "method": "M1",
+      "source": "dense",
+      "pipeline": "dense",
+      "assigned": 15,
+      "valid": 0,
+      "pending": 0,
+      "construction_failures": {
+        "semantic_construction_failed": 12,
+        "target_construction_failed": 3
+      },
+      "metrics": {
+        "coverage": {
+          "numerator": 0.0,
+          "denominator": 15.0,
+          "estimate": 0.0,
+          "ci95_question_cluster": {
+            "lower": 0.0,
+            "upper": 0.0,
+            "undefined_replicates": 0
+          }
+        },
+        "end_to_end_target_match": {
+          "numerator": 0.0,
+          "denominator": 15.0,
+          "estimate": 0.0,
+          "ci95_question_cluster": {
+            "lower": 0.0,
+            "upper": 0.0,
+            "undefined_replicates": 0
+          }
+        },
+        "valid_target_match": {
+          "numerator": 0.0,
+          "denominator": 0.0,
+          "estimate": null,
+          "ci95_question_cluster": {
+            "lower": null,
+            "upper": null,
+            "undefined_replicates": 2000
+          }
+        },
+        "source_success": {
+          "numerator": 0.0,
+          "denominator": 0.0,
+          "estimate": null,
+          "ci95_question_cluster": {
+            "lower": null,
+            "upper": null,
+            "undefined_replicates": 2000
+          }
+        },
+        "atr": {
+          "numerator": 0.0,
+          "denominator": 0.0,
+          "estimate": null,
+          "ci95_question_cluster": {
+            "lower": null,
+            "upper": null,
+            "undefined_replicates": 2000
+          }
+        },
+        "clean_correct_to_wrong": {
+          "numerator": 0.0,
+          "denominator": 0.0,
+          "estimate": null,
+          "ci95_question_cluster": {
+            "lower": null,
+            "upper": null,
+            "undefined_replicates": 2000
+          }
+        },
+        "clean_em": {
+          "numerator": 0.0,
+          "denominator": 0.0,
+          "estimate": null,
+          "ci95_question_cluster": {
+            "lower": null,
+            "upper": null,
+            "undefined_replicates": 2000
+          }
+        },
+        "poison_em": {
+          "numerator": 0.0,
+          "denominator": 0.0,
+          "estimate": null,
+          "ci95_question_cluster": {
+            "lower": null,
+            "upper": null,
+            "undefined_replicates": 2000
+          }
+        },
+        "clean_f1": {
+          "numerator": 0.0,
+          "denominator": 0.0,
+          "estimate": null,
+          "ci95_question_cluster": {
+            "lower": null,
+            "upper": null,
+            "undefined_replicates": 2000
+          }
+        },
+        "poison_f1": {
+          "numerator": 0.0,
+          "denominator": 0.0,
+          "estimate": null,
+          "ci95_question_cluster": {
+            "lower": null,
+            "upper": null,
+            "undefined_replicates": 2000
+          }
+        },
+        "poison_exposure": {
+          "numerator": 0.0,
+          "denominator": 0.0,
+          "estimate": null,
+          "ci95_question_cluster": {
+            "lower": null,
+            "upper": null,
+            "undefined_replicates": 2000
+          }
+        }
+      }
+    },
+    {
+      "family": "semantic_fluent_false_evidence",
+      "intensity": 3,
+      "method": "M1",
+      "source": "dense",
+      "pipeline": "reranker",
+      "assigned": 15,
+      "valid": 0,
+      "pending": 0,
+      "construction_failures": {
+        "semantic_construction_failed": 12,
+        "target_construction_failed": 3
+      },
+      "metrics": {
+        "coverage": {
+          "numerator": 0.0,
+          "denominator": 15.0,
+          "estimate": 0.0,
+          "ci95_question_cluster": {
+            "lower": 0.0,
+            "upper": 0.0,
+            "undefined_replicates": 0
+          }
+        },
+        "end_to_end_target_match": {
+          "numerator": 0.0,
+          "denominator": 15.0,
+          "estimate": 0.0,
+          "ci95_question_cluster": {
+            "lower": 0.0,
+            "upper": 0.0,
+            "undefined_replicates": 0
+          }
+        },
+        "valid_target_match": {
+          "numerator": 0.0,
+          "denominator": 0.0,
+          "estimate": null,
+          "ci95_question_cluster": {
+            "lower": null,
+            "upper": null,
+            "undefined_replicates": 2000
+          }
+        },
+        "source_success": {
+          "numerator": 0.0,
+          "denominator": 0.0,
+          "estimate": null,
+          "ci95_question_cluster": {
+            "lower": null,
+            "upper": null,
+            "undefined_replicates": 2000
+          }
+        },
+        "atr": {
+          "numerator": 0.0,
+          "denominator": 0.0,
+          "estimate": null,
+          "ci95_question_cluster": {
+            "lower": null,
+            "upper": null,
+            "undefined_replicates": 2000
+          }
+        },
+        "clean_correct_to_wrong": {
+          "numerator": 0.0,
+          "denominator": 0.0,
+          "estimate": null,
+          "ci95_question_cluster": {
+            "lower": null,
+            "upper": null,
+            "undefined_replicates": 2000
+          }
+        },
+        "clean_em": {
+          "numerator": 0.0,
+          "denominator": 0.0,
+          "estimate": null,
+          "ci95_question_cluster": {
+            "lower": null,
+            "upper": null,
+            "undefined_replicates": 2000
+          }
+        },
+        "poison_em": {
+          "numerator": 0.0,
+          "denominator": 0.0,
+          "estimate": null,
+          "ci95_question_cluster": {
+            "lower": null,
+            "upper": null,
+            "undefined_replicates": 2000
+          }
+        },
+        "clean_f1": {
+          "numerator": 0.0,
+          "denominator": 0.0,
+          "estimate": null,
+          "ci95_question_cluster": {
+            "lower": null,
+            "upper": null,
+            "undefined_replicates": 2000
+          }
+        },
+        "poison_f1": {
+          "numerator": 0.0,
+          "denominator": 0.0,
+          "estimate": null,
+          "ci95_question_cluster": {
+            "lower": null,
+            "upper": null,
+            "undefined_replicates": 2000
+          }
+        },
+        "poison_exposure": {
+          "numerator": 0.0,
+          "denominator": 0.0,
+          "estimate": null,
+          "ci95_question_cluster": {
+            "lower": null,
+            "upper": null,
+            "undefined_replicates": 2000
+          }
+        }
+      }
+    },
+    {
+      "family": "semantic_fluent_false_evidence",
+      "intensity": 3,
+      "method": "M1",
+      "source": "dense",
+      "pipeline": "rcd",
+      "assigned": 15,
+      "valid": 0,
+      "pending": 0,
+      "construction_failures": {
+        "semantic_construction_failed": 12,
+        "target_construction_failed": 3
+      },
+      "metrics": {
+        "coverage": {
+          "numerator": 0.0,
+          "denominator": 15.0,
+          "estimate": 0.0,
+          "ci95_question_cluster": {
+            "lower": 0.0,
+            "upper": 0.0,
+            "undefined_replicates": 0
+          }
+        },
+        "end_to_end_target_match": {
+          "numerator": 0.0,
+          "denominator": 15.0,
+          "estimate": 0.0,
+          "ci95_question_cluster": {
+            "lower": 0.0,
+            "upper": 0.0,
+            "undefined_replicates": 0
+          }
+        },
+        "valid_target_match": {
+          "numerator": 0.0,
+          "denominator": 0.0,
+          "estimate": null,
+          "ci95_question_cluster": {
+            "lower": null,
+            "upper": null,
+            "undefined_replicates": 2000
+          }
+        },
+        "source_success": {
+          "numerator": 0.0,
+          "denominator": 0.0,
+          "estimate": null,
+          "ci95_question_cluster": {
+            "lower": null,
+            "upper": null,
+            "undefined_replicates": 2000
+          }
+        },
+        "atr": {
+          "numerator": 0.0,
+          "denominator": 0.0,
+          "estimate": null,
+          "ci95_question_cluster": {
+            "lower": null,
+            "upper": null,
+            "undefined_replicates": 2000
+          }
+        },
+        "clean_correct_to_wrong": {
+          "numerator": 0.0,
+          "denominator": 0.0,
+          "estimate": null,
+          "ci95_question_cluster": {
+            "lower": null,
+            "upper": null,
+            "undefined_replicates": 2000
+          }
+        },
+        "clean_em": {
+          "numerator": 0.0,
+          "denominator": 0.0,
+          "estimate": null,
+          "ci95_question_cluster": {
+            "lower": null,
+            "upper": null,
+            "undefined_replicates": 2000
+          }
+        },
+        "poison_em": {
+          "numerator": 0.0,
+          "denominator": 0.0,
+          "estimate": null,
+          "ci95_question_cluster": {
+            "lower": null,
+            "upper": null,
+            "undefined_replicates": 2000
+          }
+        },
+        "clean_f1": {
+          "numerator": 0.0,
+          "denominator": 0.0,
+          "estimate": null,
+          "ci95_question_cluster": {
+            "lower": null,
+            "upper": null,
+            "undefined_replicates": 2000
+          }
+        },
+        "poison_f1": {
+          "numerator": 0.0,
+          "denominator": 0.0,
+          "estimate": null,
+          "ci95_question_cluster": {
+            "lower": null,
+            "upper": null,
+            "undefined_replicates": 2000
+          }
+        },
+        "poison_exposure": {
+          "numerator": 0.0,
+          "denominator": 0.0,
+          "estimate": null,
+          "ci95_question_cluster": {
+            "lower": null,
+            "upper": null,
+            "undefined_replicates": 2000
+          }
+        }
+      }
+    },
+    {
+      "family": "semantic_fluent_false_evidence",
+      "intensity": 3,
+      "method": "M2",
+      "source": "dense",
+      "pipeline": "dense",
+      "assigned": 15,
+      "valid": 0,
+      "pending": 0,
+      "construction_failures": {
+        "semantic_construction_failed": 12,
+        "target_construction_failed": 3
+      },
+      "metrics": {
+        "coverage": {
+          "numerator": 0.0,
+          "denominator": 15.0,
+          "estimate": 0.0,
+          "ci95_question_cluster": {
+            "lower": 0.0,
+            "upper": 0.0,
+            "undefined_replicates": 0
+          }
+        },
+        "end_to_end_target_match": {
+          "numerator": 0.0,
+          "denominator": 15.0,
+          "estimate": 0.0,
+          "ci95_question_cluster": {
+            "lower": 0.0,
+            "upper": 0.0,
+            "undefined_replicates": 0
+          }
+        },
+        "valid_target_match": {
+          "numerator": 0.0,
+          "denominator": 0.0,
+          "estimate": null,
+          "ci95_question_cluster": {
+            "lower": null,
+            "upper": null,
+            "undefined_replicates": 2000
+          }
+        },
+        "source_success": {
+          "numerator": 0.0,
+          "denominator": 0.0,
+          "estimate": null,
+          "ci95_question_cluster": {
+            "lower": null,
+            "upper": null,
+            "undefined_replicates": 2000
+          }
+        },
+        "atr": {
+          "numerator": 0.0,
+          "denominator": 0.0,
+          "estimate": null,
+          "ci95_question_cluster": {
+            "lower": null,
+            "upper": null,
+            "undefined_replicates": 2000
+          }
+        },
+        "clean_correct_to_wrong": {
+          "numerator": 0.0,
+          "denominator": 0.0,
+          "estimate": null,
+          "ci95_question_cluster": {
+            "lower": null,
+            "upper": null,
+            "undefined_replicates": 2000
+          }
+        },
+        "clean_em": {
+          "numerator": 0.0,
+          "denominator": 0.0,
+          "estimate": null,
+          "ci95_question_cluster": {
+            "lower": null,
+            "upper": null,
+            "undefined_replicates": 2000
+          }
+        },
+        "poison_em": {
+          "numerator": 0.0,
+          "denominator": 0.0,
+          "estimate": null,
+          "ci95_question_cluster": {
+            "lower": null,
+            "upper": null,
+            "undefined_replicates": 2000
+          }
+        },
+        "clean_f1": {
+          "numerator": 0.0,
+          "denominator": 0.0,
+          "estimate": null,
+          "ci95_question_cluster": {
+            "lower": null,
+            "upper": null,
+            "undefined_replicates": 2000
+          }
+        },
+        "poison_f1": {
+          "numerator": 0.0,
+          "denominator": 0.0,
+          "estimate": null,
+          "ci95_question_cluster": {
+            "lower": null,
+            "upper": null,
+            "undefined_replicates": 2000
+          }
+        },
+        "poison_exposure": {
+          "numerator": 0.0,
+          "denominator": 0.0,
+          "estimate": null,
+          "ci95_question_cluster": {
+            "lower": null,
+            "upper": null,
+            "undefined_replicates": 2000
+          }
+        }
+      }
+    },
+    {
+      "family": "semantic_fluent_false_evidence",
+      "intensity": 3,
+      "method": "M2",
+      "source": "dense",
+      "pipeline": "reranker",
+      "assigned": 15,
+      "valid": 0,
+      "pending": 0,
+      "construction_failures": {
+        "semantic_construction_failed": 12,
+        "target_construction_failed": 3
+      },
+      "metrics": {
+        "coverage": {
+          "numerator": 0.0,
+          "denominator": 15.0,
+          "estimate": 0.0,
+          "ci95_question_cluster": {
+            "lower": 0.0,
+            "upper": 0.0,
+            "undefined_replicates": 0
+          }
+        },
+        "end_to_end_target_match": {
+          "numerator": 0.0,
+          "denominator": 15.0,
+          "estimate": 0.0,
+          "ci95_question_cluster": {
+            "lower": 0.0,
+            "upper": 0.0,
+            "undefined_replicates": 0
+          }
+        },
+        "valid_target_match": {
+          "numerator": 0.0,
+          "denominator": 0.0,
+          "estimate": null,
+          "ci95_question_cluster": {
+            "lower": null,
+            "upper": null,
+            "undefined_replicates": 2000
+          }
+        },
+        "source_success": {
+          "numerator": 0.0,
+          "denominator": 0.0,
+          "estimate": null,
+          "ci95_question_cluster": {
+            "lower": null,
+            "upper": null,
+            "undefined_replicates": 2000
+          }
+        },
+        "atr": {
+          "numerator": 0.0,
+          "denominator": 0.0,
+          "estimate": null,
+          "ci95_question_cluster": {
+            "lower": null,
+            "upper": null,
+            "undefined_replicates": 2000
+          }
+        },
+        "clean_correct_to_wrong": {
+          "numerator": 0.0,
+          "denominator": 0.0,
+          "estimate": null,
+          "ci95_question_cluster": {
+            "lower": null,
+            "upper": null,
+            "undefined_replicates": 2000
+          }
+        },
+        "clean_em": {
+          "numerator": 0.0,
+          "denominator": 0.0,
+          "estimate": null,
+          "ci95_question_cluster": {
+            "lower": null,
+            "upper": null,
+            "undefined_replicates": 2000
+          }
+        },
+        "poison_em": {
+          "numerator": 0.0,
+          "denominator": 0.0,
+          "estimate": null,
+          "ci95_question_cluster": {
+            "lower": null,
+            "upper": null,
+            "undefined_replicates": 2000
+          }
+        },
+        "clean_f1": {
+          "numerator": 0.0,
+          "denominator": 0.0,
+          "estimate": null,
+          "ci95_question_cluster": {
+            "lower": null,
+            "upper": null,
+            "undefined_replicates": 2000
+          }
+        },
+        "poison_f1": {
+          "numerator": 0.0,
+          "denominator": 0.0,
+          "estimate": null,
+          "ci95_question_cluster": {
+            "lower": null,
+            "upper": null,
+            "undefined_replicates": 2000
+          }
+        },
+        "poison_exposure": {
+          "numerator": 0.0,
+          "denominator": 0.0,
+          "estimate": null,
+          "ci95_question_cluster": {
+            "lower": null,
+            "upper": null,
+            "undefined_replicates": 2000
+          }
+        }
+      }
+    },
+    {
+      "family": "semantic_fluent_false_evidence",
+      "intensity": 3,
+      "method": "M2",
+      "source": "dense",
+      "pipeline": "rcd",
+      "assigned": 15,
+      "valid": 0,
+      "pending": 0,
+      "construction_failures": {
+        "semantic_construction_failed": 12,
+        "target_construction_failed": 3
+      },
+      "metrics": {
+        "coverage": {
+          "numerator": 0.0,
+          "denominator": 15.0,
+          "estimate": 0.0,
+          "ci95_question_cluster": {
+            "lower": 0.0,
+            "upper": 0.0,
+            "undefined_replicates": 0
+          }
+        },
+        "end_to_end_target_match": {
+          "numerator": 0.0,
+          "denominator": 15.0,
+          "estimate": 0.0,
+          "ci95_question_cluster": {
+            "lower": 0.0,
+            "upper": 0.0,
+            "undefined_replicates": 0
+          }
+        },
+        "valid_target_match": {
+          "numerator": 0.0,
+          "denominator": 0.0,
+          "estimate": null,
+          "ci95_question_cluster": {
+            "lower": null,
+            "upper": null,
+            "undefined_replicates": 2000
+          }
+        },
+        "source_success": {
+          "numerator": 0.0,
+          "denominator": 0.0,
+          "estimate": null,
+          "ci95_question_cluster": {
+            "lower": null,
+            "upper": null,
+            "undefined_replicates": 2000
+          }
+        },
+        "atr": {
+          "numerator": 0.0,
+          "denominator": 0.0,
+          "estimate": null,
+          "ci95_question_cluster": {
+            "lower": null,
+            "upper": null,
+            "undefined_replicates": 2000
+          }
+        },
+        "clean_correct_to_wrong": {
+          "numerator": 0.0,
+          "denominator": 0.0,
+          "estimate": null,
+          "ci95_question_cluster": {
+            "lower": null,
+            "upper": null,
+            "undefined_replicates": 2000
+          }
+        },
+        "clean_em": {
+          "numerator": 0.0,
+          "denominator": 0.0,
+          "estimate": null,
+          "ci95_question_cluster": {
+            "lower": null,
+            "upper": null,
+            "undefined_replicates": 2000
+          }
+        },
+        "poison_em": {
+          "numerator": 0.0,
+          "denominator": 0.0,
+          "estimate": null,
+          "ci95_question_cluster": {
+            "lower": null,
+            "upper": null,
+            "undefined_replicates": 2000
+          }
+        },
+        "clean_f1": {
+          "numerator": 0.0,
+          "denominator": 0.0,
+          "estimate": null,
+          "ci95_question_cluster": {
+            "lower": null,
+            "upper": null,
+            "undefined_replicates": 2000
+          }
+        },
+        "poison_f1": {
+          "numerator": 0.0,
+          "denominator": 0.0,
+          "estimate": null,
+          "ci95_question_cluster": {
+            "lower": null,
+            "upper": null,
+            "undefined_replicates": 2000
+          }
+        },
+        "poison_exposure": {
+          "numerator": 0.0,
+          "denominator": 0.0,
+          "estimate": null,
+          "ci95_question_cluster": {
+            "lower": null,
+            "upper": null,
+            "undefined_replicates": 2000
+          }
+        }
+      }
+    },
+    {
+      "family": "semantic_fluent_false_evidence",
+      "intensity": 3,
+      "method": "M3",
+      "source": "dense",
+      "pipeline": "dense",
+      "assigned": 15,
+      "valid": 0,
+      "pending": 0,
+      "construction_failures": {
+        "semantic_construction_failed": 12,
+        "target_construction_failed": 3
+      },
+      "metrics": {
+        "coverage": {
+          "numerator": 0.0,
+          "denominator": 15.0,
+          "estimate": 0.0,
+          "ci95_question_cluster": {
+            "lower": 0.0,
+            "upper": 0.0,
+            "undefined_replicates": 0
+          }
+        },
+        "end_to_end_target_match": {
+          "numerator": 0.0,
+          "denominator": 15.0,
+          "estimate": 0.0,
+          "ci95_question_cluster": {
+            "lower": 0.0,
+            "upper": 0.0,
+            "undefined_replicates": 0
+          }
+        },
+        "valid_target_match": {
+          "numerator": 0.0,
+          "denominator": 0.0,
+          "estimate": null,
+          "ci95_question_cluster": {
+            "lower": null,
+            "upper": null,
+            "undefined_replicates": 2000
+          }
+        },
+        "source_success": {
+          "numerator": 0.0,
+          "denominator": 0.0,
+          "estimate": null,
+          "ci95_question_cluster": {
+            "lower": null,
+            "upper": null,
+            "undefined_replicates": 2000
+          }
+        },
+        "atr": {
+          "numerator": 0.0,
+          "denominator": 0.0,
+          "estimate": null,
+          "ci95_question_cluster": {
+            "lower": null,
+            "upper": null,
+            "undefined_replicates": 2000
+          }
+        },
+        "clean_correct_to_wrong": {
+          "numerator": 0.0,
+          "denominator": 0.0,
+          "estimate": null,
+          "ci95_question_cluster": {
+            "lower": null,
+            "upper": null,
+            "undefined_replicates": 2000
+          }
+        },
+        "clean_em": {
+          "numerator": 0.0,
+          "denominator": 0.0,
+          "estimate": null,
+          "ci95_question_cluster": {
+            "lower": null,
+            "upper": null,
+            "undefined_replicates": 2000
+          }
+        },
+        "poison_em": {
+          "numerator": 0.0,
+          "denominator": 0.0,
+          "estimate": null,
+          "ci95_question_cluster": {
+            "lower": null,
+            "upper": null,
+            "undefined_replicates": 2000
+          }
+        },
+        "clean_f1": {
+          "numerator": 0.0,
+          "denominator": 0.0,
+          "estimate": null,
+          "ci95_question_cluster": {
+            "lower": null,
+            "upper": null,
+            "undefined_replicates": 2000
+          }
+        },
+        "poison_f1": {
+          "numerator": 0.0,
+          "denominator": 0.0,
+          "estimate": null,
+          "ci95_question_cluster": {
+            "lower": null,
+            "upper": null,
+            "undefined_replicates": 2000
+          }
+        },
+        "poison_exposure": {
+          "numerator": 0.0,
+          "denominator": 0.0,
+          "estimate": null,
+          "ci95_question_cluster": {
+            "lower": null,
+            "upper": null,
+            "undefined_replicates": 2000
+          }
+        }
+      }
+    },
+    {
+      "family": "semantic_fluent_false_evidence",
+      "intensity": 3,
+      "method": "M3",
+      "source": "dense",
+      "pipeline": "reranker",
+      "assigned": 15,
+      "valid": 0,
+      "pending": 0,
+      "construction_failures": {
+        "semantic_construction_failed": 12,
+        "target_construction_failed": 3
+      },
+      "metrics": {
+        "coverage": {
+          "numerator": 0.0,
+          "denominator": 15.0,
+          "estimate": 0.0,
+          "ci95_question_cluster": {
+            "lower": 0.0,
+            "upper": 0.0,
+            "undefined_replicates": 0
+          }
+        },
+        "end_to_end_target_match": {
+          "numerator": 0.0,
+          "denominator": 15.0,
+          "estimate": 0.0,
+          "ci95_question_cluster": {
+            "lower": 0.0,
+            "upper": 0.0,
+            "undefined_replicates": 0
+          }
+        },
+        "valid_target_match": {
+          "numerator": 0.0,
+          "denominator": 0.0,
+          "estimate": null,
+          "ci95_question_cluster": {
+            "lower": null,
+            "upper": null,
+            "undefined_replicates": 2000
+          }
+        },
+        "source_success": {
+          "numerator": 0.0,
+          "denominator": 0.0,
+          "estimate": null,
+          "ci95_question_cluster": {
+            "lower": null,
+            "upper": null,
+            "undefined_replicates": 2000
+          }
+        },
+        "atr": {
+          "numerator": 0.0,
+          "denominator": 0.0,
+          "estimate": null,
+          "ci95_question_cluster": {
+            "lower": null,
+            "upper": null,
+            "undefined_replicates": 2000
+          }
+        },
+        "clean_correct_to_wrong": {
+          "numerator": 0.0,
+          "denominator": 0.0,
+          "estimate": null,
+          "ci95_question_cluster": {
+            "lower": null,
+            "upper": null,
+            "undefined_replicates": 2000
+          }
+        },
+        "clean_em": {
+          "numerator": 0.0,
+          "denominator": 0.0,
+          "estimate": null,
+          "ci95_question_cluster": {
+            "lower": null,
+            "upper": null,
+            "undefined_replicates": 2000
+          }
+        },
+        "poison_em": {
+          "numerator": 0.0,
+          "denominator": 0.0,
+          "estimate": null,
+          "ci95_question_cluster": {
+            "lower": null,
+            "upper": null,
+            "undefined_replicates": 2000
+          }
+        },
+        "clean_f1": {
+          "numerator": 0.0,
+          "denominator": 0.0,
+          "estimate": null,
+          "ci95_question_cluster": {
+            "lower": null,
+            "upper": null,
+            "undefined_replicates": 2000
+          }
+        },
+        "poison_f1": {
+          "numerator": 0.0,
+          "denominator": 0.0,
+          "estimate": null,
+          "ci95_question_cluster": {
+            "lower": null,
+            "upper": null,
+            "undefined_replicates": 2000
+          }
+        },
+        "poison_exposure": {
+          "numerator": 0.0,
+          "denominator": 0.0,
+          "estimate": null,
+          "ci95_question_cluster": {
+            "lower": null,
+            "upper": null,
+            "undefined_replicates": 2000
+          }
+        }
+      }
+    },
+    {
+      "family": "semantic_fluent_false_evidence",
+      "intensity": 3,
+      "method": "M3",
+      "source": "dense",
+      "pipeline": "rcd",
+      "assigned": 15,
+      "valid": 0,
+      "pending": 0,
+      "construction_failures": {
+        "semantic_construction_failed": 12,
+        "target_construction_failed": 3
+      },
+      "metrics": {
+        "coverage": {
+          "numerator": 0.0,
+          "denominator": 15.0,
+          "estimate": 0.0,
+          "ci95_question_cluster": {
+            "lower": 0.0,
+            "upper": 0.0,
+            "undefined_replicates": 0
+          }
+        },
+        "end_to_end_target_match": {
+          "numerator": 0.0,
+          "denominator": 15.0,
+          "estimate": 0.0,
+          "ci95_question_cluster": {
+            "lower": 0.0,
+            "upper": 0.0,
+            "undefined_replicates": 0
+          }
+        },
+        "valid_target_match": {
+          "numerator": 0.0,
+          "denominator": 0.0,
+          "estimate": null,
+          "ci95_question_cluster": {
+            "lower": null,
+            "upper": null,
+            "undefined_replicates": 2000
+          }
+        },
+        "source_success": {
+          "numerator": 0.0,
+          "denominator": 0.0,
+          "estimate": null,
+          "ci95_question_cluster": {
+            "lower": null,
+            "upper": null,
+            "undefined_replicates": 2000
+          }
+        },
+        "atr": {
+          "numerator": 0.0,
+          "denominator": 0.0,
+          "estimate": null,
+          "ci95_question_cluster": {
+            "lower": null,
+            "upper": null,
+            "undefined_replicates": 2000
+          }
+        },
+        "clean_correct_to_wrong": {
+          "numerator": 0.0,
+          "denominator": 0.0,
+          "estimate": null,
+          "ci95_question_cluster": {
+            "lower": null,
+            "upper": null,
+            "undefined_replicates": 2000
+          }
+        },
+        "clean_em": {
+          "numerator": 0.0,
+          "denominator": 0.0,
+          "estimate": null,
+          "ci95_question_cluster": {
+            "lower": null,
+            "upper": null,
+            "undefined_replicates": 2000
+          }
+        },
+        "poison_em": {
+          "numerator": 0.0,
+          "denominator": 0.0,
+          "estimate": null,
+          "ci95_question_cluster": {
+            "lower": null,
+            "upper": null,
+            "undefined_replicates": 2000
+          }
+        },
+        "clean_f1": {
+          "numerator": 0.0,
+          "denominator": 0.0,
+          "estimate": null,
+          "ci95_question_cluster": {
+            "lower": null,
+            "upper": null,
+            "undefined_replicates": 2000
+          }
+        },
+        "poison_f1": {
+          "numerator": 0.0,
+          "denominator": 0.0,
+          "estimate": null,
+          "ci95_question_cluster": {
+            "lower": null,
+            "upper": null,
+            "undefined_replicates": 2000
+          }
+        },
+        "poison_exposure": {
+          "numerator": 0.0,
+          "denominator": 0.0,
+          "estimate": null,
+          "ci95_question_cluster": {
+            "lower": null,
+            "upper": null,
+            "undefined_replicates": 2000
+          }
+        }
+      }
+    }
+  ],
+  "paired_policy_contrasts": [
+    {
+      "family": "lexical_influential_token",
+      "intensity": 1,
+      "source": "bm25",
+      "pipeline": "dense",
+      "contrast": "M3-M1",
+      "status": "INCOMPLETE",
+      "estimate": null
+    },
+    {
+      "family": "lexical_influential_token",
+      "intensity": 1,
+      "source": "bm25",
+      "pipeline": "dense",
+      "contrast": "M3-M2",
+      "status": "INCOMPLETE",
+      "estimate": null
+    },
+    {
+      "family": "lexical_influential_token",
+      "intensity": 1,
+      "source": "bm25",
+      "pipeline": "rcd",
+      "contrast": "M3-M1",
+      "status": "INCOMPLETE",
+      "estimate": null
+    },
+    {
+      "family": "lexical_influential_token",
+      "intensity": 1,
+      "source": "bm25",
+      "pipeline": "rcd",
+      "contrast": "M3-M2",
+      "status": "INCOMPLETE",
+      "estimate": null
+    },
+    {
+      "family": "lexical_influential_token",
+      "intensity": 1,
+      "source": "bm25",
+      "pipeline": "reranker",
+      "contrast": "M3-M1",
+      "status": "INCOMPLETE",
+      "estimate": null
+    },
+    {
+      "family": "lexical_influential_token",
+      "intensity": 1,
+      "source": "bm25",
+      "pipeline": "reranker",
+      "contrast": "M3-M2",
+      "status": "INCOMPLETE",
+      "estimate": null
+    },
+    {
+      "family": "lexical_influential_token",
+      "intensity": 1,
+      "source": "dense",
+      "pipeline": "dense",
+      "contrast": "M3-M1",
+      "status": "INCOMPLETE",
+      "estimate": null
+    },
+    {
+      "family": "lexical_influential_token",
+      "intensity": 1,
+      "source": "dense",
+      "pipeline": "dense",
+      "contrast": "M3-M2",
+      "status": "INCOMPLETE",
+      "estimate": null
+    },
+    {
+      "family": "lexical_influential_token",
+      "intensity": 1,
+      "source": "dense",
+      "pipeline": "rcd",
+      "contrast": "M3-M1",
+      "status": "INCOMPLETE",
+      "estimate": null
+    },
+    {
+      "family": "lexical_influential_token",
+      "intensity": 1,
+      "source": "dense",
+      "pipeline": "rcd",
+      "contrast": "M3-M2",
+      "status": "INCOMPLETE",
+      "estimate": null
+    },
+    {
+      "family": "lexical_influential_token",
+      "intensity": 1,
+      "source": "dense",
+      "pipeline": "reranker",
+      "contrast": "M3-M1",
+      "status": "INCOMPLETE",
+      "estimate": null
+    },
+    {
+      "family": "lexical_influential_token",
+      "intensity": 1,
+      "source": "dense",
+      "pipeline": "reranker",
+      "contrast": "M3-M2",
+      "status": "INCOMPLETE",
+      "estimate": null
+    },
+    {
+      "family": "lexical_influential_token",
+      "intensity": 3,
+      "source": "bm25",
+      "pipeline": "dense",
+      "contrast": "M3-M1",
+      "status": "INCOMPLETE",
+      "estimate": null
+    },
+    {
+      "family": "lexical_influential_token",
+      "intensity": 3,
+      "source": "bm25",
+      "pipeline": "dense",
+      "contrast": "M3-M2",
+      "status": "INCOMPLETE",
+      "estimate": null
+    },
+    {
+      "family": "lexical_influential_token",
+      "intensity": 3,
+      "source": "bm25",
+      "pipeline": "rcd",
+      "contrast": "M3-M1",
+      "status": "INCOMPLETE",
+      "estimate": null
+    },
+    {
+      "family": "lexical_influential_token",
+      "intensity": 3,
+      "source": "bm25",
+      "pipeline": "rcd",
+      "contrast": "M3-M2",
+      "status": "INCOMPLETE",
+      "estimate": null
+    },
+    {
+      "family": "lexical_influential_token",
+      "intensity": 3,
+      "source": "bm25",
+      "pipeline": "reranker",
+      "contrast": "M3-M1",
+      "status": "INCOMPLETE",
+      "estimate": null
+    },
+    {
+      "family": "lexical_influential_token",
+      "intensity": 3,
+      "source": "bm25",
+      "pipeline": "reranker",
+      "contrast": "M3-M2",
+      "status": "INCOMPLETE",
+      "estimate": null
+    },
+    {
+      "family": "lexical_influential_token",
+      "intensity": 3,
+      "source": "dense",
+      "pipeline": "dense",
+      "contrast": "M3-M1",
+      "status": "INCOMPLETE",
+      "estimate": null
+    },
+    {
+      "family": "lexical_influential_token",
+      "intensity": 3,
+      "source": "dense",
+      "pipeline": "dense",
+      "contrast": "M3-M2",
+      "status": "INCOMPLETE",
+      "estimate": null
+    },
+    {
+      "family": "lexical_influential_token",
+      "intensity": 3,
+      "source": "dense",
+      "pipeline": "rcd",
+      "contrast": "M3-M1",
+      "status": "INCOMPLETE",
+      "estimate": null
+    },
+    {
+      "family": "lexical_influential_token",
+      "intensity": 3,
+      "source": "dense",
+      "pipeline": "rcd",
+      "contrast": "M3-M2",
+      "status": "INCOMPLETE",
+      "estimate": null
+    },
+    {
+      "family": "lexical_influential_token",
+      "intensity": 3,
+      "source": "dense",
+      "pipeline": "reranker",
+      "contrast": "M3-M1",
+      "status": "INCOMPLETE",
+      "estimate": null
+    },
+    {
+      "family": "lexical_influential_token",
+      "intensity": 3,
+      "source": "dense",
+      "pipeline": "reranker",
+      "contrast": "M3-M2",
+      "status": "INCOMPLETE",
+      "estimate": null
+    },
+    {
+      "family": "semantic_fluent_false_evidence",
+      "intensity": 1,
+      "source": "bm25",
+      "pipeline": "dense",
+      "contrast": "M3-M1",
+      "status": "INCOMPLETE",
+      "estimate": null
+    },
+    {
+      "family": "semantic_fluent_false_evidence",
+      "intensity": 1,
+      "source": "bm25",
+      "pipeline": "dense",
+      "contrast": "M3-M2",
+      "status": "INCOMPLETE",
+      "estimate": null
+    },
+    {
+      "family": "semantic_fluent_false_evidence",
+      "intensity": 1,
+      "source": "bm25",
+      "pipeline": "rcd",
+      "contrast": "M3-M1",
+      "status": "INCOMPLETE",
+      "estimate": null
+    },
+    {
+      "family": "semantic_fluent_false_evidence",
+      "intensity": 1,
+      "source": "bm25",
+      "pipeline": "rcd",
+      "contrast": "M3-M2",
+      "status": "INCOMPLETE",
+      "estimate": null
+    },
+    {
+      "family": "semantic_fluent_false_evidence",
+      "intensity": 1,
+      "source": "bm25",
+      "pipeline": "reranker",
+      "contrast": "M3-M1",
+      "status": "INCOMPLETE",
+      "estimate": null
+    },
+    {
+      "family": "semantic_fluent_false_evidence",
+      "intensity": 1,
+      "source": "bm25",
+      "pipeline": "reranker",
+      "contrast": "M3-M2",
+      "status": "INCOMPLETE",
+      "estimate": null
+    },
+    {
+      "family": "semantic_fluent_false_evidence",
+      "intensity": 1,
+      "source": "dense",
+      "pipeline": "dense",
+      "contrast": "M3-M1",
+      "status": "INCOMPLETE",
+      "estimate": null
+    },
+    {
+      "family": "semantic_fluent_false_evidence",
+      "intensity": 1,
+      "source": "dense",
+      "pipeline": "dense",
+      "contrast": "M3-M2",
+      "status": "INCOMPLETE",
+      "estimate": null
+    },
+    {
+      "family": "semantic_fluent_false_evidence",
+      "intensity": 1,
+      "source": "dense",
+      "pipeline": "rcd",
+      "contrast": "M3-M1",
+      "status": "INCOMPLETE",
+      "estimate": null
+    },
+    {
+      "family": "semantic_fluent_false_evidence",
+      "intensity": 1,
+      "source": "dense",
+      "pipeline": "rcd",
+      "contrast": "M3-M2",
+      "status": "INCOMPLETE",
+      "estimate": null
+    },
+    {
+      "family": "semantic_fluent_false_evidence",
+      "intensity": 1,
+      "source": "dense",
+      "pipeline": "reranker",
+      "contrast": "M3-M1",
+      "status": "INCOMPLETE",
+      "estimate": null
+    },
+    {
+      "family": "semantic_fluent_false_evidence",
+      "intensity": 1,
+      "source": "dense",
+      "pipeline": "reranker",
+      "contrast": "M3-M2",
+      "status": "INCOMPLETE",
+      "estimate": null
+    },
+    {
+      "family": "semantic_fluent_false_evidence",
+      "intensity": 3,
+      "source": "bm25",
+      "pipeline": "dense",
+      "contrast": "M3-M1",
+      "status": "COMPLETE_ZERO_CONSTRUCTION_COVERAGE",
+      "estimate": 0.0,
+      "ci95_question_cluster": {
+        "lower": 0.0,
+        "upper": 0.0,
+        "undefined_replicates": 0
+      }
+    },
+    {
+      "family": "semantic_fluent_false_evidence",
+      "intensity": 3,
+      "source": "bm25",
+      "pipeline": "dense",
+      "contrast": "M3-M2",
+      "status": "COMPLETE_ZERO_CONSTRUCTION_COVERAGE",
+      "estimate": 0.0,
+      "ci95_question_cluster": {
+        "lower": 0.0,
+        "upper": 0.0,
+        "undefined_replicates": 0
+      }
+    },
+    {
+      "family": "semantic_fluent_false_evidence",
+      "intensity": 3,
+      "source": "bm25",
+      "pipeline": "rcd",
+      "contrast": "M3-M1",
+      "status": "COMPLETE_ZERO_CONSTRUCTION_COVERAGE",
+      "estimate": 0.0,
+      "ci95_question_cluster": {
+        "lower": 0.0,
+        "upper": 0.0,
+        "undefined_replicates": 0
+      }
+    },
+    {
+      "family": "semantic_fluent_false_evidence",
+      "intensity": 3,
+      "source": "bm25",
+      "pipeline": "rcd",
+      "contrast": "M3-M2",
+      "status": "COMPLETE_ZERO_CONSTRUCTION_COVERAGE",
+      "estimate": 0.0,
+      "ci95_question_cluster": {
+        "lower": 0.0,
+        "upper": 0.0,
+        "undefined_replicates": 0
+      }
+    },
+    {
+      "family": "semantic_fluent_false_evidence",
+      "intensity": 3,
+      "source": "bm25",
+      "pipeline": "reranker",
+      "contrast": "M3-M1",
+      "status": "COMPLETE_ZERO_CONSTRUCTION_COVERAGE",
+      "estimate": 0.0,
+      "ci95_question_cluster": {
+        "lower": 0.0,
+        "upper": 0.0,
+        "undefined_replicates": 0
+      }
+    },
+    {
+      "family": "semantic_fluent_false_evidence",
+      "intensity": 3,
+      "source": "bm25",
+      "pipeline": "reranker",
+      "contrast": "M3-M2",
+      "status": "COMPLETE_ZERO_CONSTRUCTION_COVERAGE",
+      "estimate": 0.0,
+      "ci95_question_cluster": {
+        "lower": 0.0,
+        "upper": 0.0,
+        "undefined_replicates": 0
+      }
+    },
+    {
+      "family": "semantic_fluent_false_evidence",
+      "intensity": 3,
+      "source": "dense",
+      "pipeline": "dense",
+      "contrast": "M3-M1",
+      "status": "COMPLETE_ZERO_CONSTRUCTION_COVERAGE",
+      "estimate": 0.0,
+      "ci95_question_cluster": {
+        "lower": 0.0,
+        "upper": 0.0,
+        "undefined_replicates": 0
+      }
+    },
+    {
+      "family": "semantic_fluent_false_evidence",
+      "intensity": 3,
+      "source": "dense",
+      "pipeline": "dense",
+      "contrast": "M3-M2",
+      "status": "COMPLETE_ZERO_CONSTRUCTION_COVERAGE",
+      "estimate": 0.0,
+      "ci95_question_cluster": {
+        "lower": 0.0,
+        "upper": 0.0,
+        "undefined_replicates": 0
+      }
+    },
+    {
+      "family": "semantic_fluent_false_evidence",
+      "intensity": 3,
+      "source": "dense",
+      "pipeline": "rcd",
+      "contrast": "M3-M1",
+      "status": "COMPLETE_ZERO_CONSTRUCTION_COVERAGE",
+      "estimate": 0.0,
+      "ci95_question_cluster": {
+        "lower": 0.0,
+        "upper": 0.0,
+        "undefined_replicates": 0
+      }
+    },
+    {
+      "family": "semantic_fluent_false_evidence",
+      "intensity": 3,
+      "source": "dense",
+      "pipeline": "rcd",
+      "contrast": "M3-M2",
+      "status": "COMPLETE_ZERO_CONSTRUCTION_COVERAGE",
+      "estimate": 0.0,
+      "ci95_question_cluster": {
+        "lower": 0.0,
+        "upper": 0.0,
+        "undefined_replicates": 0
+      }
+    },
+    {
+      "family": "semantic_fluent_false_evidence",
+      "intensity": 3,
+      "source": "dense",
+      "pipeline": "reranker",
+      "contrast": "M3-M1",
+      "status": "COMPLETE_ZERO_CONSTRUCTION_COVERAGE",
+      "estimate": 0.0,
+      "ci95_question_cluster": {
+        "lower": 0.0,
+        "upper": 0.0,
+        "undefined_replicates": 0
+      }
+    },
+    {
+      "family": "semantic_fluent_false_evidence",
+      "intensity": 3,
+      "source": "dense",
+      "pipeline": "reranker",
+      "contrast": "M3-M2",
+      "status": "COMPLETE_ZERO_CONSTRUCTION_COVERAGE",
+      "estimate": 0.0,
+      "ci95_question_cluster": {
+        "lower": 0.0,
+        "upper": 0.0,
+        "undefined_replicates": 0
+      }
+    }
+  ],
+  "logical_assigned_target_positions": 1080,
+  "valid_target_positions": 504,
+  "completed_valid_target_positions": 171,
+  "new_physical_qwen_attempts": 0,
+  "new_completed_calls": 0,
+  "failed_calls": 0,
+  "indeterminate_calls": 0,
+  "retries": 0,
+  "historical_physical_responses_verified": 212,
+  "screening": {
+    "historical_screen_elapsed_seconds": 17418.43966572079,
+    "new_screen_calls": 0,
+    "verified_historical_screen_physical_calls": 4588
+  },
+  "new_call_estimate": "UNKNOWN",
+  "resource_blocked": true,
+  "resource_stop": {
+    "reason": "Active swapping detected",
+    "max_rss": 889929728,
+    "max_metal": 1523712
+  },
+  "new_retrieval_checkpoints": 1,
+  "pilot_sha256": "e234916143b64f41994c7201b4242b7b9894dbc5c2a3980bc52cbba486158d62",
+  "selection_sha256": "7415537b8141244861f058339e4c4a9cec622683ba45a67fc5d92e6523373839",
+  "native_history_sha256": "5b5729d3750fec98d3dab478984d69186d5423e6593ddbc7c8532c30d9f52298",
+  "policy_comparison": "INCOMPLETE until all matched valid M1/M2/M3 observations resolve; no incomplete-case superiority claim"
+}

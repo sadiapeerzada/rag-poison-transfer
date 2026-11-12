@@ -13,7 +13,8 @@ import time
 def mac_health():
     pressure=int(subprocess.check_output(['sysctl','-n','kern.memorystatus_vm_pressure_level'],text=True).strip())
     vm=subprocess.check_output(['vm_stat'],text=True)
-    swapping=sum(int(re.search(r'^'+k+r':\s+(\d+)',vm,re.M).group(1)) for k in ('Swapouts','Pageouts'))
+    # Use actual compressor swap counters, not general file-backed page-outs.
+    swapping=sum(int(re.search(r'^'+k+r':\s+(\d+)',vm,re.M).group(1)) for k in ('Swapins','Swapouts'))
     thermal=subprocess.check_output(['pmset','-g','therm'],text=True)
     # CPU_Available_CPUs is a count, not a percentage.
     speed=[int(v) for v in re.findall(r'(?:CPU_Speed_Limit|CPU_Scheduler_Limit)\s*=\s*(\d+)',thermal)]
