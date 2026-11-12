@@ -1,0 +1,77 @@
+{
+  "schema": "e5-published-baseline-source-inspection/v1",
+  "baseline": "PoisonedRAG black-box LM_targeted",
+  "accessed_date": "2026-11-13",
+  "repository": "https://github.com/sleeepeer/PoisonedRAG",
+  "commit": "f660d72174f06b13fae5163ce656e7b235db858f",
+  "author_link": "https://jinyuan-jia.github.io/publications/",
+  "paper": "https://www.usenix.org/system/files/usenixsecurity25-zou-poisonedrag.pdf",
+  "files": [
+    {
+      "path": "gen_adv.py",
+      "git_blob_sha": "ca24979097eb7566861d0d5554558ff807539afd",
+      "url": "https://github.com/sleeepeer/PoisonedRAG/blob/f660d72174f06b13fae5163ce656e7b235db858f/gen_adv.py",
+      "content_sha256": "ab1e28645c4f90b7a35ea6fa0adc056abda00a5ec9ec53490ab9b9d29ec4de76"
+    },
+    {
+      "path": "main.py",
+      "git_blob_sha": "7ebe26c8d74197310dc6b57212c91a30dd68a396",
+      "url": "https://github.com/sleeepeer/PoisonedRAG/blob/f660d72174f06b13fae5163ce656e7b235db858f/main.py",
+      "content_sha256": "00b338185e29399f49cab26b09a909f9860fd0181573fc9abe822b43c087c1ff"
+    },
+    {
+      "path": "src/attack.py",
+      "git_blob_sha": "a29630c42508adbb421cc5ee23eac9bbcd58be44",
+      "url": "https://github.com/sleeepeer/PoisonedRAG/blob/f660d72174f06b13fae5163ce656e7b235db858f/src/attack.py",
+      "content_sha256": "31fb59905812e7656f7206f416dc53228a3089390b0ecd9f0c9e9575dbfc250b"
+    },
+    {
+      "path": "src/models/GPT.py",
+      "git_blob_sha": "c2679c8c8709b37068f9b635813f688feb09c5c2",
+      "url": "https://github.com/sleeepeer/PoisonedRAG/blob/f660d72174f06b13fae5163ce656e7b235db858f/src/models/GPT.py",
+      "content_sha256": "a69af74f8676f5bf1af22f8b1bf42c038dc11c8ee320399491894284aa32a486"
+    },
+    {
+      "path": "run.py",
+      "git_blob_sha": "c6bde6fdc85aad3af8234923773f95ae61d55589",
+      "url": "https://github.com/sleeepeer/PoisonedRAG/blob/f660d72174f06b13fae5163ce656e7b235db858f/run.py",
+      "content_sha256": "3d2ef80cee9d162a53ce3c6bb45fe6bb2465824d5ef65c296eaf86b454a70426"
+    },
+    {
+      "path": "model_configs/gpt4_config.json",
+      "git_blob_sha": "f16232ec98eb751734a098c40cbd3309df379888",
+      "url": "https://github.com/sleeepeer/PoisonedRAG/blob/f660d72174f06b13fae5163ce656e7b235db858f/model_configs/gpt4_config.json",
+      "content_sha256": "03de3695fc6b25a1bcb66626c5a62e5bd3ebf3a0d467600e3414e42e06541a67"
+    },
+    {
+      "path": "src/utils.py",
+      "git_blob_sha": "089be7cb423767fac3cb8cdb89643fa1eb2ea608",
+      "url": "https://github.com/sleeepeer/PoisonedRAG/blob/f660d72174f06b13fae5163ce656e7b235db858f/src/utils.py",
+      "content_sha256": "3af2f2f64dfb2e51e5b28f5b297d8e93170a8a5b8dc4f1599755fbc937466116"
+    },
+    {
+      "path": "src/prompts.py",
+      "git_blob_sha": "e6c53d4367bb49b70e097fc3b522d0583fc584ea",
+      "url": "https://github.com/sleeepeer/PoisonedRAG/blob/f660d72174f06b13fae5163ce656e7b235db858f/src/prompts.py",
+      "content_sha256": "ea9efc52a46da50fbecd811eea74be83b4fd8a5db55f35ac5e208ec841e37cf4"
+    }
+  ],
+  "execution": "not attempted",
+  "new_model_calls": 0,
+  "verdict": "suitable threat-model reference; execution not justified under current constraints",
+  "published_poison_artifact": {
+    "path": "results/adv_targeted_results/hotpotqa.json",
+    "git_blob_sha": "6bc89ec3226c105690a32295dbdc84075c3113dd",
+    "records": 100,
+    "passages_per_record": [
+      5
+    ],
+    "native_cohort_id_overlap": 6,
+    "exact_question_text_matches_in_overlap": 6,
+    "exact_gold_label_matches_in_overlap": 6,
+    "full_generator_backend_binding_reuse": "UNVERIFIED; no numeric Qwen-call savings claimed",
+    "content_sha256": "5119d6f9fd53cb0ecb3f33de939bd940d77cbaf80284b7ccd3d256f63a430537"
+  },
+  "byte_integrity_verification": "All nine downloaded UTF-8 contents reproduce their Git blob SHA-1 identities; SHA-256 also recorded.",
+  "native_comparison_input_sha256": "e73b36144364c6c5e9586ea7d3be8a57c69294a2215c0dcd73ed84cac402725b"
+}
