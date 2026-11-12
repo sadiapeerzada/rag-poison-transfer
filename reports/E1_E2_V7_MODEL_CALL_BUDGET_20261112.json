@@ -1,0 +1,97 @@
+{
+  "status": "VERIFIED_FIVE_QUESTION_INPUT_BUDGET_GENERATION_RESOURCE_BLOCKED",
+  "date": "2026-11-12",
+  "development_manifest_questions": 25,
+  "active_smoke_questions": 5,
+  "historically_exposed": true,
+  "full_25_pilot_budget": "UNKNOWN; only five-question generator inputs prepared",
+  "E1": {
+    "distinct_complete_bindings": 432,
+    "verified_reusable_historical_physical_responses": 212,
+    "missing_complete_bindings": 220,
+    "prespecified_funded_prefix": 156
+  },
+  "E2": {
+    "verified_reusable_historical_physical_responses": 180,
+    "historical_responses_are_subset_of_E1": true,
+    "missing_D2_complete_bindings": 60,
+    "clean_distinct_inputs": 4,
+    "poisoned_distinct_inputs": 56,
+    "conditional_funded_prefix_after_E1": 44,
+    "rewrite_Qwen_calls": 0
+  },
+  "combined": {
+    "classification_counts": {
+      "REUSABLE": 212,
+      "MISSING": 280,
+      "INCOMPATIBLE": 0,
+      "UNVERIFIED": 0
+    },
+    "verified_reusable_physical_calls": 212,
+    "nonreusable_distinct_complete_inputs": 280,
+    "new_call_estimate": 280,
+    "reused_responses_are_new_independent_inference": false
+  },
+  "minimum_new_calls_to_cover_all_missing_bindings_under_current_reuse_rule": 280,
+  "authorization": {
+    "maximum_new_generation_attempts": 200,
+    "maximum_inference_seconds": 14400,
+    "maximum_rss_bytes": 12884901888,
+    "maximum_metal_bytes": 10737418240,
+    "single_model_process": true,
+    "swap_ins_allowed": true,
+    "new_swap_outs_allowed": false
+  },
+  "actual_generation": {
+    "physical_attempts": 0,
+    "completed": 0,
+    "failed": 0,
+    "retried": 0,
+    "indeterminate": 0
+  },
+  "model_initialization": {
+    "attempts": 2,
+    "resource_stopped": 2,
+    "conservatively_charged_Qwen_initialization_seconds": 17.45168324172846,
+    "authorized_single_retry_consumed": true,
+    "confirmed_retry_guard_condition": "Memory pressure level=2",
+    "retry_peak_rss_bytes": 1643085824,
+    "retry_peak_metal_bytes": 4287507464,
+    "swapout_baseline": 1231704,
+    "swapouts_at_stop": 1231704,
+    "thermal_warning_at_stop": false,
+    "available_ram_before_retry_bytes": 6435962880,
+    "disk_free_before_retry_bytes": 24069664768
+  },
+  "new_D2_retrieval": {
+    "wrapper_calls": 112,
+    "inner_dense_searches": 112,
+    "rewrite_model_calls": 0,
+    "build_seconds": 19.611479496961692,
+    "retrieval_seconds": 0.18026587307394948,
+    "embedding_cache": {
+      "text_lookups": 344746,
+      "unique_texts_encoded": 3886,
+      "cache_hits": 340860,
+      "encoder_method_calls": 23
+    },
+    "max_rss_bytes": 1704034304,
+    "max_metal_bytes": 1135984640
+  },
+  "pins": {
+    "pilot": "26d055e46a09307f92ddb2e3ba7b14cc2d03abf01bcd82da7a40cbaba16a5e49",
+    "selection": "daa6e6cb42a9d6a11334728ae34953fd3711320be0e65d76609c6c60cb7a4a31",
+    "E1_plan": "b1c41c4c2ba10b951f28bd3f340e1cb8aa7a41b6376fdead301a8adfff125e84",
+    "E2_plan": "6a769dc60373ea616e52c04fed4fee1febcd4fea465d9cd08b8a03febf4ef91e",
+    "history": "5b5729d3750fec98d3dab478984d69186d5423e6593ddbc7c8532c30d9f52298",
+    "E2_dispatch": "137e6b3fee8e2ce88ee3a72c88e978f20ebcfcbbaaa909b0a1d62e1754c2cde9",
+    "retry_stop": "d31fa0630f7bd698dda128a80b170c5c3d4fc6e959e516208f90863297849fbb"
+  },
+  "limitations": [
+    "Counts are complete-binding counts under the frozen conservative reuse rule, not an inferred irreducible prompt-only minimum.",
+    "The 280-input full smoke exceeds the 200-call session cap; no full-smoke or 25-question completion is claimed.",
+    "No new Qwen answer was produced; initialization is recorded separately from physical generation calls.",
+    "No further initialization is authorized by the consumed single-retry permission.",
+    "Main 100\u2013150-question studies remain unapproved and unstarted."
+  ]
+}

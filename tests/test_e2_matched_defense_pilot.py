@@ -75,3 +75,22 @@ def test_resource_block_preserves_actual_three_arms_and_missing_fourth(tmp_path,
     assert next(c for c in result['paired_contrasts'] if c['contrast']=='D4-D2')['status']=='INCOMPLETE'
     assert 'private-native-q' not in output.read_text()
     assert 'private synthetic evidence' not in output.read_text()
+
+
+def test_embedding_cache_preserves_outputs_order_dtype_and_retrieval():
+    import numpy as np
+    from src.retrieval.dense import DenseRetriever,HashingEmbedder
+    class Encoder:
+        def __init__(self):self.calls=[];self.encoder=HashingEmbedder(16)
+        def encode(self,texts):self.calls.append(list(texts));return self.encoder.encode(texts)
+    encoder=Encoder();cache=e2.TextEmbeddingCache(encoder)
+    texts=['alpha beta','gamma','alpha beta']
+    assert np.array_equal(cache.encode(texts),encoder.encoder.encode(texts))
+    assert np.array_equal(cache.encode(list(reversed(texts))),encoder.encoder.encode(list(reversed(texts))))
+    assert encoder.calls==[['alpha beta','gamma']]
+    corpus=[{'doc_id':str(i),'text':text} for i,text in enumerate(texts)]
+    cached=e2.FixedRewriteDense(DenseRetriever(cache));baseline=e2.FixedRewriteDense(DenseRetriever(HashingEmbedder(16)))
+    cached.build(corpus);baseline.build(corpus)
+    assert cached.retrieve('alpha')==baseline.retrieve('alpha')
+    assert cache.statistics()['cache_hits']>0
+    assert cache.encode(['alpha']).dtype==np.float32

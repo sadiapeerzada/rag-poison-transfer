@@ -26,6 +26,26 @@ REWRITE_TEMPLATE='Background evidence about: {question}'
 ARMS={'D1':'dense','D2':'fixed_rewrite_dense','D3':'reranker','D4':'rcd'}
 
 
+class TextEmbeddingCache:
+    """Cache the unchanged normalized text encoder; never cache model answers."""
+    def __init__(self,encoder):
+        self.encoder=encoder;self.cache={};self.lookups=0;self.unique_encoded=0;self.encoder_calls=0
+    def encode(self,texts):
+        import numpy as np
+        if not texts:raise ValueError('Nonempty text batch required')
+        missing=list(dict.fromkeys(t for t in texts if t not in self.cache))
+        self.lookups+=len(texts)
+        if missing:
+            values=self.encoder.encode(missing)
+            if len(values)!=len(missing):raise ValueError('Embedding count mismatch')
+            self.encoder_calls+=1;self.unique_encoded+=len(missing)
+            self.cache.update(zip(missing,values))
+        return np.stack([self.cache[t] for t in texts])
+    def statistics(self):
+        return {'text_lookups':self.lookups,'unique_texts_encoded':self.unique_encoded,
+                'cache_hits':self.lookups-self.unique_encoded,'encoder_method_calls':self.encoder_calls}
+
+
 class FixedRewriteDense:
     """One non-generative rewrite + dense lookup; final QA retains original question."""
     def __init__(self,dense):self.dense=dense;self.last_diagnostics=None
@@ -77,6 +97,7 @@ def execute(root,native_root,output,snapshot=None):
     config={'pilot_sha256':sha(root/'pilot.freeze.json'),'selection_sha256':sha(root/'selection.seal.json'),
             'arms':ARMS,'generator_visible_k':3,'D2_rewrite_template':REWRITE_TEMPLATE,
             'D3_candidate_pool':20,'D3_ties':'stable dense order',
+            'D2_embedding_cache':'per-text normalized pinned encoder/v1; model/rewriter/scoring unchanged',
             'D4_frozen_config':native_spec['configs']['rcd'],'scope':'M3 fixed original source-selected union corpora',
             'limits':freeze['limits'],'code_sha256':sha(__file__),'resource_guard_sha256':sha(ROOT/'scripts/bounded_pilot_resources.py'),'historically_exposed':True}
     once(root/'e2.freeze.json',config)
@@ -89,7 +110,7 @@ def execute(root,native_root,output,snapshot=None):
     if sha(native_root/'execution/evaluation/transfer.complete.json')!=COMPLETION_PIN:raise ValueError('Native completion pin differs')
     completion=read(native_root/'execution/evaluation/transfer.complete.json')
     trace_cache={};traces=[];rows=[];new_plan={};e2logical=[]
-    used_physical=set();historical_logical=0;guard=None
+    used_physical=set();historical_logical=0;guard=None;new_retrieval_traces=[]
     dense=None;tokenizer=None
     existing_plan=read(root/'e2.plan.private.json') if (root/'e2.plan.private.json').exists() else []
     existing_logical=read(root/'e2.logical.private.json') if (root/'e2.logical.private.json').exists() else []
@@ -179,11 +200,16 @@ def execute(root,native_root,output,snapshot=None):
                             from transformers import AutoTokenizer
                             tokenizer=AutoTokenizer.from_pretrained(str(model_path),local_files_only=True)
                             from src.retrieval.dense import DenseRetriever,SentenceTransformerEmbedder
-                            dense=DenseRetriever(SentenceTransformerEmbedder(native_spec['retrieval_snapshots']['embedder']['path']))
-                        cfg={**retrieval_config(native_spec,'dense'),'retriever':'fixed_rewrite_dense','rewrite_template':REWRITE_TEMPLATE}
+                            dense=DenseRetriever(TextEmbeddingCache(SentenceTransformerEmbedder(native_spec['retrieval_snapshots']['embedder']['path'])))
+                        cfg={**retrieval_config(native_spec,'dense'),'retriever':'fixed_rewrite_dense','rewrite_template':REWRITE_TEMPLATE,'embedding_cache':'normalized-per-text/v1'}
                         for condition,corpus in (('clean',clean['corpus']),('poisoned',cell['corpus'])):
-                            mac_health();rewrite=FixedRewriteDense(dense);rewrite.build(corpus)
+                            mac_health();rewrite=FixedRewriteDense(dense)
+                            build_start=time.monotonic();rewrite.build(corpus);build_seconds=time.monotonic()-build_start
                             docs=rewrite.retrieve(queries[qid]['question'],3)
+                            trace={'cell':cid,'source':source,'query_id':qid,'condition':condition,
+                                   'build_seconds':build_seconds,**rewrite.last_diagnostics}
+                            new_retrieval_traces.append(trace)
+                            once(root/'e2.retrieval-traces'/(digest([cid,source,qid,condition])+'.json'),trace)
                             evidence=[{'doc_id':d.doc_id,'text':d.text,'score':d.score} for d in docs]
                             prompt=build_prompt(queries[qid]['question'],[d['text'] for d in evidence])
                             backend=tokenizer.apply_chat_template([{'role':'user','content':prompt}],tokenize=False,add_generation_prompt=True)
@@ -200,6 +226,11 @@ def execute(root,native_root,output,snapshot=None):
         atomic(root/'e2.prepare.complete.json',{'pilot_sha256':sha(root/'pilot.freeze.json'),
                'plan_sha256':sha(root/'e2.plan.private.json'),'history_sha256':sha(root/'history.private.json'),'e2_freeze_sha256':sha(root/'e2.freeze.json'),'reuse':reuse})
     if guard:guard.close()
+    new_cost={'wrapper_calls':len(new_retrieval_traces),'inner_dense_searches':len(new_retrieval_traces),
+              'rewrite_model_calls':0,'build_seconds':sum(t['build_seconds'] for t in new_retrieval_traces),
+              'retrieval_seconds':sum(t['elapsed_seconds'] for t in new_retrieval_traces),
+              'embedding_cache':dense.embedder.statistics() if dense else None,
+              'max_rss_bytes':guard.max_rss if guard else None,'max_metal_bytes':guard.max_metal if guard else None}
     grouped=summarize(rows,ids)
     for g in grouped:
         g['metrics']={k:v for k,v in g['metrics'].items() if k not in ('source_success','atr')}
@@ -223,7 +254,7 @@ def execute(root,native_root,output,snapshot=None):
             'assigned_defense_positions':len(rows),'valid_defense_positions':sum(r['status']==old.VALID for r in rows),
             'completed_valid_defense_positions':sum(r['complete'] for r in rows),
             'pending_D2_valid_positions':sum(r['pipeline']=='D2' and r['status']==old.VALID and not r['complete'] for r in rows),
-            'metrics':grouped,'paired_contrasts':paired(rows,ids),'historical_timing':timing,
+            'metrics':grouped,'paired_contrasts':paired(rows,ids),'historical_timing':timing,'new_D2_retrieval_work':new_cost,
             'pilot_sha256':sha(root/'pilot.freeze.json'),'e2_freeze_sha256':sha(root/'e2.freeze.json'),
             'selection_sha256':sha(root/'selection.seal.json'),'native_history_sha256':sha(root/'history.private.json'),
             'blocker':blocker if blocked else None}
