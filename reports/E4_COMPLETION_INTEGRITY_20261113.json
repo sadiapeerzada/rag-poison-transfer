@@ -1,0 +1,35 @@
+{
+  "completed_reviews": 100,
+  "e1_e2_checkpoint_sha256": {
+    "e2.plan.private.json": "6a769dc60373ea616e52c04fed4fee1febcd4fea465d9cd08b8a03febf4ef91e",
+    "pilot.freeze.json": "26d055e46a09307f92ddb2e3ba7b14cc2d03abf01bcd82da7a40cbaba16a5e49",
+    "plan.private.json": "b1c41c4c2ba10b951f28bd3f340e1cb8aa7a41b6376fdead301a8adfff125e84",
+    "selection.seal.json": "daa6e6cb42a9d6a11334728ae34953fd3711320be0e65d76609c6c60cb7a4a31"
+  },
+  "e1_e2_generation_intents": 0,
+  "e5_report_sha256": {
+    "E5_POISONEDRAG_FEASIBILITY_20261113.md": "e3179c30bb4bb45d97fe272e42be42d2409a6aaff4d0213b8e3e2fb9ba574f2e",
+    "E5_POISONEDRAG_SOURCE_INSPECTION_20261113.json": "d36c7f915c7cccd14a0d6c25e6a66eeb9313543279fde01b45fa6736d78176e0"
+  },
+  "independent_human_adjudications": 0,
+  "new_qwen_calls": 0,
+  "original_annotations_preserved": 20,
+  "original_cases_preserved": 100,
+  "private_artifact_sha256": {
+    "completion/alias-and-uncertainty.private.json": "0fdf36a3f9eece4f229ca9c116e70770daf24354412b38bf7499ff8971694a03",
+    "completion/preservation.private.json": "3c7b646a85f7f946e761598d425f01ce069b487c5c0bd2ebd1269d96d0229831",
+    "completion/review-ledger.private.json": "54e4667243a56703f54212b128ce239db50d570f986a146ed04353c83d95b5f2",
+    "failures/cases.private.json": "2a0475cc674cb9a9a6e344c16d49c6535909579c1acc1ba785a34bebff277da3",
+    "failures/design.json": "179b549e8dcce51e0eb9164cc3390c99fb8b26c47dbef7c1e011645202e6817b",
+    "failures/review-ledger.private.json": "857b9ea8fd254189234b0ece70dd66c047706bf0b09fb5cd3231f7d124bb0148",
+    "failures/review-ledger.v2.private.json": "b37454ccca501e39351a135e66c45d87ebf5b34f0a8646b87cbd271b9879182f",
+    "failures/selection.private.json": "61724438884aee63c22c421541b660d38136193732599445480598612c1443ca",
+    "original/cases.private.json": "8e0a4d54977dc44d4a4259d359e11f5228827ef15bd1496cc073eb98497b1f12",
+    "original/design.json": "662d59b77c6c33c5a2dbed4088bca8330f4a9812ac509a5511abd9e040b683f0",
+    "original/review-ledger.private.json": "e45a969d98bf30ad561060eab5340a754a5644d9327ee4a1bc56a39afa450a6a",
+    "original/selection.private.json": "fa47a76b08fbe46a5fa56835c4134456c4b9a887c7de6cbe5f4f968501a34372"
+  },
+  "private_seal_sha256": "06e12f57d5ff0b1712e144c4328fb89d12423d094281fe5a035de92c6ce93749",
+  "schema": "e4-completion-integrity/v1",
+  "supplementary_failure_reviews": 24
+}

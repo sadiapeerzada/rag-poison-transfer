@@ -1,0 +1,263 @@
+{
+  "construction_failures": {
+    "assigned_target_bands": 18,
+    "candidate_band_statuses": {
+      "semantic_construction_failed": 18,
+      "target_construction_failed": 54
+    },
+    "failure_mechanisms": {
+      "affirmative_false_relation_filtered": 1,
+      "alternating_denial_and_truthful_correction": 1,
+      "contradictory_or_referent_shift": 1,
+      "location_to_name_or_motto_drift": 1,
+      "mixed_relation_and_partial_evidence": 1,
+      "no_target_no_generated_evidence": 16,
+      "numeric_and_unit_gate": 1,
+      "quantifier_relation_drift": 1,
+      "unsupported_film_and_costar_claims": 1
+    },
+    "flags": {
+      "answer_type_mismatch": 1,
+      "boundary_scope": 1,
+      "candidate_target_missing": 3,
+      "category_qualification": 1,
+      "cofounder_omission": 1,
+      "company_property_scope": 1,
+      "credit_role_conflation": 1,
+      "episode_season_conflation": 1,
+      "fictional_qualification": 1,
+      "formatting_gate_possible": 1,
+      "geographic_scope": 1,
+      "gold_contradiction": 1,
+      "heuristic_underacceptance_possible": 1,
+      "historical_scope": 3,
+      "inclusive_boundary": 1,
+      "institution_alias_scope": 1,
+      "internal_contradiction": 2,
+      "invented_or_unverified_titles": 1,
+      "martial_art_disambiguation": 1,
+      "nonexclusive_gold": 1,
+      "nonexclusive_question": 1,
+      "partial_construction": 1,
+      "partial_geographic_alias_overlap": 1,
+      "pseudonym_scope": 1,
+      "question_defect": 3,
+      "question_underspecified": 1,
+      "relation_drift": 3,
+      "release_scope": 1,
+      "role_mismatch": 1,
+      "stadium_alias_scope": 1,
+      "target_absent": 16,
+      "taxon_homonym": 1,
+      "time_sensitive": 3,
+      "truthful_correction": 2,
+      "unit_scope": 1,
+      "unsupported_authority_claim": 1,
+      "version_scope": 1
+    },
+    "gold_assessments": {
+      "gold_contradicted_by_native_context": 1,
+      "question_defect": 3,
+      "supported_in_native_context": 9,
+      "supported_with_qualification": 10,
+      "time_sensitive": 1
+    },
+    "independently_adjudicated": 0,
+    "limitations": [
+      "Qualitative outcome-stratified sample; no prevalence estimate.",
+      "Benchmark context is source-assisted evidence, not independent ground truth.",
+      "External primary citations corroborate only the stated proposition, not every hop or poison detail.",
+      "No independent human review; no reliability statistic or corrected attack-success estimate.",
+      "Absent targets have no target-factuality verdict.",
+      "Rejected semantic attempts may contain fluent assertions or truthful corrections; failure status is not factuality.",
+      "No failed construction is converted into a victim response or successful attack."
+    ],
+    "new_model_calls": 0,
+    "packet_sha256": "2a0475cc674cb9a9a6e344c16d49c6535909579c1acc1ba785a34bebff277da3",
+    "retained_attempt_outcomes": {
+      "heuristically_supported_unverified": 1,
+      "mention_only": 6,
+      "rejected": 24,
+      "unverified": 36
+    },
+    "retained_generation_attempts": 67,
+    "retained_partial_documents": 1,
+    "review_ledger_sha256": "b37454ccca501e39351a135e66c45d87ebf5b34f0a8646b87cbd271b9879182f",
+    "reviewed": 24,
+    "reviewed_candidate_bands": 72,
+    "schema": "e4-source-assisted-review-summary/v1",
+    "selected": 24,
+    "selected_statuses": {
+      "semantic_construction_failed": 8,
+      "target_construction_failed": 16
+    },
+    "target_validity": {
+      "absent_not_reviewable": 16,
+      "source_assisted_assessment_in_rationale": 8
+    },
+    "tiers": {
+      "native_source_assisted": 24
+    },
+    "unreviewed": 0,
+    "verdicts": {
+      "ambiguous": 3,
+      "source_contradicts_target": 5,
+      "unadjudicated": 16
+    }
+  },
+  "e5_decision": "unchanged: execution deferred",
+  "independent_human_adjudications": 0,
+  "new_qwen_calls": 0,
+  "original_ledger_sha256": "e45a969d98bf30ad561060eab5340a754a5644d9327ee4a1bc56a39afa450a6a",
+  "schema": "e4-completed-source-assisted-review/v1",
+  "valid_constructions": {
+    "added_annotations": 80,
+    "completion_scope": "Source-assisted central-proposition review complete; uncertainty is a finding, not independent truth.",
+    "flags": {
+      "absence_not_disproof": 3,
+      "alias_check_incomplete": 5,
+      "ambiguous_comparative_wording": 2,
+      "ancillary_claims_not_adjudicated": 1,
+      "answer_type_mismatch": 16,
+      "approximate_date": 1,
+      "boundary_scope": 1,
+      "bounded_chronology": 1,
+      "category_conjunction_failure": 1,
+      "chronology_mismatch": 2,
+      "company_alias_scope": 2,
+      "comparative_reversal": 8,
+      "contradictory_source_counts": 1,
+      "contradictory_sources": 1,
+      "date_event_conflation": 1,
+      "edition_scope": 1,
+      "election_scope": 1,
+      "film_series_conflation": 1,
+      "genre_drift": 1,
+      "geographic_inference": 1,
+      "geographic_scope": 4,
+      "gold_chronology_problem": 1,
+      "gold_overspecified": 2,
+      "gold_precision_problem": 1,
+      "gold_underspecified": 1,
+      "historical_scope": 7,
+      "inconsistent_poison_details": 3,
+      "institution_alias_scope": 1,
+      "invented_achievement": 1,
+      "nomination_win_conflation": 1,
+      "nonexclusive_ingredient": 1,
+      "nonexclusive_question": 12,
+      "outside_named_alternatives": 2,
+      "publication_award_conflation": 1,
+      "publisher_publication_scope": 1,
+      "question_defect": 5,
+      "question_taxonomic_wording": 1,
+      "question_underspecified": 5,
+      "referent_drift": 5,
+      "referent_substitution": 10,
+      "relation_drift": 1,
+      "rounded_gold": 1,
+      "song_album_conflation": 1,
+      "target_category_failure": 1,
+      "target_not_false": 1,
+      "taxonomic_level": 1,
+      "taxonomic_rename": 1,
+      "time_sensitive": 6,
+      "title_disambiguation": 4,
+      "unsupported_authority_claim": 4,
+      "unsupported_detail": 1
+    },
+    "gold_assessments": {
+      "count_definition_conflict": 1,
+      "edition_dependent_gold": 1,
+      "insufficient_evidence": 3,
+      "nonexclusive_gold": 1,
+      "question_defect": 5,
+      "supported_in_native_context": 46,
+      "supported_with_external_corroboration": 5,
+      "supported_with_qualification": 31,
+      "time_sensitive": 6,
+      "unsupported_chronology": 1
+    },
+    "independently_adjudicated": 0,
+    "limitations": [
+      "Qualitative outcome-stratified sample; no prevalence estimate.",
+      "Benchmark context is source-assisted evidence, not independent ground truth.",
+      "External primary citations corroborate only the stated proposition, not every hop or poison detail.",
+      "No independent human review; no reliability statistic or corrected attack-success estimate."
+    ],
+    "new_model_calls": 0,
+    "original_annotations_preserved": 20,
+    "packet_sha256": "8e0a4d54977dc44d4a4259d359e11f5228827ef15bd1496cc073eb98497b1f12",
+    "review_ledger_sha256": "54e4667243a56703f54212b128ce239db50d570f986a146ed04353c83d95b5f2",
+    "reviewed": 100,
+    "sample_cells": {
+      "lexical_influential_token/I1/all_three_target": {
+        "ambiguous": 2,
+        "source_contradicts_target": 5
+      },
+      "lexical_influential_token/I1/baseline_target_rcd_not": {
+        "source_contradicts_target": 4
+      },
+      "lexical_influential_token/I1/no_target_exposed": {
+        "ambiguous": 2,
+        "source_contradicts_target": 5
+      },
+      "lexical_influential_token/I1/rcd_only_or_discordant_target": {
+        "ambiguous": 2,
+        "source_contradicts_target": 5
+      },
+      "lexical_influential_token/I3/all_three_target": {
+        "ambiguous": 2,
+        "source_contradicts_target": 6
+      },
+      "lexical_influential_token/I3/baseline_target_rcd_not": {
+        "source_contradicts_target": 7
+      },
+      "lexical_influential_token/I3/no_target_exposed": {
+        "source_contradicts_target": 7
+      },
+      "lexical_influential_token/I3/rcd_only_or_discordant_target": {
+        "ambiguous": 2,
+        "source_contradicts_target": 1
+      },
+      "semantic_fluent_false_evidence/I1/all_three_target": {
+        "ambiguous": 4,
+        "source_contradicts_target": 6
+      },
+      "semantic_fluent_false_evidence/I1/baseline_target_rcd_not": {
+        "ambiguous": 1,
+        "source_contradicts_target": 2
+      },
+      "semantic_fluent_false_evidence/I1/no_target_exposed": {
+        "ambiguous": 1,
+        "source_contradicts_target": 9
+      },
+      "semantic_fluent_false_evidence/I1/rcd_only_or_discordant_target": {
+        "source_contradicts_target": 2
+      },
+      "semantic_fluent_false_evidence/I3/all_three_target": {
+        "ambiguous": 6,
+        "source_contradicts_target": 16,
+        "source_supports_target": 1
+      },
+      "semantic_fluent_false_evidence/I3/baseline_target_rcd_not": {
+        "source_contradicts_target": 1
+      },
+      "semantic_fluent_false_evidence/I3/no_target_exposed": {
+        "source_contradicts_target": 1
+      }
+    },
+    "schema": "e4-source-assisted-review-summary/v1",
+    "selected": 100,
+    "tiers": {
+      "external_primary_source_assisted": 12,
+      "native_source_assisted": 88
+    },
+    "unreviewed": 0,
+    "verdicts": {
+      "ambiguous": 22,
+      "source_contradicts_target": 77,
+      "source_supports_target": 1
+    }
+  }
+}
