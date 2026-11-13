@@ -1,0 +1,203 @@
+{
+  "authorization_status": "SUPERSEDED_DO_NOT_EXECUTE",
+  "broader_prompt_equivalence_authorizes_reuse": false,
+  "complete_bindings": 492,
+  "deficit": 80,
+  "e1_logical_assigned": 1260,
+  "e1_logical_valid": 588,
+  "e2_d2_logical_references": 112,
+  "frozen_dispatch": {
+    "E1": {
+      "blocks": 28,
+      "dispatch_sha256": "7d0a20d0514db4a08bd0561815262da87e1716bfa9fce82c3101fb5117612c18",
+      "missing_block_costs": [
+        8,
+        8,
+        8,
+        8,
+        8,
+        8,
+        4,
+        8,
+        8,
+        8,
+        8,
+        8,
+        8,
+        8,
+        8,
+        8,
+        8,
+        8,
+        8,
+        8,
+        8,
+        8,
+        8,
+        8,
+        8,
+        8,
+        8,
+        8
+      ]
+    },
+    "E2": {
+      "blocks": 32,
+      "dispatch_sha256": "137e6b3fee8e2ce88ee3a72c88e978f20ebcfcbbaaa909b0a1d62e1754c2cde9",
+      "missing_block_costs": [
+        1,
+        1,
+        1,
+        1,
+        2,
+        2,
+        2,
+        2,
+        2,
+        2,
+        2,
+        2,
+        2,
+        2,
+        2,
+        2,
+        2,
+        2,
+        2,
+        2,
+        2,
+        2,
+        2,
+        2,
+        2,
+        2,
+        2,
+        2,
+        2,
+        2,
+        2,
+        2
+      ]
+    }
+  },
+  "frozen_inputs_unchanged": true,
+  "full_25_question_budget": "UNKNOWN: only five-question inputs materialized",
+  "input_sha256": {
+    "e2.freeze.json": "83c51a7e36c2647f5d7642ed447644b7aa919ab3fb6874134112ba0c707455eb",
+    "e2.plan.private.json": "6a769dc60373ea616e52c04fed4fee1febcd4fea465d9cd08b8a03febf4ef91e",
+    "history.private.json": "5b5729d3750fec98d3dab478984d69186d5423e6593ddbc7c8532c30d9f52298",
+    "pilot.freeze.json": "26d055e46a09307f92ddb2e3ba7b14cc2d03abf01bcd82da7a40cbaba16a5e49",
+    "plan.private.json": "b1c41c4c2ba10b951f28bd3f340e1cb8aa7a41b6376fdead301a8adfff125e84",
+    "selection.seal.json": "daa6e6cb42a9d6a11334728ae34953fd3711320be0e65d76609c6c60cb7a4a31"
+  },
+  "minimum_successful_new_calls_under_frozen_binding_contract": 280,
+  "missing_e1": 220,
+  "missing_e1_by_pipeline": {
+    "bm25": 55,
+    "dense": 55,
+    "rcd": 55,
+    "reranker": 55
+  },
+  "missing_e2": 60,
+  "new_qwen_calls_in_this_audit": 0,
+  "origins": {
+    "logical_records": 392,
+    "verified_physical_origins": 212
+  },
+  "physical_ledger": {
+    "charged_elapsed_seconds": 17.45168324172846,
+    "completed_new_calls": 0,
+    "pilot_generation_intents": 0,
+    "reconciled_initialization_sessions": 2,
+    "shared_reservations": 0
+  },
+  "previous_cap": 200,
+  "question_blocks": [
+    {
+      "all_assigned_constructions_failed": false,
+      "complete_question_cost": 61,
+      "cumulative_prefix_cost": 61,
+      "missing_e1": 48,
+      "missing_e2": 13,
+      "question_ordinal": 1,
+      "shared_missing": 0
+    },
+    {
+      "all_assigned_constructions_failed": false,
+      "complete_question_cost": 71,
+      "cumulative_prefix_cost": 132,
+      "missing_e1": 56,
+      "missing_e2": 15,
+      "question_ordinal": 2,
+      "shared_missing": 0
+    },
+    {
+      "all_assigned_constructions_failed": false,
+      "complete_question_cost": 87,
+      "cumulative_prefix_cost": 219,
+      "missing_e1": 68,
+      "missing_e2": 19,
+      "question_ordinal": 3,
+      "shared_missing": 0
+    },
+    {
+      "all_assigned_constructions_failed": false,
+      "complete_question_cost": 61,
+      "cumulative_prefix_cost": 280,
+      "missing_e1": 48,
+      "missing_e2": 13,
+      "question_ordinal": 4,
+      "shared_missing": 0
+    },
+    {
+      "all_assigned_constructions_failed": true,
+      "complete_question_cost": 0,
+      "cumulative_prefix_cost": 280,
+      "missing_e1": 0,
+      "missing_e2": 0,
+      "question_ordinal": 5,
+      "shared_missing": 0
+    }
+  ],
+  "readiness": "BLOCKED: approval, safe initialization and full-scope input coverage unresolved",
+  "retry_allowance": "none assumed; failed/indeterminate reservations consume approved attempts",
+  "reuse": {
+    "classification_counts": {
+      "INCOMPATIBLE": 0,
+      "MISSING": 280,
+      "REUSABLE": 212,
+      "UNVERIFIED": 0
+    },
+    "new_call_estimate": 280,
+    "nonreusable_distinct_complete_inputs": 280,
+    "reused_responses_are_new_independent_inference": false,
+    "verified_reusable_physical_calls": 212
+  },
+  "schema": "e1-e2-readiness-accounting/v1",
+  "shared_complete_bindings": 0,
+  "shared_missing_bindings": 0,
+  "superseded_200_attempt_dispatch_projection": {
+    "E1_funded_attempts": 156,
+    "E2_funded_attempts": 44,
+    "complete_valid_question_ordinals": [
+      1,
+      2
+    ],
+    "executable": false,
+    "incomplete_valid_question_ordinals": [
+      3,
+      4
+    ],
+    "note": "Projection of frozen dispatch only; superseded authorization remains revoked. Do not choose/drop questions or treatments to fit the cap.",
+    "remaining_unfunded_by_question_ordinal": [
+      0,
+      0,
+      20,
+      60,
+      0
+    ],
+    "zero_construction_question_ordinals": [
+      5
+    ]
+  }
+}
