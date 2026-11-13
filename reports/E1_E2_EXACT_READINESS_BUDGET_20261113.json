@@ -82,6 +82,13 @@
   },
   "frozen_inputs_unchanged": true,
   "full_25_question_budget": "UNKNOWN: only five-question inputs materialized",
+  "full_e2_accounting": {
+    "additional_d2_bindings": 60,
+    "additional_d2_overlap_with_e1": 0,
+    "existing_defense_logical_references": 336,
+    "four_defense_complete_bindings": 240,
+    "shared_e1_e2_historical_bindings": 180
+  },
   "input_sha256": {
     "e2.freeze.json": "83c51a7e36c2647f5d7642ed447644b7aa919ab3fb6874134112ba0c707455eb",
     "e2.plan.private.json": "6a769dc60373ea616e52c04fed4fee1febcd4fea465d9cd08b8a03febf4ef91e",

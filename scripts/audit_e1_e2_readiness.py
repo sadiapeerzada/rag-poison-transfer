@@ -135,6 +135,15 @@ def audit(root, native):
         raise ValueError('E2 preparation seal differs')
     origins = verify_origins(history, native)
     result = reconcile(e1, e2, history, freeze['active_smoke_ids'], logical)
+    by_id = {r['observation_id']: r for r in e1}
+    matched = [r for r in logical if r['method']=='M3' and r['pipeline'] in ('dense','reranker','rcd') and r['status']=='valid_construction']
+    shared_defenses = {binding_key(by_id[r[c+'_input']]) for r in matched for c in ('clean','poisoned')}
+    if not shared_defenses <= {binding_key(r) for r in history}:
+        raise ValueError('Existing E2 defense arm lacks verified historical binding')
+    result['full_e2_accounting'] = dict(existing_defense_logical_references=2*len(matched),
+        shared_e1_e2_historical_bindings=len(shared_defenses),
+        four_defense_complete_bindings=len(shared_defenses | {binding_key(r) for r in e2}),
+        additional_d2_bindings=len(e2), additional_d2_overlap_with_e1=len({binding_key(r) for r in e1} & {binding_key(r) for r in e2}))
     result['superseded_200_attempt_dispatch_projection'] = project_old_dispatch(root, e1, e2, history, freeze['active_smoke_ids'])
     result.update(input_sha256=before, origins=origins, frozen_dispatch=dispatches,
                   e1_logical_assigned=len(logical), e1_logical_valid=sum(r['status']=='valid_construction' for r in logical),

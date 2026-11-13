@@ -19,8 +19,15 @@ is not new independent inference.
 | Prepared scope | Complete bindings | Reusable physical responses | Missing bindings |
 | --- | ---: | ---: | ---: |
 | E1, all required source/target controls | 432 | 212 | 220 |
-| E2, additional fixed-rewrite D2 | 60 | 0 | 60 |
+| E2, all four defenses | 240 | 180 | 60 |
 | Combined, deduplicated by complete frozen binding | 492 | 212 | 280 |
+
+Full E2 shares 180 verified historical Dense/Reranker/RCD bindings with E1,
+covering 336 logical clean/poison references. Its separate 60-row plan contains
+only the additional D2 bindings. Thus 432+240−180=492 combined bindings; the
+zero overlap between E1 and the additional D2 array does not mean zero shared
+work between the full experiments. This accounting leaves the missing-call
+requirement at 280, not a sum of separately charged historical responses.
 
 Under the frozen reuse contract and verified export, the prepared scope needs
 **at least 280 successful new physical generation calls**, with zero failures
